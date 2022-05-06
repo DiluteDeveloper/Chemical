@@ -10,8 +10,8 @@ class Texture {
 public:
 	
 	Texture(const std::string& texturePath);
-	~Texture();
+	//void deleteTexture(); currently not managing opengl objects
 
-	void bind(unsigned int slot);
+	void bind(unsigned int slot) const;
 
 };

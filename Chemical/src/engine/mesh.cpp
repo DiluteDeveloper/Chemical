@@ -35,8 +35,3 @@ void Mesh::draw() const {
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, 0);
 }
-
-Mesh::~Mesh() {
-	glDeleteVertexArrays(1, &vao);
-	glDeleteBuffers(2, &buffers[0]);
-}

@@ -4,8 +4,13 @@
 
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
-Camera::Camera(float speed, float sensitivity) : speed(speed), sensitivity(sensitivity) {
+Camera::Camera(float speed, float sensitivity, float fov, float near, float far) : 
+	speed(speed), sensitivity(sensitivity)
+{
+	glm::vec2 windowSize = Window::getSize();
+	proj = glm::perspective(glm::radians(fov), (float)windowSize.x / (float)windowSize.y, near, far);
 	oldCursorPos = Window::getCursorPos();
 }
 void Camera::update() {

@@ -154,6 +154,8 @@
     <ClCompile Include="src\engine\transform.cpp" />
     <ClCompile Include="src\engine\window.cpp" />
     <ClCompile Include="src\game.cpp" />
+    <ClCompile Include="src\engine\renderer.cpp" />
+    <ClCompile Include="src\engine\scene.cpp" />
     <ClCompile Include="src\vendor\GLAD\glad.c" />
     <ClCompile Include="src\vendor\IMGUI\imgui.cpp" />
     <ClCompile Include="src\vendor\IMGUI\imgui_draw.cpp" />
@@ -174,6 +176,9 @@
     <ClInclude Include="src\engine\time.h" />
     <ClInclude Include="src\engine\transform.h" />
     <ClInclude Include="src\engine\window.h" />
+    <ClInclude Include="src\engine\point_light.h" />
+    <ClInclude Include="src\engine\renderer.h" />
+    <ClInclude Include="src\engine\scene.h" />
     <ClInclude Include="src\vendor\GLAD\glad.h" />
     <ClInclude Include="src\vendor\GLAD\khrplatform.h" />
     <ClInclude Include="src\vendor\IMGUI\imconfig.h" />
@@ -184,7 +189,7 @@
     <ClInclude Include="src\vendor\IMGUI\imstb_rectpack.h" />
     <ClInclude Include="src\vendor\IMGUI\imstb_textedit.h" />
     <ClInclude Include="src\vendor\IMGUI\imstb_truetype.h" />
-    <ClInclude Include="src\object.h" />
+    <ClInclude Include="src\engine\renderable.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -14,10 +14,7 @@ public:
 	void draw() const;
 
 	Mesh(const std::vector<float>& vertices, const std::vector<unsigned int>& indices);
-	~Mesh();
-
-	Mesh(const Mesh&) = delete;
-	Mesh(Mesh&&) = delete;
+	//void deleteMesh(); temporarily not caring about opengl object destruction bc annoying 
 	
 	
 

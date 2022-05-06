@@ -17,4 +17,24 @@ struct Transform {
 
 	glm::mat4 toMat4() const;
 
+	bool operator==(const Transform& t) const { // might be fucked
+		if (position != t.position)
+			return false;
+		if (rotation != t.rotation)
+			return false;
+		if (scale != t.scale)
+			return false;
+		return true;
+	}
+
+	bool operator!=(const Transform& t) const { // might be fucked
+		if (position == t.position)
+			return false;
+		if (rotation == t.rotation)
+			return false;
+		if (scale == t.scale)
+			return false;
+		return true;
+	}
+
 };

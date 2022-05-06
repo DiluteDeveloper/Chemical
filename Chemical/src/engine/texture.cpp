@@ -32,10 +32,6 @@ Texture::Texture(const std::string& path) {
 	glGenerateTextureMipmap(id);
 }
 
-Texture::~Texture() {
-	glDeleteTextures(1, &id);
-}
-
-void Texture::bind(unsigned int slot) {
+void Texture::bind(unsigned int slot) const {
 	glBindTextureUnit(slot, id);
 }
