@@ -1,0 +1,14 @@
+pointLights.position
+pointLights.diffuse
+pointLights.ambient
+pointLights.specular
+viewPos
+
+v_view
+v_proj
+v_model
+
+material.ambient
+material.diffuse
+material.specular
+material.shininess

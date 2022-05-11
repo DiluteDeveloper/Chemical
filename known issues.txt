@@ -1,5 +1,0 @@
-1. Deleting a point light(other than the last index) will result in the point light GUI staying open.
-This is due to ImGui using memory addresses to reference different UI elements, and deleting the point light
-does not neccessary close this, because the memory address now refers to the next index point light.
-
-2. No instanced opengl objects are being properly disposed of. Not a huge issue but is a memory leak.
