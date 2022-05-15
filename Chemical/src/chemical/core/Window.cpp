@@ -2,8 +2,8 @@
 
 #include <iostream>
 
-#include <glfw/glfw3.h>
-#include <glad/glad.h>
+#include <vendor/glfw/glfw3.h>
+#include <vendor/glad/glad.h>
 
 #include <vendor/IMGUI/imgui_impl_glfw.h>
 #include <vendor/IMGUI/imgui_impl_opengl3.h>
@@ -101,15 +101,17 @@ namespace Chemical {
 
 		}
 
-		Window::Window(AccessKey<Application>) {
-			std::cout << "Window constructor called." << std::endl;
+		Window::Window(WindowSettings& settings) : settings(settings) {
 
 			glfwInit();
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-			glfwWindow = glfwCreateWindow(1280, 720, "LearnOpenGL", NULL, NULL);
+			if(settings.fullscreen)
+				glfwWindow = glfwCreateWindow(settings.resolution.x, settings.resolution.y, settings.title.c_str(), glfwGetPrimaryMonitor(), NULL);
+			else 
+				glfwWindow = glfwCreateWindow(settings.resolution.x, settings.resolution.y, settings.title.c_str(), NULL, NULL);
 			if (glfwWindow == NULL) {
 				std::cout << "Failed to create GLFW window" << std::endl;
 				glfwTerminate();
@@ -126,7 +128,7 @@ namespace Chemical {
 			glfwSetKeyCallback(glfwWindow, KeyCallback);
 			glDebugMessageCallback(&DebugCallback, nullptr);
 
-			glfwSwapInterval(0);
+			glfwSwapInterval(settings.vSync);
 
 			if (glfwRawMouseMotionSupported())
 				glfwSetInputMode(glfwWindow, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
@@ -152,46 +154,11 @@ namespace Chemical {
 		}
 
 		Window::~Window() {
-			std::cout << "Window destructor called." << std::endl;
 			ImGui_ImplOpenGL3_Shutdown();
 			ImGui_ImplGlfw_Shutdown();
 			ImGui::DestroyContext();
 
 			glfwTerminate();
-		}
-
-		void Window::SetInputMode(int mode, int value) const {
-			glfwSetInputMode(glfwWindow, mode, value);
-		}
-
-		glm::ivec2 Window::GetSize() const{
-			int x, y;
-			glfwGetWindowSize(glfwWindow, &x, &y);
-			return glm::ivec2(x, y);
-		}
-
-		void Window::SwapBuffers() const {
-			glfwSwapBuffers(glfwWindow);
-		}
-
-		bool Window::Close() const {
-			return glfwWindowShouldClose(glfwWindow);
-		}
-
-		bool Window::GetKey(int key) const {
-			return glfwGetKey(glfwWindow, key);
-		}
-		glm::ivec2 Window::GetCursorPos() const {
-			double x, y;
-			glfwGetCursorPos(glfwWindow, &x, &y);
-			return glm::ivec2(x, y);
-		}
-
-		void Window::PollEvents() const {
-			glfwPollEvents();
-		}
-		double Window::GetTime() const {
-			return glfwGetTime();
 		}
 	}
 

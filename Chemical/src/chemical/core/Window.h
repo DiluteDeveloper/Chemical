@@ -5,40 +5,43 @@ struct GLFWwindow;
 #include <vendor/glm/glm.hpp>
 #include <iostream>
 
-#include "AccessKey.h"
-
 namespace Chemical {
+	namespace Layers {
+		class SettingsLayer;
+	}
 
 	namespace Core {
 
-		class Application;
+		struct WindowSettings {
+
+			bool vSync = false;
+			bool fullscreen = false;
+
+			glm::ivec2 resolution = glm::ivec2(1280, 720);
+
+			std::string title = "Chemical";
+
+			friend class Layers::SettingsLayer;
+
+		private:
+			WindowSettings() = default;
+			~WindowSettings() = default;
+			WindowSettings(const WindowSettings&) = delete;
+			WindowSettings(WindowSettings&&) = delete;
+		};
 		class Window {
 
-			GLFWwindow* glfwWindow = nullptr;
+			friend class Application;
 
 			Window(const Window&) = delete;
 			Window(Window&&) = delete;
 
-		public:
-
 			~Window();
-			Window(AccessKey<Application>);
-	
+			Window(WindowSettings& settings);
 
-			glm::ivec2 GetSize() const;
+			GLFWwindow* glfwWindow = nullptr;
 
-			void SwapBuffers() const;
-
-			void SetInputMode(int mode, int value)const ;
-
-			bool GetKey(int key) const;
-			glm::ivec2 GetCursorPos() const;
-
-			bool Close() const;
-
-			void PollEvents() const;
-
-			double GetTime() const;
+			WindowSettings& settings;
 		};
 	}
 

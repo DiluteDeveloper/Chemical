@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <filesystem>
 
 namespace Chemical {
 	class Mesh {
@@ -11,11 +12,11 @@ namespace Chemical {
 		unsigned int VAO = 0;
 		unsigned int buffers[2] = { 0,0 };
 
-		std::string filePath = "";
+		const std::filesystem::path filePath = "";
 
 		void Draw() const;
 
-		Mesh(const std::vector<float>& vertices, const std::vector<unsigned int>& indices, const std::string& filePath);
+		Mesh(const std::vector<float>& vertices, const std::vector<unsigned int>& indices, const std::filesystem::path& filePath);
 
 	};
 

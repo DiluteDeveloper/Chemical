@@ -3,8 +3,7 @@
 #include <string>
 #include <vendor/glm/glm.hpp>
 #include <unordered_map>
-
-#include "Material.h"
+#include <filesystem>
 
 class AssetImporter;
 
@@ -13,8 +12,8 @@ namespace Chemical {
 	public:
 
 		unsigned int ID = 0;
-		std::string vertexPath = "";
-		std::string fragmentPath = "";
+		const std::filesystem::path vertexPath = "";
+		const std::filesystem::path fragmentPath = "";
 		std::unordered_map<std::string, int> uniformLocations;
 
 		void Bind() const;
@@ -35,7 +34,7 @@ namespace Chemical {
 
 		int GetUniformLocation(const std::string& name);
 
-		Shader(const std::string& vertexPath, const std::string& fragmentPath);
+		Shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath);
 	};
 
 }

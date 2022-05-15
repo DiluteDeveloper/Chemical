@@ -1,19 +1,18 @@
 #include "LayerStack.h"
-#include "Layer.h"
+#include "chemical/layers/Layer.h"
 
 namespace Chemical {
 
 	namespace Core {
 
-		void LayerStack::Update(AccessKey<Application>) {
-			for (Layer* l : layers)
+		void LayerStack::Update() {
+			for (Layers::Layer* l : layers)
 				l->OnUpdate();
 		}
 
 		LayerStack::~LayerStack() {
-			std::cout << "LayerStack destructor called." << std::endl;
 
-			for (Layer* l : layers) {
+			for (Layers::Layer* l : layers) {
 				delete l;
 			}
 			layers.clear();

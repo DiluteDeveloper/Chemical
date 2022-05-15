@@ -1,9 +1,11 @@
 #include "Shader.h"
+#include "io/FileStream.h"
+#include "io/ConsoleStream.h"
 
-#include <fstream>
 #include <iostream>
-#include <glad/glad.h>
+#include <vendor/glad/glad.h>
 #include <vendor/glm/gtc/matrix_transform.hpp>
+#include <format>
 
 namespace Chemical {
 	void ShaderCompileStatus(unsigned int shader) {
@@ -12,47 +14,37 @@ namespace Chemical {
 		glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 		if (success != GL_TRUE) {
 			glGetShaderInfoLog(shader, 512, NULL, infoLog);
-			std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
+			IO::LogError("0x0: Chemical::ShaderCompileStatus({})\n{}", shader, infoLog);
+			throw std::exception();
 		}
 	}
 
-	Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath) :
+	Shader::Shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath) :
 		vertexPath(vertexPath), fragmentPath(fragmentPath) {
 
-		std::ifstream stream(vertexPath);
-		std::string vertex_source((std::istreambuf_iterator<char>(stream)),
-			std::istreambuf_iterator<char>());
-
-		stream.close();
-
-		stream.open(fragmentPath);
-		std::string fragment_source((std::istreambuf_iterator<char>(stream)),
-			std::istreambuf_iterator<char>());
-
-		stream.close();
-
-		// Build Shaders
-
-		// VERTEX
-
-		const char* cVertexSource = vertex_source.c_str();
+		std::string vertexSource = IO::ReadFile(vertexPath);
+		const char* cVertexSource = vertexSource.c_str();
 
 		unsigned int vertexShader = 0;
 		vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
 		glShaderSource(vertexShader, 1, &cVertexSource, NULL);
+
+
 		glCompileShader(vertexShader);
 
 		ShaderCompileStatus(vertexShader);
 
 		// FRAGMENT
 
-		const char* cFragmentSource = fragment_source.c_str();
+		std::string fragmentSource = IO::ReadFile(fragmentPath);
+		const char* cFragmentSource = fragmentSource.c_str();
 
 		unsigned int fragmentShader = 0;
 		fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
 		glShaderSource(fragmentShader, 1, &cFragmentSource, NULL);
+
 		glCompileShader(fragmentShader);
 
 		ShaderCompileStatus(fragmentShader);
@@ -73,7 +65,8 @@ namespace Chemical {
 		glGetProgramiv(ID, GL_LINK_STATUS, &success);
 		if (!success) {
 			glGetProgramInfoLog(ID, 512, NULL, infoLog);
-			std::cout << "ERROR::PROGRAM::COMPILATION_FAILED\n" << infoLog << std::endl;
+			IO::LogError("0x0: Chemical::Shader::Shader(\"{}\", \"{}\")\n{}", vertexPath.generic_string(), fragmentPath.generic_string(), infoLog);
+			throw std::exception();
 		}
 	}
 

@@ -1,7 +1,6 @@
 #include "AssetImporter.h"
 
 #include <filesystem>
-#include <iostream>
 
 namespace Chemical {
 
@@ -15,8 +14,7 @@ namespace Chemical {
             return dirs;
         }
 
-        AssetImporter::AssetImporter(AccessKey<Application>) {
-            std::cout << "AssetImporter constructor called." << std::endl;
+        AssetImporter::AssetImporter() {
             // Temporarily manually loading materials and meshes as the files for these are subject to change drastically
 
             std::vector<float> vertices{
@@ -83,60 +81,83 @@ namespace Chemical {
             materials.emplace_back("res/materials/DefaultMaterial.mat");
             meshes.emplace_back(vertices, indices, "res/meshes/DefaultMesh.mesh");
 
-            std::vector<std::string> vertexShaderPaths;
-            std::vector<std::string> fragmentShaderPaths;
+            std::vector<std::filesystem::path> vertexShaderPaths;
+            std::vector<std::filesystem::path> fragmentShaderPaths;
 
             std::vector<std::filesystem::path> resources = RecursiveDirectories("res/");
 
             for (auto& path : resources) {
 
-                std::string ext(path.extension().generic_string()); // path.extension().c_str() returns wchar_t*
-                std::string filePath(path.generic_string());
+                if (path.parent_path() != "res") {
 
-                if (ext.compare(".v") == 0)
-                    vertexShaderPaths.emplace_back(filePath);
-                else if (ext.compare(".f") == 0)
-                    fragmentShaderPaths.emplace_back(filePath);
-                else if (ext.compare("") == 0)
-                    folders.emplace_back(filePath);
+                    resourceStructure[path.parent_path().generic_string().c_str()].emplace_back(path);
+                }
+                else {
+                    resourceStructure["res"].emplace_back(path);
+                }
+
+                std::string ext(path.extension().generic_string()); // path.extension().c_str() returns wchar_t*;
+
+                if (path.extension() == ".v")
+                    vertexShaderPaths.emplace_back(path);
+                else if (path.extension() == ".f")
+                    fragmentShaderPaths.emplace_back(path);
             }
 
-            for (const std::string& vsp : vertexShaderPaths) {
-                for (const std::string& fsp : fragmentShaderPaths) {
-                    std::string vspNoEXT = vsp.substr(0, vsp.length() - 1);
-                    std::string fspNoEXT = fsp.substr(0, fsp.length() - 1);
-                    if (vspNoEXT.compare(fspNoEXT) == 0) {
+            for (const std::filesystem::path& vsp : vertexShaderPaths) {
+                for (const std::filesystem::path& fsp : fragmentShaderPaths) {
+                    if (vsp.filename() == fsp.filename()) {
                         shaders.emplace_back(vsp, fsp);
                     }
                 }
             }
         }
 
-        Mesh* AssetImporter::GetMesh(const std::string& filePath) {
-            for (Mesh& m : meshes) {
+        /*std::tuple<const Mesh*, bool> AssetImporter::GetMesh(const std::string& filePath) const {
+            for (const Mesh& m : meshes) {
                 if (m.filePath == filePath)
-                    return &m;
+                    return std::make_tuple<const Mesh*, bool>(&m, false);
             }
             std::cout << "Mesh \"" << filePath << "\" doesnt exist." << std::endl;
-            return nullptr;
+            return std::make_tuple<const Mesh*, bool>(nullptr, true);
         }
-        Material* AssetImporter::GetMaterial(const std::string& filePath) {
-            for (Material& m : materials) {
+        std::tuple<const Material*, bool> AssetImporter::GetMaterial(const std::string& filePath) const {
+
+            std::weak_ptr<Material> m(std::make_shared<Material>(&materials[0]));
+            auto ma = m.lock();
+            auto b = ma.get();
+            b->ambient = glm::vec3(1.0f);
+            for (const Material& m : materials) {
+
                 if (m.filePath == filePath)
-                    return &m;
+                    return std::make_tuple<const Material*, bool>(&m, false);;
             }
             std::cout << "Material \"" << filePath << "\" doesnt exist." << std::endl;
-            return nullptr;
+            return std::make_tuple<const Material*, bool>(nullptr, true);
         }
-        Shader* AssetImporter::GetShader(const std::string& filePath) {
-            for (Shader& s : shaders) {
+        std::tuple<const Shader*, bool> AssetImporter::GetShader(const std::string& filePath) const {
+            for (const Shader& s : shaders) {
                 if (s.vertexPath == filePath)
-                    return &s;
+                    return std::make_tuple<const Shader*, bool>(&s, false);
                 else if (s.fragmentPath == filePath)
-                    return &s;
+                    return std::make_tuple<const Shader*, bool>(nullptr, true);
             }
             std::cout << "Shader \"" << filePath << "\" doesnt exist." << std::endl;
-            return nullptr;
+            return std::make_tuple<const Shader*, bool>(nullptr, true);
+        }*/
+
+        const std::vector<Mesh>& AssetImporter::GetMeshes() const {
+            return meshes;
+        }
+        const std::vector<Material>& AssetImporter::GetMaterials() const {
+            return materials;
+        }
+        const std::vector<Shader>& AssetImporter::GetShaders() const {
+            return shaders;
+        }
+
+        const std::unordered_map<std::string, std::vector<std::filesystem::path>>& AssetImporter::GetResourceStructure() const {
+            return resourceStructure;
         }
     }
 

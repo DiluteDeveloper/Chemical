@@ -4,14 +4,13 @@
 namespace Chemical {
 
 	namespace Core {
-		Time::Time(AccessKey<Application>, const Window& window) : window(window) {
-			std::cout << "Time constructor called." << std::endl;
+		Time::Time(double time) {
 
-			oldTime = window.GetTime();
+			oldTime = time;
 		}
 
-		void Time::Update(AccessKey<Application>) {
-			double newTime = window.GetTime();
+		void Time::Update(double time) {
+			double newTime = time;
 			deltaTime = newTime - oldTime;
 			oldTime = newTime;
 		}

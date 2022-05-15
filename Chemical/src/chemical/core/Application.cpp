@@ -1,12 +1,17 @@
 #include "Application.h"
 #include "Window.h"
-#include "Layer.h"
 #include "AssetImporter.h"
+#include "Time.h"
+#include "LayerStack.h"
+
+#include "chemical/layers/SettingsLayer.h"
+#include "chemical/layers/GUILayer.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include <stb_image/stb_image.h>
+#include <vendor/stb_image/stb_image.h>
 
-#include <glad/glad.h>
+#include <vendor/glad/glad.h>
+#include <vendor/glfw/glfw3.h>
 
 #include <vendor/IMGUI/imgui.h>
 #include <vendor/IMGUI/imgui_impl_opengl3.h>
@@ -17,35 +22,46 @@ namespace Chemical {
     namespace Core {
 
         Application::Application() {
-            std::cout << "Application constructor called." << std::endl;
 
-            window = std::make_unique<Window>(AccessKey<Application>());
-            assetImporter = std::make_unique<AssetImporter>(AccessKey<Application>());
-            time = std::make_unique<Time>(AccessKey<Application>(), GetWindow());
-            layerStack = std::make_unique<LayerStack>(AccessKey<Application>());
+            layerStack = new LayerStack();
+
+            Layers::SettingsLayer& s = layerStack->PushLayer<Layers::SettingsLayer>();
+            window = new Window(s.windowSettings);
+            assetImporter = new AssetImporter();
+            time = new Time(glfwGetTime());
+
+            layerStack->PushLayer<Layers::GUILayer>(assetImporter->GetResourceStructure());
 
             stbi_set_flip_vertically_on_load(true);
 
         }
 
         void Application::Run() {
-            while (!window->Close()) {
+            while (!glfwWindowShouldClose(window->glfwWindow)) {
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                 ImGui_ImplOpenGL3_NewFrame();
                 ImGui_ImplGlfw_NewFrame();
                 ImGui::NewFrame();
 
-                time->Update(AccessKey<Application>());
-                layerStack->Update(AccessKey<Application>());
+                time->Update(glfwGetTime());
+                layerStack->Update();
 
                 ImGui::Render();
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-                window->SwapBuffers();
+                glfwSwapBuffers(window->glfwWindow);
 
-                window->PollEvents();
+                glfwPollEvents();
             }
+        }
+
+        Application::~Application() {
+
+            delete layerStack;
+            delete time;
+            delete assetImporter;
+            delete window;
         }
     }
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vendor/glm/glm.hpp>
-#include <filesystem>
 
 namespace Chemical {
 	struct Material {
@@ -11,9 +10,9 @@ namespace Chemical {
 		glm::fvec3 ambient = glm::fvec3(1.0f);
 		float shininess = 32.0f;
 
-		std::filesystem::path filePath = "";
+		std::string filePath = "";
 
-		Material(const std::filesystem::path& filePath) : filePath(filePath) {}
+		Material(const std::string& filePath) : filePath(filePath) {}
 	};
 
 }

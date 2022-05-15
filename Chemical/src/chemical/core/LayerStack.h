@@ -1,35 +1,38 @@
 #pragma once
 
 #include <vector>
-#include <iostream>
-
-#include "AccessKey.h"
 
 namespace Chemical {
 
-	namespace Core {
+	namespace Layers {
 		class Layer;
-		class Application;
+	}
+	namespace Core {
+
 
 		class LayerStack {
+			friend class Application;
 
-			std::vector<Layer*> layers;	
+			std::vector<Layers::Layer*> layers;	
 
 			LayerStack(const LayerStack&) = delete;
 			LayerStack(LayerStack&&) = delete;
 
-		public:
-			void Update(AccessKey<Application>);
-			LayerStack(AccessKey<Application>) { std::cout << "LayerStack constructor called." << std::endl; };
+			void Update();
+			LayerStack() = default;
 			~LayerStack();
 
+		public:
+
 			template<typename T, class... ARGS>
-			void PushLayer(ARGS&&... args) {
+			T& PushLayer(ARGS&&... args) { // May be unsafe
 				layers.insert(layers.begin(), new T(std::forward<ARGS>(args)...));
+				return static_cast<T&>(*layers[0]);
 			}
 			template<typename T, class... ARGS>
-			void PushOverlay(ARGS&&... args) {
+			T& PushOverlay(ARGS&&... args) { // May be unsafe
 				layers.emplace_back(new T(std::forward<ARGS>(args)...));
+				return static_cast<T&>(*layers[layers.size() - 1]);
 			}
 
 			

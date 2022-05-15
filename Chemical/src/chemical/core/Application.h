@@ -1,24 +1,20 @@
 #pragma once
-
-#include "LayerStack.h"
-#include "AssetImporter.h"
-#include "Window.h"
-#include "Time.h"
-
-#include <memory>
-
 int main();
 
 namespace Chemical {
 
 	namespace Core {
 
+		class Window;
+		class AssetImporter;
+		class Time;
+		class LayerStack;
+
 		class Application {
 
-			std::unique_ptr<Window> window;
-			std::unique_ptr<AssetImporter> assetImporter;
-			std::unique_ptr<Time> time;
-			std::unique_ptr<LayerStack> layerStack;
+			Window* window;
+			AssetImporter* assetImporter;
+			Time* time;
 
 
 			friend int ::main();
@@ -28,23 +24,16 @@ namespace Chemical {
 			Application(Application&&) = delete;
 
 		protected:
+			LayerStack* layerStack;
+
+
 			Application();
 
-			inline virtual ~Application() {
-				std::cout << "Application destructor called." << std::endl;
-			};
-
-		public:
-			Window& GetWindow() { return *window.get(); };
-			AssetImporter& GetAssetImporter() { return *assetImporter.get(); };
-			Time& GetTime() { return *time.get(); };
-		protected:
-			LayerStack& GetLayerStack() { return *layerStack.get(); };
+			virtual ~Application();
 		};
 
 		extern Application* CreateApplication();
 	}
-
 
 
 }

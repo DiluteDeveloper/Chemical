@@ -1,10 +1,10 @@
 #include "Mesh.h"
 
-#include <glad/glad.h>
+#include <vendor/glad/glad.h>
 #include <iostream>
 
 namespace Chemical {
-	Mesh::Mesh(const std::vector<float>& vertices, const std::vector<unsigned int>& in_indices, const std::string& filePath) : filePath(filePath) {
+	Mesh::Mesh(const std::vector<float>& vertices, const std::vector<unsigned int>& in_indices, const std::filesystem::path& filePath) : filePath(filePath) {
 		indices = (unsigned int)in_indices.size();
 
 		glCreateVertexArrays(1, &VAO);
