@@ -7,8 +7,12 @@
 #include <filesystem>
 
 namespace Chemical {
+
+	namespace Core { class LayerStack;  }
 	namespace Layers {
-		class GUILayer : public Layer {
+		class GUI : public Layer {
+
+			friend class Core::LayerStack;
 
 			const std::unordered_map<std::string, std::vector<std::filesystem::path>>& resourceStructure;
 
@@ -35,15 +39,12 @@ namespace Chemical {
 					}
 				ImGui::End();
 			}
-		public:
-			GUILayer(const std::unordered_map<std::string, std::vector<std::filesystem::path>>& resourceStructure) : resourceStructure(resourceStructure) {
-				currentDirectory = "res";
-			}
+			GUI(const std::unordered_map<std::string, std::vector<std::filesystem::path>>& resourceStructure) :
+				resourceStructure(resourceStructure), 
+				currentDirectory("res") { }
 
 
-			~GUILayer() override {
-
-			}
+			~GUI() override = default;
 		};
 
 	}

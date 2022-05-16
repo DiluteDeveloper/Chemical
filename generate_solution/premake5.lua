@@ -65,3 +65,12 @@ project "Sandbox"
     filter "configurations:Release"
         symbols "Off"
         optimize "On"
+
+    filter { "platforms:Win64", "configurations:Debug"}
+        postbuildcommands "$(SolutionDir)generate_solution/copy_res_debug_x86_64.bat"
+    filter { "platforms:Win32", "configurations:Debug"}
+        postbuildcommands "$(SolutionDir)generate_solution/copy_res_debug_x86.bat"
+    filter { "platforms:Win64", "configurations:Release"}
+        postbuildcommands "$(SolutionDir)generate_solution/copy_res_release_x86_64.bat"
+    filter { "platforms:Win32", "configurations:Debug"}
+        postbuildcommands "$(SolutionDir)generate_solution/copy_res_release_x86.bat"

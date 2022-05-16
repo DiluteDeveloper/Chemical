@@ -1,11 +1,5 @@
 #include "Application.h"
-#include "Window.h"
-#include "AssetImporter.h"
-#include "Time.h"
 #include "LayerStack.h"
-
-#include "chemical/layers/SettingsLayer.h"
-#include "chemical/layers/GUILayer.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <vendor/stb_image/stb_image.h>
@@ -21,47 +15,50 @@ namespace Chemical {
 
     namespace Core {
 
-        Application::Application() {
+        Application::Application() { // Should have an interface for glad in the future; glad funcs wont work without a window
 
             layerStack = new LayerStack();
 
-            Layers::SettingsLayer& s = layerStack->PushLayer<Layers::SettingsLayer>();
-            window = new Window(s.windowSettings);
-            assetImporter = new AssetImporter();
-            time = new Time(glfwGetTime());
+            SettingsLayer& s = layerStack->PushLayer<SettingsLayer>();
+            w = &layerStack->PushLayer<WindowLayer>(s.windowSettings);
 
-            layerStack->PushLayer<Layers::GUILayer>(assetImporter->GetResourceStructure());
+            AssetImporterLayer& a = layerStack->PushLayer<AssetImporterLayer>();
+
+            layerStack->PushLayer<Render::RendererLayer>(a);
+
+            t = &layerStack->PushLayer<Util::TimeLayer>(*w);
+
 
             stbi_set_flip_vertically_on_load(true);
-
         }
 
         void Application::Run() {
-            while (!glfwWindowShouldClose(window->glfwWindow)) {
+            while (!w->ShouldClose()) {
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                 ImGui_ImplOpenGL3_NewFrame();
                 ImGui_ImplGlfw_NewFrame();
                 ImGui::NewFrame();
 
-                time->Update(glfwGetTime());
                 layerStack->Update();
+               
 
                 ImGui::Render();
+
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-                glfwSwapBuffers(window->glfwWindow);
+                w->SwapBuffers();
 
-                glfwPollEvents();
+                w->PollEvents();
             }
         }
 
-        Application::~Application() {
+        LayerStack& Application::GetLayerStack() {
+            return *layerStack;
+        }
 
-            delete layerStack;
-            delete time;
-            delete assetImporter;
-            delete window;
+        Util::TimeLayer& Application::GetTime() {
+            return *t;
         }
     }
 

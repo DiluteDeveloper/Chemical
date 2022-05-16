@@ -2,42 +2,38 @@
 
 #include <vector>
 
-namespace Chemical {
+#include "Layer.h"
 
-	namespace Layers {
-		class Layer;
-	}
+namespace Chemical {
 	namespace Core {
 
 
 		class LayerStack {
 			friend class Application;
 
-			std::vector<Layers::Layer*> layers;	
+			std::vector<Layer*> layers; // Want this to be heap allocated; cant use unique_ptr with private destructed layers,
+												// has to be raw pointers manually deleted
 
 			LayerStack(const LayerStack&) = delete;
 			LayerStack(LayerStack&&) = delete;
 
 			void Update();
-			LayerStack() = default;
+			LayerStack() {};
 			~LayerStack();
 
 		public:
 
 			template<typename T, class... ARGS>
 			T& PushLayer(ARGS&&... args) { // May be unsafe
-				layers.insert(layers.begin(), new T(std::forward<ARGS>(args)...));
-				return static_cast<T&>(*layers[0]);
-			}
-			template<typename T, class... ARGS>
-			T& PushOverlay(ARGS&&... args) { // May be unsafe
-				layers.emplace_back(new T(std::forward<ARGS>(args)...));
-				return static_cast<T&>(*layers[layers.size() - 1]);
+				T* t = new T(std::forward<ARGS>(args)...);
+				layers.emplace_back(t);
+				return *t;
 			}
 
 			
 		};
 	}
+
 
 }
 

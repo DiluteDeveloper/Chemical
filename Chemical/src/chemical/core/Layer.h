@@ -2,7 +2,7 @@
 
 namespace Chemical {
 
-	namespace Layers {
+	namespace Core {
 		class Layer {
 
 			Layer(const Layer&) = delete;
@@ -14,7 +14,7 @@ namespace Chemical {
 		public:
 			virtual void OnUpdate() {};
 
-			virtual ~Layer() {};
+			virtual ~Layer() = default;
 
 		};
 	}

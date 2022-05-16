@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Layer.h"
-#include "chemical/core/Window.h"
+#include "chemical/core/LayerStack.h"
+#include "WindowLayer.h"
 #include "chemical/io/FileStream.h"
 #include "chemical/io/ConsoleStream.h"
 
@@ -9,18 +9,15 @@
 #include <vendor/glm/glm.hpp>
 
 namespace Chemical {
-	namespace Layers {
+
+	namespace Core {
 		class SettingsLayer : public Layer {
-		public:
+		private:
+
+			friend class LayerStack;
 
 			SettingsLayer(const SettingsLayer&) = delete;
 			SettingsLayer(SettingsLayer&&) = delete;
-
-			nlohmann::json settings;
-
-		public:
-
-			Core::WindowSettings windowSettings;
 			SettingsLayer() {
 				try {
 					settings = nlohmann::json::parse(IO::ReadFileAppData("Chemical/settings.json"));
@@ -48,6 +45,11 @@ namespace Chemical {
 
 				IO::WriteFileAppData("Chemical/settings.json", settings.dump());
 			}
+
+		public:
+
+			WindowSettings windowSettings;
+			nlohmann::json settings;
 		};
 
 	}
