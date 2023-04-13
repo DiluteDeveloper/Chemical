@@ -4,56 +4,76 @@ cmake_minimum_required(VERSION 3.15)
 
 project(Chemical VERSION 1.0)
 
+set(CMAKE_CONFIGURATION_TYPES
+Debug;Release;RelWithDebInfo;MinSizeRel
+)
+
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(C_STANDARD 11)
 set(C_STANDARD_REQUIRED True)
 
-set(CHEMICAL chemical)
-set(CHEMICAL_DIR ${CMAKE_SOURCE_DIR}/chemical)
-
-set(VS_STARTUP_PROJECT Chemical)
-
-# glad setup
-
-set(GLAD_DIR ${CHEMICAL_DIR}/vendor/glad)
-add_library(glad ${GLAD_DIR}/glad.c)
-
-# glfw setup
-
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(GLFW_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/glfw)
+set(PROJECT ${PROJECT_NAME})
+set(PROJECT_DIR ${CMAKE_SOURCE_DIR})
+set(ENGINE engine)
+set(ENGINE_DIR ${CMAKE_SOURCE_DIR}/engine)
+set(SANDBOX sandbox)
+set(SANDBOX_DIR ${CMAKE_SOURCE_DIR}/sandbox)
+set(GLAD glad)
+set(GLAD_DIR ${CMAKE_SOURCE_DIR}/vendor/glad)
+set(GLFW glfw)
+set(GLFW_DIR ${CMAKE_SOURCE_DIR}/glfw)
 
+set(VS_STARTUP_PROJECT ${SANDBOX})
 
-# setting up chemical subproject
-
-set(CHEMICAL_SOURCES
-    ${CHEMICAL_DIR}/src/main.cpp
-    ${CHEMICAL_DIR}/src/engine.cpp
-    ${CHEMICAL_DIR}/src/filestream.cpp
-    ${CHEMICAL_DIR}/src/graphics/Mesh.cpp
-    ${CHEMICAL_DIR}/src/logger.cpp
+set(ENGINE_SOURCES
+    "engine/src/main.cpp"
+    "engine/src/filestream.cpp"
+    "engine/src/logger.cpp"
+    "engine/src/api/mesh.cpp"
 )
-set(CHEMICAL_HEADERS
-    ${CHEMICAL_DIR}/vendor
-    ${CHEMICAL_DIR}/src
+set(ENGINE_HEADERS
+    ${PROJECT_DIR}/vendor
+    ${ENGINE_DIR}/src
 )
-set(CHEMICAL_LIBS
-   glfw
-   glad
+set(ENGINE_LIBS
+   ${GLFW}
+   ${GLAD}
 )
-add_executable(${CHEMICAL} ${CHEMICAL_SOURCES})
-target_include_directories(${CHEMICAL} PRIVATE ${CHEMICAL_HEADERS})
-target_link_libraries(${CHEMICAL} ${CHEMICAL_LIBS})
+set(SANDBOX_SOURCES
+    "sandbox/src/main.cpp"
+)
+set(SANDBOX_HEADERS
 
-target_compile_definitions(${CHEMICAL} PRIVATE GLFW_INCLUDE_NONE) # might not work
+)
+set(SANDBOX_LIBS
+    ${ENGINE}
+)
 
-# setting includes and precompiled header
+add_library(${GLAD} ${GLAD_DIR}/glad.c)
+add_library(${ENGINE} ${ENGINE_SOURCES})
+add_executable(${SANDBOX} ${SANDBOX_SOURCES})
+add_subdirectory(${GLFW_DIR})
 
-target_precompile_headers(${CHEMICAL} PRIVATE
+
+
+target_include_directories(${ENGINE} PRIVATE ${ENGINE_HEADERS})
+target_include_directories(${SANDBOX} PRIVATE ${SANDBOX_HEADERS})
+
+
+
+
+target_link_libraries(${ENGINE} ${ENGINE_LIBS})
+target_link_libraries(${SANDBOX} ${SANDBOX_LIBS})
+
+target_compile_definitions(${ENGINE} PRIVATE GLFW_INCLUDE_NONE) # might not work
+
+set(PCH_STD
 <iostream>
 <memory>
 <utility>
@@ -75,6 +95,24 @@ target_precompile_headers(${CHEMICAL} PRIVATE
 <type_traits>
 
 <Windows.h>
+)
+set(PCH_SANDBOX
+${ENGINE_DIR}/src/api/entry_point.h
+${ENGINE_DIR}/src/api/mesh.h
+)
+set(PCH_ENGINE
+
+)
+
+# setting includes and precompiled header
+target_precompile_headers(${SANDBOX} 
+PRIVATE ${PCH_STD}
+PRIVATE ${PCH_SANDBOX}
+)
+
+target_precompile_headers(${ENGINE} 
+PRIVATE ${PCH_STD}
+PRIVATE ${PCH_ENGINE}
 )
 
 

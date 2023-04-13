@@ -49,10 +49,10 @@ cmake_ninja_workdir = D$:\Programming\Current_Projects\Chemical_V2\out\build\x64
 
 build cmake_object_order_depends_target_glad: phony || CMakeFiles\glad.dir
 
-build CMakeFiles\glad.dir\chemical\vendor\glad\glad.c.obj: C_COMPILER__glad_Debug D$:\Programming\Current_Projects\Chemical_V2\chemical\vendor\glad\glad.c || cmake_object_order_depends_target_glad
+build CMakeFiles\glad.dir\vendor\glad\glad.c.obj: C_COMPILER__glad_Debug D$:\Programming\Current_Projects\Chemical_V2\vendor\glad\glad.c || cmake_object_order_depends_target_glad
   FLAGS = /DWIN32 /D_WINDOWS /Zi /Ob0 /Od /RTC1 -MDd
   OBJECT_DIR = CMakeFiles\glad.dir
-  OBJECT_FILE_DIR = CMakeFiles\glad.dir\chemical\vendor\glad
+  OBJECT_FILE_DIR = CMakeFiles\glad.dir\vendor\glad
   TARGET_COMPILE_PDB = CMakeFiles\glad.dir\glad.pdb
   TARGET_PDB = glad.pdb
 
@@ -64,7 +64,7 @@ build CMakeFiles\glad.dir\chemical\vendor\glad\glad.c.obj: C_COMPILER__glad_Debu
 #############################################
 # Link the static library glad.lib
 
-build glad.lib: C_STATIC_LIBRARY_LINKER__glad_Debug CMakeFiles\glad.dir\chemical\vendor\glad\glad.c.obj
+build glad.lib: C_STATIC_LIBRARY_LINKER__glad_Debug CMakeFiles\glad.dir\vendor\glad\glad.c.obj
   LANGUAGE_COMPILE_FLAGS = /DWIN32 /D_WINDOWS /Zi /Ob0 /Od /RTC1 -MDd
   LINK_FLAGS = /machine:x64
   OBJECT_DIR = CMakeFiles\glad.dir
@@ -75,93 +75,133 @@ build glad.lib: C_STATIC_LIBRARY_LINKER__glad_Debug CMakeFiles\glad.dir\chemical
   TARGET_PDB = glad.pdb
 
 # =============================================================================
-# Object build statements for EXECUTABLE target chemical
+# Object build statements for STATIC_LIBRARY target engine
 
 
 #############################################
-# Order-only phony target for chemical
+# Order-only phony target for engine
 
-build cmake_object_order_depends_target_chemical: phony || cmake_object_order_depends_target_glad cmake_object_order_depends_target_glfw
+build cmake_object_order_depends_target_engine: phony || cmake_object_order_depends_target_glad cmake_object_order_depends_target_glfw
 
-build CMakeFiles\chemical.dir\cmake_pch.cxx.obj: CXX_COMPILER__chemical_Debug D$:\Programming\Current_Projects\Chemical_V2\out\build\x64-Debug\CMakeFiles\chemical.dir\cmake_pch.cxx | CMakeFiles\chemical.dir\cmake_pch.hxx || cmake_object_order_depends_target_chemical
+build CMakeFiles\engine.dir\cmake_pch.cxx.obj: CXX_COMPILER__engine_Debug D$:\Programming\Current_Projects\Chemical_V2\out\build\x64-Debug\CMakeFiles\engine.dir\cmake_pch.cxx | CMakeFiles\engine.dir\cmake_pch.hxx || cmake_object_order_depends_target_engine
   DEFINES = -DGLFW_INCLUDE_NONE
-  FLAGS = /DWIN32 /D_WINDOWS /GR /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++latest /YcD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/chemical.dir/cmake_pch.hxx /FpD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/chemical.dir/./cmake_pch.cxx.pch /FID:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/chemical.dir/cmake_pch.hxx
-  INCLUDES = -ID:\Programming\Current_Projects\Chemical_V2\chemical\vendor -ID:\Programming\Current_Projects\Chemical_V2\chemical\src -ID:\Programming\Current_Projects\Chemical_V2\glfw\include
-  OBJECT_DIR = CMakeFiles\chemical.dir
-  OBJECT_FILE_DIR = CMakeFiles\chemical.dir
-  TARGET_COMPILE_PDB = CMakeFiles\chemical.dir\
-  TARGET_PDB = chemical.pdb
+  FLAGS = /DWIN32 /D_WINDOWS /GR /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++latest /YcD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/engine.dir/cmake_pch.hxx /FpD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/engine.dir/./cmake_pch.cxx.pch /FID:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/engine.dir/cmake_pch.hxx
+  INCLUDES = -ID:\Programming\Current_Projects\Chemical_V2\vendor -ID:\Programming\Current_Projects\Chemical_V2\engine\src -ID:\Programming\Current_Projects\Chemical_V2\glfw\include
+  OBJECT_DIR = CMakeFiles\engine.dir
+  OBJECT_FILE_DIR = CMakeFiles\engine.dir
+  TARGET_COMPILE_PDB = CMakeFiles\engine.dir\engine.pdb
+  TARGET_PDB = engine.pdb
 
 
 #############################################
 # Additional output files.
 
-build CMakeFiles\chemical.dir\.\cmake_pch.cxx.pch: phony CMakeFiles\chemical.dir\cmake_pch.cxx.obj
+build CMakeFiles\engine.dir\.\cmake_pch.cxx.pch: phony CMakeFiles\engine.dir\cmake_pch.cxx.obj
 
-build CMakeFiles\chemical.dir\chemical\src\main.cpp.obj: CXX_COMPILER__chemical_Debug D$:\Programming\Current_Projects\Chemical_V2\chemical\src\main.cpp | CMakeFiles\chemical.dir\cmake_pch.hxx CMakeFiles\chemical.dir\cmake_pch.cxx.pch || cmake_object_order_depends_target_chemical
+build CMakeFiles\engine.dir\engine\src\main.cpp.obj: CXX_COMPILER__engine_Debug D$:\Programming\Current_Projects\Chemical_V2\engine\src\main.cpp | CMakeFiles\engine.dir\cmake_pch.hxx CMakeFiles\engine.dir\cmake_pch.cxx.pch || cmake_object_order_depends_target_engine
   DEFINES = -DGLFW_INCLUDE_NONE
-  FLAGS = /DWIN32 /D_WINDOWS /GR /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++latest /YuD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/chemical.dir/cmake_pch.hxx /FpD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/chemical.dir/./cmake_pch.cxx.pch /FID:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/chemical.dir/cmake_pch.hxx
-  INCLUDES = -ID:\Programming\Current_Projects\Chemical_V2\chemical\vendor -ID:\Programming\Current_Projects\Chemical_V2\chemical\src -ID:\Programming\Current_Projects\Chemical_V2\glfw\include
-  OBJECT_DIR = CMakeFiles\chemical.dir
-  OBJECT_FILE_DIR = CMakeFiles\chemical.dir\chemical\src
-  TARGET_COMPILE_PDB = CMakeFiles\chemical.dir\
-  TARGET_PDB = chemical.pdb
+  FLAGS = /DWIN32 /D_WINDOWS /GR /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++latest /YuD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/engine.dir/cmake_pch.hxx /FpD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/engine.dir/./cmake_pch.cxx.pch /FID:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/engine.dir/cmake_pch.hxx
+  INCLUDES = -ID:\Programming\Current_Projects\Chemical_V2\vendor -ID:\Programming\Current_Projects\Chemical_V2\engine\src -ID:\Programming\Current_Projects\Chemical_V2\glfw\include
+  OBJECT_DIR = CMakeFiles\engine.dir
+  OBJECT_FILE_DIR = CMakeFiles\engine.dir\engine\src
+  TARGET_COMPILE_PDB = CMakeFiles\engine.dir\engine.pdb
+  TARGET_PDB = engine.pdb
 
-build CMakeFiles\chemical.dir\chemical\src\engine.cpp.obj: CXX_COMPILER__chemical_Debug D$:\Programming\Current_Projects\Chemical_V2\chemical\src\engine.cpp | CMakeFiles\chemical.dir\cmake_pch.hxx CMakeFiles\chemical.dir\cmake_pch.cxx.pch || cmake_object_order_depends_target_chemical
+build CMakeFiles\engine.dir\engine\src\filestream.cpp.obj: CXX_COMPILER__engine_Debug D$:\Programming\Current_Projects\Chemical_V2\engine\src\filestream.cpp | CMakeFiles\engine.dir\cmake_pch.hxx CMakeFiles\engine.dir\cmake_pch.cxx.pch || cmake_object_order_depends_target_engine
   DEFINES = -DGLFW_INCLUDE_NONE
-  FLAGS = /DWIN32 /D_WINDOWS /GR /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++latest /YuD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/chemical.dir/cmake_pch.hxx /FpD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/chemical.dir/./cmake_pch.cxx.pch /FID:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/chemical.dir/cmake_pch.hxx
-  INCLUDES = -ID:\Programming\Current_Projects\Chemical_V2\chemical\vendor -ID:\Programming\Current_Projects\Chemical_V2\chemical\src -ID:\Programming\Current_Projects\Chemical_V2\glfw\include
-  OBJECT_DIR = CMakeFiles\chemical.dir
-  OBJECT_FILE_DIR = CMakeFiles\chemical.dir\chemical\src
-  TARGET_COMPILE_PDB = CMakeFiles\chemical.dir\
-  TARGET_PDB = chemical.pdb
+  FLAGS = /DWIN32 /D_WINDOWS /GR /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++latest /YuD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/engine.dir/cmake_pch.hxx /FpD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/engine.dir/./cmake_pch.cxx.pch /FID:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/engine.dir/cmake_pch.hxx
+  INCLUDES = -ID:\Programming\Current_Projects\Chemical_V2\vendor -ID:\Programming\Current_Projects\Chemical_V2\engine\src -ID:\Programming\Current_Projects\Chemical_V2\glfw\include
+  OBJECT_DIR = CMakeFiles\engine.dir
+  OBJECT_FILE_DIR = CMakeFiles\engine.dir\engine\src
+  TARGET_COMPILE_PDB = CMakeFiles\engine.dir\engine.pdb
+  TARGET_PDB = engine.pdb
 
-build CMakeFiles\chemical.dir\chemical\src\filestream.cpp.obj: CXX_COMPILER__chemical_Debug D$:\Programming\Current_Projects\Chemical_V2\chemical\src\filestream.cpp | CMakeFiles\chemical.dir\cmake_pch.hxx CMakeFiles\chemical.dir\cmake_pch.cxx.pch || cmake_object_order_depends_target_chemical
+build CMakeFiles\engine.dir\engine\src\logger.cpp.obj: CXX_COMPILER__engine_Debug D$:\Programming\Current_Projects\Chemical_V2\engine\src\logger.cpp | CMakeFiles\engine.dir\cmake_pch.hxx CMakeFiles\engine.dir\cmake_pch.cxx.pch || cmake_object_order_depends_target_engine
   DEFINES = -DGLFW_INCLUDE_NONE
-  FLAGS = /DWIN32 /D_WINDOWS /GR /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++latest /YuD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/chemical.dir/cmake_pch.hxx /FpD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/chemical.dir/./cmake_pch.cxx.pch /FID:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/chemical.dir/cmake_pch.hxx
-  INCLUDES = -ID:\Programming\Current_Projects\Chemical_V2\chemical\vendor -ID:\Programming\Current_Projects\Chemical_V2\chemical\src -ID:\Programming\Current_Projects\Chemical_V2\glfw\include
-  OBJECT_DIR = CMakeFiles\chemical.dir
-  OBJECT_FILE_DIR = CMakeFiles\chemical.dir\chemical\src
-  TARGET_COMPILE_PDB = CMakeFiles\chemical.dir\
-  TARGET_PDB = chemical.pdb
+  FLAGS = /DWIN32 /D_WINDOWS /GR /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++latest /YuD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/engine.dir/cmake_pch.hxx /FpD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/engine.dir/./cmake_pch.cxx.pch /FID:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/engine.dir/cmake_pch.hxx
+  INCLUDES = -ID:\Programming\Current_Projects\Chemical_V2\vendor -ID:\Programming\Current_Projects\Chemical_V2\engine\src -ID:\Programming\Current_Projects\Chemical_V2\glfw\include
+  OBJECT_DIR = CMakeFiles\engine.dir
+  OBJECT_FILE_DIR = CMakeFiles\engine.dir\engine\src
+  TARGET_COMPILE_PDB = CMakeFiles\engine.dir\engine.pdb
+  TARGET_PDB = engine.pdb
 
-build CMakeFiles\chemical.dir\chemical\src\graphics\Mesh.cpp.obj: CXX_COMPILER__chemical_Debug D$:\Programming\Current_Projects\Chemical_V2\chemical\src\graphics\Mesh.cpp | CMakeFiles\chemical.dir\cmake_pch.hxx CMakeFiles\chemical.dir\cmake_pch.cxx.pch || cmake_object_order_depends_target_chemical
+build CMakeFiles\engine.dir\engine\src\api\mesh.cpp.obj: CXX_COMPILER__engine_Debug D$:\Programming\Current_Projects\Chemical_V2\engine\src\api\mesh.cpp | CMakeFiles\engine.dir\cmake_pch.hxx CMakeFiles\engine.dir\cmake_pch.cxx.pch || cmake_object_order_depends_target_engine
   DEFINES = -DGLFW_INCLUDE_NONE
-  FLAGS = /DWIN32 /D_WINDOWS /GR /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++latest /YuD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/chemical.dir/cmake_pch.hxx /FpD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/chemical.dir/./cmake_pch.cxx.pch /FID:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/chemical.dir/cmake_pch.hxx
-  INCLUDES = -ID:\Programming\Current_Projects\Chemical_V2\chemical\vendor -ID:\Programming\Current_Projects\Chemical_V2\chemical\src -ID:\Programming\Current_Projects\Chemical_V2\glfw\include
-  OBJECT_DIR = CMakeFiles\chemical.dir
-  OBJECT_FILE_DIR = CMakeFiles\chemical.dir\chemical\src\graphics
-  TARGET_COMPILE_PDB = CMakeFiles\chemical.dir\
-  TARGET_PDB = chemical.pdb
-
-build CMakeFiles\chemical.dir\chemical\src\logger.cpp.obj: CXX_COMPILER__chemical_Debug D$:\Programming\Current_Projects\Chemical_V2\chemical\src\logger.cpp | CMakeFiles\chemical.dir\cmake_pch.hxx CMakeFiles\chemical.dir\cmake_pch.cxx.pch || cmake_object_order_depends_target_chemical
-  DEFINES = -DGLFW_INCLUDE_NONE
-  FLAGS = /DWIN32 /D_WINDOWS /GR /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++latest /YuD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/chemical.dir/cmake_pch.hxx /FpD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/chemical.dir/./cmake_pch.cxx.pch /FID:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/chemical.dir/cmake_pch.hxx
-  INCLUDES = -ID:\Programming\Current_Projects\Chemical_V2\chemical\vendor -ID:\Programming\Current_Projects\Chemical_V2\chemical\src -ID:\Programming\Current_Projects\Chemical_V2\glfw\include
-  OBJECT_DIR = CMakeFiles\chemical.dir
-  OBJECT_FILE_DIR = CMakeFiles\chemical.dir\chemical\src
-  TARGET_COMPILE_PDB = CMakeFiles\chemical.dir\
-  TARGET_PDB = chemical.pdb
+  FLAGS = /DWIN32 /D_WINDOWS /GR /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++latest /YuD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/engine.dir/cmake_pch.hxx /FpD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/engine.dir/./cmake_pch.cxx.pch /FID:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/engine.dir/cmake_pch.hxx
+  INCLUDES = -ID:\Programming\Current_Projects\Chemical_V2\vendor -ID:\Programming\Current_Projects\Chemical_V2\engine\src -ID:\Programming\Current_Projects\Chemical_V2\glfw\include
+  OBJECT_DIR = CMakeFiles\engine.dir
+  OBJECT_FILE_DIR = CMakeFiles\engine.dir\engine\src\api
+  TARGET_COMPILE_PDB = CMakeFiles\engine.dir\engine.pdb
+  TARGET_PDB = engine.pdb
 
 
 # =============================================================================
-# Link build statements for EXECUTABLE target chemical
+# Link build statements for STATIC_LIBRARY target engine
 
 
 #############################################
-# Link the executable chemical.exe
+# Link the static library engine.lib
 
-build chemical.exe: CXX_EXECUTABLE_LINKER__chemical_Debug CMakeFiles\chemical.dir\cmake_pch.cxx.obj CMakeFiles\chemical.dir\chemical\src\main.cpp.obj CMakeFiles\chemical.dir\chemical\src\engine.cpp.obj CMakeFiles\chemical.dir\chemical\src\filestream.cpp.obj CMakeFiles\chemical.dir\chemical\src\graphics\Mesh.cpp.obj CMakeFiles\chemical.dir\chemical\src\logger.cpp.obj | glfw\src\glfw3.lib glad.lib || glad.lib glfw\src\glfw3.lib
-  FLAGS = /DWIN32 /D_WINDOWS /GR /EHsc /Zi /Ob0 /Od /RTC1 -MDd
-  LINK_FLAGS = /machine:x64 /debug /INCREMENTAL /subsystem:console
-  LINK_LIBRARIES = glfw\src\glfw3.lib  glad.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
-  OBJECT_DIR = CMakeFiles\chemical.dir
+build engine.lib: CXX_STATIC_LIBRARY_LINKER__engine_Debug CMakeFiles\engine.dir\cmake_pch.cxx.obj CMakeFiles\engine.dir\engine\src\main.cpp.obj CMakeFiles\engine.dir\engine\src\filestream.cpp.obj CMakeFiles\engine.dir\engine\src\logger.cpp.obj CMakeFiles\engine.dir\engine\src\api\mesh.cpp.obj || glad.lib glfw\src\glfw3.lib
+  LANGUAGE_COMPILE_FLAGS = /DWIN32 /D_WINDOWS /GR /EHsc /Zi /Ob0 /Od /RTC1 -MDd
+  LINK_FLAGS = /machine:x64
+  OBJECT_DIR = CMakeFiles\engine.dir
   POST_BUILD = cd .
   PRE_LINK = cd .
-  TARGET_COMPILE_PDB = CMakeFiles\chemical.dir\
-  TARGET_FILE = chemical.exe
-  TARGET_IMPLIB = chemical.lib
-  TARGET_PDB = chemical.pdb
+  TARGET_COMPILE_PDB = CMakeFiles\engine.dir\engine.pdb
+  TARGET_FILE = engine.lib
+  TARGET_PDB = engine.pdb
+
+# =============================================================================
+# Object build statements for EXECUTABLE target sandbox
+
+
+#############################################
+# Order-only phony target for sandbox
+
+build cmake_object_order_depends_target_sandbox: phony || cmake_object_order_depends_target_engine cmake_object_order_depends_target_glad cmake_object_order_depends_target_glfw
+
+build CMakeFiles\sandbox.dir\cmake_pch.cxx.obj: CXX_COMPILER__sandbox_Debug D$:\Programming\Current_Projects\Chemical_V2\out\build\x64-Debug\CMakeFiles\sandbox.dir\cmake_pch.cxx | CMakeFiles\sandbox.dir\cmake_pch.hxx || cmake_object_order_depends_target_sandbox
+  FLAGS = /DWIN32 /D_WINDOWS /GR /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++latest /YcD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/sandbox.dir/cmake_pch.hxx /FpD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/sandbox.dir/./cmake_pch.cxx.pch /FID:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/sandbox.dir/cmake_pch.hxx
+  INCLUDES = -ID:\Programming\Current_Projects\Chemical_V2\glfw\include
+  OBJECT_DIR = CMakeFiles\sandbox.dir
+  OBJECT_FILE_DIR = CMakeFiles\sandbox.dir
+  TARGET_COMPILE_PDB = CMakeFiles\sandbox.dir\
+  TARGET_PDB = sandbox.pdb
+
+
+#############################################
+# Additional output files.
+
+build CMakeFiles\sandbox.dir\.\cmake_pch.cxx.pch: phony CMakeFiles\sandbox.dir\cmake_pch.cxx.obj
+
+build CMakeFiles\sandbox.dir\sandbox\src\main.cpp.obj: CXX_COMPILER__sandbox_Debug D$:\Programming\Current_Projects\Chemical_V2\sandbox\src\main.cpp | CMakeFiles\sandbox.dir\cmake_pch.hxx CMakeFiles\sandbox.dir\cmake_pch.cxx.pch || cmake_object_order_depends_target_sandbox
+  FLAGS = /DWIN32 /D_WINDOWS /GR /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++latest /YuD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/sandbox.dir/cmake_pch.hxx /FpD:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/sandbox.dir/./cmake_pch.cxx.pch /FID:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug/CMakeFiles/sandbox.dir/cmake_pch.hxx
+  INCLUDES = -ID:\Programming\Current_Projects\Chemical_V2\glfw\include
+  OBJECT_DIR = CMakeFiles\sandbox.dir
+  OBJECT_FILE_DIR = CMakeFiles\sandbox.dir\sandbox\src
+  TARGET_COMPILE_PDB = CMakeFiles\sandbox.dir\
+  TARGET_PDB = sandbox.pdb
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target sandbox
+
+
+#############################################
+# Link the executable sandbox.exe
+
+build sandbox.exe: CXX_EXECUTABLE_LINKER__sandbox_Debug CMakeFiles\sandbox.dir\cmake_pch.cxx.obj CMakeFiles\sandbox.dir\sandbox\src\main.cpp.obj | engine.lib glfw\src\glfw3.lib glad.lib || engine.lib glad.lib glfw\src\glfw3.lib
+  FLAGS = /DWIN32 /D_WINDOWS /GR /EHsc /Zi /Ob0 /Od /RTC1 -MDd
+  LINK_FLAGS = /machine:x64 /debug /INCREMENTAL /subsystem:console
+  LINK_LIBRARIES = engine.lib  glfw\src\glfw3.lib  glad.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
+  OBJECT_DIR = CMakeFiles\sandbox.dir
+  POST_BUILD = cd .
+  PRE_LINK = cd .
+  TARGET_COMPILE_PDB = CMakeFiles\sandbox.dir\
+  TARGET_FILE = sandbox.exe
+  TARGET_IMPLIB = sandbox.lib
+  TARGET_PDB = sandbox.pdb
 
 
 #############################################
@@ -578,13 +618,15 @@ build glfw\src\CMakeFiles\update_mappings | ${cmake_ninja_workdir}glfw\src\CMake
 # =============================================================================
 # Target aliases.
 
-build chemical: phony chemical.exe
+build engine: phony engine.lib
 
 build glad: phony glad.lib
 
 build glfw: phony glfw\src\glfw3.lib
 
 build glfw3.lib: phony glfw\src\glfw3.lib
+
+build sandbox: phony sandbox.exe
 
 build uninstall: phony glfw\uninstall
 
@@ -598,7 +640,7 @@ build update_mappings: phony glfw\src\update_mappings
 #############################################
 # Folder: D:/Programming/Current_Projects/Chemical_V2/out/build/x64-Debug
 
-build all: phony glad.lib chemical.exe glfw\all
+build all: phony glad.lib engine.lib sandbox.exe glfw\all
 
 # =============================================================================
 

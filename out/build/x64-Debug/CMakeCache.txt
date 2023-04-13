@@ -295,6 +295,8 @@ GLFW_IS_TOP_LEVEL:STATIC=OFF
 // to follow BUILD_SHARED_LIBS)
 GLFW_LIBRARY_TYPE:STRING=
 
+GLFW_SHARED_LIBS:BOOL=OFF
+
 //Value Computed by CMake
 GLFW_SOURCE_DIR:STATIC=D:/Programming/Current_Projects/Chemical_V2/glfw
 
