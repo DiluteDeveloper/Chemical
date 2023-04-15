@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "logger.h"
 
 static HANDLE hConsole;

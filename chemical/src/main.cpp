@@ -1,5 +1,6 @@
+#include "pch.h"
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include <glfw/glfw3.h>
 
 #include "logger.h"
 #include "mesh.h"
@@ -8,7 +9,7 @@
 
 
 int64_t prevMessageID = -1;
-void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
+void APIENTRY message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
 {
 
 	if ((GLuint)prevMessageID == id)

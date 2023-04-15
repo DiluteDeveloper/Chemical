@@ -397,7 +397,6 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
+# Added by me
 
-# ADDED BY ME
-
-build/
+*.sln

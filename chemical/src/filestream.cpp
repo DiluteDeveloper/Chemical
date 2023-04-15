@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "logger.h"
 
 std::string ReadFile(const std::filesystem::path& filePath) {

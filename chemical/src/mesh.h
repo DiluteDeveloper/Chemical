@@ -106,7 +106,7 @@ namespace OpenGL {
 			glNamedBufferStorage(vbID, sizeof(T) * vertexData.size(), vertexData.data(), GL_MAP_READ_BIT);
 			glVertexArrayVertexBuffer(rendererID, 0, vbID, 0, layout.m_stride);
 
-			size_t i = 0;
+			unsigned int i = 0;
 			for (const VertexAttribute& va : layout.m_attributes) {
 
 				switch (va.m_dataTransformation) {
