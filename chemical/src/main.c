@@ -2,10 +2,7 @@
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 
-#include "logger.h"
-#include "mesh.h"
-#include "application_function_declarations.h"
-
+#include "types/string.h"
 
 
 int64_t prevMessageID = -1;
@@ -15,6 +12,8 @@ void APIENTRY message_callback(GLenum source, GLenum type, GLuint id, GLenum sev
 	if ((GLuint)prevMessageID == id)
 		return;
 	prevMessageID = id;
+
+#ifdef false
 	auto const src_str = [source]() {
 		switch (source)
 		{
@@ -61,27 +60,32 @@ void APIENTRY message_callback(GLenum source, GLenum type, GLuint id, GLenum sev
 	default: break;
 	}
 
+#endif
+
 }
 
+extern void on_main_begin();
+extern void on_chemical_begin();
+extern void on_scene_begin();
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (key == GLFW_KEY_E && action == GLFW_PRESS)
-		ApplicationAPI::on_scene_begin();
+		on_scene_begin();
 }
 
 
 
 int main(int argc, char* argv[]) {
-	ApplicationAPI::on_main_begin();
+	on_main_begin();
 
-	Logger::InitializeLogger();
+	//Logger::InitializeLogger();
 
 	if (!glfwInit()) {
-		LOGGER_CONSOLE_ERROR("GLFW initialization failed.");
-		throw std::exception();
+		//LOGGER_CONSOLE_ERROR("GLFW initialization failed.");
+		return -1;
 	}
-	else
-		LOGGER_CONSOLE_MESSAGE("GLFW initialized.");
+	//else
+		//LOGGER_CONSOLE_MESSAGE("GLFW initialized.");
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -89,24 +93,24 @@ int main(int argc, char* argv[]) {
 	GLFWwindow* window = glfwCreateWindow(1280, 720, "Hello World", NULL, NULL);
 
 	if (!window) {
-		LOGGER_CONSOLE_ERROR("GLFW window creation failed.");
-		throw std::exception();
+		//LOGGER_CONSOLE_ERROR("GLFW window creation failed.");
+		return -1;
 	}
-	else
-		LOGGER_CONSOLE_MESSAGE("GLFW window created.");
+	//else
+		//LOGGER_CONSOLE_MESSAGE("GLFW window created.");
 	glfwMakeContextCurrent(window);
 
 	if (!gladLoadGL()) {
-		LOGGER_CONSOLE_ERROR("gladLoadGL failed.");
-		throw std::exception();
+		//LOGGER_CONSOLE_ERROR("gladLoadGL failed.");
+		return -1;
 	}
-	else
-		LOGGER_CONSOLE_MESSAGE("gladLoadGL succeeded.");
+	//else
+		//LOGGER_CONSOLE_MESSAGE("gladLoadGL succeeded.");
 
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	glEnable(GL_DEPTH_TEST);
-	glDebugMessageCallback(&message_callback, nullptr);
+	glDebugMessageCallback(&message_callback, NULL);
 	//glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
 
 	glfwSetKeyCallback(window, key_callback);
@@ -122,26 +126,36 @@ int main(int argc, char* argv[]) {
 
 	glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
 
-	ApplicationAPI::on_engine_begin();
+	string s = string_create();
+
+	string_append_c("HELLO", &s);
+	printf("part 1: %s\n", string_c_str(&s));
+	printf("string length: %u\n", s.len);
+	printf("string capacity: %u\n", s.data->capacity);
+
+	string_append_c(" HELLO2", &s);
+	printf("part 2: %s\n", string_c_str(&s));
+	printf("string length: %u\n", s.len);
+	printf("string capacity: %u\n", s.data->capacity);
+
+	string_append_c(" THIS IS A TEST OF INCREASING CAPACITY HELLO3", &s);
+	printf("part 3: %s\n", string_c_str(&s));
+	printf("string length: %u\n", s.len);
+	printf("string capacity: %u\n", s.data->capacity);
+
+	string_append_c(" HELL YEAH IT IS", &s);
+	printf("part 4: %s\n", string_c_str(&s));
+	printf("string length: %u\n", s.len);
+	printf("string capacity: %u\n", s.data->capacity);
+
+	string_delete(&s);
+
+	on_chemical_begin();
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		std::vector<float> vertices = {
-		-0.5f, -0.5f,
-		0.0f, 0.5f,
-		0.5f, -0.5f
-		};
-		OpenGL::VertexAttributeLayout layout({ OpenGL::VertexAttribute(2, OpenGL::VertexAttribute::DataType::FLOAT) });
-
-		{
-			std::shared_ptr<OpenGL::Mesh> mesh = OpenGL::Mesh::CreateStaticMesh<float>(vertices, layout);
-			std::shared_ptr<OpenGL::Mesh> mesh2 = mesh;
-
-			mesh->Draw(3);
-		}
 
 		glfwSwapBuffers(window);
 	}

@@ -31,7 +31,7 @@ namespace OpenGL {
 		} m_dataTransformation = DataTransformation::DONT_NORMALIZE_OUTPUT_FLOAT;
 
 		VertexAttribute(uint32_t components, DataType dataType, DataTransformation dataTransformation = DataTransformation::DONT_NORMALIZE_OUTPUT_FLOAT) :
-			m_components(components), m_dataTransformation(dataTransformation), m_dataType(dataType) {
+			m_components(components), m_dataType(dataType), m_dataTransformation(dataTransformation) {
 
 			switch (dataType) {
 			case DataType::BYTE:

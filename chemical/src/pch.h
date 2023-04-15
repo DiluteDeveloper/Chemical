@@ -1,23 +1,5 @@
 #pragma once
 
-#include <iostream>
-#include <memory>
-#include <utility>
-#include <algorithm>
-#include <functional>
-#include <cstdint>
-
-#include <string>
-#include <sstream>
-#include <array>
-#include <vector>
-#include <unordered_map>
-#include <unordered_set>
-
-#include <chrono>
-#include <filesystem>
-#include <fstream>
-#include <initializer_list>
-#include <type_traits>
-
-#include <Windows.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
