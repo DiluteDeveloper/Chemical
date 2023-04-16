@@ -127,26 +127,17 @@ int main(int argc, char* argv[]) {
 	glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
 
 	string s = string_create();
+	string s2 = string_create();
 
 	string_append_c("HELLO", &s);
-	printf("part 1: %s\n", string_c_str(&s));
-	printf("string length: %u\n", s.len);
-	printf("string capacity: %u\n", s.data->capacity);
+	for (size_t i = 0; i < 5000000; i++)
+	{
+		string_append_c(" HELLO ", &s);
+	}
+	string_append_c("WORLD!", &s2);
+	string_append_s(&s2, &s);
 
-	string_append_c(" HELLO2", &s);
-	printf("part 2: %s\n", string_c_str(&s));
-	printf("string length: %u\n", s.len);
-	printf("string capacity: %u\n", s.data->capacity);
-
-	string_append_c(" THIS IS A TEST OF INCREASING CAPACITY HELLO3", &s);
-	printf("part 3: %s\n", string_c_str(&s));
-	printf("string length: %u\n", s.len);
-	printf("string capacity: %u\n", s.data->capacity);
-
-	string_append_c(" HELL YEAH IT IS", &s);
-	printf("part 4: %s\n", string_c_str(&s));
-	printf("string length: %u\n", s.len);
-	printf("string capacity: %u\n", s.data->capacity);
+	//printf("%s", s.data);
 
 	string_delete(&s);
 

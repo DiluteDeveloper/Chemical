@@ -2,75 +2,43 @@
 #include "string.h"
 
 string string_create() {
-	string s = { 0, (string_data*)malloc(sizeof(string_data)) };
-	s.data->capacity = DEFAULT_STRING_ALLOCATION;
-	s.data->data = malloc(DEFAULT_STRING_ALLOCATION);
-	return s;
-}
-
-string string_create_value(const char* value) {
-	size_t it = 0;
-	while (value[it] != '\0') it++;
-	it++;
-
-	string s = { it, (string_data*)malloc(sizeof(string_data)) };
-	s.data->capacity = s.len + DEFAULT_STRING_ALLOCATION;
-	s.data->data = malloc(s.data->capacity);
-	memcpy_s(s.data->data, it, (void*)value, it);
+	string s = { 0, DEFAULT_STRING_ALLOCATION, malloc(DEFAULT_STRING_ALLOCATION) };
 	return s;
 }
 
 char* string_c_str(const string* value) {
-	return value->data->data;
+	return value->data;
 }
 
 void string_append_c(const char* from, string* to) {
 	// Get length of from
 
-	size_t it = 0;
-	while (from[it] != '\0') it++;
-	it++;
+	size_t it = strlen(from);
 
-	// allocate if needed
-
+	size_t new_len = to->len + it;
 	// check if need to allocate
-	if (to->len + it >= to->data->capacity) {
-		to->data->capacity = to->len + it - 1 + DEFAULT_STRING_ALLOCATION;
-		char* new = malloc(to->data->capacity);
-		memcpy_s(new, to->len, to->data->data, to->len);
-		free(to->data->data);
-
-		size_t new_data_offset = 0;
-		// new allocation
-		if (to->len > 0) // if string has null terminator, replace it
-			new_data_offset = to->len - 1;
-		else
-			new_data_offset = to->len;
-
-		memcpy_s(new + new_data_offset, it, from, it);
-		to->len = new_data_offset + it;
-
-		to->data->data = new;
+	if (new_len >= to->capacity) {
+		size_t new_alloc_size = max((to->len * 2), (new_len + 1));
+		to->data = (char*)realloc(to->data, new_alloc_size); // +1 account for null terminator
+		to->capacity = new_len + DEFAULT_STRING_ALLOCATION;
 	}
-	else {
-
-		size_t new_data_offset = 0;
-
-		if (to->len > 0) // if string has null terminator, replace it
-			new_data_offset = to->len - 1;
-		else
-			new_data_offset = to->len;
-
-		memcpy_s(to->data->data + new_data_offset, it, from, it);
-		to->len = new_data_offset + it;
-	}
+	memcpy_s(to->data + to->len, it + 1, from, it + 1); // +1 account for null terminator
+	to->len = new_len;
 }
 
 void string_append_s(const string* from, string* to) {
-	// not currently implemented
+
+	size_t new_len = to->len + from->len;
+
+	if (new_len >= to->capacity) {
+		size_t new_alloc_size = max((to->len * 2), (new_len + 1));
+		to->data = (char*)realloc(to->data, new_alloc_size);
+		to->capacity = new_len + DEFAULT_STRING_ALLOCATION;
+	}
+	memcpy_s(to->data + to->len, from->len + 1, from->data, from->len + 1);
+	to->len = new_len;
 }
 
 void string_delete(string* value) {
-	free(value->data->data);
 	free(value->data);
 }
