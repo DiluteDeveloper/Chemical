@@ -400,3 +400,6 @@ FodyWeavers.xsd
 # Added by me
 
 *.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.filters.users
