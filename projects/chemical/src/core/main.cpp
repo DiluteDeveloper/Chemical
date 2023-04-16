@@ -2,10 +2,8 @@
 #include <GLAD/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "logger.h"
-#include "mesh.h"
-#include "application_function_declarations.h"
-
+#include "util/logger.h"
+#include "opengl/vertex_array.h"
 
 
 int64_t prevMessageID = -1;
@@ -63,16 +61,9 @@ void APIENTRY message_callback(GLenum source, GLenum type, GLuint id, GLenum sev
 
 }
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	if (key == GLFW_KEY_E && action == GLFW_PRESS)
-		ApplicationAPI::on_scene_begin();
-}
-
 
 
 int main(int argc, char* argv[]) {
-	ApplicationAPI::on_main_begin();
 
 	Logger::InitializeLogger();
 
@@ -109,8 +100,6 @@ int main(int argc, char* argv[]) {
 	glDebugMessageCallback(&message_callback, nullptr);
 	//glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
 
-	glfwSetKeyCallback(window, key_callback);
-
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -122,8 +111,6 @@ int main(int argc, char* argv[]) {
 
 	glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
 
-	ApplicationAPI::on_engine_begin();
-
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 
@@ -134,14 +121,26 @@ int main(int argc, char* argv[]) {
 		0.0f, 0.5f,
 		0.5f, -0.5f
 		};
-		OpenGL::VertexAttributeLayout layout({ OpenGL::VertexAttribute(2, OpenGL::VertexAttribute::DataType::FLOAT) });
+		OpenGL::Buffer vertexBuffer;
+		vertexBuffer.CreateImmutableBuffer(sizeof(float) * vertices.size(), vertices.data());
+		OpenGL::VertexBufferInfo info(sizeof(float) * 2, 0, 0);
 
-		{
-			std::shared_ptr<OpenGL::Mesh> mesh = OpenGL::Mesh::CreateStaticMesh<float>(vertices, layout);
-			std::shared_ptr<OpenGL::Mesh> mesh2 = mesh;
+		OpenGL::VertexAttribute attribute(2, 0);
+		info.AddAttribute(attribute);
 
-			mesh->Draw(3);
-		}
+		std::vector<unsigned char> indices = {
+			0,1,2
+		};
+		OpenGL::Buffer elementBuffer;
+		elementBuffer.CreateImmutableBuffer(sizeof(unsigned int) * indices.size(), indices.data());
+		
+		OpenGL::VertexArray vertexArray;
+		vertexArray.SetVertexBuffer(vertexBuffer, info);
+		vertexArray.SetElementBuffer(elementBuffer);
+
+		vertexArray.Bind();
+		OpenGL::ElementDrawInfo drawInfo(indices.size(), 0, OpenGL::DataType::UNSIGNED_BYTE, OpenGL::DrawMode::TRIANGLES);
+		vertexArray.DrawElements(drawInfo);
 
 		glfwSwapBuffers(window);
 	}

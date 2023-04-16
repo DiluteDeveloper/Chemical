@@ -9,6 +9,7 @@ workspace "Chemical"
     systemversion "latest"
     debugformat "c7"
     --toolset "clang"
+
     filter "configurations:Debug"
         symbols "On"
         optimize "Off"
@@ -24,11 +25,9 @@ RES_DEST_DIR = BIN_DIR .. "/resources"
 LIB_DIR = "%{wks.location}/libs/%{cfg.platform}-%{cfg.buildcfg}"
 
 CHEMICAL_DIR = "%{wks.location}/projects/chemical"
-CHEMICAL_SRC_DIR = "%{wks.location}/projects/chemical/src"
-CHEMICAL_INC_DIR = CHEMICAL_DIR .. "/include"
 
-SANDBOX_DIR = "%{wks.location}/projects/sandbox"
-SANDBOX_SRC_DIR = "%{wks.location}/projects/sandbox"
+--SANDBOX_DIR = "%{wks.location}/projects/sandbox"
+--SANDBOX_SRC_DIR = "%{wks.location}/projects/sandbox"
 
 THIRD_PARTY_DIR = "%{wks.location}/3rdparty"
 GLAD_SRC_DIR = "%{wks.location}/3rdparty/glad/src"
@@ -59,7 +58,7 @@ project "GLFW"
     objdir (INT_DIR)
 
 project "Chemical"
-    kind "StaticLib"
+    kind "ConsoleApp"
 
     pchheader "pch.h"
     pchsource ("../projects/chemical/src/pch.cpp") -- relative to script: has to be changed manually
@@ -69,15 +68,13 @@ project "Chemical"
     location (CHEMICAL_DIR)
     files { CHEMICAL_DIR .. "/src/**.cpp", CHEMICAL_DIR .."/src/**.h", 
     CHEMICAL_DIR .. "/vendor/**.h", CHEMICAL_DIR ..  "/vendor/**.hpp"}
-    includedirs {CHEMICAL_DIR, GLAD_INC_DIR, GLFW_INC_DIR}
+    includedirs {CHEMICAL_DIR .. "/src/", CHEMICAL_DIR .. "/vendor/", GLAD_INC_DIR, GLFW_INC_DIR}
     links {"GLFW", "GLAD"}
     targetdir (BIN_DIR)
     objdir (INT_DIR)
 
-project "Sandbox"
+--[[project "Sandbox"
     kind "ConsoleApp"
-
-    --pchsource (PCH_SRC)
 
     location (SANDBOX_DIR)
     files { SANDBOX_DIR .. "/src/**.cpp", SANDBOX_DIR .. "/src/**.h", 
@@ -87,4 +84,4 @@ project "Sandbox"
     targetdir (BIN_DIR)
     objdir (INT_DIR)
 
-    postbuildcommands (COPY_RESOURCES_COMMAND)
+    postbuildcommands ("%{wks.location}meta\\copy_resources.bat %{wks.location}resources " .. string.gsub(BIN_DIR, "/", "\\") .. "\\resources")]]--
