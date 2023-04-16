@@ -23,25 +23,27 @@ RES_SRC_DIR = "%{wks.location}/resources"
 RES_DEST_DIR = BIN_DIR .. "/resources"
 LIB_DIR = "%{wks.location}/libs/%{cfg.platform}-%{cfg.buildcfg}"
 
-CHEMICAL_DIR = "%{wks.location}/targets/chemical"
-SANDBOX_DIR = "%{wks.location}/targets/sandbox"
-GLAD_DIR = "%{wks.location}/targets/glad"
-GLFW_DIR = "%{wks.location}/targets/glfw"
+CHEMICAL_DIR = "%{wks.location}/projects/chemical"
+CHEMICAL_SRC_DIR = "%{wks.location}/projects/chemical/src"
+CHEMICAL_INC_DIR = CHEMICAL_DIR .. "/include"
 
-CHEMICAL_INCLUDE_DIR = CHEMICAL_DIR .. "/include"
-GLAD_INCLUDE_DIR = GLAD_DIR .. "/include"
-GLFW_INCLUDE_DIR = GLFW_DIR .. "/include"
+SANDBOX_DIR = "%{wks.location}/projects/sandbox"
+SANDBOX_SRC_DIR = "%{wks.location}/projects/sandbox"
 
-PCH_SRC = "../targets/chemical/src/pch.cpp"
+THIRD_PARTY_DIR = "%{wks.location}/3rdparty"
+GLAD_SRC_DIR = "%{wks.location}/3rdparty/glad/src"
+GLAD_INC_DIR = "%{wks.location}/3rdparty/glad/include"
+GLFW_SRC_DIR = "%{wks.location}/3rdparty/glfw/src"
+GLFW_INC_DIR = "%{wks.location}/3rdparty/glfw/include"
 
 COPY_RESOURCES_COMMAND = "%{wks.location}meta\\copy_resources.bat %{wks.location}resources %{wks.location}bin\\%{prj.name}\\%{cfg.platform}-%{cfg.buildcfg}\\resources"
 project "GLAD"
     kind "StaticLib"
 
 
-    location (GLAD_DIR)
-    files { GLAD_DIR .. "/src/**.c", GLAD_DIR .."/src/**.h", GLAD_DIR .. "/src/**.cpp", GLAD_DIR .."/src/**.hpp", GLAD_DIR .. "/src/**.m"}
-    includedirs {GLAD_DIR, GLAD_INCLUDE_DIR}
+    location (THIRD_PARTY_DIR)
+    files { GLAD_SRC_DIR .. "/**.c", GLAD_SRC_DIR .. "/**.h", GLAD_SRC_DIR .. "/**.cpp", GLAD_SRC_DIR .."/**.hpp", GLAD_SRC_DIR .. "/**.m"}
+    includedirs(GLAD_INC_DIR .. "/GLAD/")
     targetdir (BIN_DIR)
     objdir (INT_DIR)
 
@@ -51,9 +53,8 @@ project "GLFW"
     defines "_GLFW_WIN32"
 
 
-    location (GLFW_DIR)
-    files { GLFW_DIR .. "/src/**.c", GLFW_DIR .."/src/**.h", GLFW_DIR .. "/src/**.cpp", GLFW_DIR .."/src/**.hpp", GLFW_DIR .. "/src/**.m"}
-    includedirs {GLFW_DIR, GLFW_INCLUDE_DIR}
+    location (THIRD_PARTY_DIR)
+    files { GLFW_SRC_DIR .. "/**.c", GLFW_SRC_DIR .."/**.h", GLFW_SRC_DIR .. "/**.cpp", GLFW_SRC_DIR .."/**.hpp", GLFW_SRC_DIR .. "/**.m"}
     targetdir (BIN_DIR)
     objdir (INT_DIR)
 
@@ -61,14 +62,14 @@ project "Chemical"
     kind "StaticLib"
 
     pchheader "pch.h"
-    pchsource (PCH_SRC)
+    pchsource ("../projects/chemical/src/pch.cpp") -- relative to script: has to be changed manually
 
     defines "GLFW_INCLUDE_NONE"
 
     location (CHEMICAL_DIR)
     files { CHEMICAL_DIR .. "/src/**.cpp", CHEMICAL_DIR .."/src/**.h", 
     CHEMICAL_DIR .. "/vendor/**.h", CHEMICAL_DIR ..  "/vendor/**.hpp"}
-    includedirs {CHEMICAL_DIR, CHEMICAL_INCLUDE_DIR, GLAD_INCLUDE_DIR, GLFW_INCLUDE_DIR}
+    includedirs {CHEMICAL_DIR, GLAD_INC_DIR, GLFW_INC_DIR}
     links {"GLFW", "GLAD"}
     targetdir (BIN_DIR)
     objdir (INT_DIR)
@@ -81,7 +82,7 @@ project "Sandbox"
     location (SANDBOX_DIR)
     files { SANDBOX_DIR .. "/src/**.cpp", SANDBOX_DIR .. "/src/**.h", 
     SANDBOX_DIR .. "/vendor/**.h", SANDBOX_DIR .. "/vendor/**.hpp"}
-    includedirs { SANDBOX_DIR, CHEMICAL_INCLUDE_DIR }
+    includedirs { SANDBOX_DIR, CHEMICAL_INC_DIR}
     links {"GLFW", "GLAD", "Chemical"}
     targetdir (BIN_DIR)
     objdir (INT_DIR)

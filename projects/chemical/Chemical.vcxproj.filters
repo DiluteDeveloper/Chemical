@@ -1,0 +1,2586 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{2DAB880B-99B4-887C-2230-9F7C8E38947C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor">
+      <UniqueIdentifier>{B3738122-9F15-ACF8-88D0-BF4C74113349}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\assimp">
+      <UniqueIdentifier>{6F57A1F8-DB17-1D2F-A452-66AC10D2610B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\assimp\Compiler">
+      <UniqueIdentifier>{B963A434-A55D-CD86-8ECA-63977A6333F3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\assimp\port">
+      <UniqueIdentifier>{43268E7C-2F0A-4FD2-986A-4925846D3954}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\assimp\port\AndroidJNI">
+      <UniqueIdentifier>{B4803FE3-2099-260D-E945-B6A6551DBBA6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib">
+      <UniqueIdentifier>{B3BE179D-9F8C-0BA3-8820-7CC9748DE707}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\Open3DGC">
+      <UniqueIdentifier>{15AE31DE-81E5-7975-8AEF-DD98F6A5A06E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\clipper">
+      <UniqueIdentifier>{D1DA6CBB-BDD4-950D-A641-2C1E92DAFB79}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco">
+      <UniqueIdentifier>{EBED5AD3-D77C-E49C-809B-F8976C09F542}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src">
+      <UniqueIdentifier>{82A9C1C1-6ECE-1042-9719-F6D1839D0F60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco">
+      <UniqueIdentifier>{FA77A30C-E69D-6D73-CFE3-F23EBBA8923F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\animation">
+      <UniqueIdentifier>{891190C6-758E-8309-9E0B-841D8AE71F9D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\attributes">
+      <UniqueIdentifier>{30739E0C-9C8D-01AE-E5AF-1142510929B5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\compression">
+      <UniqueIdentifier>{7B9DAD4A-6705-7418-D070-882EBCF78A04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\compression\attributes">
+      <UniqueIdentifier>{11868907-7DA2-7BF8-467A-E865B255E5B9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes">
+      <UniqueIdentifier>{F8AB4207-E4D8-8E38-0DBA-3149F945E208}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\compression\bit_coders">
+      <UniqueIdentifier>{08748B46-7490-7D37-3D68-EAA4A943E7F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\compression\config">
+      <UniqueIdentifier>{40D432DA-AC9A-8FF6-F5F5-1D5961FBFD5A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\compression\entropy">
+      <UniqueIdentifier>{DBEF9FB8-C783-9560-3048-EF141CFBCF52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\compression\mesh">
+      <UniqueIdentifier>{3744325B-A37F-921E-AC74-0FAE182F174F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\compression\mesh\traverser">
+      <UniqueIdentifier>{C4BEDCC9-3031-1FE6-79C5-546AE576E9DE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\compression\point_cloud">
+      <UniqueIdentifier>{4A140B49-36BE-4058-1F8F-48730BD8E046}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\compression\point_cloud\algorithms">
+      <UniqueIdentifier>{930AEC7E-FF28-004C-48F6-055EB4533B55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\core">
+      <UniqueIdentifier>{B2341A4B-1EEE-84F5-A74D-9FCF13063B65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\io">
+      <UniqueIdentifier>{A1038E2F-0D72-E3AE-565B-9EAEC208D94A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\javascript">
+      <UniqueIdentifier>{80A70A5F-ECC1-6D00-35E4-7D94A13D9507}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\javascript\emscripten">
+      <UniqueIdentifier>{89477F85-7586-2901-1E09-06330A27DF6B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\material">
+      <UniqueIdentifier>{F8DB760B-646B-38F6-6D67-190ED9757302}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\maya">
+      <UniqueIdentifier>{D1751F4B-3D2F-8AF5-C68E-A4CF32474065}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\mesh">
+      <UniqueIdentifier>{16861F4B-823F-8AF5-0B9F-A4CF77574065}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\metadata">
+      <UniqueIdentifier>{0AA00F3F-762F-D129-7F2B-B241EB390C36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\point_cloud">
+      <UniqueIdentifier>{49A5BDF0-350D-84BE-9E78-98D48AFF9AAA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\scene">
+      <UniqueIdentifier>{B7887BAF-A36F-3DA7-4CC0-A3C43886B60D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\texture">
+      <UniqueIdentifier>{7A8F80CF-66E1-57BF-4F00-95CF3BF170A8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\tools">
+      <UniqueIdentifier>{1A6094AF-0647-56A7-AF97-BCC49B5DCF0D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\draco\src\draco\unity">
+      <UniqueIdentifier>{C2D3A5AF-AEBA-67A7-570B-CEC443D1E00D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\gtest">
+      <UniqueIdentifier>{496392D3-35F2-1B9D-DE10-3098CA7E2C43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\gtest\include">
+      <UniqueIdentifier>{BCC34E97-A87E-3E43-5136-B78D3DD088D3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\gtest\include\gtest">
+      <UniqueIdentifier>{124B05F3-FE86-085D-6799-205453F4B077}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\gtest\include\gtest\internal">
+      <UniqueIdentifier>{9E8141FD-0AE7-D483-93BF-765CFF23CAF2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\gtest\include\gtest\internal\custom">
+      <UniqueIdentifier>{48E06D78-3474-6320-9D38-BDD489EB9D12}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\gtest\samples">
+      <UniqueIdentifier>{8D13797B-79CE-6827-2286-E1710E20B3B7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\gtest\src">
+      <UniqueIdentifier>{E09D5051-CCC2-9FD1-F50D-8561E1919EEF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\openddlparser">
+      <UniqueIdentifier>{95DF96C7-819A-8673-2A52-FFBD16ECD003}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\openddlparser\include">
+      <UniqueIdentifier>{08CC002B-F4B2-C222-9D03-294089C93B89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\openddlparser\include\openddlparser">
+      <UniqueIdentifier>{AA1D8AD0-96B1-7F78-FF75-D92CEB28BA6A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\poly2tri">
+      <UniqueIdentifier>{C751CF16-3389-17AE-3C93-7BD1A8493EA7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\poly2tri\poly2tri">
+      <UniqueIdentifier>{5B9B8FD0-47EC-7A12-7050-69D45C000E7C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\poly2tri\poly2tri\common">
+      <UniqueIdentifier>{5308F0A1-BF97-B18C-C893-92A434A2EC98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\poly2tri\poly2tri\sweep">
+      <UniqueIdentifier>{4EE79115-3A39-6905-2358-A6150F4982EE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\pugixml">
+      <UniqueIdentifier>{A879F8B8-9473-210B-7DE0-B71B69798777}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\pugixml\src">
+      <UniqueIdentifier>{BFCB880E-ABDB-34DF-1495-99FD00C42378}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\rapidjson">
+      <UniqueIdentifier>{2C843200-18A9-8180-41F4-66102D78809E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\rapidjson\include">
+      <UniqueIdentifier>{9F17673C-8B68-527E-B4CC-4040A07CE5E7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\rapidjson\include\rapidjson">
+      <UniqueIdentifier>{18F4061E-045C-CDEB-6DC7-E101594EE4D7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\rapidjson\include\rapidjson\error">
+      <UniqueIdentifier>{713DEA38-5DE6-5168-867C-6DE772846CA9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\rapidjson\include\rapidjson\internal">
+      <UniqueIdentifier>{64B1702B-D0C2-18D2-5914-AB11C524A20B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\rapidjson\include\rapidjson\msinttypes">
+      <UniqueIdentifier>{E73C17B4-5359-09A5-1C31-7612880C7366}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\stb">
+      <UniqueIdentifier>{8B9E89CB-7782-4A21-E0E2-4474CCE534A3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\unzip">
+      <UniqueIdentifier>{18C88CD4-0457-169E-AD75-2A9999E32644}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\utf8cpp">
+      <UniqueIdentifier>{CC305937-B82A-8289-A197-189A8D30E8F5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\utf8cpp\source">
+      <UniqueIdentifier>{6CF5E52B-D80D-CD55-A1BA-5CEF0D9261EF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\utf8cpp\source\utf8">
+      <UniqueIdentifier>{C2DB68E2-AE17-6C4C-172A-844303851467}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\zip">
+      <UniqueIdentifier>{F5BA89CB-E19E-4A21-4AFF-4474360235A3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\zip\src">
+      <UniqueIdentifier>{8CEB439F-78E5-6CF1-6152-03024DEBD25D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\zlib">
+      <UniqueIdentifier>{D325C13C-3F87-9E4A-C8F4-E4FC3455D509}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\zlib\contrib">
+      <UniqueIdentifier>{D390779C-3F9E-A582-C884-A16D34917139}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\zlib\contrib\blast">
+      <UniqueIdentifier>{D85EF082-44CD-4502-8DB6-0002F9633B9E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\zlib\contrib\infback9">
+      <UniqueIdentifier>{09CE202B-F5B4-E222-9E05-49408ACB5B89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\zlib\contrib\iostream">
+      <UniqueIdentifier>{E62DBD97-D214-7F8F-7B65-E5AC672BF8F5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\zlib\contrib\iostream2">
+      <UniqueIdentifier>{D8EA628F-44AF-617F-0D15-92497998FDB4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\zlib\contrib\iostream3">
+      <UniqueIdentifier>{D9EA628F-45AF-617F-0E15-92497A98FDB4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\zlib\contrib\minizip">
+      <UniqueIdentifier>{82812A49-EE3A-95F3-779A-AFCDE3524B63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\contrib\zlib\contrib\puff">
+      <UniqueIdentifier>{13F673D5-FF46-5F17-28AB-4DD9145BF280}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\entt">
+      <UniqueIdentifier>{DD8078C1-4936-F1B6-D22A-EB8D3EDFE7BA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\glad">
+      <UniqueIdentifier>{9A8E79C1-0644-F2B6-8F38-EC8DFBECE8BA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\glad\KHR">
+      <UniqueIdentifier>{0E5A8EEA-7AE5-FBAE-83F6-7EA3EF0058AF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\glfw">
+      <UniqueIdentifier>{528F79C1-BE44-F2B6-4739-EC8DB3EDE8BA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\glm">
+      <UniqueIdentifier>{829FC5A8-6E57-07F6-D75E-E051C335A2E6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\glm\detail">
+      <UniqueIdentifier>{04D16468-70E7-62FE-B95E-EE1F25B43386}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\glm\ext">
+      <UniqueIdentifier>{E213C9C9-CEE1-BCCF-B775-2DF6A3E29834}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\glm\gtc">
+      <UniqueIdentifier>{CF1BC9C9-BBE9-BCCF-A47D-2DF690EA9834}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\glm\gtx">
+      <UniqueIdentifier>{E41BC9C9-D0E9-BCCF-B97D-2DF6A5EA9834}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\glm\simd">
+      <UniqueIdentifier>{1EFDF202-8A88-60C7-9399-E3BBFFA3BCC7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\imgui">
+      <UniqueIdentifier>{5D3BD0F0-499E-5F95-F223-984BDE652B18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\stb_image">
+      <UniqueIdentifier>{0DA0BA59-F998-D9AB-22CB-BE300E23B9B7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\application_function_declarations.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\filestream.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\logger.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mesh.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pch.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\stopwatch.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\AssertHandler.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\Base64.hpp">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\BaseImporter.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\Bitmap.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\BlobIOSystem.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\ByteSwapper.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\ColladaMetaData.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\Compiler\poppack1.h">
+      <Filter>vendor\assimp\Compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\Compiler\pstdint.h">
+      <Filter>vendor\assimp\Compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\Compiler\pushpack1.h">
+      <Filter>vendor\assimp\Compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\CreateAnimMesh.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\DefaultIOStream.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\DefaultIOSystem.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\DefaultLogger.hpp">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\Exceptional.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\Exporter.hpp">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\GenericProperty.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\GltfMaterial.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\Hash.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\IOStream.hpp">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\IOStreamBuffer.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\IOSystem.hpp">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\Importer.hpp">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\LineSplitter.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\LogAux.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\LogStream.hpp">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\Logger.hpp">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\MathFunctions.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\MemoryIOWrapper.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\NullLogger.hpp">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\ObjMaterial.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\ParsingUtils.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\Profiler.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\ProgressHandler.hpp">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\RemoveComments.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\SGSpatialSort.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\SceneCombiner.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\SkeletonMeshBuilder.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\SmallVector.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\SmoothingGroups.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\SpatialSort.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\StandardShapes.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\StreamReader.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\StreamWriter.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\StringComparison.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\StringUtils.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\Subdivision.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\TinyFormatter.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\Vertex.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\XMLTools.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\XmlParser.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\ZipArchiveIOSystem.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\aabb.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\ai_assert.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\anim.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\camera.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\cexport.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\cfileio.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\cimport.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\color4.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\commonMetaData.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\config.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\defs.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\fast_atof.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\importerdesc.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\light.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\material.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\matrix3x3.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\matrix4x4.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\mesh.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\metadata.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\pbrmaterial.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\port\AndroidJNI\AndroidJNIIOSystem.h">
+      <Filter>vendor\assimp\port\AndroidJNI</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\port\AndroidJNI\BundledAssetIOSystem.h">
+      <Filter>vendor\assimp\port\AndroidJNI</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\postprocess.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\qnan.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\quaternion.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\scene.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\texture.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\types.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\vector2.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\vector3.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\assimp\version.h">
+      <Filter>vendor\assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\Open3DGC\o3dgcAdjacencyInfo.h">
+      <Filter>vendor\contrib\Open3DGC</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\Open3DGC\o3dgcArithmeticCodec.h">
+      <Filter>vendor\contrib\Open3DGC</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\Open3DGC\o3dgcBinaryStream.h">
+      <Filter>vendor\contrib\Open3DGC</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\Open3DGC\o3dgcCommon.h">
+      <Filter>vendor\contrib\Open3DGC</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\Open3DGC\o3dgcDVEncodeParams.h">
+      <Filter>vendor\contrib\Open3DGC</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\Open3DGC\o3dgcDynamicVector.h">
+      <Filter>vendor\contrib\Open3DGC</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\Open3DGC\o3dgcDynamicVectorDecoder.h">
+      <Filter>vendor\contrib\Open3DGC</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\Open3DGC\o3dgcDynamicVectorEncoder.h">
+      <Filter>vendor\contrib\Open3DGC</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\Open3DGC\o3dgcFIFO.h">
+      <Filter>vendor\contrib\Open3DGC</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\Open3DGC\o3dgcIndexedFaceSet.h">
+      <Filter>vendor\contrib\Open3DGC</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\Open3DGC\o3dgcSC3DMCDecoder.h">
+      <Filter>vendor\contrib\Open3DGC</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\Open3DGC\o3dgcSC3DMCEncodeParams.h">
+      <Filter>vendor\contrib\Open3DGC</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\Open3DGC\o3dgcSC3DMCEncoder.h">
+      <Filter>vendor\contrib\Open3DGC</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\Open3DGC\o3dgcTimer.h">
+      <Filter>vendor\contrib\Open3DGC</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\Open3DGC\o3dgcTriangleFans.h">
+      <Filter>vendor\contrib\Open3DGC</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\Open3DGC\o3dgcTriangleListDecoder.h">
+      <Filter>vendor\contrib\Open3DGC</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\Open3DGC\o3dgcTriangleListEncoder.h">
+      <Filter>vendor\contrib\Open3DGC</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\Open3DGC\o3dgcVector.h">
+      <Filter>vendor\contrib\Open3DGC</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\clipper\clipper.hpp">
+      <Filter>vendor\contrib\clipper</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\animation\animation.h">
+      <Filter>vendor\contrib\draco\src\draco\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\animation\keyframe_animation.h">
+      <Filter>vendor\contrib\draco\src\draco\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\animation\keyframe_animation_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\animation\keyframe_animation_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\animation\node_animation_data.h">
+      <Filter>vendor\contrib\draco\src\draco\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\animation\skin.h">
+      <Filter>vendor\contrib\draco\src\draco\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\attributes\attribute_octahedron_transform.h">
+      <Filter>vendor\contrib\draco\src\draco\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\attributes\attribute_quantization_transform.h">
+      <Filter>vendor\contrib\draco\src\draco\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\attributes\attribute_transform.h">
+      <Filter>vendor\contrib\draco\src\draco\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\attributes\attribute_transform_data.h">
+      <Filter>vendor\contrib\draco\src\draco\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\attributes\attribute_transform_type.h">
+      <Filter>vendor\contrib\draco\src\draco\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\attributes\geometry_attribute.h">
+      <Filter>vendor\contrib\draco\src\draco\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\attributes\geometry_indices.h">
+      <Filter>vendor\contrib\draco\src\draco\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\attributes\point_attribute.h">
+      <Filter>vendor\contrib\draco\src\draco\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\attributes_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\attributes_decoder_interface.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\attributes_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\kd_tree_attributes_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\kd_tree_attributes_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\kd_tree_attributes_shared.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\linear_sequencer.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\mesh_attribute_indices_encoding_data.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\normal_compression_utils.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\point_d_vector.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\points_sequencer.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\mesh_prediction_scheme_constrained_multi_parallelogram_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\mesh_prediction_scheme_constrained_multi_parallelogram_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\mesh_prediction_scheme_constrained_multi_parallelogram_shared.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\mesh_prediction_scheme_data.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\mesh_prediction_scheme_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\mesh_prediction_scheme_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\mesh_prediction_scheme_geometric_normal_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\mesh_prediction_scheme_geometric_normal_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\mesh_prediction_scheme_geometric_normal_predictor_area.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\mesh_prediction_scheme_geometric_normal_predictor_base.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\mesh_prediction_scheme_multi_parallelogram_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\mesh_prediction_scheme_multi_parallelogram_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\mesh_prediction_scheme_parallelogram_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\mesh_prediction_scheme_parallelogram_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\mesh_prediction_scheme_parallelogram_shared.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\mesh_prediction_scheme_tex_coords_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\mesh_prediction_scheme_tex_coords_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\mesh_prediction_scheme_tex_coords_portable_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\mesh_prediction_scheme_tex_coords_portable_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\mesh_prediction_scheme_tex_coords_portable_predictor.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\prediction_scheme_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\prediction_scheme_decoder_factory.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\prediction_scheme_decoder_interface.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\prediction_scheme_decoding_transform.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\prediction_scheme_delta_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\prediction_scheme_delta_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\prediction_scheme_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\prediction_scheme_encoder_factory.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\prediction_scheme_encoder_interface.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\prediction_scheme_encoding_transform.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\prediction_scheme_factory.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\prediction_scheme_interface.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\prediction_scheme_normal_octahedron_canonicalized_decoding_transform.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\prediction_scheme_normal_octahedron_canonicalized_encoding_transform.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\prediction_scheme_normal_octahedron_canonicalized_transform_base.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\prediction_scheme_normal_octahedron_decoding_transform.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\prediction_scheme_normal_octahedron_encoding_transform.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\prediction_scheme_normal_octahedron_transform_base.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\prediction_scheme_wrap_decoding_transform.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\prediction_scheme_wrap_encoding_transform.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes\prediction_scheme_wrap_transform_base.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes\prediction_schemes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\sequential_attribute_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\sequential_attribute_decoders_controller.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\sequential_attribute_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\sequential_attribute_encoders_controller.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\sequential_integer_attribute_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\sequential_integer_attribute_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\sequential_normal_attribute_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\sequential_normal_attribute_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\sequential_quantization_attribute_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\attributes\sequential_quantization_attribute_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\attributes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\bit_coders\adaptive_rans_bit_coding_shared.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\bit_coders</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\bit_coders\adaptive_rans_bit_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\bit_coders</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\bit_coders\adaptive_rans_bit_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\bit_coders</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\bit_coders\direct_bit_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\bit_coders</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\bit_coders\direct_bit_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\bit_coders</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\bit_coders\folded_integer_bit_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\bit_coders</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\bit_coders\folded_integer_bit_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\bit_coders</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\bit_coders\rans_bit_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\bit_coders</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\bit_coders\rans_bit_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\bit_coders</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\bit_coders\symbol_bit_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\bit_coders</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\bit_coders\symbol_bit_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\bit_coders</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\config\compression_shared.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\config</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\config\decoder_options.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\config</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\config\draco_options.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\config</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\config\encoder_options.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\config</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\config\encoding_features.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\config</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\decode.h">
+      <Filter>vendor\contrib\draco\src\draco\compression</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\draco_compression_options.h">
+      <Filter>vendor\contrib\draco\src\draco\compression</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\encode.h">
+      <Filter>vendor\contrib\draco\src\draco\compression</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\encode_base.h">
+      <Filter>vendor\contrib\draco\src\draco\compression</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\entropy\ans.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\entropy</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\entropy\rans_symbol_coding.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\entropy</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\entropy\rans_symbol_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\entropy</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\entropy\rans_symbol_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\entropy</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\entropy\shannon_entropy.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\entropy</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\entropy\symbol_decoding.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\entropy</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\entropy\symbol_encoding.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\entropy</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\expert_encode.h">
+      <Filter>vendor\contrib\draco\src\draco\compression</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\mesh\mesh_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\mesh\mesh_edgebreaker_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\mesh\mesh_edgebreaker_decoder_impl.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\mesh\mesh_edgebreaker_decoder_impl_interface.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\mesh\mesh_edgebreaker_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\mesh\mesh_edgebreaker_encoder_impl.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\mesh\mesh_edgebreaker_encoder_impl_interface.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\mesh\mesh_edgebreaker_shared.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\mesh\mesh_edgebreaker_traversal_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\mesh\mesh_edgebreaker_traversal_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\mesh\mesh_edgebreaker_traversal_predictive_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\mesh\mesh_edgebreaker_traversal_predictive_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\mesh\mesh_edgebreaker_traversal_valence_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\mesh\mesh_edgebreaker_traversal_valence_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\mesh\mesh_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\mesh\mesh_sequential_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\mesh\mesh_sequential_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\mesh\traverser\depth_first_traverser.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\mesh\traverser</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\mesh\traverser\max_prediction_degree_traverser.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\mesh\traverser</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\mesh\traverser\mesh_attribute_indices_encoding_observer.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\mesh\traverser</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\mesh\traverser\mesh_traversal_sequencer.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\mesh\traverser</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\mesh\traverser\traverser_base.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\mesh\traverser</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\point_cloud\algorithms\dynamic_integer_points_kd_tree_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\point_cloud\algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\point_cloud\algorithms\dynamic_integer_points_kd_tree_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\point_cloud\algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\point_cloud\algorithms\float_points_tree_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\point_cloud\algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\point_cloud\algorithms\float_points_tree_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\point_cloud\algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\point_cloud\algorithms\integer_points_kd_tree_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\point_cloud\algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\point_cloud\algorithms\integer_points_kd_tree_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\point_cloud\algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\point_cloud\algorithms\point_cloud_compression_method.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\point_cloud\algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\point_cloud\algorithms\point_cloud_types.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\point_cloud\algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\point_cloud\algorithms\quantize_points_3.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\point_cloud\algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\point_cloud\algorithms\queuing_policy.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\point_cloud\algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\point_cloud\point_cloud_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\point_cloud</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\point_cloud\point_cloud_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\point_cloud</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\point_cloud\point_cloud_kd_tree_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\point_cloud</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\point_cloud\point_cloud_kd_tree_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\point_cloud</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\point_cloud\point_cloud_sequential_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\point_cloud</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\compression\point_cloud\point_cloud_sequential_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\compression\point_cloud</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\bit_utils.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\bounding_box.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\constants.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\cycle_timer.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\data_buffer.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\decoder_buffer.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\divide.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\draco_index_type.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\draco_index_type_vector.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\draco_test_base.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\draco_test_utils.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\draco_types.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\draco_version.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\encoder_buffer.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\hash_utils.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\macros.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\math_utils.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\options.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\quantization_utils.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\status.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\status_or.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\varint_decoding.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\varint_encoding.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\core\vector_d.h">
+      <Filter>vendor\contrib\draco\src\draco\core</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\file_reader_factory.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\file_reader_interface.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\file_reader_test_common.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\file_utils.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\file_writer_factory.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\file_writer_interface.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\file_writer_utils.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\gltf_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\gltf_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\gltf_test_helper.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\gltf_utils.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\image_compression_options.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\mesh_io.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\obj_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\obj_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\parser_utils.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\ply_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\ply_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\ply_property_reader.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\ply_property_writer.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\ply_reader.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\point_cloud_io.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\scene_io.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\stdio_file_reader.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\stdio_file_writer.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\stl_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\stl_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\texture_io.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\io\tiny_gltf_utils.h">
+      <Filter>vendor\contrib\draco\src\draco\io</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\javascript\emscripten\decoder_webidl_wrapper.h">
+      <Filter>vendor\contrib\draco\src\draco\javascript\emscripten</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\javascript\emscripten\encoder_webidl_wrapper.h">
+      <Filter>vendor\contrib\draco\src\draco\javascript\emscripten</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\material\material.h">
+      <Filter>vendor\contrib\draco\src\draco\material</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\material\material_library.h">
+      <Filter>vendor\contrib\draco\src\draco\material</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\material\material_utils.h">
+      <Filter>vendor\contrib\draco\src\draco\material</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\maya\draco_maya_plugin.h">
+      <Filter>vendor\contrib\draco\src\draco\maya</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\mesh\corner_table.h">
+      <Filter>vendor\contrib\draco\src\draco\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\mesh\corner_table_iterators.h">
+      <Filter>vendor\contrib\draco\src\draco\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\mesh\mesh.h">
+      <Filter>vendor\contrib\draco\src\draco\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\mesh\mesh_are_equivalent.h">
+      <Filter>vendor\contrib\draco\src\draco\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\mesh\mesh_attribute_corner_table.h">
+      <Filter>vendor\contrib\draco\src\draco\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\mesh\mesh_cleanup.h">
+      <Filter>vendor\contrib\draco\src\draco\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\mesh\mesh_connected_components.h">
+      <Filter>vendor\contrib\draco\src\draco\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\mesh\mesh_features.h">
+      <Filter>vendor\contrib\draco\src\draco\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\mesh\mesh_indices.h">
+      <Filter>vendor\contrib\draco\src\draco\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\mesh\mesh_misc_functions.h">
+      <Filter>vendor\contrib\draco\src\draco\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\mesh\mesh_splitter.h">
+      <Filter>vendor\contrib\draco\src\draco\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\mesh\mesh_stripifier.h">
+      <Filter>vendor\contrib\draco\src\draco\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\mesh\mesh_utils.h">
+      <Filter>vendor\contrib\draco\src\draco\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\mesh\triangle_soup_mesh_builder.h">
+      <Filter>vendor\contrib\draco\src\draco\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\mesh\valence_cache.h">
+      <Filter>vendor\contrib\draco\src\draco\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\metadata\geometry_metadata.h">
+      <Filter>vendor\contrib\draco\src\draco\metadata</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\metadata\metadata.h">
+      <Filter>vendor\contrib\draco\src\draco\metadata</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\metadata\metadata_decoder.h">
+      <Filter>vendor\contrib\draco\src\draco\metadata</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\metadata\metadata_encoder.h">
+      <Filter>vendor\contrib\draco\src\draco\metadata</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\metadata\property_table.h">
+      <Filter>vendor\contrib\draco\src\draco\metadata</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\metadata\structural_metadata.h">
+      <Filter>vendor\contrib\draco\src\draco\metadata</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\point_cloud\point_cloud.h">
+      <Filter>vendor\contrib\draco\src\draco\point_cloud</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\point_cloud\point_cloud_builder.h">
+      <Filter>vendor\contrib\draco\src\draco\point_cloud</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\scene\instance_array.h">
+      <Filter>vendor\contrib\draco\src\draco\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\scene\light.h">
+      <Filter>vendor\contrib\draco\src\draco\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\scene\mesh_group.h">
+      <Filter>vendor\contrib\draco\src\draco\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\scene\scene.h">
+      <Filter>vendor\contrib\draco\src\draco\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\scene\scene_are_equivalent.h">
+      <Filter>vendor\contrib\draco\src\draco\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\scene\scene_indices.h">
+      <Filter>vendor\contrib\draco\src\draco\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\scene\scene_node.h">
+      <Filter>vendor\contrib\draco\src\draco\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\scene\scene_utils.h">
+      <Filter>vendor\contrib\draco\src\draco\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\scene\trs_matrix.h">
+      <Filter>vendor\contrib\draco\src\draco\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\texture\source_image.h">
+      <Filter>vendor\contrib\draco\src\draco\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\texture\texture.h">
+      <Filter>vendor\contrib\draco\src\draco\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\texture\texture_library.h">
+      <Filter>vendor\contrib\draco\src\draco\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\texture\texture_map.h">
+      <Filter>vendor\contrib\draco\src\draco\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\texture\texture_transform.h">
+      <Filter>vendor\contrib\draco\src\draco\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\texture\texture_utils.h">
+      <Filter>vendor\contrib\draco\src\draco\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\tools\draco_transcoder_lib.h">
+      <Filter>vendor\contrib\draco\src\draco\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\draco\src\draco\unity\draco_unity_plugin.h">
+      <Filter>vendor\contrib\draco\src\draco\unity</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\gtest-assertion-result.h">
+      <Filter>vendor\contrib\gtest\include\gtest</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\gtest-death-test.h">
+      <Filter>vendor\contrib\gtest\include\gtest</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\gtest-matchers.h">
+      <Filter>vendor\contrib\gtest\include\gtest</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\gtest-message.h">
+      <Filter>vendor\contrib\gtest\include\gtest</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\gtest-param-test.h">
+      <Filter>vendor\contrib\gtest\include\gtest</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\gtest-printers.h">
+      <Filter>vendor\contrib\gtest\include\gtest</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\gtest-spi.h">
+      <Filter>vendor\contrib\gtest\include\gtest</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\gtest-test-part.h">
+      <Filter>vendor\contrib\gtest\include\gtest</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\gtest-typed-test.h">
+      <Filter>vendor\contrib\gtest\include\gtest</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\gtest.h">
+      <Filter>vendor\contrib\gtest\include\gtest</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\gtest_pred_impl.h">
+      <Filter>vendor\contrib\gtest\include\gtest</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\gtest_prod.h">
+      <Filter>vendor\contrib\gtest\include\gtest</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\internal\custom\gtest-port.h">
+      <Filter>vendor\contrib\gtest\include\gtest\internal\custom</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\internal\custom\gtest-printers.h">
+      <Filter>vendor\contrib\gtest\include\gtest\internal\custom</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\internal\custom\gtest.h">
+      <Filter>vendor\contrib\gtest\include\gtest\internal\custom</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\internal\gtest-death-test-internal.h">
+      <Filter>vendor\contrib\gtest\include\gtest\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\internal\gtest-filepath.h">
+      <Filter>vendor\contrib\gtest\include\gtest\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\internal\gtest-internal.h">
+      <Filter>vendor\contrib\gtest\include\gtest\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\internal\gtest-linked_ptr.h">
+      <Filter>vendor\contrib\gtest\include\gtest\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\internal\gtest-param-util-generated.h">
+      <Filter>vendor\contrib\gtest\include\gtest\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\internal\gtest-param-util.h">
+      <Filter>vendor\contrib\gtest\include\gtest\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\internal\gtest-port-arch.h">
+      <Filter>vendor\contrib\gtest\include\gtest\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\internal\gtest-port.h">
+      <Filter>vendor\contrib\gtest\include\gtest\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\internal\gtest-string.h">
+      <Filter>vendor\contrib\gtest\include\gtest\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\internal\gtest-tuple.h">
+      <Filter>vendor\contrib\gtest\include\gtest\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\include\gtest\internal\gtest-type-util.h">
+      <Filter>vendor\contrib\gtest\include\gtest\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\samples\prime_tables.h">
+      <Filter>vendor\contrib\gtest\samples</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\samples\sample1.h">
+      <Filter>vendor\contrib\gtest\samples</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\samples\sample2.h">
+      <Filter>vendor\contrib\gtest\samples</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\samples\sample3-inl.h">
+      <Filter>vendor\contrib\gtest\samples</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\samples\sample4.h">
+      <Filter>vendor\contrib\gtest\samples</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\gtest\src\gtest-internal-inl.h">
+      <Filter>vendor\contrib\gtest\src</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\openddlparser\include\openddlparser\DDLNode.h">
+      <Filter>vendor\contrib\openddlparser\include\openddlparser</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\openddlparser\include\openddlparser\OpenDDLCommon.h">
+      <Filter>vendor\contrib\openddlparser\include\openddlparser</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\openddlparser\include\openddlparser\OpenDDLExport.h">
+      <Filter>vendor\contrib\openddlparser\include\openddlparser</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\openddlparser\include\openddlparser\OpenDDLParser.h">
+      <Filter>vendor\contrib\openddlparser\include\openddlparser</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\openddlparser\include\openddlparser\OpenDDLParserUtils.h">
+      <Filter>vendor\contrib\openddlparser\include\openddlparser</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\openddlparser\include\openddlparser\OpenDDLStream.h">
+      <Filter>vendor\contrib\openddlparser\include\openddlparser</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\openddlparser\include\openddlparser\TPoolAllocator.h">
+      <Filter>vendor\contrib\openddlparser\include\openddlparser</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\openddlparser\include\openddlparser\Value.h">
+      <Filter>vendor\contrib\openddlparser\include\openddlparser</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\poly2tri\poly2tri\common\shapes.h">
+      <Filter>vendor\contrib\poly2tri\poly2tri\common</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\poly2tri\poly2tri\common\utils.h">
+      <Filter>vendor\contrib\poly2tri\poly2tri\common</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\poly2tri\poly2tri\poly2tri.h">
+      <Filter>vendor\contrib\poly2tri\poly2tri</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\poly2tri\poly2tri\sweep\advancing_front.h">
+      <Filter>vendor\contrib\poly2tri\poly2tri\sweep</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\poly2tri\poly2tri\sweep\cdt.h">
+      <Filter>vendor\contrib\poly2tri\poly2tri\sweep</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\poly2tri\poly2tri\sweep\sweep.h">
+      <Filter>vendor\contrib\poly2tri\poly2tri\sweep</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\poly2tri\poly2tri\sweep\sweep_context.h">
+      <Filter>vendor\contrib\poly2tri\poly2tri\sweep</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\pugixml\src\pugiconfig.hpp">
+      <Filter>vendor\contrib\pugixml\src</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\pugixml\src\pugixml.hpp">
+      <Filter>vendor\contrib\pugixml\src</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\allocators.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\cursorstreamwrapper.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\document.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\encodedstream.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\encodings.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\error\en.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson\error</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\error\error.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson\error</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\filereadstream.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\filewritestream.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\fwd.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\internal\biginteger.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\internal\clzll.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\internal\diyfp.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\internal\dtoa.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\internal\ieee754.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\internal\itoa.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\internal\meta.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\internal\pow10.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\internal\regex.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\internal\stack.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\internal\strfunc.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\internal\strtod.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\internal\swap.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\istreamwrapper.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\memorybuffer.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\memorystream.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\msinttypes\inttypes.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson\msinttypes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\msinttypes\stdint.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson\msinttypes</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\ostreamwrapper.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\pointer.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\prettywriter.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\rapidjson.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\reader.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\schema.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\stream.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\stringbuffer.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\rapidjson\include\rapidjson\writer.h">
+      <Filter>vendor\contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\stb\stb_image.h">
+      <Filter>vendor\contrib\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\unzip\crypt.h">
+      <Filter>vendor\contrib\unzip</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\unzip\ioapi.h">
+      <Filter>vendor\contrib\unzip</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\unzip\unzip.h">
+      <Filter>vendor\contrib\unzip</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\utf8cpp\source\utf8.h">
+      <Filter>vendor\contrib\utf8cpp\source</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\utf8cpp\source\utf8\checked.h">
+      <Filter>vendor\contrib\utf8cpp\source\utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\utf8cpp\source\utf8\core.h">
+      <Filter>vendor\contrib\utf8cpp\source\utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\utf8cpp\source\utf8\cpp11.h">
+      <Filter>vendor\contrib\utf8cpp\source\utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\utf8cpp\source\utf8\unchecked.h">
+      <Filter>vendor\contrib\utf8cpp\source\utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zip\src\miniz.h">
+      <Filter>vendor\contrib\zip\src</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zip\src\zip.h">
+      <Filter>vendor\contrib\zip\src</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\contrib\blast\blast.h">
+      <Filter>vendor\contrib\zlib\contrib\blast</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\contrib\infback9\infback9.h">
+      <Filter>vendor\contrib\zlib\contrib\infback9</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\contrib\infback9\inffix9.h">
+      <Filter>vendor\contrib\zlib\contrib\infback9</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\contrib\infback9\inflate9.h">
+      <Filter>vendor\contrib\zlib\contrib\infback9</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\contrib\infback9\inftree9.h">
+      <Filter>vendor\contrib\zlib\contrib\infback9</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\contrib\iostream\zfstream.h">
+      <Filter>vendor\contrib\zlib\contrib\iostream</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\contrib\iostream2\zstream.h">
+      <Filter>vendor\contrib\zlib\contrib\iostream2</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\contrib\iostream3\zfstream.h">
+      <Filter>vendor\contrib\zlib\contrib\iostream3</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\contrib\minizip\crypt.h">
+      <Filter>vendor\contrib\zlib\contrib\minizip</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\contrib\minizip\ioapi.h">
+      <Filter>vendor\contrib\zlib\contrib\minizip</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\contrib\minizip\iowin32.h">
+      <Filter>vendor\contrib\zlib\contrib\minizip</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\contrib\minizip\mztools.h">
+      <Filter>vendor\contrib\zlib\contrib\minizip</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\contrib\minizip\unzip.h">
+      <Filter>vendor\contrib\zlib\contrib\minizip</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\contrib\minizip\zip.h">
+      <Filter>vendor\contrib\zlib\contrib\minizip</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\contrib\puff\puff.h">
+      <Filter>vendor\contrib\zlib\contrib\puff</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\crc32.h">
+      <Filter>vendor\contrib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\deflate.h">
+      <Filter>vendor\contrib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\gzguts.h">
+      <Filter>vendor\contrib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\inffast.h">
+      <Filter>vendor\contrib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\inffixed.h">
+      <Filter>vendor\contrib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\inflate.h">
+      <Filter>vendor\contrib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\inftrees.h">
+      <Filter>vendor\contrib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\trees.h">
+      <Filter>vendor\contrib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\zlib.h">
+      <Filter>vendor\contrib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\contrib\zlib\zutil.h">
+      <Filter>vendor\contrib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\entt\entt.h">
+      <Filter>vendor\entt</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glad\KHR\khrplatform.h">
+      <Filter>vendor\glad\KHR</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glad\glad.h">
+      <Filter>vendor\glad</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glfw\glfw3.h">
+      <Filter>vendor\glfw</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glfw\glfw3native.h">
+      <Filter>vendor\glfw</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\common.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\_features.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\_fixes.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\_noise.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\_swizzle.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\_swizzle_func.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\_vectorize.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\compute_common.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\compute_vector_relational.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\qualifier.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\setup.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\type_float.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\type_half.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\type_mat2x2.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\type_mat2x3.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\type_mat2x4.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\type_mat3x2.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\type_mat3x3.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\type_mat3x4.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\type_mat4x2.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\type_mat4x3.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\type_mat4x4.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\type_quat.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\type_vec1.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\type_vec2.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\type_vec3.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\detail\type_vec4.hpp">
+      <Filter>vendor\glm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\exponential.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_clip_space.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_common.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_double2x2.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_double2x2_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_double2x3.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_double2x3_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_double2x4.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_double2x4_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_double3x2.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_double3x2_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_double3x3.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_double3x3_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_double3x4.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_double3x4_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_double4x2.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_double4x2_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_double4x3.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_double4x3_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_double4x4.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_double4x4_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_float2x2.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_float2x2_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_float2x3.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_float2x3_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_float2x4.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_float2x4_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_float3x2.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_float3x2_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_float3x3.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_float3x3_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_float3x4.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_float3x4_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_float4x2.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_float4x2_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_float4x3.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_float4x3_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_float4x4.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_float4x4_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_int2x2.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_int2x2_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_int2x3.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_int2x3_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_int2x4.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_int2x4_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_int3x2.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_int3x2_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_int3x3.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_int3x3_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_int3x4.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_int3x4_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_int4x2.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_int4x2_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_int4x3.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_int4x3_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_int4x4.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_int4x4_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_projection.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_relational.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_transform.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_uint2x2.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_uint2x2_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_uint2x3.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_uint2x3_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_uint2x4.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_uint2x4_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_uint3x2.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_uint3x2_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_uint3x3.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_uint3x3_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_uint3x4.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_uint3x4_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_uint4x2.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_uint4x2_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_uint4x3.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_uint4x3_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_uint4x4.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\matrix_uint4x4_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\quaternion_common.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\quaternion_double.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\quaternion_double_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\quaternion_exponential.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\quaternion_float.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\quaternion_float_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\quaternion_geometric.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\quaternion_relational.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\quaternion_transform.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\quaternion_trigonometric.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\scalar_common.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\scalar_constants.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\scalar_int_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\scalar_integer.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\scalar_packing.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\scalar_relational.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\scalar_uint_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\scalar_ulp.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_bool1.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_bool1_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_bool2.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_bool2_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_bool3.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_bool3_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_bool4.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_bool4_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_common.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_double1.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_double1_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_double2.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_double2_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_double3.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_double3_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_double4.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_double4_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_float1.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_float1_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_float2.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_float2_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_float3.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_float3_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_float4.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_float4_precision.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_int1.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_int1_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_int2.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_int2_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_int3.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_int3_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_int4.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_int4_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_integer.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_packing.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_relational.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_uint1.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_uint1_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_uint2.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_uint2_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_uint3.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_uint3_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_uint4.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_uint4_sized.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\ext\vector_ulp.hpp">
+      <Filter>vendor\glm\ext</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\fwd.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\geometric.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\glm.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtc\bitfield.hpp">
+      <Filter>vendor\glm\gtc</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtc\color_space.hpp">
+      <Filter>vendor\glm\gtc</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtc\constants.hpp">
+      <Filter>vendor\glm\gtc</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtc\epsilon.hpp">
+      <Filter>vendor\glm\gtc</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtc\integer.hpp">
+      <Filter>vendor\glm\gtc</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtc\matrix_access.hpp">
+      <Filter>vendor\glm\gtc</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtc\matrix_integer.hpp">
+      <Filter>vendor\glm\gtc</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtc\matrix_inverse.hpp">
+      <Filter>vendor\glm\gtc</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtc\matrix_transform.hpp">
+      <Filter>vendor\glm\gtc</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtc\noise.hpp">
+      <Filter>vendor\glm\gtc</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtc\packing.hpp">
+      <Filter>vendor\glm\gtc</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtc\quaternion.hpp">
+      <Filter>vendor\glm\gtc</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtc\random.hpp">
+      <Filter>vendor\glm\gtc</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtc\reciprocal.hpp">
+      <Filter>vendor\glm\gtc</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtc\round.hpp">
+      <Filter>vendor\glm\gtc</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtc\type_aligned.hpp">
+      <Filter>vendor\glm\gtc</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtc\type_precision.hpp">
+      <Filter>vendor\glm\gtc</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtc\type_ptr.hpp">
+      <Filter>vendor\glm\gtc</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtc\ulp.hpp">
+      <Filter>vendor\glm\gtc</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtc\vec1.hpp">
+      <Filter>vendor\glm\gtc</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\associated_min_max.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\bit.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\closest_point.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\color_encoding.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\color_space.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\color_space_YCoCg.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\common.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\compatibility.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\component_wise.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\dual_quaternion.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\easing.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\euler_angles.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\extend.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\extended_min_max.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\exterior_product.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\fast_exponential.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\fast_square_root.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\fast_trigonometry.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\functions.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\gradient_paint.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\handed_coordinate_space.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\hash.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\integer.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\intersect.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\io.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\log_base.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\matrix_cross_product.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\matrix_decompose.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\matrix_factorisation.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\matrix_interpolation.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\matrix_major_storage.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\matrix_operation.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\matrix_query.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\matrix_transform_2d.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\mixed_product.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\norm.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\normal.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\normalize_dot.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\number_precision.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\optimum_pow.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\orthonormalize.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\perpendicular.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\polar_coordinates.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\projection.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\quaternion.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\range.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\raw_data.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\rotate_normalized_axis.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\rotate_vector.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\scalar_multiplication.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\scalar_relational.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\spline.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\std_based_type.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\string_cast.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\texture.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\transform.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\transform2.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\type_aligned.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\type_trait.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\vec_swizzle.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\vector_angle.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\vector_query.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\gtx\wrap.hpp">
+      <Filter>vendor\glm\gtx</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\integer.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\mat2x2.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\mat2x3.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\mat2x4.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\mat3x2.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\mat3x3.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\mat3x4.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\mat4x2.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\mat4x3.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\mat4x4.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\matrix.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\packing.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\simd\common.h">
+      <Filter>vendor\glm\simd</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\simd\exponential.h">
+      <Filter>vendor\glm\simd</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\simd\geometric.h">
+      <Filter>vendor\glm\simd</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\simd\integer.h">
+      <Filter>vendor\glm\simd</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\simd\matrix.h">
+      <Filter>vendor\glm\simd</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\simd\neon.h">
+      <Filter>vendor\glm\simd</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\simd\packing.h">
+      <Filter>vendor\glm\simd</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\simd\platform.h">
+      <Filter>vendor\glm\simd</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\simd\trigonometric.h">
+      <Filter>vendor\glm\simd</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\simd\vector_relational.h">
+      <Filter>vendor\glm\simd</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\trigonometric.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\vec2.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\vec3.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\vec4.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\glm\vector_relational.hpp">
+      <Filter>vendor\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imconfig.h">
+      <Filter>vendor\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imgui.h">
+      <Filter>vendor\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imgui_impl_glfw.h">
+      <Filter>vendor\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imgui_impl_opengl3.h">
+      <Filter>vendor\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imgui_impl_opengl3_loader.h">
+      <Filter>vendor\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imgui_internal.h">
+      <Filter>vendor\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imstb_rectpack.h">
+      <Filter>vendor\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imstb_textedit.h">
+      <Filter>vendor\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imstb_truetype.h">
+      <Filter>vendor\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb_image\stb_image.h">
+      <Filter>vendor\stb_image</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\filestream.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\logger.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pch.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
