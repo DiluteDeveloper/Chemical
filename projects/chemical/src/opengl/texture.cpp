@@ -139,18 +139,18 @@ namespace OpenGL {
 
 		switch (parameters.type) {
 		case TextureType::TEXTURE_1D:
-			glTextureStorage1D(m_rendererID, 1, (GLenum)parameters.internalFormat, parameters.width);
+			glTextureStorage1D(m_rendererID, parameters.mipLevels, (GLenum)parameters.internalFormat, parameters.width);
 			break;
 		case TextureType::TEXTURE_1D_ARRAY:
 			[[fallthrough]];
 		case TextureType::TEXTURE_2D:
-			glTextureStorage2D(m_rendererID, 1, (GLenum)parameters.internalFormat,
+			glTextureStorage2D(m_rendererID, parameters.mipLevels, (GLenum)parameters.internalFormat,
 				parameters.width, parameters.height);
 			break;
 		case TextureType::TEXTURE_2D_ARRAY:
 			[[fallthrough]];
 		case TextureType::TEXTURE_3D:
-			glTextureStorage3D(m_rendererID, 1, (GLenum)parameters.internalFormat,
+			glTextureStorage3D(m_rendererID, parameters.mipLevels, (GLenum)parameters.internalFormat,
 				parameters.width, parameters.height, parameters.depth);
 			break;
 		case TextureType::TEXTURE_2D_MULTISAMPLE:

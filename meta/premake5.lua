@@ -66,8 +66,7 @@ project "Chemical"
     defines "GLFW_INCLUDE_NONE"
 
     location (CHEMICAL_DIR)
-    files { CHEMICAL_DIR .. "/src/**.cpp", CHEMICAL_DIR .."/src/**.h", 
-    CHEMICAL_DIR .. "/vendor/**.h", CHEMICAL_DIR ..  "/vendor/**.hpp"}
+    files {CHEMICAL_DIR .. "/include/**", CHEMICAL_DIR .. "/resources/**", CHEMICAL_DIR .. "/src/**"}
     includedirs {CHEMICAL_DIR .. "/src/", CHEMICAL_DIR .. "/vendor/", GLAD_INC_DIR, GLFW_INC_DIR}
     links {"GLFW", "GLAD"}
     targetdir (BIN_DIR)
@@ -75,8 +74,7 @@ project "Chemical"
 
     -- Copy resources to project directory and to bin
     postbuildcommands {
-        "call %{wks.location}meta\\copy_resources.bat %{wks.location}resources " .. string.gsub(BIN_DIR, "/", "\\") .. "\\resources",
-        "call %{wks.location}meta\\copy_resources.bat %{wks.location}resources " .. string.gsub(CHEMICAL_DIR, "/", "\\") .. "\\resources"                
+        "call %{wks.location}/meta/copy_resources.bat " .. string.gsub(CHEMICAL_DIR, "/", "\\") .. "\\resources " .. string.gsub(BIN_DIR, "/", "\\") .. "\\resources"                
     }
 
 --[[project "Sandbox"
