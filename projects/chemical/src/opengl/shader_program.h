@@ -51,7 +51,7 @@ namespace OpenGL {
 
 		uint32_t m_rendererID = 0;
 		
-		std::unordered_map<ShaderType, std::shared_ptr<Shader>> m_shaders;
+		std::unordered_map<ShaderType, std::weak_ptr<Shader>> m_shaders;
 		std::unordered_map<std::string, Uniform> m_uniforms;
 
 	public:

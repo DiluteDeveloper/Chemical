@@ -4,6 +4,8 @@
 
 #include "util/logger.h"
 #include "opengl/vertex_array.h"
+#include "util/filestream.h"
+#include "opengl/shader_program.h"
 
 
 int64_t prevMessageID = -1;
@@ -65,7 +67,7 @@ void APIENTRY message_callback(GLenum source, GLenum type, GLuint id, GLenum sev
 
 int main(int argc, char* argv[]) {
 
-	Logger::InitializeLogger();
+	Util::Logger::InitializeLogger();
 
 	if (!glfwInit()) {
 		LOGGER_CONSOLE_ERROR("GLFW initialization failed.");
@@ -109,34 +111,44 @@ int main(int argc, char* argv[]) {
 	//glfwSwapInterval(1);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+	OpenGL::ShaderProgram shaderProgram;
+	{
+		std::shared_ptr<OpenGL::Shader> vertexShader = std::make_shared<OpenGL::Shader>(Util::ReadFile("resources/shaders/test_shader.vert").c_str(), OpenGL::ShaderType::VERTEX_SHADER);
+		std::shared_ptr<OpenGL::Shader> fragmentShader = std::make_shared<OpenGL::Shader>(Util::ReadFile("resources/shaders/test_shader.frag").c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
+
+		shaderProgram.AddShader(vertexShader);
+		shaderProgram.AddShader(fragmentShader);
+	}
+	shaderProgram.Reload();
+	shaderProgram.BindProgram();
+
+	std::vector<float> vertices = {
+		-0.5f, -0.5f,
+		0.0f, 0.5f,
+		0.5f, -0.5f
+	};
+	OpenGL::Buffer vertexBuffer;
+	vertexBuffer.CreateImmutableBuffer(sizeof(float) * vertices.size(), vertices.data());
+	OpenGL::VertexBufferInfo info(sizeof(float) * 2, 0, 0);
+
+	OpenGL::VertexAttribute attribute(2, 0);
+	info.AddAttribute(attribute);
+
+	std::vector<unsigned char> indices = {
+		0,1,2
+	};
+	OpenGL::Buffer elementBuffer;
+	elementBuffer.CreateImmutableBuffer(sizeof(unsigned int) * indices.size(), indices.data());
+	OpenGL::VertexArray vertexArray;
+	vertexArray.SetVertexBuffer(vertexBuffer, info);
+	vertexArray.SetElementBuffer(elementBuffer);
+
 	glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		std::vector<float> vertices = {
-		-0.5f, -0.5f,
-		0.0f, 0.5f,
-		0.5f, -0.5f
-		};
-		OpenGL::Buffer vertexBuffer;
-		vertexBuffer.CreateImmutableBuffer(sizeof(float) * vertices.size(), vertices.data());
-		OpenGL::VertexBufferInfo info(sizeof(float) * 2, 0, 0);
-
-		OpenGL::VertexAttribute attribute(2, 0);
-		info.AddAttribute(attribute);
-
-		std::vector<unsigned char> indices = {
-			0,1,2
-		};
-		OpenGL::Buffer elementBuffer;
-		elementBuffer.CreateImmutableBuffer(sizeof(unsigned int) * indices.size(), indices.data());
-		
-		OpenGL::VertexArray vertexArray;
-		vertexArray.SetVertexBuffer(vertexBuffer, info);
-		vertexArray.SetElementBuffer(elementBuffer);
 
 		vertexArray.Bind();
 		OpenGL::ElementDrawInfo drawInfo(indices.size(), 0, OpenGL::DataType::UNSIGNED_BYTE, OpenGL::DrawMode::TRIANGLES);

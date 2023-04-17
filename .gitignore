@@ -403,3 +403,5 @@ FodyWeavers.xsd
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.filters.users
+
+projects/chemical/resources

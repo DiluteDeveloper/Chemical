@@ -58,6 +58,7 @@ namespace OpenGL {
 		uint32_t GetRendererID() const {
 			return m_rendererID;
 		}
+
 	};
 
 

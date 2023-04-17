@@ -106,9 +106,19 @@ namespace OpenGL {
 		uint32_t bindingIndex = 0;
 	};
 
-	// Only supports 1 vertex buffer
+	// http://alex-charlton.com/posts/When_is_it_okay_to_delete_an_OpenGL_buffer/
+	/*
+	According to the OpenGL specification, you can, for instance, 
+	reference a vertex buffer object (VBO) in a vertex array object (VAO) 
+	and then immediately delete the VBO. The VAO will retain the reference to the VBO,
+	which will only truly get deleted when all references to it are deleted. 
+	The relevant parts from the spec that explain this are section 5.1.2:
+	*/
+	// tl:dr vertex arrays contain the equivalent of shared_ptr's to buffers, they will only truly
+	// be deleted when they are no longer referenced.
 	class VertexArray {
 		uint32_t m_rendererID = 0;
+
 	public:
 
 		VertexArray();

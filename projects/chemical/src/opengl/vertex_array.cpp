@@ -11,7 +11,6 @@ namespace OpenGL {
 
 	void VertexArray::SetVertexBuffer(const Buffer& buffer, const VertexBufferInfo& info) {
 		glVertexArrayVertexBuffer(m_rendererID, info.bindingIndex, buffer.GetRendererID(), info.offset, info.stride);
-
 		uint32_t i = 0;
 		for (const VertexAttribute& att : info.GetAttributes())
 		{

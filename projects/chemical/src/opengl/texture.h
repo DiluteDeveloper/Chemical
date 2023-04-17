@@ -170,7 +170,7 @@ namespace OpenGL {
 		// helper function, binds texture buffer to textureUnit slot on shader
 		void BindTexture(uint32_t textureUnit);
 
-		uint32_t GetRendererID() {
+		uint32_t GetRendererID() const {
 			return m_rendererID;
 		}
 	};

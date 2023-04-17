@@ -73,6 +73,12 @@ project "Chemical"
     targetdir (BIN_DIR)
     objdir (INT_DIR)
 
+    -- Copy resources to project directory and to bin
+    postbuildcommands {
+        "call %{wks.location}meta\\copy_resources.bat %{wks.location}resources " .. string.gsub(BIN_DIR, "/", "\\") .. "\\resources",
+        "call %{wks.location}meta\\copy_resources.bat %{wks.location}resources " .. string.gsub(CHEMICAL_DIR, "/", "\\") .. "\\resources"                
+    }
+
 --[[project "Sandbox"
     kind "ConsoleApp"
 

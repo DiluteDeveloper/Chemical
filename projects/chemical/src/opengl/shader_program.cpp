@@ -36,8 +36,12 @@ namespace OpenGL {
 		// maye and create, dont know if resetting is an option
 		m_rendererID = glCreateProgram();
 
-		for (const auto&[type, shader_ptr] : m_shaders) {
-			glAttachShader(m_rendererID, shader_ptr->GetRendererID());
+		for (const auto&[type, weak_shader] : m_shaders) {
+			if(std::shared_ptr<Shader> shared_shader = weak_shader.lock())
+				glAttachShader(m_rendererID, shared_shader->GetRendererID());
+			else {
+				LOGGER_CONSOLE_CUSTOM_ERROR("Shader type {} no longer exists.", (uint16_t)type);
+			}
 		}
 
 		glLinkProgram(m_rendererID);
@@ -78,9 +82,12 @@ namespace OpenGL {
 	}
 
 	void ShaderProgram::AddShader(std::shared_ptr<Shader> shader) {
-		if (m_shaders.contains(shader->GetShaderType()))
-			LOGGER_CONSOLE_CUSTOM_WARNING("ShaderProgram already contains shader type {}. AddShader cancelled.", (uint8_t)shader->GetShaderType());
-		m_shaders[shader->GetShaderType()] = shader;
+		ShaderType type = shader->GetShaderType();
+		if (m_shaders.contains(type)) {
+			LOGGER_CONSOLE_CUSTOM_WARNING("Shader program already contains shader type {}. Overwriting with new shader.", (uint16_t)type);
+			RemoveShader(type);
+		}
+		m_shaders[type] = shader;
 	}
 
 	void ShaderProgram::BindProgram() {
@@ -88,11 +95,7 @@ namespace OpenGL {
 	}
 
 	void ShaderProgram::RemoveShader(ShaderType type) {
-		if (m_shaders.contains(type)) {
-			m_shaders.erase(type);
-		}
-
-
+		m_shaders.erase(type);
 	}
 
 	ShaderProgram::~ShaderProgram() {
