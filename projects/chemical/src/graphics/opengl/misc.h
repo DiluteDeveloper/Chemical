@@ -30,4 +30,9 @@ namespace OpenGL {
 		UNSIGNED_INT_10_10_10_2 = 0x8036
 	};
 
+	// returns 0 if type isnt found
+	extern uint64_t ConvertEnumDataTypeToByteSize(DataType type);
+	// returns 0 if type isnt found
+	extern uint64_t ConvertUnsignedIntegralDataTypeToByteSize(DataType type);
+
 }

@@ -46,17 +46,17 @@ namespace OpenGL {
 	void VertexArray::Unbind() const {
 		glBindVertexArray(0);
 	}
-	void VertexArray::DrawElements(const ElementDrawInfo& info) {
+	void VertexArray::DrawElements(const ElementDrawInfo& info) const {
 		glDrawElements((GLenum)info.mode, info.count, (GLenum)info.dataType, (void*)info.offset);
 	}
-	void VertexArray::DrawArrays(const ArrayDrawInfo& info) {
-		glDrawArrays((GLenum)info.mode, info.first, (GLsizei)info.count);
+	void VertexArray::DrawArrays(const ArrayDrawInfo& info)  const{
+		glDrawArrays((GLenum)info.mode, info.first, info.count);
 	}
 
-	void VertexArray::DrawElementsInstanced(const InstancedElementDrawInfo& info) {
+	void VertexArray::DrawElementsInstanced(const InstancedElementDrawInfo& info) const {
 		glDrawElementsInstanced((GLenum)info.mode, info.count, (GLenum)info.dataType, (void*)info.offset, info.instanceCount);
 	}
-	void VertexArray::DrawArraysInstanced(const InstancedArrayDrawInfo& info) {
+	void VertexArray::DrawArraysInstanced(const InstancedArrayDrawInfo& info) const {
 		glDrawArraysInstanced((GLenum)info.mode, info.first, info.count, info.instanceCount);
 	}
 

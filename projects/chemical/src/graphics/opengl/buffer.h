@@ -1,3 +1,5 @@
+#pragma once
+
 namespace OpenGL {
 
 	// Bitfield Flags for buffer storage, only has & operator implemented
@@ -24,6 +26,13 @@ namespace OpenGL {
 		DYNAMIC_COPY = 0x88EA
 	};
 
+	enum class BufferBaseTarget {
+		ATOMIC_COUNTER_BUFFER = 0x92C0,
+		TRANSFORM_FEEDBACK_BUFFER = 0x8C8E,
+		UNIFORM_BUFFER = 0x8A11,
+		SHADER_STORAGE_BUFFER = 0x90D2
+	};
+
 	inline BufferStorageFlags operator & (BufferStorageFlags lhs, BufferStorageFlags rhs)
 	{
 		using T = std::underlying_type_t <BufferStorageFlags>;
@@ -40,20 +49,28 @@ namespace OpenGL {
 		Buffer();
 
 		Buffer(const Buffer&) = delete;
+		Buffer(Buffer&& other) noexcept :
+		m_rendererID(std::move(other.m_rendererID)){ }
 		Buffer& operator=(const Buffer&) = delete;
+		Buffer& operator=(Buffer&& other) noexcept {
+			this->m_rendererID = std::move(other.m_rendererID);
+			return *this;
+		}
 
 		~Buffer();
 
 		// Will set the buffer data to data at offset with byte size of size
-		void SetBufferData(uint32_t size, void* data = nullptr, uint32_t offset = 0);
+		void SetBufferData(int64_t size, const void* data = nullptr, uint32_t offset = 0);
 		// Will create new data store that can be resized with the same function and fills it with data,
 		// calling this will empty out any data previously contained within the buffer.
 		// Incompatible with CreateImmutableBuffer
-		void CreateMutableBuffer(uint32_t size, void* data = nullptr, BufferDataFlags flags = BufferDataFlags::STATIC_READ);
+		void CreateMutableBuffer(int64_t size, const void* data = nullptr, BufferDataFlags flags = BufferDataFlags::STATIC_READ);
 		// Will create new data store that cannot be changed and fills it with data,
 		// this function cannot be called twice.
 		// Incompatible with CreateMutableBuffer
-		void CreateImmutableBuffer(uint32_t size, void* data = nullptr, BufferStorageFlags flags = BufferStorageFlags::MAP_READ_BIT & BufferStorageFlags::MAP_WRITE_BIT);
+		void CreateImmutableBuffer(int64_t size, const void* data = nullptr, BufferStorageFlags flags = BufferStorageFlags::MAP_READ_BIT & BufferStorageFlags::MAP_WRITE_BIT);
+
+		void BindBufferBase(BufferBaseTarget target, uint32_t bindingIndex);
 
 		uint32_t GetRendererID() const {
 			return m_rendererID;

@@ -45,18 +45,18 @@ namespace OpenGL {
 	struct InstancedElementDrawInfo {
 		DrawMode mode = DrawMode::TRIANGLES;
 		DataType dataType = DataType::UNSIGNED_INT; // must be uint, ushort, ubyte
-		uint32_t count = 0;
+		int32_t count = 0;
 		int64_t offset = 0;
-		uint32_t instanceCount = 0;
+		int32_t instanceCount = 0;
 
-		InstancedElementDrawInfo(uint32_t count, uint32_t instanceCount, int64_t offset = 0, DataType dataType = DataType::UNSIGNED_INT, DrawMode mode = DrawMode::TRIANGLES) :
+		InstancedElementDrawInfo(int32_t count, int32_t instanceCount, int64_t offset = 0, DataType dataType = DataType::UNSIGNED_INT, DrawMode mode = DrawMode::TRIANGLES) :
 			count(count), instanceCount(instanceCount), offset(offset), dataType(dataType), mode(mode) {}
 		InstancedElementDrawInfo() = default;
 	};
 	struct ElementDrawInfo {
 		DrawMode mode = DrawMode::TRIANGLES;
 		DataType dataType = DataType::UNSIGNED_INT; // must be uint, ushort, ubyte
-		uint32_t count = 0;
+		int32_t count = 0;
 		int64_t offset = 0;
 
 		ElementDrawInfo(uint32_t count, int64_t offset = 0, DataType dataType = DataType::UNSIGNED_INT, DrawMode mode = DrawMode::TRIANGLES) :
@@ -75,10 +75,10 @@ namespace OpenGL {
 	};
 	struct ArrayDrawInfo {
 		DrawMode mode = DrawMode::TRIANGLES;
-		uint32_t count = 0;
+		int32_t count = 0;
 		int32_t first = 0;
 
-		ArrayDrawInfo(uint32_t count, uint32_t first = 0, DrawMode mode = DrawMode::TRIANGLES) :
+		ArrayDrawInfo(int32_t count, uint32_t first = 0, DrawMode mode = DrawMode::TRIANGLES) :
 			count(count), first(first), mode(mode) {}
 		ArrayDrawInfo() = default;
 	};
@@ -92,6 +92,7 @@ namespace OpenGL {
 
 		VertexBufferInfo(int32_t stride, int64_t offset, uint32_t bindingIndex) :
 			stride(stride), offset(offset), bindingIndex(bindingIndex) {}
+		VertexBufferInfo() {}
 
 		void AddAttribute(const VertexAttribute& attribute) {
 			m_attributes.emplace_back(attribute);
@@ -123,19 +124,25 @@ namespace OpenGL {
 
 		VertexArray();
 
+		VertexArray(VertexArray&& other) noexcept :
+			m_rendererID(std::move(other.m_rendererID)) {}
 		VertexArray(const VertexArray&) = delete;
 		VertexArray& operator=(const VertexArray&) = delete;
+		VertexArray& operator=(VertexArray&& other) noexcept {
+			this->m_rendererID = std::move(other.m_rendererID);
+			return *this;
+		}
 
 		~VertexArray();
 
 		void SetVertexBuffer(const Buffer& buffer, const VertexBufferInfo& info);
 		void SetElementBuffer(const Buffer& buffer);
 
-		void DrawElements(const ElementDrawInfo& info);
-		void DrawArrays(const ArrayDrawInfo& info);
+		void DrawElements(const ElementDrawInfo& info) const;
+		void DrawArrays(const ArrayDrawInfo& info) const;
 
-		void DrawElementsInstanced(const InstancedElementDrawInfo& info);
-		void DrawArraysInstanced(const InstancedArrayDrawInfo& info);
+		void DrawElementsInstanced(const InstancedElementDrawInfo& info) const;
+		void DrawArraysInstanced(const InstancedArrayDrawInfo& info) const;
 
 		void Bind() const;
 		void Unbind() const;

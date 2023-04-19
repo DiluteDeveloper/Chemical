@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "logger.h"
 
 namespace Util {
 	static HANDLE hConsole;

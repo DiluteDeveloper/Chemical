@@ -3,7 +3,6 @@
 #include <glad/glad.h>
 
 #include "shader_program.h"
-#include "util/logger.h"
 
 namespace OpenGL {
 	Shader::Shader(const char* data, ShaderType type) : 
@@ -17,11 +16,12 @@ namespace OpenGL {
 		glGetShaderiv(m_rendererID, GL_COMPILE_STATUS, &success);
 		if (success != GL_TRUE) {
 
-			char infoLog[512];
-			glGetShaderInfoLog(m_rendererID, sizeof(infoLog), nullptr, infoLog);
+			char infoLog[1024];
+			glGetShaderInfoLog(m_rendererID, 1024, nullptr, infoLog);
 
 			LOGGER_CONSOLE_CUSTOM_ERROR("Shader compilation failed. [{}] \n{}",
 				(uint8_t)type, infoLog);
+			std::cout << infoLog << std::endl;
 			throw std::exception();
 		}
 	}
@@ -30,33 +30,34 @@ namespace OpenGL {
 		glDeleteShader(m_rendererID);
 	}
 
+	void ShaderProgram::BindProgram() {
+		glUseProgram(m_rendererID);
+	}
 
-	void ShaderProgram::Reload() {
+	ShaderProgram::~ShaderProgram() {
 		glDeleteProgram(m_rendererID);
-		// maye and create, dont know if resetting is an option
+	}
+
+	ShaderProgram::ShaderProgram(std::initializer_list<const Shader*> shaders) {
 		m_rendererID = glCreateProgram();
 
-		for (const auto&[type, weak_shader] : m_shaders) {
-			if(std::shared_ptr<Shader> shared_shader = weak_shader.lock())
-				glAttachShader(m_rendererID, shared_shader->GetRendererID());
-			else {
-				LOGGER_CONSOLE_CUSTOM_ERROR("Shader type {} no longer exists.", (uint16_t)type);
-			}
+		for (const Shader* shader : shaders) {
+				glAttachShader(m_rendererID, shader->GetRendererID());
 		}
 
 		glLinkProgram(m_rendererID);
 
-		glValidateProgram(m_rendererID);
-
 		int success;
 		glGetProgramiv(m_rendererID, GL_LINK_STATUS, &success);
-		if (!success) {
-			char infoLog[512];
-			glGetProgramInfoLog(m_rendererID, sizeof(infoLog), nullptr, infoLog);
+		if (success != GL_TRUE) {
+			char infoLog[1024];
+			glGetProgramInfoLog(m_rendererID, 1024, nullptr, infoLog);
 
 			LOGGER_CONSOLE_CUSTOM_ERROR("ShaderProgram compilation failed. \n{}", infoLog);
+			std::cout << infoLog << std::endl;
 			throw std::exception();
 		}
+		glValidateProgram(m_rendererID);
 
 		m_uniforms.clear();
 		int32_t uniform_count = 0;
@@ -76,30 +77,9 @@ namespace OpenGL {
 				glGetActiveUniform(m_rendererID, i, max_name_len, &length, &count, &type, uniform_name.get());
 
 				int32_t location = glGetUniformLocation(m_rendererID, uniform_name.get());
-				m_uniforms[uniform_name.get()] = Uniform(location, count);
+				m_uniforms[uniform_name.get()] = Uniform(location);
 			}
 		}
-	}
-
-	void ShaderProgram::AddShader(std::shared_ptr<Shader> shader) {
-		ShaderType type = shader->GetShaderType();
-		if (m_shaders.contains(type)) {
-			LOGGER_CONSOLE_CUSTOM_WARNING("Shader program already contains shader type {}. Overwriting with new shader.", (uint16_t)type);
-			RemoveShader(type);
-		}
-		m_shaders[type] = shader;
-	}
-
-	void ShaderProgram::BindProgram() {
-		glUseProgram(m_rendererID);
-	}
-
-	void ShaderProgram::RemoveShader(ShaderType type) {
-		m_shaders.erase(type);
-	}
-
-	ShaderProgram::~ShaderProgram() {
-		glDeleteProgram(m_rendererID);
 	}
 
 	void ShaderProgram::SetUniform1F(std::string_view name, float value) {
@@ -140,88 +120,88 @@ namespace OpenGL {
 	}
 
 	void ShaderProgram::SetUniform1FV(std::string_view name, int32_t count, float const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniform1fv(m_rendererID, uniform.m_location, uniform.m_count, (GLfloat*)value);
+		
+		glProgramUniform1fv(m_rendererID, m_uniforms[name.data()].m_location, count, (GLfloat*)value);
 	}
 	void ShaderProgram::SetUniform2FV(std::string_view name, int32_t count, float const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniform2fv(m_rendererID, uniform.m_location, uniform.m_count, (GLfloat*)value);
+		
+		glProgramUniform2fv(m_rendererID, m_uniforms[name.data()].m_location, count, (GLfloat*)value);
 	}
 	void ShaderProgram::SetUniform3FV(std::string_view name, int32_t count, float const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniform3fv(m_rendererID, uniform.m_location, uniform.m_count, (GLfloat*)value);
+		
+		glProgramUniform3fv(m_rendererID, m_uniforms[name.data()].m_location, count, (GLfloat*)value);
 	}
 	void ShaderProgram::SetUniform4FV(std::string_view name, int32_t count, float const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniform4fv(m_rendererID, uniform.m_location, uniform.m_count, (GLfloat*)value);
+		
+		glProgramUniform4fv(m_rendererID, m_uniforms[name.data()].m_location, count, (GLfloat*)value);
 	}
 	void ShaderProgram::SetUniform1IV(std::string_view name, int32_t count, int32_t const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniform1iv(m_rendererID, uniform.m_location, uniform.m_count, (GLint*)value);
+		
+		glProgramUniform1iv(m_rendererID, m_uniforms[name.data()].m_location, count, (GLint*)value);
 	}
 	void ShaderProgram::SetUniform2IV(std::string_view name, int32_t count, int32_t const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniform2iv(m_rendererID, uniform.m_location, uniform.m_count, (GLint*)value);
+		
+		glProgramUniform2iv(m_rendererID, m_uniforms[name.data()].m_location, count, (GLint*)value);
 	}
 	void ShaderProgram::SetUniform3IV(std::string_view name, int32_t count, int32_t const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniform3iv(m_rendererID, uniform.m_location, uniform.m_count, (GLint*)value);
+		
+		glProgramUniform3iv(m_rendererID, m_uniforms[name.data()].m_location, count, (GLint*)value);
 	}
 	void ShaderProgram::SetUniform4IV(std::string_view name, int32_t count, int32_t const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniform4iv(m_rendererID, uniform.m_location, uniform.m_count, (GLint*)value);
+		
+		glProgramUniform4iv(m_rendererID, m_uniforms[name.data()].m_location, count, (GLint*)value);
 	}
 	void ShaderProgram::SetUniform1UIV(std::string_view name, int32_t count, uint32_t const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniform1uiv(m_rendererID, uniform.m_location, uniform.m_count, (GLuint*)value);
+		
+		glProgramUniform1uiv(m_rendererID, m_uniforms[name.data()].m_location, count, (GLuint*)value);
 	}
 	void ShaderProgram::SetUniform2UIV(std::string_view name, int32_t count, uint32_t const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniform2uiv(m_rendererID, uniform.m_location, uniform.m_count, (GLuint*)value);
+		
+		glProgramUniform2uiv(m_rendererID, m_uniforms[name.data()].m_location, count, (GLuint*)value);
 	}
 	void ShaderProgram::SetUniform3UIV(std::string_view name, int32_t count, uint32_t const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniform3uiv(m_rendererID, uniform.m_location, uniform.m_count, (GLuint*)value);
+		
+		glProgramUniform3uiv(m_rendererID, m_uniforms[name.data()].m_location, count, (GLuint*)value);
 	}
 	void ShaderProgram::SetUniform4UIV(std::string_view name, int32_t count, uint32_t const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniform4uiv(m_rendererID, uniform.m_location, uniform.m_count, (GLuint*)value);
+		
+		glProgramUniform4uiv(m_rendererID, m_uniforms[name.data()].m_location, count, (GLuint*)value);
 	}
 	void ShaderProgram::SetUniformMatrix2FV(std::string_view name, int32_t count, bool transpose, float const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniformMatrix2fv(m_rendererID, uniform.m_location, uniform.m_count, transpose, (GLfloat*)value);
+		
+		glProgramUniformMatrix2fv(m_rendererID, m_uniforms[name.data()].m_location, count, transpose, (GLfloat*)value);
 	}
 	void ShaderProgram::SetUniformMatrix3FV(std::string_view name, int32_t count, bool transpose, float const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniformMatrix3fv(m_rendererID, uniform.m_location, uniform.m_count, transpose, (GLfloat*)value);
+		
+		glProgramUniformMatrix3fv(m_rendererID, m_uniforms[name.data()].m_location, count, transpose, (GLfloat*)value);
 	}
 	void ShaderProgram::SetUniformMatrix4FV(std::string_view name, int32_t count, bool transpose, float const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniformMatrix4fv(m_rendererID, uniform.m_location, uniform.m_count, transpose, (GLfloat*)value);
+		
+		glProgramUniformMatrix4fv(m_rendererID, m_uniforms[name.data()].m_location, count, transpose, (GLfloat*)value);
 	}
 	void ShaderProgram::SetUniformMatrix2x4FV(std::string_view name, int32_t count, bool transpose, float const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniformMatrix2x4fv(m_rendererID, uniform.m_location, uniform.m_count, transpose, (GLfloat*)value);
+		
+		glProgramUniformMatrix2x4fv(m_rendererID, m_uniforms[name.data()].m_location, count, transpose, (GLfloat*)value);
 	}
 	void ShaderProgram::SetUniformMatrix4x2FV(std::string_view name, int32_t count, bool transpose, float const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniformMatrix4x2fv(m_rendererID, uniform.m_location, uniform.m_count, transpose, (GLfloat*)value);
+		
+		glProgramUniformMatrix4x2fv(m_rendererID, m_uniforms[name.data()].m_location, count, transpose, (GLfloat*)value);
 	}
 	void ShaderProgram::SetUniformMatrix3x4FV(std::string_view name, int32_t count, bool transpose, float const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniformMatrix3x4fv(m_rendererID, uniform.m_location, uniform.m_count, transpose, (GLfloat*)value);
+		
+		glProgramUniformMatrix3x4fv(m_rendererID, m_uniforms[name.data()].m_location, count, transpose, (GLfloat*)value);
 	}
 	void ShaderProgram::SetUniformMatrix4x3FV(std::string_view name, int32_t count, bool transpose, float const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniformMatrix4x3fv(m_rendererID, uniform.m_location, uniform.m_count, transpose, (GLfloat*)value);
+		
+		glProgramUniformMatrix4x3fv(m_rendererID, m_uniforms[name.data()].m_location, count, transpose, (GLfloat*)value);
 	}
 	void ShaderProgram::SetUniformMatrix2x3FV(std::string_view name, int32_t count, bool transpose, float const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniformMatrix2x3fv(m_rendererID, uniform.m_location, uniform.m_count, transpose, (GLfloat*)value);
+		
+		glProgramUniformMatrix2x3fv(m_rendererID, m_uniforms[name.data()].m_location, count, transpose, (GLfloat*)value);
 	}
 	void ShaderProgram::SetUniformMatrix3x2FV(std::string_view name, int32_t count, bool transpose, float const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniformMatrix3x2fv(m_rendererID, uniform.m_location, uniform.m_count, transpose, (GLfloat*)value);
+		
+		glProgramUniformMatrix3x2fv(m_rendererID, m_uniforms[name.data()].m_location, count, transpose, (GLfloat*)value);
 	}
 
 	void ShaderProgram::SetUniform1D(std::string_view name, double value) {
@@ -238,55 +218,55 @@ namespace OpenGL {
 	}
 
 	void ShaderProgram::SetUniform1DV(std::string_view name, int32_t count, double const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniform1dv(m_rendererID, uniform.m_location, uniform.m_count, (GLdouble*)value);
+		
+		glProgramUniform1dv(m_rendererID, m_uniforms[name.data()].m_location, count, (GLdouble*)value);
 	}
 	void ShaderProgram::SetUniform2DV(std::string_view name, int32_t count, double const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniform2dv(m_rendererID, uniform.m_location, uniform.m_count, (GLdouble*)value);
+		
+		glProgramUniform2dv(m_rendererID, m_uniforms[name.data()].m_location, count, (GLdouble*)value);
 	}
 	void ShaderProgram::SetUniform3DV(std::string_view name, int32_t count, double const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniform3dv(m_rendererID, uniform.m_location, uniform.m_count, (GLdouble*)value);
+		
+		glProgramUniform3dv(m_rendererID, m_uniforms[name.data()].m_location, count, (GLdouble*)value);
 	}
 	void ShaderProgram::SetUniform4DV(std::string_view name, int32_t count, double const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniform4dv(m_rendererID, uniform.m_location, uniform.m_count, (GLdouble*)value);
+		
+		glProgramUniform4dv(m_rendererID, m_uniforms[name.data()].m_location, count, (GLdouble*)value);
 	}
 	void ShaderProgram::SetUniformMatrix2DV(std::string_view name, int32_t count, bool transpose, double const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniformMatrix2dv(m_rendererID, uniform.m_location, uniform.m_count, transpose, (GLdouble*)value);
+		
+		glProgramUniformMatrix2dv(m_rendererID, m_uniforms[name.data()].m_location, count, transpose, (GLdouble*)value);
 	}
 	void ShaderProgram::SetUniformMatrix3DV(std::string_view name, int32_t count, bool transpose, double const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniformMatrix3dv(m_rendererID, uniform.m_location, uniform.m_count, transpose, (GLdouble*)value);
+		
+		glProgramUniformMatrix3dv(m_rendererID, m_uniforms[name.data()].m_location, count, transpose, (GLdouble*)value);
 	}
 	void ShaderProgram::SetUniformMatrix4DV(std::string_view name, int32_t count, bool transpose, double const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniformMatrix4dv(m_rendererID, uniform.m_location, uniform.m_count, transpose, (GLdouble*)value);
+		
+		glProgramUniformMatrix4dv(m_rendererID, m_uniforms[name.data()].m_location, count, transpose, (GLdouble*)value);
 	}
 	void ShaderProgram::SetUniformMatrix2x4DV(std::string_view name, int32_t count, bool transpose, double const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniformMatrix2x4dv(m_rendererID, uniform.m_location, uniform.m_count, transpose, (GLdouble*)value);
+		
+		glProgramUniformMatrix2x4dv(m_rendererID, m_uniforms[name.data()].m_location, count, transpose, (GLdouble*)value);
 	}
 	void ShaderProgram::SetUniformMatrix4x2DV(std::string_view name, int32_t count, bool transpose, double const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniformMatrix4x2dv(m_rendererID, uniform.m_location, uniform.m_count, transpose, (GLdouble*)value);
+		
+		glProgramUniformMatrix4x2dv(m_rendererID, m_uniforms[name.data()].m_location, count, transpose, (GLdouble*)value);
 	}
 	void ShaderProgram::SetUniformMatrix3x4DV(std::string_view name, int32_t count, bool transpose, double const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniformMatrix3x4dv(m_rendererID, uniform.m_location, uniform.m_count, transpose, (GLdouble*)value);
+		
+		glProgramUniformMatrix3x4dv(m_rendererID, m_uniforms[name.data()].m_location, count, transpose, (GLdouble*)value);
 	}
 	void ShaderProgram::SetUniformMatrix4x3DV(std::string_view name, int32_t count, bool transpose, double const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniformMatrix4x3dv(m_rendererID, uniform.m_location, uniform.m_count, transpose, (GLdouble*)value);
+		
+		glProgramUniformMatrix4x3dv(m_rendererID, m_uniforms[name.data()].m_location, count, transpose, (GLdouble*)value);
 	}
 	void ShaderProgram::SetUniformMatrix2x3DV(std::string_view name, int32_t count, bool transpose, double const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniformMatrix2x3dv(m_rendererID, uniform.m_location, uniform.m_count, transpose, (GLdouble*)value);
+		
+		glProgramUniformMatrix2x3dv(m_rendererID, m_uniforms[name.data()].m_location, count, transpose, (GLdouble*)value);
 	}
 	void ShaderProgram::SetUniformMatrix3x2DV(std::string_view name, int32_t count, bool transpose, double const* value) {
-		const Uniform& uniform = m_uniforms[name.data()];
-		glProgramUniformMatrix3x2dv(m_rendererID, uniform.m_location, uniform.m_count, transpose, (GLdouble*)value);
+		
+		glProgramUniformMatrix3x2dv(m_rendererID, m_uniforms[name.data()].m_location, count, transpose, (GLdouble*)value);
 	}
 }

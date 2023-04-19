@@ -135,9 +135,9 @@ namespace OpenGL {
 	}*/
 
 	Texture::Texture(const TextureStorageParameters& parameters) {
-		glCreateTextures((GLenum)parameters.type, 1, &m_rendererID);
+		glCreateTextures((GLenum)parameters.textureType, 1, &m_rendererID);
 
-		switch (parameters.type) {
+		switch (parameters.textureType) {
 		case TextureType::TEXTURE_1D:
 			glTextureStorage1D(m_rendererID, parameters.mipLevels, (GLenum)parameters.internalFormat, parameters.width);
 			break;

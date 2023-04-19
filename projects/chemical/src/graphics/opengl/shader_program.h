@@ -13,16 +13,24 @@ namespace OpenGL {
 
 	// Recommended to make a shared_ptr as copy constructor is disabled
 	class Shader {
-		const uint32_t m_rendererID = 0;
+		uint32_t m_rendererID = 0;
 
-		const ShaderType m_type = ShaderType::VERTEX_SHADER;
+		ShaderType m_type = ShaderType::VERTEX_SHADER;
 
 	public:
 
 		Shader(const char* data, ShaderType type);
+		Shader(Shader&& other) noexcept :
+			m_rendererID(std::move(other.m_rendererID)), m_type(std::move(other.m_type)) {}
 
 		Shader(const Shader&) = delete;
 		Shader& operator =(const Shader&) = delete;
+		Shader& operator=(Shader&& other) noexcept {
+			this->m_rendererID = std::move(other.m_rendererID);
+			this->m_type = std::move(other.m_type);
+			return *this;
+		}
+
 
 		~Shader();
 
@@ -38,37 +46,34 @@ namespace OpenGL {
 
 	struct Uniform {
 		int32_t m_location = 0;
-		int32_t m_count = 0;
 
-		Uniform(int32_t location, int32_t count) :
-			m_location(location), m_count(count) {}
+		Uniform(int32_t location) :
+			m_location(location) {}
 		Uniform() = default;
 	};
 
-	// Recommended to make a shared_ptr as copy constructor is disabled
-	// Retains shared_ptr configured ownership of any shader given to it 
+	// Shaders must be added on creation, cannot be added later
 	class ShaderProgram {
 
 		uint32_t m_rendererID = 0;
-		
-		std::unordered_map<ShaderType, std::weak_ptr<Shader>> m_shaders;
+
 		std::unordered_map<std::string, Uniform> m_uniforms;
 
 	public:
-		ShaderProgram() = default;
+		ShaderProgram(std::initializer_list<const Shader*> shaders);
+		ShaderProgram(ShaderProgram&& other) noexcept :
+			m_rendererID(std::move(other.m_rendererID)), m_uniforms(std::move(other.m_uniforms)) {}
+
 		ShaderProgram(const ShaderProgram&) = delete;
 		ShaderProgram& operator =(const ShaderProgram&) = delete;
+		ShaderProgram& operator=(ShaderProgram&& other) noexcept {
+			this->m_rendererID = std::move(other.m_rendererID);
+			this->m_uniforms = std::move(other.m_uniforms);
+			return *this;
+		}
+
 
 		~ShaderProgram();
-
-		// Takes the information currently supplied and creates a new program
-		void Reload();
-
-		// Will not update program, call Reload()
-		void AddShader(std::shared_ptr<Shader> shader);
-		// Will not update program, call Reload()
-		// Will delete shader object if it is owned by ShaderProgram
-		void RemoveShader(ShaderType type);
 
 		void BindProgram();
 

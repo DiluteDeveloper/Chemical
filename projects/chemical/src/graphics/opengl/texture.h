@@ -112,7 +112,7 @@ namespace OpenGL {
 	struct TextureStorageParameters {
 
 		TextureInternalFormat internalFormat = TextureInternalFormat::SRGB8;
-		TextureType type = TextureType::TEXTURE_2D;
+		TextureType textureType = TextureType::TEXTURE_2D;
 
 		int32_t width = 0;
 		int32_t height = 0;
@@ -153,9 +153,15 @@ namespace OpenGL {
 	public:
 
 		Texture(const TextureStorageParameters& parameters);
+		Texture(Texture&& other) noexcept :
+			m_rendererID(std::move(other.m_rendererID)) {}
 
 		Texture(const Texture&) = delete;
 		Texture& operator=(const Texture&) = delete;
+		Texture& operator=(Texture&& other) noexcept {
+			this->m_rendererID = std::move(other.m_rendererID);
+			return *this;
+		}
 
 		~Texture();
 

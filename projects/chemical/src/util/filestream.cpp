@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "logger.h"
 #include "filestream.h"
 
 namespace Util {

@@ -2,15 +2,15 @@
 #include <GLAD/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "util/logger.h"
-#include "opengl/vertex_array.h"
+#include "graphics/renderer.h"
+#include "transform/transform.h"
+#include "graphics/mesh/mesh.h"
+
 #include "util/filestream.h"
-#include "opengl/shader_program.h"
-#include "opengl/texture.h"
+#include "graphics/opengl/shader_program.h"
+#include "graphics/material/material.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image/stb_image.h"
-
+// Todo: start using uniform buffer objects
 
 int64_t prevMessageID = -1;
 void APIENTRY message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
@@ -67,6 +67,13 @@ void APIENTRY message_callback(GLenum source, GLenum type, GLuint id, GLenum sev
 
 }
 
+struct Vertex {
+	glm::fvec3 position;
+	glm::fvec2 texCoord;
+
+	Vertex(glm::fvec3 position, glm::fvec2 texCoord) :
+		position(position), texCoord(texCoord) {}
+};
 
 
 int main(int argc, char* argv[]) {
@@ -113,68 +120,42 @@ int main(int argc, char* argv[]) {
 	glFrontFace(GL_CW);
 
 	glfwSwapInterval(1);
-	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	OpenGL::ShaderProgram shaderProgram;
-	std::shared_ptr<OpenGL::Shader> vertexShader = std::make_shared<OpenGL::Shader>(Util::ReadFile("resources/shaders/test_shader.vert").c_str(), OpenGL::ShaderType::VERTEX_SHADER);
-	std::shared_ptr<OpenGL::Shader> fragmentShader = std::make_shared<OpenGL::Shader>(Util::ReadFile("resources/shaders/test_shader.frag").c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
+	OpenGL::Shader vertexShader(Util::ReadFile("resources/shaders/default_shader.vert").c_str(), OpenGL::ShaderType::VERTEX_SHADER);
+	OpenGL::Shader fragmentShader(Util::ReadFile("resources/shaders/default_shader.frag").c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
 
-	shaderProgram.AddShader(vertexShader);
-	shaderProgram.AddShader(fragmentShader);
-	shaderProgram.Reload();
-	shaderProgram.BindProgram();
+	OpenGL::ShaderProgram sp({ &vertexShader, &fragmentShader });
 
-	shaderProgram.SetUniform1I("f_texture", 0);
+	//std::vector<Material> materials = {
+	//	{glm::fvec4{1.0f, 1.0f, 1.0f, 1.0f}, glm::fvec4{1.0f,1.0f,1.0f,1.0f}},
+	//	{glm::fvec4{1.0f, 1.0f, 1.0f, 1.0f}, glm::fvec4{1.0f,1.0f,1.0f,1.0f}}
+	//};
 
-	std::vector<float> vertices = {
-		-0.05f, -0.05f, 0.0f, 0.0f,
-		-0.05f, 0.05f, 0.0f, 1.0f,
-		0.05f, -0.05f, 1.0f, 0.0f,
-		0.05f, 0.05f, 1.0f, 1.0f
+	//StaticSSBOMaterial m(materials);
+
+	std::vector<Vertex> vertices = {
+		{glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(0.0f, 0.0f)},
+		{glm::vec3(-0.5f, 0.5f, 0.0f), glm::vec2(0.0f, 1.0f)},
+		{glm::vec3(0.5f, -0.5f, 0.0f), glm::vec2(1.0f, 0.0f)},
+		{glm::vec3(0.5f, 0.5f, 0.0f), glm::vec2(1.0f, 1.0f)}
+
 	};
-	OpenGL::Buffer vertexBuffer;
-	vertexBuffer.CreateImmutableBuffer(sizeof(float) * vertices.size(), vertices.data());
-	OpenGL::VertexBufferInfo info(sizeof(float) * 4, 0, 0);
-
-	OpenGL::VertexAttribute attribute(2, 0);
-	OpenGL::VertexAttribute attribute2(2, (sizeof(float) * 2));
-	info.AddAttribute(attribute);
-	info.AddAttribute(attribute2);
-
-	std::vector<unsigned char> indices = {
+	std::vector<uint32_t> indices = {
 		0,1,2,
 		1,3,2
 	};
-	OpenGL::Buffer elementBuffer;
-	elementBuffer.CreateImmutableBuffer(sizeof(unsigned int) * indices.size(), indices.data());
-	OpenGL::VertexArray vertexArray;
-	vertexArray.SetVertexBuffer(vertexBuffer, info);
-	vertexArray.SetElementBuffer(elementBuffer);
 
-	stbi_set_flip_vertically_on_load(1);
-	int x, y, components;
-	unsigned char* data = stbi_load("resources/textures/test.png", &x, &y, &components, 0);
+	Util::TypelessArray vertexData(vertices);
+	Util::TypelessArray elementData(indices);
 
-	OpenGL::TextureStorageParameters sp;
-	sp.width = x;
-	sp.height = y;
-	sp.internalFormat = OpenGL::TextureInternalFormat::RGBA8;
-	sp.type = OpenGL::TextureType::TEXTURE_2D;
-	sp.mipLevels = 1;
+	StaticMeshData data(vertexData, elementData);
 
-	OpenGL::Texture texture(sp);
+	data.AddVertexAttribute(OpenGL::VertexAttribute(3, 0, OpenGL::DataType::FLOAT));
+	data.AddVertexAttribute(OpenGL::VertexAttribute(2, offsetof(Vertex, texCoord), OpenGL::DataType::FLOAT));
 
+	data.SetDrawMode(OpenGL::DrawMode::TRIANGLES);
 
-	OpenGL::TextureDataParameters dp;
-	dp.baseFormat = OpenGL::TextureBaseFormat::RGBA;
-	dp.dataType = OpenGL::DataType::UNSIGNED_BYTE;
-	dp.height = y;
-	dp.width = x;
-	dp.textureType = OpenGL::TextureType::TEXTURE_2D;
-
-	texture.SetTextureData(dp, data);
-	texture.GenerateMipmaps();
-	texture.BindTexture(0);
+	StaticMesh mesh(data);
 
 	glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
 
@@ -183,9 +164,10 @@ int main(int argc, char* argv[]) {
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		vertexArray.Bind();
-		OpenGL::ElementDrawInfo drawInfo(indices.size(), 0, OpenGL::DataType::UNSIGNED_BYTE, OpenGL::DrawMode::TRIANGLES);
-		vertexArray.DrawElements(drawInfo);
+		sp.BindProgram();
+		mesh.Draw();
+
+		//Renderer::SceneRenderer(scene);
 
 		glfwSwapBuffers(window);
 	}

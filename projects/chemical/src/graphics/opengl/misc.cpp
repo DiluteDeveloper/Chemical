@@ -1,0 +1,70 @@
+#include "pch.h"
+#include "misc.h"
+
+#include <GLAD/glad.h>
+
+namespace OpenGL {
+
+	uint64_t ConvertEnumDataTypeToByteSize(DataType type) {
+		switch (type) {
+		case DataType::BYTE:
+			return sizeof(GLbyte);
+			break;
+		case DataType::UNSIGNED_BYTE:
+			return sizeof(GLubyte);
+			break;
+		case DataType::SHORT:
+			return sizeof(GLshort);
+			break;
+		case DataType::UNSIGNED_SHORT:
+			return sizeof(GLushort);
+			break;
+		case DataType::INT:
+			return sizeof(GLint);
+			break;
+		case DataType::UNSIGNED_INT:
+			return sizeof(GLuint);
+			break;
+		case DataType::FLOAT:
+			return sizeof(GLfloat);
+			break;
+		case DataType::HALF_FLOAT:
+			return sizeof(GLhalf);
+			break;
+		case DataType::DOUBLE:
+			return sizeof(GLdouble);
+			break;
+		case DataType::FIXED:
+			return sizeof(GLfixed);
+			break;
+		case DataType::INT_2_10_10_10_REV:
+			return sizeof(GLuint);
+			break;
+		case DataType::UNSIGNED_INT_2_10_10_10_REV:
+			return sizeof(GLuint);
+			break;
+		case DataType::UNSIGNED_INT_10F_11F_11F_REV:
+			return sizeof(GLuint);
+			break;
+		default:
+			return 0;
+		}
+
+	}
+
+	extern uint64_t ConvertUnsignedIntegralDataTypeToByteSize(DataType type) {
+		switch (type) {
+		case DataType::UNSIGNED_BYTE:
+			return sizeof(GLubyte);
+			break;
+		case DataType::UNSIGNED_SHORT:
+			return sizeof(GLushort);
+			break;
+		case DataType::UNSIGNED_INT:
+			return sizeof(GLuint);
+			break;
+		default:
+			return 0;
+		}
+	}
+}
