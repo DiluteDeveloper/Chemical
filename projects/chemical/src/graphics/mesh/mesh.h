@@ -27,7 +27,7 @@ public:
 	void SetDrawMode(OpenGL::DrawMode mode);
 };
 
-// stores element and vertex buffer in 1 array, can be used for many meshes in one
+// stores elements and vertices in 1 buffer, can be used for many meshes in one
 class StaticMesh {
 	OpenGL::VertexArray m_vArray;
 

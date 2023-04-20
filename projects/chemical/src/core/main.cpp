@@ -70,9 +70,10 @@ void APIENTRY message_callback(GLenum source, GLenum type, GLuint id, GLenum sev
 struct Vertex {
 	glm::fvec3 position;
 	glm::fvec2 texCoord;
+	uint32_t materialIndex;
 
-	Vertex(glm::fvec3 position, glm::fvec2 texCoord) :
-		position(position), texCoord(texCoord) {}
+	Vertex(glm::fvec3 position, glm::fvec2 texCoord, uint32_t materialIndex) :
+		position(position), texCoord(texCoord), materialIndex(materialIndex) {}
 };
 
 
@@ -80,15 +81,27 @@ int main(int argc, char* argv[]) {
 
 	Util::Logger::InitializeLogger();
 
+	// GLFW INITIALIZATION ----------------------------
+
 	if (!glfwInit()) {
 		LOGGER_CONSOLE_ERROR("GLFW initialization failed.");
 		throw std::exception();
 	}
 	else
 		LOGGER_CONSOLE_MESSAGE("GLFW initialized.");
+
+	// GLFW INITIALIZATION ----------------------------
+
+	// GLFW PREFERENCES ----------------------------------
+
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwSwapInterval(1);
+
+	// GLFW PREFERENCES ----------------------------------
+
+	// GLFW WINDOW SETUP -------------------------------------------------
 
 	GLFWwindow* window = glfwCreateWindow(1280, 720, "Hello World", NULL, NULL);
 
@@ -98,14 +111,45 @@ int main(int argc, char* argv[]) {
 	}
 	else
 		LOGGER_CONSOLE_MESSAGE("GLFW window created.");
+
+	//GLFWwindow* window2 = glfwCreateWindow(1280, 720, "Hello World", NULL, NULL);
+
+	//if (!window2) {
+	//	LOGGER_CONSOLE_ERROR("GLFW window creation failed.");
+	//	throw std::exception();
+	//}
+	//else
+		//LOGGER_CONSOLE_MESSAGE("GLFW window created.");
+
+	// GLFW WINDOW SETUP -------------------------------------------------
+
+	// GLAD SETUP --------------------------------------------
+
 	glfwMakeContextCurrent(window);
 
-	if (!gladLoadGL()) {
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		LOGGER_CONSOLE_ERROR("gladLoadGL failed.");
 		throw std::exception();
 	}
 	else
 		LOGGER_CONSOLE_MESSAGE("gladLoadGL succeeded.");
+
+	glClearColor(1.0f, 0.2f, 0.3f, 1.0f);
+
+	//glfwMakeContextCurrent(window2);
+
+	//if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+	//	LOGGER_CONSOLE_ERROR("gladLoadGL failed.");
+	//	throw std::exception();
+	//}
+	//else
+	//	LOGGER_CONSOLE_MESSAGE("gladLoadGL succeeded.");
+
+	//glClearColor(0.1f, 0.2f, 1.0f, 1.0f);
+
+	// GLAD SETUP --------------------------------------------
+
+	// GLAD PREFERENCES -----------------------------------------
 
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
@@ -119,25 +163,47 @@ int main(int argc, char* argv[]) {
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CW);
 
-	glfwSwapInterval(1);
+	glProvokingVertex(GL_FIRST_VERTEX_CONVENTION);
+
+	glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
+
+	// GLAD PREFERENCES -----------------------------------------
+
+	// TESTING CODE --------------------------------------------
+
+
+	Renderer renderer;
 
 	OpenGL::Shader vertexShader(Util::ReadFile("resources/shaders/default_shader.vert").c_str(), OpenGL::ShaderType::VERTEX_SHADER);
 	OpenGL::Shader fragmentShader(Util::ReadFile("resources/shaders/default_shader.frag").c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
 
 	OpenGL::ShaderProgram sp({ &vertexShader, &fragmentShader });
 
-	//std::vector<Material> materials = {
-	//	{glm::fvec4{1.0f, 1.0f, 1.0f, 1.0f}, glm::fvec4{1.0f,1.0f,1.0f,1.0f}},
-	//	{glm::fvec4{1.0f, 1.0f, 1.0f, 1.0f}, glm::fvec4{1.0f,1.0f,1.0f,1.0f}}
-	//};
+	std::vector<Material> materials = {
+		{glm::fvec4{1.0f, 1.0f, 1.0f, 1.0f}, glm::fvec4{1.0f,1.0f,1.0f,1.0f}},
+		{glm::fvec4{0.5f, 0.5f, 0.5f, 1.0f}, glm::fvec4{0.5f,0.5f,0.5f,1.0f}}
+	};
+	// todo:
+	// decide where to store array of interface block buffers, definitely has to be specific to a context
+	// use dynamic buffers to change materials
 
-	//StaticSSBOMaterial m(materials);
+	{ // renderer holds onto this buffer so it will not be deleted when goes out of scope.
+		OpenGL::Buffer& buffer = renderer.CreateLivingBuffer();
+		buffer.CreateImmutableBuffer(sizeof(Material) * materials.size(), materials.data(), OpenGL::BufferStorageFlags::MAP_READ_BIT);
+		buffer.BindBufferBase(OpenGL::BufferBaseTarget::UNIFORM_BUFFER, 0);
+	}
+	
+
+
+
+
+
 
 	std::vector<Vertex> vertices = {
-		{glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(0.0f, 0.0f)},
-		{glm::vec3(-0.5f, 0.5f, 0.0f), glm::vec2(0.0f, 1.0f)},
-		{glm::vec3(0.5f, -0.5f, 0.0f), glm::vec2(1.0f, 0.0f)},
-		{glm::vec3(0.5f, 0.5f, 0.0f), glm::vec2(1.0f, 1.0f)}
+		Vertex{glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(0.0f, 0.0f), 0},
+		Vertex{glm::vec3(-0.5f, 0.5f, 0.0f), glm::vec2(0.0f, 1.0f), 1},
+		Vertex{glm::vec3(0.5f, -0.5f, 0.0f), glm::vec2(1.0f, 0.0f), 1},
+		Vertex{glm::vec3(0.5f, 0.5f, 0.0f), glm::vec2(1.0f, 1.0f), 1}
 
 	};
 	std::vector<uint32_t> indices = {
@@ -152,24 +218,35 @@ int main(int argc, char* argv[]) {
 
 	data.AddVertexAttribute(OpenGL::VertexAttribute(3, 0, OpenGL::DataType::FLOAT));
 	data.AddVertexAttribute(OpenGL::VertexAttribute(2, offsetof(Vertex, texCoord), OpenGL::DataType::FLOAT));
+	data.AddVertexAttribute(OpenGL::VertexAttribute(1, offsetof(Vertex, materialIndex), OpenGL::DataType::UNSIGNED_INT, OpenGL::DataTransformation::INT));
 
 	data.SetDrawMode(OpenGL::DrawMode::TRIANGLES);
 
 	StaticMesh mesh(data);
 
-	glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
+	// TESTING CODE --------------------------------------------
 
-	while (!glfwWindowShouldClose(window)) {
-		glfwPollEvents();
+	while (!glfwWindowShouldClose(window) /*&& !glfwWindowShouldClose(window2)*/) {
+
+		glfwMakeContextCurrent(window);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		sp.BindProgram();
 		mesh.Draw();
 
-		//Renderer::SceneRenderer(scene);
-
 		glfwSwapBuffers(window);
+
+		//glfwMakeContextCurrent(window2);
+
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		//sp.BindProgram();
+		//mesh.Draw();
+
+		//glfwSwapBuffers(window);
+
+		glfwPollEvents();
 	}
 	return 0;
 }

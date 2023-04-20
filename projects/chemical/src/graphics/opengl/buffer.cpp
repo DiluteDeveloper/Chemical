@@ -10,7 +10,7 @@ namespace OpenGL {
 		glCreateBuffers(1, &m_rendererID);
 	}
 	Buffer::~Buffer() {
-		//glDeleteBuffers(1, &m_rendererID);
+		glDeleteBuffers(1, &m_rendererID);
 	}
 	void Buffer::SetBufferData(int64_t size, const void* data, uint32_t offset) {
 		glNamedBufferSubData(m_rendererID, offset, size, data);
@@ -23,8 +23,9 @@ namespace OpenGL {
 	}
 
 	void Buffer::BindBufferBase(BufferBaseTarget target, uint32_t bindingIndex) {
-		glBindBufferBase((GLenum)target, bindingIndex, m_rendererID); // may not work like a tall
+
 		glBindBuffer((GLenum)target, m_rendererID);
+		glBindBufferBase((GLenum)target, bindingIndex, m_rendererID); // may not work like a tall
 	}
 
 }

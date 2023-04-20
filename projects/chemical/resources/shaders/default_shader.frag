@@ -3,17 +3,22 @@
 out vec4 fragColor;
 
 in vec2 f_texCoord;
-/*flat in uint f_materialIndex;
+flat in uint f_materialIndex;
+
+struct MaterialData {
+
+    vec4 diffColour;
+    vec4 specColour;
+};
 
 layout(std140, binding = 0) uniform Material
 {
-    vec4 diffColour[1024];
-    vec4 specColour[1024];
-} material;*/
+    MaterialData data[1024];
+} material;
 
 void main()
 {                          
 
-    //fragColor = material.diffColour[f_materialIndex] * material.specColour[f_materialIndex];
-    fragColor = vec4(1.0,1.0,1.0,1.0);
+    fragColor = material.data[f_materialIndex].diffColour * material.data[f_materialIndex].specColour;
+    //fragColor = vec4(1.0,1.0,1.0,1.0);
 }

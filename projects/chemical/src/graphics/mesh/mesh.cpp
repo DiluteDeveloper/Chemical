@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "mesh.h"
 
+#include <GLAD/glad.h>
+
 StaticMeshData::StaticMeshData(const Util::TypelessArray& vertexData, const Util::TypelessArray& elementData)
 	: m_vertexData(vertexData), m_elementData(elementData) {
 	m_vertexInfo.bindingIndex = 0;
