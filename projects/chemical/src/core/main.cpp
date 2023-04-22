@@ -9,6 +9,11 @@
 #include "util/filestream.h"
 #include "graphics/opengl/shader_program.h"
 #include "graphics/material/material.h"
+#include "scene/scene.h"
+
+#include <entt/entt.h>
+
+using namespace entt::literals;
 
 // Todo: start using uniform buffer objects
 
@@ -112,15 +117,6 @@ int main(int argc, char* argv[]) {
 	else
 		LOGGER_CONSOLE_MESSAGE("GLFW window created.");
 
-	//GLFWwindow* window2 = glfwCreateWindow(1280, 720, "Hello World", NULL, NULL);
-
-	//if (!window2) {
-	//	LOGGER_CONSOLE_ERROR("GLFW window creation failed.");
-	//	throw std::exception();
-	//}
-	//else
-		//LOGGER_CONSOLE_MESSAGE("GLFW window created.");
-
 	// GLFW WINDOW SETUP -------------------------------------------------
 
 	// GLAD SETUP --------------------------------------------
@@ -135,17 +131,6 @@ int main(int argc, char* argv[]) {
 		LOGGER_CONSOLE_MESSAGE("gladLoadGL succeeded.");
 
 	glClearColor(1.0f, 0.2f, 0.3f, 1.0f);
-
-	//glfwMakeContextCurrent(window2);
-
-	//if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-	//	LOGGER_CONSOLE_ERROR("gladLoadGL failed.");
-	//	throw std::exception();
-	//}
-	//else
-	//	LOGGER_CONSOLE_MESSAGE("gladLoadGL succeeded.");
-
-	//glClearColor(0.1f, 0.2f, 1.0f, 1.0f);
 
 	// GLAD SETUP --------------------------------------------
 
@@ -177,27 +162,30 @@ int main(int argc, char* argv[]) {
 	OpenGL::Shader vertexShader(Util::ReadFile("resources/shaders/default_shader.vert").c_str(), OpenGL::ShaderType::VERTEX_SHADER);
 	OpenGL::Shader fragmentShader(Util::ReadFile("resources/shaders/default_shader.frag").c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
 
-	OpenGL::ShaderProgram sp({ &vertexShader, &fragmentShader });
+	OpenGL::VertexLayout layout;
+	layout.stride = sizeof(Vertex);
 
-	std::vector<Material> materials = {
-		{glm::fvec4{1.0f, 1.0f, 1.0f, 1.0f}, glm::fvec4{1.0f,1.0f,1.0f,1.0f}},
-		{glm::fvec4{0.5f, 0.5f, 0.5f, 1.0f}, glm::fvec4{0.5f,0.5f,0.5f,1.0f}}
-	};
+	layout.AddAttribute(OpenGL::VertexAttribute(3, 0, OpenGL::DataType::FLOAT));
+	layout.AddAttribute(OpenGL::VertexAttribute(2, offsetof(Vertex, texCoord), OpenGL::DataType::FLOAT));
+	layout.AddAttribute(OpenGL::VertexAttribute(1, offsetof(Vertex, materialIndex), OpenGL::DataType::UNSIGNED_INT, OpenGL::DataTransformation::INT));
+
+	std::shared_ptr<OpenGL::ShaderProgram> sp = std::make_shared<OpenGL::ShaderProgram>(std::initializer_list<const OpenGL::Shader*>{ &vertexShader, &fragmentShader }, layout);
+
+	renderer.AddShader(HashedString("default_shader"), sp);
+
+	//std::vector<Material> materials = {
+	//	{glm::fvec4{1.0f, 1.0f, 1.0f, 1.0f}, glm::fvec4{1.0f,1.0f,1.0f,1.0f}},
+	//	{glm::fvec4{0.5f, 0.5f, 0.5f, 1.0f}, glm::fvec4{0.5f,0.5f,0.5f,1.0f}}
+	//};
 	// todo:
 	// decide where to store array of interface block buffers, definitely has to be specific to a context
 	// use dynamic buffers to change materials
 
-	{ // renderer holds onto this buffer so it will not be deleted when goes out of scope.
-		OpenGL::Buffer& buffer = renderer.CreateLivingBuffer();
-		buffer.CreateImmutableBuffer(sizeof(Material) * materials.size(), materials.data(), OpenGL::BufferStorageFlags::MAP_READ_BIT);
-		buffer.BindBufferBase(OpenGL::BufferBaseTarget::UNIFORM_BUFFER, 0);
-	}
-	
-
-
-
-
-
+	//{ // renderer holds onto this buffer so it will not be deleted when goes out of scope.
+	//	OpenGL::Buffer& buffer = renderer.CreateLivingBuffer();
+	//	buffer.CreateImmutableBuffer(sizeof(Material) * materials.size(), materials.data(), OpenGL::BufferStorageFlags::MAP_READ_BIT);
+	//	buffer.BindBufferBase(OpenGL::BufferBaseTarget::UNIFORM_BUFFER, 0);
+	//}
 
 	std::vector<Vertex> vertices = {
 		Vertex{glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(0.0f, 0.0f), 0},
@@ -214,15 +202,13 @@ int main(int argc, char* argv[]) {
 	Util::TypelessArray vertexData(vertices);
 	Util::TypelessArray elementData(indices);
 
-	StaticMeshData data(vertexData, elementData);
+	Scene scene;
 
-	data.AddVertexAttribute(OpenGL::VertexAttribute(3, 0, OpenGL::DataType::FLOAT));
-	data.AddVertexAttribute(OpenGL::VertexAttribute(2, offsetof(Vertex, texCoord), OpenGL::DataType::FLOAT));
-	data.AddVertexAttribute(OpenGL::VertexAttribute(1, offsetof(Vertex, materialIndex), OpenGL::DataType::UNSIGNED_INT, OpenGL::DataTransformation::INT));
+	Entity e = scene.CreateEntity();
+	e.CreateNamedComponent<StaticMesh>(HashedString("default_shader"), vertexData, elementData);
 
-	data.SetDrawMode(OpenGL::DrawMode::TRIANGLES);
+	renderer.GenerateSceneRenderData(scene);
 
-	StaticMesh mesh(data);
 
 	// TESTING CODE --------------------------------------------
 
@@ -232,19 +218,9 @@ int main(int argc, char* argv[]) {
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		sp.BindProgram();
-		mesh.Draw();
+		renderer.RenderSceneData();
 
 		glfwSwapBuffers(window);
-
-		//glfwMakeContextCurrent(window2);
-
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		//sp.BindProgram();
-		//mesh.Draw();
-
-		//glfwSwapBuffers(window);
 
 		glfwPollEvents();
 	}

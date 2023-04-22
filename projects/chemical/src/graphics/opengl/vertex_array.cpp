@@ -9,8 +9,8 @@ namespace OpenGL {
 		glCreateVertexArrays(1, &m_rendererID);
 	}
 
-	void VertexArray::SetVertexBuffer(const Buffer& buffer, const VertexBufferInfo& info) {
-		glVertexArrayVertexBuffer(m_rendererID, info.bindingIndex, buffer.GetRendererID(), info.offset, info.stride);
+	void VertexArray::SetVertexBuffer(const Buffer& buffer, const VertexLayout& info, int64_t offset, uint32_t bindingIndex) {
+		glVertexArrayVertexBuffer(m_rendererID, bindingIndex, buffer.GetRendererID(), offset, info.stride);
 		uint32_t i = 0;
 		for (const VertexAttribute& att : info.GetAttributes())
 		{
@@ -31,7 +31,7 @@ namespace OpenGL {
 				break;
 			}
 			glEnableVertexArrayAttrib(m_rendererID, i);
-			glVertexArrayAttribBinding(m_rendererID, i, info.bindingIndex);
+			glVertexArrayAttribBinding(m_rendererID, i, bindingIndex);
 
 			i++;
 		}

@@ -38,7 +38,8 @@ namespace OpenGL {
 		glDeleteProgram(m_rendererID);
 	}
 
-	ShaderProgram::ShaderProgram(std::initializer_list<const Shader*> shaders) {
+	ShaderProgram::ShaderProgram(std::initializer_list<const Shader*> shaders, const VertexLayout& layout) :
+	m_layout(layout) {
 		m_rendererID = glCreateProgram();
 
 		for (const Shader* shader : shaders) {

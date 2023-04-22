@@ -1,5 +1,7 @@
 #pragma once
 
+#include "misc.h"
+
 namespace OpenGL {
 
 	enum class ShaderType {
@@ -59,8 +61,11 @@ namespace OpenGL {
 
 		std::unordered_map<std::string, Uniform> m_uniforms;
 
+		OpenGL::VertexLayout m_layout;
+
 	public:
-		ShaderProgram(std::initializer_list<const Shader*> shaders);
+		ShaderProgram(std::initializer_list<const Shader*> shaders, const VertexLayout& layout);
+
 		ShaderProgram(ShaderProgram&& other) noexcept :
 			m_rendererID(std::move(other.m_rendererID)), m_uniforms(std::move(other.m_uniforms)) {}
 
@@ -72,6 +77,7 @@ namespace OpenGL {
 			return *this;
 		}
 
+		const VertexLayout& GetLayout() { return m_layout; }
 
 		~ShaderProgram();
 
