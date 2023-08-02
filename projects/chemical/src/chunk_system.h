@@ -6,8 +6,8 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#define CHUNK_SIZE_X 80
-#define CHUNK_SIZE_Z 400
+#define CHUNK_SIZE_X 456
+#define CHUNK_SIZE_Z 456
 
 // chunk blocks will iterate along chunk x then z
 struct Chunk {

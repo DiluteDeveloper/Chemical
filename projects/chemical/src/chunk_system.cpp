@@ -7,17 +7,17 @@
 void Chunk::GenerateHeightmap() {
 	heightMap.clear();
 
-	const siv::PerlinNoise::seed_type seed = 6232;
-	const siv::PerlinNoise::seed_type seed2 = 2832;
-
-	const siv::PerlinNoise perlin{seed};
-	const siv::PerlinNoise perlin2{seed2};
+	const siv::PerlinNoise perlin{std::random_device{}};
+	const siv::PerlinNoise perlin2{std::random_device{}};
+	const siv::PerlinNoise perlin3{std::random_device{}};
 
 	for (size_t x = 0; x < CHUNK_SIZE_X; x++)
 	{
 		for (size_t z = 0; z < CHUNK_SIZE_Z; z++)
 		{
-			int noise = perlin.normalizedOctave2D(x * 0.03f, z * 0.03f, 4) * 20;
+			int noise = perlin.normalizedOctave2D(x * 0.01f, z * 0.01f, 1) * 20;
+			noise += perlin2.normalizedOctave2D(x * 0.02f, z * 0.02f, 1) * 30;
+			noise += perlin3.normalizedOctave2D(x * 0.004f, z * 0.004f, 1) * 80;
 
 
 			heightMap.emplace_back(noise);

@@ -79,22 +79,22 @@ void movement(Transform& cam, GLFWwindow* window) {
 	glm::fvec3 right = matrix[0];
 
 	if (glfwGetKey(window, GLFW_KEY_W)) {
-		cam.position -= front * 0.05f;
+		cam.position -= front * 0.3f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_S)) {
-		cam.position += front * 0.05f;
+		cam.position += front * 0.3f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A)) {
-		cam.position -= right * 0.05f;
+		cam.position -= right * 0.3f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D)) {
-		cam.position += right * 0.05f;
+		cam.position += right * 0.3f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE)) {
-		cam.position.y += 0.05f;
+		cam.position.y += 0.3f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
-		cam.position.y -= 0.05f;
+		cam.position.y -= 0.3f;
 	}
 
 	double x, y;
@@ -229,7 +229,7 @@ int main(int argc, char* argv[]) {
 	Chunk chunk(glm::vec3(0));
 	chunk.GenerateHeightmap();
 
-	OpenGL::VertexArray ChunkVArray = RenderChunk(chunk, *sp);
+	OpenGL::VertexArray* ChunkVArray = new OpenGL::VertexArray(RenderChunk(chunk, *sp));
 
 	OpenGL::ArrayDrawInfo info(CHUNK_SIZE_X * CHUNK_SIZE_Z * 6, 0, OpenGL::DrawMode::TRIANGLES);
 
@@ -241,11 +241,18 @@ int main(int argc, char* argv[]) {
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		if (glfwGetKey(window, GLFW_KEY_R)) {
+			chunk.GenerateHeightmap();
+
+			delete ChunkVArray;
+			ChunkVArray = new OpenGL::VertexArray(RenderChunk(chunk, *sp));
+		}
+
 		movement(view, window);
 		sp->SetUniformMatrix4FV("v_view", 1, false, &glm::inverse(view.GetTransform())[0][0]); // set to true to transpose
 		sp->BindProgram();
-		ChunkVArray.Bind();
-		ChunkVArray.DrawArrays(info);
+		ChunkVArray->Bind();
+		ChunkVArray->DrawArrays(info);
 
 		glfwSwapBuffers(window);
 
