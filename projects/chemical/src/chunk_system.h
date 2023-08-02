@@ -6,8 +6,8 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#define CHUNK_SIZE_X 456
-#define CHUNK_SIZE_Z 456
+#define CHUNK_SIZE_X 480
+#define CHUNK_SIZE_Z 720
 
 // chunk blocks will iterate along chunk x then z
 struct Chunk {
@@ -18,4 +18,10 @@ struct Chunk {
 	void GenerateHeightmap();
 };
 
-extern OpenGL::VertexArray RenderChunk(Chunk& chunk, const OpenGL::ShaderProgram& shader);
+struct ChunkRender {
+	OpenGL::VertexArray vArray;
+	OpenGL::ArrayDrawInfo info;
+
+};
+
+extern std::shared_ptr<ChunkRender> RenderChunk(Chunk& chunk, const OpenGL::ShaderProgram& shader);

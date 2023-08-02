@@ -79,22 +79,22 @@ void movement(Transform& cam, GLFWwindow* window) {
 	glm::fvec3 right = matrix[0];
 
 	if (glfwGetKey(window, GLFW_KEY_W)) {
-		cam.position -= front * 0.3f;
+		cam.position -= front * 0.05f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_S)) {
-		cam.position += front * 0.3f;
+		cam.position += front * 0.05f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A)) {
-		cam.position -= right * 0.3f;
+		cam.position -= right * 0.05f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D)) {
-		cam.position += right * 0.3f;
+		cam.position += right * 0.05f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE)) {
-		cam.position.y += 0.3f;
+		cam.position.y += 0.05f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
-		cam.position.y -= 0.3f;
+		cam.position.y -= 0.05f;
 	}
 
 	double x, y;
@@ -180,8 +180,10 @@ int main(int argc, char* argv[]) {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	//glEnable(GL_CULL_FACE);
-	//glFrontFace(GL_CW);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	glEnable(GL_CULL_FACE);
+	glFrontFace(GL_CW);
 
 	glProvokingVertex(GL_FIRST_VERTEX_CONVENTION);
 
@@ -229,9 +231,7 @@ int main(int argc, char* argv[]) {
 	Chunk chunk(glm::vec3(0));
 	chunk.GenerateHeightmap();
 
-	OpenGL::VertexArray* ChunkVArray = new OpenGL::VertexArray(RenderChunk(chunk, *sp));
-
-	OpenGL::ArrayDrawInfo info(CHUNK_SIZE_X * CHUNK_SIZE_Z * 6, 0, OpenGL::DrawMode::TRIANGLES);
+	std::shared_ptr<ChunkRender> chunkRender = RenderChunk(chunk, *sp);
 
 	// MORE TESTING CODE --------------------------------------------
 
@@ -244,15 +244,14 @@ int main(int argc, char* argv[]) {
 		if (glfwGetKey(window, GLFW_KEY_R)) {
 			chunk.GenerateHeightmap();
 
-			delete ChunkVArray;
-			ChunkVArray = new OpenGL::VertexArray(RenderChunk(chunk, *sp));
+			chunkRender = RenderChunk(chunk, *sp);
 		}
 
 		movement(view, window);
 		sp->SetUniformMatrix4FV("v_view", 1, false, &glm::inverse(view.GetTransform())[0][0]); // set to true to transpose
 		sp->BindProgram();
-		ChunkVArray->Bind();
-		ChunkVArray->DrawArrays(info);
+		chunkRender->vArray.Bind();
+		chunkRender->vArray.DrawArrays(chunkRender->info);
 
 		glfwSwapBuffers(window);
 
