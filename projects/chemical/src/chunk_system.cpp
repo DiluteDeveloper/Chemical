@@ -4,18 +4,21 @@
 #include "chunk_system.h"
 #include "graphics/opengl/buffer.h"
 
-void Chunk::GenerateBlockPositions() {
+void Chunk::GenerateHeightmap() {
 	heightMap.clear();
 
-	const siv::PerlinNoise::seed_type seed = 123456u;
+	const siv::PerlinNoise::seed_type seed = 6232;
+	const siv::PerlinNoise::seed_type seed2 = 2832;
 
 	const siv::PerlinNoise perlin{seed};
+	const siv::PerlinNoise perlin2{seed2};
 
 	for (size_t x = 0; x < CHUNK_SIZE_X; x++)
 	{
 		for (size_t z = 0; z < CHUNK_SIZE_Z; z++)
 		{
-			const int noise = perlin.octave2D_11((x * 0.01/* think the 0.01 is the range, like how broad the perlin is*/), (z * 0.01), 3) * 10;
+			int noise = perlin.normalizedOctave2D(x * 0.03f, z * 0.03f, 4) * 20;
+
 
 			heightMap.emplace_back(noise);
 		}
@@ -29,7 +32,7 @@ OpenGL::VertexArray RenderChunk(Chunk& chunk, const OpenGL::ShaderProgram& p) {
 	{
 		for (size_t z = 0; z < CHUNK_SIZE_Z; z++)
 		{
-			const int height = chunk.heightMap[x * z];
+			const int height = chunk.heightMap[(x * CHUNK_SIZE_Z) + z];
 
 			vertices.emplace_back(glm::vec3(x - 0.5f, height, z - 0.5f));
 			vertices.emplace_back(glm::vec3(x + 0.5f, height, z - 0.5f));

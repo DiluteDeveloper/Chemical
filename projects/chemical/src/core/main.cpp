@@ -79,22 +79,22 @@ void movement(Transform& cam, GLFWwindow* window) {
 	glm::fvec3 right = matrix[0];
 
 	if (glfwGetKey(window, GLFW_KEY_W)) {
-		cam.position -= front * 0.01f;
+		cam.position -= front * 0.05f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_S)) {
-		cam.position += front * 0.01f;
+		cam.position += front * 0.05f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A)) {
-		cam.position -= right * 0.01f;
+		cam.position -= right * 0.05f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D)) {
-		cam.position += right * 0.01f;
+		cam.position += right * 0.05f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE)) {
-		cam.position.y += 0.01f;
+		cam.position.y += 0.05f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
-		cam.position.y -= 0.01f;
+		cam.position.y -= 0.05f;
 	}
 
 	double x, y;
@@ -227,7 +227,7 @@ int main(int argc, char* argv[]) {
 	// MORE TESTING CODE --------------------------------------------
 
 	Chunk chunk(glm::vec3(0));
-	chunk.GenerateBlockPositions();
+	chunk.GenerateHeightmap();
 
 	OpenGL::VertexArray ChunkVArray = RenderChunk(chunk, *sp);
 
