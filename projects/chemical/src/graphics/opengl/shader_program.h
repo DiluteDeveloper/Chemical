@@ -77,7 +77,7 @@ namespace OpenGL {
 			return *this;
 		}
 
-		const VertexLayout& GetLayout() { return m_layout; }
+		const VertexLayout& GetLayout() const { return m_layout; }
 
 		~ShaderProgram();
 

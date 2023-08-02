@@ -2,18 +2,17 @@
 #include <GLAD/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "graphics/renderer.h"
+#include <glm/gtc/matrix_transform.hpp>
+
+
 #include "transform/transform.h"
-#include "graphics/mesh/mesh.h"
 
 #include "util/filestream.h"
 #include "graphics/opengl/shader_program.h"
-#include "graphics/material/material.h"
-#include "scene/scene.h"
+#include "graphics/opengl/buffer.h"
+#include "graphics/opengl/vertex_array.h"
 
-#include <entt/entt.h>
-
-using namespace entt::literals;
+#include "chunk_system.h"
 
 // Todo: start using uniform buffer objects
 
@@ -72,15 +71,43 @@ void APIENTRY message_callback(GLenum source, GLenum type, GLuint id, GLenum sev
 
 }
 
-struct Vertex {
-	glm::fvec3 position;
-	glm::fvec2 texCoord;
-	uint32_t materialIndex;
+double oldx, oldy;
+void movement(Transform& cam, GLFWwindow* window) {
+	glm::fmat4 matrix = cam.GetTransform();
+	glm::fvec3 forward = matrix[2];
+	glm::fvec3 front = glm::normalize(glm::vec3(forward.x, 0, forward.z));
+	glm::fvec3 right = matrix[0];
 
-	Vertex(glm::fvec3 position, glm::fvec2 texCoord, uint32_t materialIndex) :
-		position(position), texCoord(texCoord), materialIndex(materialIndex) {}
-};
+	if (glfwGetKey(window, GLFW_KEY_W)) {
+		cam.position -= front * 0.01f;
+	}
+	if (glfwGetKey(window, GLFW_KEY_S)) {
+		cam.position += front * 0.01f;
+	}
+	if (glfwGetKey(window, GLFW_KEY_A)) {
+		cam.position -= right * 0.01f;
+	}
+	if (glfwGetKey(window, GLFW_KEY_D)) {
+		cam.position += right * 0.01f;
+	}
+	if (glfwGetKey(window, GLFW_KEY_SPACE)) {
+		cam.position.y += 0.01f;
+	}
+	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
+		cam.position.y -= 0.01f;
+	}
 
+	double x, y;
+	glfwGetCursorPos(window, &x, &y);
+
+	cam.rotation.y -= (x - oldx) * 0.002f;
+	cam.rotation.x -= (y - oldy) * 0.002f;
+
+	cam.rotation.x = glm::clamp(cam.rotation.x, -80.0f, 80.0f);
+
+	oldx = x;
+	oldy = y;
+}
 
 int main(int argc, char* argv[]) {
 
@@ -97,14 +124,14 @@ int main(int argc, char* argv[]) {
 
 	// GLFW INITIALIZATION ----------------------------
 
-	// GLFW PREFERENCES ----------------------------------
+	// GLFW WINDOW HINTS ----------------------------------
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwSwapInterval(1);
 
-	// GLFW PREFERENCES ----------------------------------
+
+	// GLFW WINDOW HINTS ----------------------------------
 
 	// GLFW WINDOW SETUP -------------------------------------------------
 
@@ -118,6 +145,14 @@ int main(int argc, char* argv[]) {
 		LOGGER_CONSOLE_MESSAGE("GLFW window created.");
 
 	// GLFW WINDOW SETUP -------------------------------------------------
+
+	// GLFW PREFERENCES ----------------------------------
+
+	glfwSwapInterval(1);
+
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	// GLFW PREFERENCES ----------------------------------
 
 	// GLAD SETUP --------------------------------------------
 
@@ -145,8 +180,8 @@ int main(int argc, char* argv[]) {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glEnable(GL_CULL_FACE);
-	glFrontFace(GL_CW);
+	//glEnable(GL_CULL_FACE);
+	//glFrontFace(GL_CW);
 
 	glProvokingVertex(GL_FIRST_VERTEX_CONVENTION);
 
@@ -157,68 +192,60 @@ int main(int argc, char* argv[]) {
 	// TESTING CODE --------------------------------------------
 
 
-	Renderer renderer;
-
-	OpenGL::Shader vertexShader(Util::ReadFile("resources/shaders/default_shader.vert").c_str(), OpenGL::ShaderType::VERTEX_SHADER);
-	OpenGL::Shader fragmentShader(Util::ReadFile("resources/shaders/default_shader.frag").c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
+	OpenGL::Shader vertexShader(Util::ReadFile("resources/shaders/chunk_shader.vert").c_str(), OpenGL::ShaderType::VERTEX_SHADER);
+	OpenGL::Shader fragmentShader(Util::ReadFile("resources/shaders/chunk_shader.frag").c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
 
 	OpenGL::VertexLayout layout;
-	layout.stride = sizeof(Vertex);
+	layout.stride = 12;
 
 	layout.AddAttribute(OpenGL::VertexAttribute(3, 0, OpenGL::DataType::FLOAT));
-	layout.AddAttribute(OpenGL::VertexAttribute(2, offsetof(Vertex, texCoord), OpenGL::DataType::FLOAT));
-	layout.AddAttribute(OpenGL::VertexAttribute(1, offsetof(Vertex, materialIndex), OpenGL::DataType::UNSIGNED_INT, OpenGL::DataTransformation::INT));
 
 	std::shared_ptr<OpenGL::ShaderProgram> sp = std::make_shared<OpenGL::ShaderProgram>(std::initializer_list<const OpenGL::Shader*>{ &vertexShader, &fragmentShader }, layout);
+	
+	Transform model;
+	Transform view;
+	const glm::mat4 proj = glm::perspective(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
+	sp->SetUniformMatrix4FV("v_model", 1, false, &model.GetTransform()[0][0]);
+	sp->SetUniformMatrix4FV("v_view", 1, false, &glm::inverse(view.GetTransform())[0][0]); // set to true to transpose
+	sp->SetUniformMatrix4FV("v_proj", 1, false, &proj[0][0]);
 
-	renderer.AddShader(HashedString("default_shader"), sp);
-
-	//std::vector<Material> materials = {
-	//	{glm::fvec4{1.0f, 1.0f, 1.0f, 1.0f}, glm::fvec4{1.0f,1.0f,1.0f,1.0f}},
-	//	{glm::fvec4{0.5f, 0.5f, 0.5f, 1.0f}, glm::fvec4{0.5f,0.5f,0.5f,1.0f}}
-	//};
-	// todo:
-	// decide where to store array of interface block buffers, definitely has to be specific to a context
-	// use dynamic buffers to change materials
-
-	//{ // renderer holds onto this buffer so it will not be deleted when goes out of scope.
-	//	OpenGL::Buffer& buffer = renderer.CreateLivingBuffer();
-	//	buffer.CreateImmutableBuffer(sizeof(Material) * materials.size(), materials.data(), OpenGL::BufferStorageFlags::MAP_READ_BIT);
-	//	buffer.BindBufferBase(OpenGL::BufferBaseTarget::UNIFORM_BUFFER, 0);
-	//}
-
-	std::vector<Vertex> vertices = {
-		Vertex{glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(0.0f, 0.0f), 0},
-		Vertex{glm::vec3(-0.5f, 0.5f, 0.0f), glm::vec2(0.0f, 1.0f), 1},
-		Vertex{glm::vec3(0.5f, -0.5f, 0.0f), glm::vec2(1.0f, 0.0f), 1},
-		Vertex{glm::vec3(0.5f, 0.5f, 0.0f), glm::vec2(1.0f, 1.0f), 1}
-
-	};
-	std::vector<uint32_t> indices = {
-		0,1,2,
-		1,3,2
+	/*std::vector<float> vertices = {
+		-0.5f, -0.5f, -0.5f,
+		0.0f, 0.5f, -0.5f,
+		0.5f, -0.5f, -0.5f
 	};
 
-	Util::TypelessArray vertexData(vertices);
-	Util::TypelessArray elementData(indices);
+	OpenGL::Buffer vBuffer;
+	vBuffer.CreateImmutableBuffer(vertices.size() * sizeof(float), &vertices[0]);
 
-	Scene scene;
+	OpenGL::VertexArray vArray;
+	vArray.SetVertexBuffer(vBuffer, layout, 0, 0);
 
-	Entity e = scene.CreateEntity();
-	e.CreateNamedComponent<StaticMesh>(HashedString("default_shader"), vertexData, elementData);
-
-	renderer.GenerateSceneRenderData(scene);
-
-
+	OpenGL::ArrayDrawInfo adi(3, 0);*/
 	// TESTING CODE --------------------------------------------
 
-	while (!glfwWindowShouldClose(window) /*&& !glfwWindowShouldClose(window2)*/) {
+	// MORE TESTING CODE --------------------------------------------
+
+	Chunk chunk(glm::vec3(0));
+	chunk.GenerateBlockPositions();
+
+	OpenGL::VertexArray ChunkVArray = RenderChunk(chunk, *sp);
+
+	OpenGL::ArrayDrawInfo info(CHUNK_SIZE_X * CHUNK_SIZE_Z * 6, 0, OpenGL::DrawMode::TRIANGLES);
+
+	// MORE TESTING CODE --------------------------------------------
+
+	while (!glfwWindowShouldClose(window)) {
 
 		glfwMakeContextCurrent(window);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		renderer.RenderSceneData();
+		movement(view, window);
+		sp->SetUniformMatrix4FV("v_view", 1, false, &glm::inverse(view.GetTransform())[0][0]); // set to true to transpose
+		sp->BindProgram();
+		ChunkVArray.Bind();
+		ChunkVArray.DrawArrays(info);
 
 		glfwSwapBuffers(window);
 

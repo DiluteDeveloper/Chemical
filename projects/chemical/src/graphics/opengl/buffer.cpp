@@ -10,7 +10,7 @@ namespace OpenGL {
 		glCreateBuffers(1, &m_rendererID);
 	}
 	Buffer::~Buffer() {
-		glDeleteBuffers(1, &m_rendererID);
+		//glDeleteBuffers(1, &m_rendererID); temporary
 	}
 	void Buffer::SetBufferData(int64_t size, const void* data, uint32_t offset) {
 		glNamedBufferSubData(m_rendererID, offset, size, data);
