@@ -6,9 +6,9 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#define CHUNK_SIZE_X 16
-#define CHUNK_SIZE_Z 16
-#define CHUNK_BOTTOM -60
+#define CHUNK_SIZE_X 160
+#define CHUNK_SIZE_Z 160
+#define CHUNK_BOTTOM -64
 
 namespace Chemical {
 
@@ -33,8 +33,8 @@ namespace Chemical {
 		std::array<std::array<std::unordered_map<int16_t, Block>, CHUNK_SIZE_Z>, CHUNK_SIZE_X> blocks;
 
 		// chunk origin is at -x-z
-		glm::dvec2 origin;
-		Chunk(const glm::dvec2& origin, uint32_t seed);
+		glm::dvec3 origin;
+		Chunk(const glm::dvec3& origin, uint32_t seed);
 
 	};
 

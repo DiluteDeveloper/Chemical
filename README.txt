@@ -1,6 +1,7 @@
 todo:
 
 remove vertex layout from shaderprogram class
+switch chunks to heap
 
 notes:
 

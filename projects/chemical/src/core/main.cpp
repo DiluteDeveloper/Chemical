@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <random>
 
 
 #include "transform/transform.h"
@@ -224,10 +225,10 @@ int main(int argc, char* argv[]) {
 
 	std::shared_ptr<OpenGL::ShaderProgram> sp = std::make_shared<OpenGL::ShaderProgram>(std::initializer_list<const OpenGL::Shader*>{ &vertexShader, &fragmentShader }, layout);
 	
-	Transform model;
+
 	Transform view;
 	const glm::mat4 proj = glm::perspective(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
-	sp->SetUniformMatrix4FV("v_model", 1, false, &model.GetTransform()[0][0]);
+
 	sp->SetUniformMatrix4FV("v_view", 1, false, &glm::inverse(view.GetTransform())[0][0]); // set to true to transpose
 	sp->SetUniformMatrix4FV("v_proj", 1, false, &proj[0][0]);
 
@@ -235,7 +236,8 @@ int main(int argc, char* argv[]) {
 
 	// MORE TESTING CODE --------------------------------------------
 
-	Chunk chunk(glm::dvec2(0, 0), 9352);
+	std::random_device rd;
+	Chunk chunk(glm::dvec3(0), rd());
 
 	std::shared_ptr<ChunkRender> chunkRender = RenderChunk(chunk, *sp);
 
@@ -248,8 +250,11 @@ int main(int argc, char* argv[]) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		movement(view, window);
-		sp->SetUniformMatrix4FV("v_view", 1, false, &glm::inverse(view.GetTransform())[0][0]); // set to true to transpose
 		sp->BindProgram();
+
+		sp->SetUniformMatrix4FV("v_view", 1, false, &glm::inverse(view.GetTransform())[0][0]); // set to true to transpose
+		sp->SetUniform3DV("v_chunk_origin", 1, &chunk.origin[0]);
+
 		chunkRender->vArray.Bind();
 		chunkRender->vArray.DrawArrays(chunkRender->info);
 
