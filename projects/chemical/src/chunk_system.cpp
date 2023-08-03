@@ -23,13 +23,25 @@ namespace Chemical {
 			{
 				int16_t genHeight = static_cast<int>(perlin.normalizedOctave2D(x * 0.01f, z * 0.01f, 1) * 20);
 				genHeight += static_cast<int>(perlin2.normalizedOctave2D(x * 0.02f, z * 0.02f, 4) * 30);
-				genHeight += static_cast<int>(perlin3.normalizedOctave2D(x * 0.004f, z * 0.004f, 1) * 80);
-				genHeight += static_cast<int>(perlin3.normalizedOctave2D(x * 0.05f, z * 0.05f, 1) * 150);
+				genHeight += static_cast<int>(perlin3.normalizedOctave2D(x * 0.004f, z * 0.004f, 1) * 40);
+				genHeight += static_cast<int>(perlin3.normalizedOctave2D(x * 0.009f, z * 0.009f, 1) * 50);
 
-				visibleBlocks[x][z].emplace_back(genHeight); // generate the top block
+
+
+				for (int16_t i = genHeight; i > CHUNK_BOTTOM; i--)
+				{
+					if (i <= genHeight - 1) {
+						if (i <= genHeight - 4)
+							blocks[x][z][i] = Block(glm::fvec3(0.38f, 0.38f, 0.38f));
+						else
+							blocks[x][z][i] = Block(glm::fvec3(0.6f, 0.3f, 0.1f));
+					}
+					else
+						blocks[x][z][i] = Block(glm::fvec3(0.0f, 1.0f, 0.0f));
+				}
 
 				// Since the X+ and Z+ blocks arent generated yet, we need to go backwards compared to the rendering.
-				if (x > 0) {
+				/*if (x > 0) {
 
 					// index 0 will always be the top block
 					// Calculates the height difference between current block and block x - 1
@@ -46,7 +58,7 @@ namespace Chemical {
 							visibleBlocks[x][z].emplace_back(genHeight + i);
 						}
 
-				}
+				}*/
 			}
 		}
 	}
@@ -59,111 +71,127 @@ namespace Chemical {
 		{
 			for (size_t z = 0; z < CHUNK_SIZE_Z; z++)
 			{
-				const int16_t height = chunk.visibleBlocks[x][z][0];
+				for (auto const& [y, block] : chunk.blocks[x][z]) {
 
-				vertices.emplace_back(glm::vec3(x - 0.5f, height, z - 0.5f), glm::vec3(0, 1, 0));
-				vertices.emplace_back(glm::vec3(x + 0.5f, height, z - 0.5f), glm::vec3(0, 1, 0));
-				vertices.emplace_back(glm::vec3(x - 0.5f, height, z + 0.5f), glm::vec3(0, 1, 0));
+					if (!chunk.blocks[x][z].contains(static_cast<int16_t>(y + 1))) {
+						vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
+						vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
+						vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
 
-				vertices.emplace_back(glm::vec3(x - 0.5f, height, z + 0.5f), glm::vec3(0, 1, 0));
-				vertices.emplace_back(glm::vec3(x + 0.5f, height, z - 0.5f), glm::vec3(0, 1, 0));
-				vertices.emplace_back(glm::vec3(x + 0.5f, height, z + 0.5f), glm::vec3(0, 1, 0));
+						vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
+						vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
+						vertices.emplace_back(glm::vec3(x + 1, y + 1, z + 1), block.colour);
+					}
 
-				// X+ face
+					// fix this goofy ahh if statement
+					if (x < CHUNK_SIZE_X - 1) {
+						if (!chunk.blocks[x + 1][z].contains(static_cast<int16_t>(y))) {
 
-				if (x < CHUNK_SIZE_X - 1) {
+							vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
+							vertices.emplace_back(glm::vec3(x + 1, y, z), block.colour);
+							vertices.emplace_back(glm::vec3(x + 1, y, z + 1), block.colour);
 
-					// height diff is next - current e.g 20 - 18 = 2
-					int16_t heightDiff = chunk.visibleBlocks[x + 1][z][0] - chunk.visibleBlocks[x][z][0];
-
-					if (heightDiff < 0) // if it is equal to 0, the positive branch will not run either
-						for (int16_t i = 0; i > heightDiff; i--)
-
-						{
-							glm::fvec3 colour = glm::fvec3(0.0f, 0.6f, 0.0f);
-							if (abs(i) > 0)
-								if (abs(i) > 2)
-									colour = glm::fvec3(0.4f, 0.4f, 0.4f);
-								else
-									colour = glm::fvec3(0.6f, 0.3f, 0.2f);
-
-							vertices.emplace_back(glm::vec3(x + 0.5f, height + i, z - 0.5f), colour);
-							vertices.emplace_back(glm::vec3(x + 0.5f, (height - 1) + i, z - 0.5f), colour);
-							vertices.emplace_back(glm::vec3(x + 0.5f, height + i, z + 0.5f), colour);
-
-							vertices.emplace_back(glm::vec3(x + 0.5f, height + i, z + 0.5f), colour);
-							vertices.emplace_back(glm::vec3(x + 0.5f, (height - 1) + i, z - 0.5f), colour);
-							vertices.emplace_back(glm::vec3(x + 0.5f, (height - 1) + i, z + 0.5f), colour);
+							vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
+							vertices.emplace_back(glm::vec3(x + 1, y, z + 1), block.colour);
+							vertices.emplace_back(glm::vec3(x + 1, y + 1, z + 1), block.colour);
 						}
-					else
-						for (int16_t i = 0; i < heightDiff; i++)
-						{
-							glm::fvec3 colour = glm::fvec3(0.0f, 0.6f, 0.0f);
-							if (i > 0)
-								if (i > 2)
-									colour = glm::fvec3(0.4f, 0.4f, 0.4f);
-								else
-									colour = glm::fvec3(0.6f, 0.3f, 0.2f);
-							vertices.emplace_back(glm::vec3(x + 0.5f, height + i, z - 0.5f), colour);
-							vertices.emplace_back(glm::vec3(x + 0.5f, (height + 1) + i, z - 0.5f), colour);
-							vertices.emplace_back(glm::vec3(x + 0.5f, height + i, z + 0.5f), colour);
+					}
+					else {
+						vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
+						vertices.emplace_back(glm::vec3(x + 1, y, z), block.colour);
+						vertices.emplace_back(glm::vec3(x + 1, y, z + 1), block.colour);
 
-							vertices.emplace_back(glm::vec3(x + 0.5f, height + i, z + 0.5f), colour);
-							vertices.emplace_back(glm::vec3(x + 0.5f, (height + 1) + i, z - 0.5f), colour);
-							vertices.emplace_back(glm::vec3(x + 0.5f, (height + 1) + i, z + 0.5f), colour);
+						vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
+						vertices.emplace_back(glm::vec3(x + 1, y, z + 1), block.colour);
+						vertices.emplace_back(glm::vec3(x + 1, y + 1, z + 1), block.colour);
+					}
+
+					// fix this goofy ahh if statement
+					if (x > 0) {
+						if (!chunk.blocks[x - 1][z].contains(static_cast<int16_t>(y))) {
+
+							vertices.emplace_back(glm::vec3(x, y, z), block.colour);
+							vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
+							vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
+
+							vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
+							vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
+							vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
 						}
+					}
+					else {
+						vertices.emplace_back(glm::vec3(x, y, z), block.colour);
+						vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
+						vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
+
+						vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
+						vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
+						vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
+					}
+
+					// fix this goofy ahh if statement
+					if (z < CHUNK_SIZE_Z - 1) {
+						if (!chunk.blocks[x][z + 1].contains(static_cast<int16_t>(y))) {
+
+							vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
+							vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
+							vertices.emplace_back(glm::vec3(x + 1, y, z + 1), block.colour);
+							
+							vertices.emplace_back(glm::vec3(x + 1, y, z + 1), block.colour);
+							vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
+							vertices.emplace_back(glm::vec3(x + 1, y + 1, z + 1), block.colour);
+						}
+					}
+					else {
+						vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
+						vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
+						vertices.emplace_back(glm::vec3(x + 1, y, z + 1), block.colour);
+
+						vertices.emplace_back(glm::vec3(x + 1, y, z + 1), block.colour);
+						vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
+						vertices.emplace_back(glm::vec3(x + 1, y + 1, z + 1), block.colour);
+					}
+
+					// fix this goofy ahh if statement
+					if (z > 0) {
+						if (!chunk.blocks[x][z - 1].contains(static_cast<int16_t>(y))) {
+
+							vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
+							vertices.emplace_back(glm::vec3(x, y, z), block.colour);
+							vertices.emplace_back(glm::vec3(x + 1, y, z), block.colour);
+
+							vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
+							vertices.emplace_back(glm::vec3(x + 1, y, z), block.colour);
+							vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
+						}
+					}
+					else {
+						vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
+						vertices.emplace_back(glm::vec3(x, y, z), block.colour);
+						vertices.emplace_back(glm::vec3(x + 1, y, z), block.colour);
+
+						vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
+						vertices.emplace_back(glm::vec3(x + 1, y, z), block.colour);
+						vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
+					}
+
+					// fix this goofy ahh if statement
+					if (abs(y) == abs(CHUNK_BOTTOM) - 1) {
+
+							vertices.emplace_back(glm::vec3(x, y, z), block.colour);
+							vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
+							vertices.emplace_back(glm::vec3(x + 1, y, z), block.colour);
+
+							vertices.emplace_back(glm::vec3(x + 1, y, z), block.colour);
+							vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
+							vertices.emplace_back(glm::vec3(x + 1, y, z + 1), block.colour);
+						
+					}
 				}
-
-				// The only reason to need 2 for loops each is to account for a negative for loop and a positive for loop. maybe this can be fixed?
-
-				// Z+ face
-
-				if (z < CHUNK_SIZE_Z - 1) {
-
-					// height diff is next - current e.g 20 - 18 = 2
-					int16_t heightDiff = chunk.visibleBlocks[x][z + 1][0] - chunk.visibleBlocks[x][z][0];
-
-					if (heightDiff < 0) // if it is equal to 0, the positive branch will not run either
-						for (int16_t i = 0; i > heightDiff; i--)
-						{
-							glm::fvec3 colour = glm::fvec3(0.0f, 0.6f, 0.0f);
-							if (abs(i) > 0)
-								if (abs(i) > 2)
-									colour = glm::fvec3(0.4f, 0.4f, 0.4f);
-								else
-									colour = glm::fvec3(0.6f, 0.3f, 0.2f);
-							vertices.emplace_back(glm::vec3(x + 0.5f, height + i, z + 0.5f), colour);
-							vertices.emplace_back(glm::vec3(x - 0.5f, (height - 1) + i, z + 0.5f), colour);
-							vertices.emplace_back(glm::vec3(x - 0.5f, height + i, z + 0.5f), colour);
-
-							vertices.emplace_back(glm::vec3(x + 0.5f, (height - 1) + i, z + 0.5f), colour);
-							vertices.emplace_back(glm::vec3(x - 0.5f, (height - 1) + i, z + 0.5f), colour);
-							vertices.emplace_back(glm::vec3(x + 0.5f, height + i, z + 0.5f), colour);
-						}
-					else
-						for (int16_t i = 0; i < heightDiff; i++)
-						{
-							glm::fvec3 colour = glm::fvec3(0.0f, 0.6f, 0.0f);
-							if (i > 0)
-								if (i > 2)
-									colour = glm::fvec3(0.4f, 0.4f, 0.4f);
-								else
-									colour = glm::fvec3(0.6f, 0.3f, 0.2f);
-							vertices.emplace_back(glm::vec3(x + 0.5f, height + i, z + 0.5f), colour);
-							vertices.emplace_back(glm::vec3(x - 0.5f, (height + 1) + i, z + 0.5f), colour);
-							vertices.emplace_back(glm::vec3(x - 0.5f, height + i, z + 0.5f), colour);
-
-							vertices.emplace_back(glm::vec3(x + 0.5f, (height + 1) + i, z + 0.5f), colour);
-							vertices.emplace_back(glm::vec3(x - 0.5f, (height + 1) + i, z + 0.5f), colour);
-							vertices.emplace_back(glm::vec3(x + 0.5f, height + i, z + 0.5f), colour);
-						}
-				}
-
-
-				// Z+ face
 
 			}
 		}
+
 
 		OpenGL::Buffer buffer;
 		buffer.CreateImmutableBuffer(vertices.size() * sizeof(ChunkVertex), &vertices[0]);

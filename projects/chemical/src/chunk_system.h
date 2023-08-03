@@ -6,10 +6,18 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#define CHUNK_SIZE_X 128
-#define CHUNK_SIZE_Z 128
+#define CHUNK_SIZE_X 16
+#define CHUNK_SIZE_Z 16
+#define CHUNK_BOTTOM -32
 
 namespace Chemical {
+
+	struct Block {
+		glm::fvec3 colour = glm::fvec3(1.0f);
+
+		Block(const glm::fvec3& colour) : colour(colour) {}
+		Block() {}
+	};
 
 	struct ChunkVertex {
 		glm::fvec3 position;
@@ -20,11 +28,12 @@ namespace Chemical {
 	};
 
 	// chunk blocks will iterate along chunk x then z
-	struct Chunk {
+	// block origin is at -x-y-z
+	struct Chunk 
+	{
+		// position maps to a block
+		std::unordered_map<int16_t, Block> blocks[CHUNK_SIZE_X][CHUNK_SIZE_Z];
 
-		std::vector<int16_t> visibleBlocks[CHUNK_SIZE_X][CHUNK_SIZE_Z];
-		//outer vector is X, inner vector is Z, value is Y
-		//std::vector<std::vector<int16_t>> visibleBlocks;
 		glm::dvec3 origin;
 		Chunk(const glm::dvec3& origin);
 	};
