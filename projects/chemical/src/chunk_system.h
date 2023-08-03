@@ -6,9 +6,9 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#define CHUNK_SIZE_X 16
-#define CHUNK_SIZE_Z 16
-#define CHUNK_BOTTOM -180
+#define CHUNK_SIZE_X 128
+#define CHUNK_SIZE_Z 128
+#define CHUNK_BOTTOM -64
 
 namespace Chemical {
 
@@ -27,12 +27,11 @@ namespace Chemical {
 			position(position), normal(normal) {}
 	};
 
-	// chunk blocks will iterate along chunk x then z
 	// block origin is at -x-y-z
 	struct Chunk 
 	{
-		// position maps to a block
-		std::unordered_map<int16_t, Block> blocks[CHUNK_SIZE_X][CHUNK_SIZE_Z];
+		// x,z,y
+		std::array<std::array<std::unordered_map<int16_t, Block>, CHUNK_SIZE_Z>, CHUNK_SIZE_X> blocks;
 
 		glm::dvec3 origin;
 		Chunk(const glm::dvec3& origin);
