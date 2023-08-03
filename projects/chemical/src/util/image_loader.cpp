@@ -4,12 +4,17 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image/stb_image.h"
 
-namespace Util {
 
-	ImageData LoadImage(std::string_view filePath, int32_t req_comp) {
+namespace Chemical {
 
-		ImageData id;
-		id.data = stbi_load(filePath.data(), &id.x, &id.y, &id.bitDepth, req_comp);
-		return id;
+	namespace Util {
+
+		ImageData LoadImage(std::string_view filePath, int32_t req_comp) {
+
+			ImageData id;
+			id.data = stbi_load(filePath.data(), &id.x, &id.y, &id.bitDepth, req_comp);
+			return id;
+		}
 	}
 }
+
