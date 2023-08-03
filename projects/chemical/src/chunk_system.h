@@ -8,7 +8,7 @@
 
 #define CHUNK_SIZE_X 16
 #define CHUNK_SIZE_Z 16
-#define CHUNK_BOTTOM -32
+#define CHUNK_BOTTOM -180
 
 namespace Chemical {
 
@@ -36,6 +36,9 @@ namespace Chemical {
 
 		glm::dvec3 origin;
 		Chunk(const glm::dvec3& origin);
+
+		void RemoveBlock(glm::ivec3 position);
+		void AddBlock(glm::i16vec3 position, glm::fvec3 colour);
 	};
 
 	struct ChunkRender {

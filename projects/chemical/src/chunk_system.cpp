@@ -63,6 +63,17 @@ namespace Chemical {
 		}
 	}
 
+	void Chunk::RemoveBlock(glm::ivec3 position) {
+		if (position.x < CHUNK_SIZE_X - 1 && position.z < CHUNK_SIZE_Z - 1) {
+			blocks[position.x][position.z].erase(position.y);
+		}
+	}
+
+	void Chunk::AddBlock(glm::i16vec3 position, glm::fvec3 colour) {
+		if (!blocks[position.x][position.z].contains(position.y))
+			blocks[position.x][position.z][position.y] = Block(colour);
+	}
+
 	// Its a bit inneficient to do the rendering separately so maybe combine them at some point
 	std::shared_ptr<ChunkRender> RenderChunk(Chunk& chunk, const OpenGL::ShaderProgram& p) {
 		std::vector<ChunkVertex> vertices;

@@ -254,6 +254,18 @@ int main(int argc, char* argv[]) {
 			chunkRender = RenderChunk(*chunk, *sp);
 		}
 
+		if (glfwGetKey(window, GLFW_KEY_G)) {
+			chunk->RemoveBlock(view.position);
+			chunkRender = RenderChunk(*chunk, *sp);
+		}
+		if (glfwGetKey(window, GLFW_KEY_T)) {
+			chunk->AddBlock(view.position, glm::fvec3(0.7, 0.2, 0.1));
+			chunkRender = RenderChunk(*chunk, *sp);
+		}
+		if (glfwGetKey(window, GLFW_KEY_Y)) {
+			chunk->AddBlock(view.position, glm::fvec3(0.2, 0.6, 0.4));
+			chunkRender = RenderChunk(*chunk, *sp);
+		}
 		movement(view, window);
 		sp->SetUniformMatrix4FV("v_view", 1, false, &glm::inverse(view.GetTransform())[0][0]); // set to true to transpose
 		sp->BindProgram();

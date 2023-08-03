@@ -1,7 +1,8 @@
 todo:
 
 remove vertex layout from shaderprogram class
-
+swap to std::arrays
+add last portion of faces bottom faces and top
 
 notes:
 
