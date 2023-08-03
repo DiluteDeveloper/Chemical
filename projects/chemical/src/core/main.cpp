@@ -235,9 +235,9 @@ int main(int argc, char* argv[]) {
 
 	// MORE TESTING CODE --------------------------------------------
 
-	std::unique_ptr<Chunk> chunk = std::make_unique<Chunk>(glm::vec3(0));
+	Chunk chunk(glm::dvec2(0, 0), 9352);
 
-	std::shared_ptr<ChunkRender> chunkRender = RenderChunk(*chunk, *sp);
+	std::shared_ptr<ChunkRender> chunkRender = RenderChunk(chunk, *sp);
 
 	// MORE TESTING CODE --------------------------------------------
 
@@ -247,25 +247,6 @@ int main(int argc, char* argv[]) {
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		if (glfwGetKey(window, GLFW_KEY_R)) {
-			chunk.reset();
-			chunk = std::make_unique<Chunk>(glm::vec3(0));
-
-			chunkRender = RenderChunk(*chunk, *sp);
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_G)) {
-			chunk->RemoveBlock(view.position);
-			chunkRender = RenderChunk(*chunk, *sp);
-		}
-		if (glfwGetKey(window, GLFW_KEY_T)) {
-			chunk->AddBlock(view.position, glm::fvec3(0.7, 0.2, 0.1));
-			chunkRender = RenderChunk(*chunk, *sp);
-		}
-		if (glfwGetKey(window, GLFW_KEY_Y)) {
-			chunk->AddBlock(view.position, glm::fvec3(0.2, 0.6, 0.4));
-			chunkRender = RenderChunk(*chunk, *sp);
-		}
 		movement(view, window);
 		sp->SetUniformMatrix4FV("v_view", 1, false, &glm::inverse(view.GetTransform())[0][0]); // set to true to transpose
 		sp->BindProgram();

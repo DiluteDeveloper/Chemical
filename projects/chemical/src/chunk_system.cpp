@@ -10,12 +10,12 @@
 namespace Chemical {
 
 
-	Chunk::Chunk(const glm::dvec3& origin) :
+	Chunk::Chunk(const glm::dvec2& origin, uint32_t seed) :
 		origin(origin) {
 
-		const siv::PerlinNoise perlin{std::random_device{}};
-		const siv::PerlinNoise perlin2{std::random_device{}};
-		const siv::PerlinNoise perlin3{std::random_device{}};
+		const siv::PerlinNoise perlin{seed/2};
+		const siv::PerlinNoise perlin2{seed/2};
+		const siv::PerlinNoise perlin3{seed/2};
 
 		for (size_t x = 0; x < CHUNK_SIZE_X; x++)
 		{
@@ -41,17 +41,6 @@ namespace Chemical {
 		}
 	}
 
-	void Chunk::RemoveBlock(glm::ivec3 position) {
-		if (position.x < CHUNK_SIZE_X - 1 && position.z < CHUNK_SIZE_Z - 1) {
-			blocks[position.x][position.z].erase(position.y);
-		}
-	}
-
-	void Chunk::AddBlock(glm::i16vec3 position, glm::fvec3 colour) {
-		if (!blocks[position.x][position.z].contains(position.y))
-			blocks[position.x][position.z][position.y] = Block(colour);
-	}
-
 	// Its a bit inneficient to do the rendering separately so maybe combine them at some point
 	std::shared_ptr<ChunkRender> RenderChunk(Chunk& chunk, const OpenGL::ShaderProgram& p) {
 		std::vector<ChunkVertex> vertices;
@@ -60,78 +49,80 @@ namespace Chemical {
 		{
 			for (size_t z = 0; z < CHUNK_SIZE_Z; z++)
 			{
+				double relx = x + chunk.origin.x;
+				double relz = z + chunk.origin.y;
 				for (auto const& [y, block] : chunk.blocks[x][z]) {
 
 					// TOP
 					if (!chunk.blocks[x][z].contains(static_cast<int16_t>(y + 1))) {
-						vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
-						vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
-						vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
+						vertices.emplace_back(glm::vec3(relx, y + 1, relz), block.colour);
+						vertices.emplace_back(glm::vec3(relx + 1, y + 1, relz), block.colour);
+						vertices.emplace_back(glm::vec3(relx, y + 1, relz + 1), block.colour);
 
-						vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
-						vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
-						vertices.emplace_back(glm::vec3(x + 1, y + 1, z + 1), block.colour);
+						vertices.emplace_back(glm::vec3(relx, y + 1, relz + 1), block.colour);
+						vertices.emplace_back(glm::vec3(relx + 1, y + 1, relz), block.colour);
+						vertices.emplace_back(glm::vec3(relx + 1, y + 1, relz + 1), block.colour);
 					}
 					// BOTTOM
 					if (!chunk.blocks[x][z].contains(static_cast<int16_t>(y - 1))) {
-						vertices.emplace_back(glm::vec3(x + 1, y, z), block.colour);
-						vertices.emplace_back(glm::vec3(x, y, z), block.colour);
-						vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
+						vertices.emplace_back(glm::vec3(relx + 1, y, relz), block.colour);
+						vertices.emplace_back(glm::vec3(relx, y, relz), block.colour);
+						vertices.emplace_back(glm::vec3(relx, y, relz + 1), block.colour);
 
-						vertices.emplace_back(glm::vec3(x + 1, y, z), block.colour);
-						vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
-						vertices.emplace_back(glm::vec3(x + 1, y, z + 1), block.colour);
+						vertices.emplace_back(glm::vec3(relx + 1, y, relz), block.colour);
+						vertices.emplace_back(glm::vec3(relx, y, relz + 1), block.colour);
+						vertices.emplace_back(glm::vec3(relx + 1, y, relz + 1), block.colour);
 					}
 
 					if (x < CHUNK_SIZE_X - 1) {
 						if (!chunk.blocks[x + 1][z].contains(static_cast<int16_t>(y))) {
 
-							vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
-							vertices.emplace_back(glm::vec3(x + 1, y, z), block.colour);
-							vertices.emplace_back(glm::vec3(x + 1, y, z + 1), block.colour);
+							vertices.emplace_back(glm::vec3(relx + 1, y + 1, relz), block.colour);
+							vertices.emplace_back(glm::vec3(relx + 1, y, relz), block.colour);
+							vertices.emplace_back(glm::vec3(relx + 1, y, relz + 1), block.colour);
 
-							vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
-							vertices.emplace_back(glm::vec3(x + 1, y, z + 1), block.colour);
-							vertices.emplace_back(glm::vec3(x + 1, y + 1, z + 1), block.colour);
+							vertices.emplace_back(glm::vec3(relx + 1, y + 1, relz), block.colour);
+							vertices.emplace_back(glm::vec3(relx + 1, y, relz + 1), block.colour);
+							vertices.emplace_back(glm::vec3(relx + 1, y + 1, relz + 1), block.colour);
 						}
 					}
 
 					if (x > 0) {
 						if (!chunk.blocks[x - 1][z].contains(static_cast<int16_t>(y))) {
 
-							vertices.emplace_back(glm::vec3(x, y, z), block.colour);
-							vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
-							vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
+							vertices.emplace_back(glm::vec3(relx, y, relz), block.colour);
+							vertices.emplace_back(glm::vec3(relx, y + 1, relz), block.colour);
+							vertices.emplace_back(glm::vec3(relx, y, relz + 1), block.colour);
 
-							vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
-							vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
-							vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
+							vertices.emplace_back(glm::vec3(relx, y, relz + 1), block.colour);
+							vertices.emplace_back(glm::vec3(relx, y + 1, relz), block.colour);
+							vertices.emplace_back(glm::vec3(relx, y + 1, relz + 1), block.colour);
 						}
 					}
 
 					if (z < CHUNK_SIZE_Z - 1) {
 						if (!chunk.blocks[x][z + 1].contains(static_cast<int16_t>(y))) {
 
-							vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
-							vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
-							vertices.emplace_back(glm::vec3(x + 1, y, z + 1), block.colour);
+							vertices.emplace_back(glm::vec3(relx, y, relz + 1), block.colour);
+							vertices.emplace_back(glm::vec3(relx, y + 1, relz + 1), block.colour);
+							vertices.emplace_back(glm::vec3(relx + 1, y, relz + 1), block.colour);
 							
-							vertices.emplace_back(glm::vec3(x + 1, y, z + 1), block.colour);
-							vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
-							vertices.emplace_back(glm::vec3(x + 1, y + 1, z + 1), block.colour);
+							vertices.emplace_back(glm::vec3(relx + 1, y, relz + 1), block.colour);
+							vertices.emplace_back(glm::vec3(relx, y + 1, relz + 1), block.colour);
+							vertices.emplace_back(glm::vec3(relx + 1, y + 1, relz + 1), block.colour);
 						}
 					}
 
 					if (z > 0) {
 						if (!chunk.blocks[x][z - 1].contains(static_cast<int16_t>(y))) {
 
-							vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
-							vertices.emplace_back(glm::vec3(x, y, z), block.colour);
-							vertices.emplace_back(glm::vec3(x + 1, y, z), block.colour);
+							vertices.emplace_back(glm::vec3(x, y + 1, relz), block.colour);
+							vertices.emplace_back(glm::vec3(x, y, relz), block.colour);
+							vertices.emplace_back(glm::vec3(x + 1, y, relz), block.colour);
 
-							vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
-							vertices.emplace_back(glm::vec3(x + 1, y, z), block.colour);
-							vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
+							vertices.emplace_back(glm::vec3(x, y + 1, relz), block.colour);
+							vertices.emplace_back(glm::vec3(x + 1, y, relz), block.colour);
+							vertices.emplace_back(glm::vec3(x + 1, y + 1, relz), block.colour);
 						}
 					}
 				}
