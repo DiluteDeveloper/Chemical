@@ -198,7 +198,7 @@ int main(int argc, char* argv[]) {
 	OpenGL::Shader fragmentShader(Util::ReadFile("resources/shaders/chunk_shader.frag").c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
 
 	OpenGL::VertexLayout layout;
-	layout.stride = 24;
+	//layout.stride = 24;
 
 	layout.AddAttribute(OpenGL::VertexAttribute(3, 0, OpenGL::DataType::FLOAT));
 	layout.AddAttribute(OpenGL::VertexAttribute(3, sizeof(float) * 3, OpenGL::DataType::FLOAT));

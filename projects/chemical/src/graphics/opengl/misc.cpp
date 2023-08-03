@@ -67,4 +67,26 @@ namespace OpenGL {
 			return 0;
 		}
 	}
+
+	void VertexLayout::AddAttribute(const VertexAttribute& attribute) {
+		stride += attribute.components * ConvertEnumDataTypeToByteSize(attribute.dataType);
+
+		attributes.emplace_back(attribute);
+	}
+
+	const std::vector<VertexAttribute>& VertexLayout::GetAttributes() const {
+#ifdef CHEMICAL_DEBUG
+		if(attributes.size() == 0)
+			LOGGER_CONSOLE_CUSTOM_WARNING("VertexLayout GetAttributes() is being called when VertexLayout does not contain any attributes.");
+#endif
+		return attributes;
+	}
+
+	int32_t VertexLayout::GetStride() const {
+#ifdef CHEMICAL_DEBUG
+		if(stride==0)
+			LOGGER_CONSOLE_CUSTOM_WARNING("VertexLayout GetStride() is being called when stride is 0.");
+#endif
+		return stride;
+	}
 }

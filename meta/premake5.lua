@@ -72,6 +72,9 @@ project "Chemical"
     targetdir (BIN_DIR)
     objdir (INT_DIR)
 
+    filter "configurations:Debug"
+        defines "CHEMICAL_DEBUG"
+
     -- Copy resources to project directory and to bin
     postbuildcommands {
         "call %{wks.location}/meta/copy_resources.bat " .. string.gsub(CHEMICAL_DIR, "/", "\\") .. "\\resources " .. string.gsub(BIN_DIR, "/", "\\") .. "\\resources"                

@@ -74,23 +74,21 @@ namespace OpenGL {
 
 	class VertexLayout {
 
-		std::vector<VertexAttribute> m_attributes;
+		std::vector<VertexAttribute> attributes;
+
+		int32_t stride = 0;
 
 	public:
 
-		VertexLayout(int32_t stride, int64_t offset, uint32_t bindingIndex) :
-			stride(stride) {}
+
+		VertexLayout(int64_t offset, uint32_t bindingIndex) {}
 		VertexLayout() {}
 
-		void AddAttribute(const VertexAttribute& attribute) {
-			m_attributes.emplace_back(attribute);
-		}
+		void AddAttribute(const VertexAttribute& attribute);
 
-		const std::vector<VertexAttribute>& GetAttributes() const {
-			return m_attributes;
-		}
+		const std::vector<VertexAttribute>& GetAttributes() const;
 
-		int32_t stride = 0;
+		int32_t GetStride() const;
 	};
 
 }
