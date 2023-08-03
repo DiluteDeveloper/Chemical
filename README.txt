@@ -1,3 +1,10 @@
+changes this commit:
+Changed chunk shader input to correctly reflect variables, normal to colour.
+chunk shader now takes in chunk origin vector instead of model matrix.
+Massively simplified noise generation.
+Removed relative coordinates in rendering to support switching to origin set in shader.
+main now gives a random number as the seed to the chunk.
+
 todo:
 
 remove vertex layout from shaderprogram class
