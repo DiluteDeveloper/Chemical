@@ -20,7 +20,7 @@ Chunk::Chunk(const glm::dvec3& origin) :
 			int genHeight = perlin.normalizedOctave2D(x * 0.01f, z * 0.01f, 1) * 20;
 			genHeight += perlin2.normalizedOctave2D(x * 0.02f, z * 0.02f, 4) * 30;
 			genHeight += perlin3.normalizedOctave2D(x * 0.004f, z * 0.004f, 1) * 80;
-			genHeight += perlin3.normalizedOctave2D(x * 0.01f, z * 0.01f, 1) * 120;
+			genHeight += perlin3.normalizedOctave2D(x * 0.05f, z * 0.05f, 1) * 150;
 
 			visibleBlocks[x][z].emplace_back(genHeight); // generate the top block
 
@@ -78,25 +78,39 @@ std::shared_ptr<ChunkRender> RenderChunk(Chunk& chunk, const OpenGL::ShaderProgr
 
 				if (heightDiff < 0) // if it is equal to 0, the positive branch will not run either
 					for (int16_t i = 0; i > heightDiff; i--)
-					{
-						vertices.emplace_back(glm::vec3(x + 0.5f, height, z - 0.5f), glm::vec3(1, 0, 0));
-						vertices.emplace_back(glm::vec3(x + 0.5f, (height - 1) + i, z - 0.5f), glm::vec3(1, 0, 0));
-						vertices.emplace_back(glm::vec3(x + 0.5f, height, z + 0.5f), glm::vec3(1, 0, 0));
 
-						vertices.emplace_back(glm::vec3(x + 0.5f, height, z + 0.5f), glm::vec3(1, 0, 0));
-						vertices.emplace_back(glm::vec3(x + 0.5f, (height - 1) + i, z - 0.5f), glm::vec3(1, 0, 0));
-						vertices.emplace_back(glm::vec3(x + 0.5f, (height - 1) + i, z + 0.5f), glm::vec3(1, 0, 0));
+					{
+						glm::fvec3 colour = glm::fvec3(0.0f, 0.6f, 0.0f);
+						if (abs(i) > 0)
+							if (abs(i) > 2)
+								colour = glm::fvec3(0.4f, 0.4f, 0.4f);
+							else
+								colour = glm::fvec3(0.6f, 0.3f, 0.2f);
+
+						vertices.emplace_back(glm::vec3(x + 0.5f, height + i, z - 0.5f), colour);
+						vertices.emplace_back(glm::vec3(x + 0.5f, (height - 1) + i, z - 0.5f), colour);
+						vertices.emplace_back(glm::vec3(x + 0.5f, height + i, z + 0.5f), colour);
+
+						vertices.emplace_back(glm::vec3(x + 0.5f, height + i, z + 0.5f), colour);
+						vertices.emplace_back(glm::vec3(x + 0.5f, (height - 1) + i, z - 0.5f), colour);
+						vertices.emplace_back(glm::vec3(x + 0.5f, (height - 1) + i, z + 0.5f), colour);
 					}
 				else 
 					for (int16_t i = 0; i < heightDiff; i++)
 					{
-						vertices.emplace_back(glm::vec3(x + 0.5f, height, z - 0.5f), glm::vec3(0, 0, 1));
-						vertices.emplace_back(glm::vec3(x + 0.5f, (height + 1) + i, z - 0.5f), glm::vec3(0, 0, 1));
-						vertices.emplace_back(glm::vec3(x + 0.5f, height, z + 0.5f), glm::vec3(0, 0, 1));
+						glm::fvec3 colour = glm::fvec3(0.0f, 0.6f, 0.0f);
+						if (i > 0)
+							if (i > 2)
+								colour = glm::fvec3(0.4f, 0.4f, 0.4f);
+							else
+								colour = glm::fvec3(0.6f, 0.3f, 0.2f);
+						vertices.emplace_back(glm::vec3(x + 0.5f, height + i, z - 0.5f), colour);
+						vertices.emplace_back(glm::vec3(x + 0.5f, (height + 1) + i, z - 0.5f), colour);
+						vertices.emplace_back(glm::vec3(x + 0.5f, height + i, z + 0.5f), colour);
 
-						vertices.emplace_back(glm::vec3(x + 0.5f, height, z + 0.5f), glm::vec3(0, 0, 1));
-						vertices.emplace_back(glm::vec3(x + 0.5f, (height + 1) + i, z - 0.5f), glm::vec3(0, 0, 1));
-						vertices.emplace_back(glm::vec3(x + 0.5f, (height + 1) + i, z + 0.5f), glm::vec3(0, 0, 1));
+						vertices.emplace_back(glm::vec3(x + 0.5f, height + i, z + 0.5f), colour);
+						vertices.emplace_back(glm::vec3(x + 0.5f, (height + 1) + i, z - 0.5f), colour);
+						vertices.emplace_back(glm::vec3(x + 0.5f, (height + 1) + i, z + 0.5f), colour);
 					}
 			}
 
@@ -112,24 +126,36 @@ std::shared_ptr<ChunkRender> RenderChunk(Chunk& chunk, const OpenGL::ShaderProgr
 				if (heightDiff < 0) // if it is equal to 0, the positive branch will not run either
 					for (int16_t i = 0; i > heightDiff; i--)
 					{
-						vertices.emplace_back(glm::vec3(x + 0.5f, height, z + 0.5f), glm::vec3(0, 0, 1));
-						vertices.emplace_back(glm::vec3(x - 0.5f, (height - 1) + i, z + 0.5f), glm::vec3(0, 0, 1));
-						vertices.emplace_back(glm::vec3(x - 0.5f, height, z + 0.5f), glm::vec3(0, 0, 1));
+						glm::fvec3 colour = glm::fvec3(0.0f, 0.6f, 0.0f);
+						if (abs(i) > 0)
+							if (abs(i) > 2)
+								colour = glm::fvec3(0.4f, 0.4f, 0.4f);
+							else
+								colour = glm::fvec3(0.6f, 0.3f, 0.2f);
+						vertices.emplace_back(glm::vec3(x + 0.5f, height + i, z + 0.5f), colour);
+						vertices.emplace_back(glm::vec3(x - 0.5f, (height - 1) + i, z + 0.5f), colour);
+						vertices.emplace_back(glm::vec3(x - 0.5f, height + i, z + 0.5f), colour);
 
-						vertices.emplace_back(glm::vec3(x + 0.5f, (height - 1) + i, z + 0.5f), glm::vec3(0, 0, 1));
-						vertices.emplace_back(glm::vec3(x - 0.5f, (height - 1) + i, z + 0.5f), glm::vec3(0, 0, 1));
-						vertices.emplace_back(glm::vec3(x + 0.5f, height, z + 0.5f), glm::vec3(0, 0, 1));
+						vertices.emplace_back(glm::vec3(x + 0.5f, (height - 1) + i, z + 0.5f), colour);
+						vertices.emplace_back(glm::vec3(x - 0.5f, (height - 1) + i, z + 0.5f), colour);
+						vertices.emplace_back(glm::vec3(x + 0.5f, height + i, z + 0.5f), colour);
 					}
 				else
 					for (int16_t i = 0; i < heightDiff; i++)
 					{
-						vertices.emplace_back(glm::vec3(x + 0.5f, height, z + 0.5f), glm::vec3(0, 0, 1));
-						vertices.emplace_back(glm::vec3(x - 0.5f, (height + 1) + i, z + 0.5f), glm::vec3(0, 0, 1));
-						vertices.emplace_back(glm::vec3(x - 0.5f, height, z + 0.5f), glm::vec3(0, 0, 1));
+						glm::fvec3 colour = glm::fvec3(0.0f, 0.6f, 0.0f);
+						if (i > 0)
+							if (i > 2)
+								colour = glm::fvec3(0.4f, 0.4f, 0.4f);
+							else
+								colour = glm::fvec3(0.6f, 0.3f, 0.2f);
+						vertices.emplace_back(glm::vec3(x + 0.5f, height + i, z + 0.5f), colour);
+						vertices.emplace_back(glm::vec3(x - 0.5f, (height + 1) + i, z + 0.5f), colour);
+						vertices.emplace_back(glm::vec3(x - 0.5f, height + i, z + 0.5f), colour);
 
-						vertices.emplace_back(glm::vec3(x + 0.5f, (height + 1) + i, z + 0.5f), glm::vec3(0, 0, 1));
-						vertices.emplace_back(glm::vec3(x - 0.5f, (height + 1) + i, z + 0.5f), glm::vec3(0, 0, 1));
-						vertices.emplace_back(glm::vec3(x + 0.5f, height, z + 0.5f), glm::vec3(0, 0, 1));
+						vertices.emplace_back(glm::vec3(x + 0.5f, (height + 1) + i, z + 0.5f), colour);
+						vertices.emplace_back(glm::vec3(x - 0.5f, (height + 1) + i, z + 0.5f), colour);
+						vertices.emplace_back(glm::vec3(x + 0.5f, height + i, z + 0.5f), colour);
 					}
 			}
 			
