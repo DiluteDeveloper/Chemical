@@ -59,18 +59,18 @@ namespace OpenGL {
 	// tl:dr vertex arrays contain the equivalent of shared_ptr's to buffers, they will only truly
 	// be deleted when they are no longer referenced.
 	class VertexArray {
-		uint32_t m_rendererID = 0;
+		uint32_t rendererID = 0;
 
 	public:
 
 		VertexArray();
 
 		VertexArray(VertexArray&& other) noexcept :
-			m_rendererID(std::move(other.m_rendererID)) {}
+			rendererID(std::move(other.rendererID)) {}
 		VertexArray(const VertexArray&) = delete;
 		VertexArray& operator=(const VertexArray&) = delete;
 		VertexArray& operator=(VertexArray&& other) noexcept {
-			this->m_rendererID = std::move(other.m_rendererID);
+			this->rendererID = std::move(other.rendererID);
 			return *this;
 		}
 

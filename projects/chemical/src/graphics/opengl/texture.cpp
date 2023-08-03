@@ -135,30 +135,30 @@ namespace OpenGL {
 	}*/
 
 	Texture::Texture(const TextureStorageParameters& parameters) {
-		glCreateTextures((GLenum)parameters.textureType, 1, &m_rendererID);
+		glCreateTextures((GLenum)parameters.textureType, 1, &rendererID);
 
 		switch (parameters.textureType) {
 		case TextureType::TEXTURE_1D:
-			glTextureStorage1D(m_rendererID, parameters.mipLevels, (GLenum)parameters.internalFormat, parameters.width);
+			glTextureStorage1D(rendererID, parameters.mipLevels, (GLenum)parameters.internalFormat, parameters.width);
 			break;
 		case TextureType::TEXTURE_1D_ARRAY:
 			[[fallthrough]];
 		case TextureType::TEXTURE_2D:
-			glTextureStorage2D(m_rendererID, parameters.mipLevels, (GLenum)parameters.internalFormat,
+			glTextureStorage2D(rendererID, parameters.mipLevels, (GLenum)parameters.internalFormat,
 				parameters.width, parameters.height);
 			break;
 		case TextureType::TEXTURE_2D_ARRAY:
 			[[fallthrough]];
 		case TextureType::TEXTURE_3D:
-			glTextureStorage3D(m_rendererID, parameters.mipLevels, (GLenum)parameters.internalFormat,
+			glTextureStorage3D(rendererID, parameters.mipLevels, (GLenum)parameters.internalFormat,
 				parameters.width, parameters.height, parameters.depth);
 			break;
 		case TextureType::TEXTURE_2D_MULTISAMPLE:
-			glTextureStorage2DMultisample(m_rendererID, parameters.samples, (GLenum)parameters.internalFormat,
+			glTextureStorage2DMultisample(rendererID, parameters.samples, (GLenum)parameters.internalFormat,
 				parameters.width, parameters.height, (GLboolean)parameters.fixedSampleLocations);
 			break;
 		case TextureType::TEXTURE_3D_MULTISAMPLE:
-			glTextureStorage3DMultisample(m_rendererID, parameters.samples, (GLenum)parameters.internalFormat,
+			glTextureStorage3DMultisample(rendererID, parameters.samples, (GLenum)parameters.internalFormat,
 				parameters.width, parameters.height, parameters.depth, (GLboolean)parameters.fixedSampleLocations);
 			break;
 		}
@@ -168,7 +168,7 @@ namespace OpenGL {
 	void Texture::SetTextureData(const TextureDataParameters& parameters, void* data) {
 		switch (parameters.textureType) {
 		case TextureType::TEXTURE_1D:
-			glTextureSubImage1D(m_rendererID, 0, parameters.widthOffset, 
+			glTextureSubImage1D(rendererID, 0, parameters.widthOffset, 
 				parameters.width, 
 				(GLenum)parameters.baseFormat, (GLenum)parameters.dataType, data);
 			break;
@@ -177,7 +177,7 @@ namespace OpenGL {
 		case TextureType::TEXTURE_1D_ARRAY:
 			[[fallthrough]];
 		case TextureType::TEXTURE_2D_MULTISAMPLE:
-			glTextureSubImage2D(m_rendererID, 0, parameters.widthOffset, parameters.heightOffset,
+			glTextureSubImage2D(rendererID, 0, parameters.widthOffset, parameters.heightOffset,
 				parameters.width, parameters.height,
 				(GLenum)parameters.baseFormat, (GLenum)parameters.dataType, data);
 			break;
@@ -186,7 +186,7 @@ namespace OpenGL {
 		case TextureType::TEXTURE_2D_ARRAY:
 			[[fallthrough]];
 		case TextureType::TEXTURE_3D_MULTISAMPLE:
-			glTextureSubImage3D(m_rendererID, 0, parameters.widthOffset, parameters.heightOffset, parameters.depthOffset,
+			glTextureSubImage3D(rendererID, 0, parameters.widthOffset, parameters.heightOffset, parameters.depthOffset,
 				parameters.width, parameters.height, parameters.depthOffset,
 				(GLenum)parameters.baseFormat, (GLenum)parameters.dataType, data);
 			break;
@@ -194,20 +194,20 @@ namespace OpenGL {
 	}
 
 	void Texture::GenerateMipmaps() {
-		glGenerateTextureMipmap(m_rendererID);
+		glGenerateTextureMipmap(rendererID);
 	}
 
 	void Texture::SetTextureSetting(TextureSettings setting, int32_t value) {
-		glTextureParameteri(m_rendererID, (GLenum)setting, (GLint)value);
+		glTextureParameteri(rendererID, (GLenum)setting, (GLint)value);
 	}
 	void Texture::SetTextureSetting(TextureSettings setting, float* value) {
-		glTextureParameterfv(m_rendererID, (GLenum)setting, (GLfloat*)value);
+		glTextureParameterfv(rendererID, (GLenum)setting, (GLfloat*)value);
 	}
 
 	void Texture::BindTexture(uint32_t textureUnit) {
-		glBindTextureUnit(textureUnit, m_rendererID);
+		glBindTextureUnit(textureUnit, rendererID);
 	}
 	Texture::~Texture() {
-		glDeleteTextures(1, &m_rendererID);
+		glDeleteTextures(1, &rendererID);
 	}
 }

@@ -41,7 +41,7 @@ namespace OpenGL {
 
 	// Recommended to make a shared_ptr as copy constructor is disabled
 	class Buffer {
-		uint32_t m_rendererID = 0;
+		uint32_t rendererID = 0;
 	public:
 
 
@@ -50,10 +50,10 @@ namespace OpenGL {
 
 		Buffer(const Buffer&) = delete;
 		Buffer(Buffer&& other) noexcept :
-		m_rendererID(std::move(other.m_rendererID)){ }
+		rendererID(std::move(other.rendererID)){ }
 		Buffer& operator=(const Buffer&) = delete;
 		Buffer& operator=(Buffer&& other) noexcept {
-			this->m_rendererID = std::move(other.m_rendererID);
+			this->rendererID = std::move(other.rendererID);
 			return *this;
 		}
 
@@ -73,7 +73,7 @@ namespace OpenGL {
 		void BindBufferBase(BufferBaseTarget target, uint32_t bindingIndex);
 
 		uint32_t GetRendererID() const {
-			return m_rendererID;
+			return rendererID;
 		}
 
 	};

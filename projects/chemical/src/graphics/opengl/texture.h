@@ -148,18 +148,18 @@ namespace OpenGL {
 	// storage size is immutable
 	// Recommended to make a shared_ptr as copy constructor is disabled
 	class Texture {
-		uint32_t m_rendererID = 0;
+		uint32_t rendererID = 0;
 
 	public:
 
 		Texture(const TextureStorageParameters& parameters);
 		Texture(Texture&& other) noexcept :
-			m_rendererID(std::move(other.m_rendererID)) {}
+			rendererID(std::move(other.rendererID)) {}
 
 		Texture(const Texture&) = delete;
 		Texture& operator=(const Texture&) = delete;
 		Texture& operator=(Texture&& other) noexcept {
-			this->m_rendererID = std::move(other.m_rendererID);
+			this->rendererID = std::move(other.rendererID);
 			return *this;
 		}
 
@@ -179,7 +179,7 @@ namespace OpenGL {
 		void BindTexture(uint32_t textureUnit);
 
 		uint32_t GetRendererID() const {
-			return m_rendererID;
+			return rendererID;
 		}
 	};
 }

@@ -7,25 +7,25 @@
 namespace OpenGL {
 	
 	Buffer::Buffer() {
-		glCreateBuffers(1, &m_rendererID);
+		glCreateBuffers(1, &rendererID);
 	}
 	Buffer::~Buffer() {
-		//glDeleteBuffers(1, &m_rendererID); temporary
+		//glDeleteBuffers(1, &rendererID); temporary
 	}
 	void Buffer::SetBufferData(int64_t size, const void* data, uint32_t offset) {
-		glNamedBufferSubData(m_rendererID, offset, size, data);
+		glNamedBufferSubData(rendererID, offset, size, data);
 	}
 	void Buffer::CreateMutableBuffer(int64_t size, const void* data, BufferDataFlags flags) {
-		glNamedBufferData(m_rendererID, size, data, (GLenum)flags);
+		glNamedBufferData(rendererID, size, data, (GLenum)flags);
 	}
 	void Buffer::CreateImmutableBuffer(int64_t size, const void* data, BufferStorageFlags flags) {
-		glNamedBufferStorage(m_rendererID, size, data, (GLbitfield)flags);
+		glNamedBufferStorage(rendererID, size, data, (GLbitfield)flags);
 	}
 
 	void Buffer::BindBufferBase(BufferBaseTarget target, uint32_t bindingIndex) {
 
-		glBindBuffer((GLenum)target, m_rendererID);
-		glBindBufferBase((GLenum)target, bindingIndex, m_rendererID); // may not work like a tall
+		glBindBuffer((GLenum)target, rendererID);
+		glBindBufferBase((GLenum)target, bindingIndex, rendererID); // may not work like a tall
 	}
 
 }

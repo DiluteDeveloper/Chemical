@@ -6,42 +6,42 @@
 namespace OpenGL {
 
 	VertexArray::VertexArray() {
-		glCreateVertexArrays(1, &m_rendererID);
+		glCreateVertexArrays(1, &rendererID);
 	}
 
 	void VertexArray::SetVertexBuffer(const Buffer& buffer, const VertexLayout& info, int64_t offset, uint32_t bindingIndex) {
-		glVertexArrayVertexBuffer(m_rendererID, bindingIndex, buffer.GetRendererID(), offset, info.GetStride());
+		glVertexArrayVertexBuffer(rendererID, bindingIndex, buffer.GetRendererID(), offset, info.GetStride());
 		uint32_t i = 0;
 		for (const VertexAttribute& att : info.GetAttributes())
 		{
 			switch (att.transformation) {
 			case DataTransformation::INT:
-				glVertexArrayAttribIFormat(m_rendererID, i, att.components, (GLenum)att.dataType, (GLuint)att.offset);
+				glVertexArrayAttribIFormat(rendererID, i, att.components, (GLenum)att.dataType, (GLuint)att.offset);
 				break;
 			case DataTransformation::NORMALIZED_INT_TO_FLOAT:
-				glVertexArrayAttribFormat(m_rendererID, i, att.components, (GLenum)att.dataType, GL_TRUE, (GLuint)att.offset);
+				glVertexArrayAttribFormat(rendererID, i, att.components, (GLenum)att.dataType, GL_TRUE, (GLuint)att.offset);
 				break;
 			case DataTransformation::INT_TO_FLOAT:
 				[[fallthrough]];
 			case DataTransformation::FLOAT:
-				glVertexArrayAttribFormat(m_rendererID, i, att.components, (GLenum)att.dataType, GL_FALSE, (GLuint)att.offset);
+				glVertexArrayAttribFormat(rendererID, i, att.components, (GLenum)att.dataType, GL_FALSE, (GLuint)att.offset);
 				break;
 			case DataTransformation::DOUBLE:
-				glVertexArrayAttribLFormat(m_rendererID, i, att.components, (GLenum)att.dataType, (GLuint)att.offset);
+				glVertexArrayAttribLFormat(rendererID, i, att.components, (GLenum)att.dataType, (GLuint)att.offset);
 				break;
 			}
-			glEnableVertexArrayAttrib(m_rendererID, i);
-			glVertexArrayAttribBinding(m_rendererID, i, bindingIndex);
+			glEnableVertexArrayAttrib(rendererID, i);
+			glVertexArrayAttribBinding(rendererID, i, bindingIndex);
 
 			i++;
 		}
 	}
 	void VertexArray::SetElementBuffer(const Buffer& buffer) {
-		glVertexArrayElementBuffer(m_rendererID, buffer.GetRendererID());
+		glVertexArrayElementBuffer(rendererID, buffer.GetRendererID());
 	}
 
 	void VertexArray::Bind() const {
-		glBindVertexArray(m_rendererID);
+		glBindVertexArray(rendererID);
 	}
 	void VertexArray::Unbind() const {
 		glBindVertexArray(0);
@@ -61,6 +61,6 @@ namespace OpenGL {
 	}
 
 	VertexArray::~VertexArray() {
-		glDeleteVertexArrays(1, &m_rendererID);
+		glDeleteVertexArrays(1, &rendererID);
 	}
 }

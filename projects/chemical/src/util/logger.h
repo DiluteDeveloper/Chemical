@@ -5,7 +5,7 @@
 namespace Util {
 	class Logger {
 
-		static Stopwatch m_stopWatch;
+		static Stopwatch stopwatch;
 
 		static void SetConsoleTextColour(int32_t ansiColour);
 

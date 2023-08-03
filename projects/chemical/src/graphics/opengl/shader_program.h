@@ -15,21 +15,21 @@ namespace OpenGL {
 
 	// Recommended to make a shared_ptr as copy constructor is disabled
 	class Shader {
-		uint32_t m_rendererID = 0;
+		uint32_t rendererID = 0;
 
-		ShaderType m_type = ShaderType::VERTEX_SHADER;
+		ShaderType type = ShaderType::VERTEX_SHADER;
 
 	public:
 
 		Shader(const char* data, ShaderType type);
 		Shader(Shader&& other) noexcept :
-			m_rendererID(std::move(other.m_rendererID)), m_type(std::move(other.m_type)) {}
+			rendererID(std::move(other.rendererID)), type(std::move(other.type)) {}
 
 		Shader(const Shader&) = delete;
 		Shader& operator =(const Shader&) = delete;
 		Shader& operator=(Shader&& other) noexcept {
-			this->m_rendererID = std::move(other.m_rendererID);
-			this->m_type = std::move(other.m_type);
+			this->rendererID = std::move(other.rendererID);
+			this->type = std::move(other.type);
 			return *this;
 		}
 
@@ -37,47 +37,47 @@ namespace OpenGL {
 		~Shader();
 
 		uint32_t GetRendererID() const {
-			return m_rendererID;
+			return rendererID;
 		}
 		ShaderType GetShaderType() const {
-			return m_type;
+			return type;
 		}
 
 
 	};
 
 	struct Uniform {
-		int32_t m_location = 0;
+		int32_t location = 0;
 
 		Uniform(int32_t location) :
-			m_location(location) {}
+			location(location) {}
 		Uniform() = default;
 	};
 
 	// Shaders must be added on creation, cannot be added later
 	class ShaderProgram {
 
-		uint32_t m_rendererID = 0;
+		uint32_t rendererID = 0;
 
-		std::unordered_map<std::string, Uniform> m_uniforms;
+		std::unordered_map<std::string, Uniform> uniforms;
 
-		OpenGL::VertexLayout m_layout;
+		OpenGL::VertexLayout layout;
 
 	public:
 		ShaderProgram(std::initializer_list<const Shader*> shaders, const VertexLayout& layout);
 
 		ShaderProgram(ShaderProgram&& other) noexcept :
-			m_rendererID(std::move(other.m_rendererID)), m_uniforms(std::move(other.m_uniforms)) {}
+			rendererID(std::move(other.rendererID)), uniforms(std::move(other.uniforms)) {}
 
 		ShaderProgram(const ShaderProgram&) = delete;
 		ShaderProgram& operator =(const ShaderProgram&) = delete;
 		ShaderProgram& operator=(ShaderProgram&& other) noexcept {
-			this->m_rendererID = std::move(other.m_rendererID);
-			this->m_uniforms = std::move(other.m_uniforms);
+			this->rendererID = std::move(other.rendererID);
+			this->uniforms = std::move(other.uniforms);
 			return *this;
 		}
 
-		const VertexLayout& GetLayout() const { return m_layout; }
+		const VertexLayout& GetLayout() const { return layout; }
 
 		~ShaderProgram();
 

@@ -1,18 +1,18 @@
 #include "pch.h"
 
 namespace Util {
-	static HANDLE hConsole;
-	Stopwatch Logger::m_stopWatch;
+	static HANDLE h_console;
+	Stopwatch Logger::stopwatch;
 
 	void Logger::SetConsoleTextColour(int32_t ansiColour) {
-		if (!SetConsoleTextAttribute(hConsole, (WORD)ansiColour)) {
+		if (!SetConsoleTextAttribute(h_console, (WORD)ansiColour)) {
 			std::cout << "Setting console text attribute failed. Maybe InitializeLogger() wasnt called." << std::endl;
 		}
 	}
 
 
 	void Logger::RetrieveConsoleHandle() {
-		hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+		h_console = GetStdHandle(STD_OUTPUT_HANDLE);
 	}
 
 	void Logger::InitializeLogger() {
@@ -24,7 +24,7 @@ namespace Util {
 
 	void Logger::ConsoleLogCustomMessage(std::string_view message, int32_t line, std::filesystem::path file, std::format_args args) {
 
-		auto output = std::vformat("[{}] [Line {}] [{}]: ", std::make_format_args(m_stopWatch.Elapsed(), line, file.filename().string()));
+		auto output = std::vformat("[{}] [Line {}] [{}]: ", std::make_format_args(stopwatch.Elapsed(), line, file.filename().string()));
 		auto messageFormatted = std::vformat(message, args);
 
 		SetConsoleTextColour(10);
@@ -34,7 +34,7 @@ namespace Util {
 	}
 	void Logger::ConsoleLogMessage(std::string_view message, int32_t line, std::filesystem::path file) {
 
-		auto output = std::vformat("[{}] [Line {}] [{}]: ", std::make_format_args(m_stopWatch.Elapsed(), line, file.filename().string()));
+		auto output = std::vformat("[{}] [Line {}] [{}]: ", std::make_format_args(stopwatch.Elapsed(), line, file.filename().string()));
 
 		SetConsoleTextColour(10);
 		std::cout << output;
@@ -43,7 +43,7 @@ namespace Util {
 	}
 	void Logger::ConsoleLogCustomWarning(std::string_view message, int32_t line, std::filesystem::path file, std::format_args args) {
 
-		auto output = std::vformat("[{}] [Line {}] [{}]: ", std::make_format_args(m_stopWatch.Elapsed(), line, file.filename().string()));
+		auto output = std::vformat("[{}] [Line {}] [{}]: ", std::make_format_args(stopwatch.Elapsed(), line, file.filename().string()));
 		auto messageFormatted = std::vformat(message, args);
 
 		SetConsoleTextColour(6);
@@ -53,7 +53,7 @@ namespace Util {
 	}
 	void Logger::ConsoleLogWarning(std::string_view message, int32_t line, std::filesystem::path file) {
 
-		auto output = std::vformat("[{}] [Line {}] [{}]: ", std::make_format_args(m_stopWatch.Elapsed(), line, file.filename().string()));
+		auto output = std::vformat("[{}] [Line {}] [{}]: ", std::make_format_args(stopwatch.Elapsed(), line, file.filename().string()));
 
 		SetConsoleTextColour(6);
 		std::cout << output;
@@ -63,7 +63,7 @@ namespace Util {
 
 	void Logger::ConsoleLogCustomError(std::string_view message, int32_t line, std::filesystem::path file, std::format_args args) {
 
-		auto output = std::vformat("[{}] [Line {}] [{}]: ", std::make_format_args(m_stopWatch.Elapsed(), line, file.filename().string()));
+		auto output = std::vformat("[{}] [Line {}] [{}]: ", std::make_format_args(stopwatch.Elapsed(), line, file.filename().string()));
 		auto messageFormatted = std::vformat(message, args);
 
 		SetConsoleTextColour(4);
@@ -74,7 +74,7 @@ namespace Util {
 	}
 	void Logger::ConsoleLogError(std::string_view message, int32_t line, std::filesystem::path file) {
 
-		auto output = std::vformat("[{}] [Line {}] [{}]: ", std::make_format_args(m_stopWatch.Elapsed(), line, file.filename().string()));
+		auto output = std::vformat("[{}] [Line {}] [{}]: ", std::make_format_args(stopwatch.Elapsed(), line, file.filename().string()));
 
 		SetConsoleTextColour(4);
 		std::cout << output;
