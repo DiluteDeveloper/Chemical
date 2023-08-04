@@ -236,8 +236,13 @@ int main(int argc, char* argv[]) {
 
 	// MORE TESTING CODE --------------------------------------------
 
+	SetBlockData();
+
 	std::random_device rd;
-	Chunk chunk(glm::dvec3(0), rd());
+	uint32_t seed = rd();
+
+	// unique_ptr for heap allocation
+	std::unique_ptr<Chunk> chunk = std::make_unique<Chunk>(glm::dvec3(0), seed);
 
 	std::shared_ptr<ChunkRender> chunkRender = RenderChunk(chunk, *sp);
 
@@ -253,7 +258,7 @@ int main(int argc, char* argv[]) {
 		sp->BindProgram();
 
 		sp->SetUniformMatrix4FV("v_view", 1, false, &glm::inverse(view.GetTransform())[0][0]); // set to true to transpose
-		sp->SetUniform3DV("v_chunk_origin", 1, &chunk.origin[0]);
+		sp->SetUniform3DV("v_chunk_origin", 1, &chunk->origin[0]);
 
 		chunkRender->vArray.Bind();
 		chunkRender->vArray.DrawArrays(chunkRender->info);
