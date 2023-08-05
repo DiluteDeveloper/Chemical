@@ -6,18 +6,18 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#define CHUNK_SIZE_X 200
-#define CHUNK_SIZE_Z 200
-#define CHUNK_BOTTOM -32
+#define CHUNK_SIZE_X 320
+#define CHUNK_SIZE_Y 248
+#define CHUNK_SIZE_Z 320
 
 namespace Chemical {
 
 	struct BlockData {
-		glm::fvec3 colour = glm::fvec3(1.0f);
+		glm::fvec3 colour = glm::fvec3(0.0f);
 	};
 
 	// could be uint16_t but padded to 32 anyway
-	struct BlockID {
+	/*struct BlockID {
 		uint32_t blockID = 0;
 
 		operator uint32_t() const {
@@ -26,7 +26,9 @@ namespace Chemical {
 
 		BlockID(uint32_t blockID) : blockID(blockID) {}
 		BlockID() {} // default constructor only needed for unordered_map use
-	};
+	};*/
+
+	using BlockID = uint16_t;
 
 	// Getter and setter to avoid globals in a way
 	void SetBlockData();
@@ -43,7 +45,7 @@ namespace Chemical {
 	struct Chunk 
 	{
 		// x,z,z block origin is at -x-y-z
-		std::array<std::array<std::unordered_map<int16_t, BlockID>, CHUNK_SIZE_Z>, CHUNK_SIZE_X> blocks;
+		std::array<BlockID, CHUNK_SIZE_X* CHUNK_SIZE_Y* CHUNK_SIZE_Z> blocks = { 0 };
 
 		// chunk origin is at -x-z
 		glm::dvec3 origin;

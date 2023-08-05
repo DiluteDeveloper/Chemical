@@ -1,13 +1,19 @@
 changes this commit:
-Block instances are now block ids and refer to a single block as its source of data
-perlin noise and chunk size was updated
-blocks are using reserve to preallocate memory for each y
-chunks are now on the heap
+Added 2 more blocks being Air block and Bedrock block with id 0 and 4 respectively
+Block data is now stored in a 1D array using a function called dimension in chunk_system.cpp to convert 3D to 1D
+BlockID is now a using macro instead of a struct
+perlin noise, chunk size was changed once again, perlin noise y can go from 5-25y
+block data now stores air blocks instead of a dynamic sized Y array, air blocks being value initialized to 0 in blocks array
+memory usage issues are now fixed and each BlockID is 2 bytes each
 
 todo:
 
 remove vertex layout from shaderprogram class
-switch chunks to heap(fix stack overflow)
+chunk block positions are stored as uint64_t's because of being std::array indexes. too much data. many wow
+create enum for block types
+i dont like the amount of if statements happening in RenderChunk
+clean up block type determination in chunk generation function
+add macro or define for bottom chunk Y so it isnt always hardcoded 0, same for X and Z possibly
 
 notes:
 
