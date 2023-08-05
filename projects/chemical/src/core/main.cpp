@@ -236,7 +236,7 @@ int main(int argc, char* argv[]) {
 
 	// MORE TESTING CODE --------------------------------------------
 
-	SetBlockData();
+	InitializeBlockData();
 
 	std::random_device rd;
 	uint32_t seed = rd();
@@ -244,7 +244,7 @@ int main(int argc, char* argv[]) {
 	// unique_ptr for heap allocation
 	std::unique_ptr<Chunk> chunk = std::make_unique<Chunk>(glm::dvec3(0), seed);
 
-	std::shared_ptr<ChunkRender> chunkRender = RenderChunk(chunk, *sp);
+	std::shared_ptr<ChunkMesh> chunkRender = RenderChunk(chunk, *sp);
 
 	// MORE TESTING CODE --------------------------------------------
 

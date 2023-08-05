@@ -12,35 +12,10 @@
 
 namespace Chemical {
 
-	struct BlockData {
-		glm::fvec3 colour = glm::fvec3(0.0f);
-	};
 
-	// could be uint16_t but padded to 32 anyway
-	/*struct BlockID {
-		uint32_t blockID = 0;
-
-		operator uint32_t() const {
-			return blockID;
-		}
-
-		BlockID(uint32_t blockID) : blockID(blockID) {}
-		BlockID() {} // default constructor only needed for unordered_map use
-	};*/
+	void InitializeBlockData(); // needs to be called before any chunk generation code
 
 	using BlockID = uint16_t;
-
-	// Getter and setter to avoid globals in a way
-	void SetBlockData();
-	const BlockData& GetBlockData(BlockID blockID);
-
-	struct ChunkVertex {
-		glm::fvec3 position;
-		glm::fvec3 normal;
-
-		ChunkVertex(const glm::fvec3& position, const glm::fvec3 normal) :
-			position(position), normal(normal) {}
-	};
 
 	struct Chunk 
 	{
@@ -53,12 +28,20 @@ namespace Chemical {
 
 	};
 
-	struct ChunkRender {
-		OpenGL::VertexArray vArray;
+	struct ChunkVertex {
+		glm::fvec3 position;
+		glm::fvec3 normal;
+
+		ChunkVertex(const glm::fvec3& position, const glm::fvec3 normal) :
+			position(position), normal(normal) {}
+	};
+
+	struct ChunkMesh {
+		OpenGL::VertexArray v_array;
 		OpenGL::ArrayDrawInfo info;
 
 	};
 
-	extern std::shared_ptr<ChunkRender> RenderChunk(const std::unique_ptr<Chunk>& chunk, const OpenGL::ShaderProgram& shader);
+	extern std::shared_ptr<ChunkMesh> RenderChunk(const std::unique_ptr<Chunk>& chunk, const OpenGL::ShaderProgram& shader);
 
 }
