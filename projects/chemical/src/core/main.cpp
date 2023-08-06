@@ -95,22 +95,22 @@ void UpdatePlayer() {
 	glm::fvec3 right = matrix[0];
 
 	if (glfwGetKey(window, GLFW_KEY_W)) {
-		player_transform.position -= front * 0.05f;
+		player_transform.position -= front * 0.15f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_S)) {
-		player_transform.position += front * 0.05f;
+		player_transform.position += front * 0.15f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A)) {
-		player_transform.position -= right * 0.05f;
+		player_transform.position -= right * 0.15f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D)) {
-		player_transform.position += right * 0.05f;
+		player_transform.position += right * 0.15f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE)) {
-		player_transform.position.y += 0.05f;
+		player_transform.position.y += 0.15f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
-		player_transform.position.y -= 0.05f;
+		player_transform.position.y -= 0.15f;
 	}
 
 	double x, y;
@@ -174,8 +174,6 @@ int main(int argc, char* argv[]) {
 
 	// GLFW PREFERENCES ----------------------------------
 
-	glfwSwapInterval(1);
-
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// GLFW PREFERENCES ----------------------------------
@@ -224,41 +222,16 @@ int main(int argc, char* argv[]) {
 
 	// GLAD PREFERENCES -----------------------------------------
 
-	// TESTING CODE --------------------------------------------
-
-
-	/*OpenGL::Shader vertexShader(Util::ReadFile("resources/shaders/chunk_shader.vert").c_str(), OpenGL::ShaderType::VERTEX_SHADER);
-	OpenGL::Shader fragmentShader(Util::ReadFile("resources/shaders/chunk_shader.frag").c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
-
-	OpenGL::VertexLayout layout;
-	//layout.stride = 24;
-
-	layout.AddAttribute(OpenGL::VertexAttribute(3, 0, OpenGL::DataType::FLOAT));
-	layout.AddAttribute(OpenGL::VertexAttribute(3, sizeof(float) * 3, OpenGL::DataType::FLOAT));
-
-	std::shared_ptr<OpenGL::ShaderProgram> sp = std::make_shared<OpenGL::ShaderProgram>(std::initializer_list<const OpenGL::Shader*>{ &vertexShader, & fragmentShader }, layout);
-
-
-	Transform view;*/
-	projection = glm::perspective(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
-	/*
-	sp->SetUniformMatrix4FV("v_view", 1, false, &glm::inverse(view.GetTransform())[0][0]); // set to true to transpose
-	sp->SetUniformMatrix4FV("v_proj", 1, false, &proj[0][0]);*/
-
-	// TESTING CODE --------------------------------------------
-
 	// MORE TESTING CODE --------------------------------------------
+
+	projection = glm::perspective(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
 
 	InitializeBlockData();
 
 	std::random_device rd;
 	uint32_t seed = rd();
 
-	// unique_ptr for heap allocation
-	//std::unique_ptr<Chunk> chunk = std::make_unique<Chunk>(glm::dvec3(0), seed);
-
-	std::unique_ptr<ChunkLoader> loader = ChunkLoader::CreateChunkLoader(seed);
-	//ChunkLoader chunk_loader(8);
+	std::unique_ptr<ChunkLoader> loader = ChunkLoader::CreateChunkLoader(32, seed);
 
 	// MORE TESTING CODE --------------------------------------------
 
@@ -271,14 +244,6 @@ int main(int argc, char* argv[]) {
 		UpdatePlayer();
 
 		loader->Update();
-		//cr.RenderChunk(*chunk);
-		//sp->BindProgram();
-
-		//sp->SetUniformMatrix4FV("v_view", 1, false, &glm::inverse(view.GetTransform())[0][0]); // set to true to transpose
-		//sp->SetUniform3DV("v_chunk_origin", 1, &chunk->origin[0]);
-
-		//chunkRender->v_array.Bind();
-		//chunkRender->v_array.DrawArrays(chunkRender->info);
 
 		glfwSwapBuffers(window);
 

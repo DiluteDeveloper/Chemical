@@ -6,9 +6,9 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#define CHUNK_SIZE_X 128
-#define CHUNK_SIZE_Y 128
-#define CHUNK_SIZE_Z 128
+#define CHUNK_SIZE_X 16 // MAX OF 64
+#define CHUNK_SIZE_Y 72
+#define CHUNK_SIZE_Z 16 // MAX OF 64
 
 namespace Chemical {
 
@@ -19,14 +19,18 @@ namespace Chemical {
 
 
 	struct ChunkVertex {
-		glm::fvec3 position;
-		glm::fvec3 normal;
+		glm::fvec3 position = glm::fvec3(0);
+		glm::fvec3 colour = glm::fvec3(1);
 
-		ChunkVertex(const glm::fvec3& position, const glm::fvec3 normal) :
-			position(position), normal(normal) {}
+		ChunkVertex(const glm::fvec3& position, const glm::fvec3 colour) :
+			position(position), colour(colour) {}
+		ChunkVertex() {}
 	};
 
 	struct ChunkMesh {
+		
+		OpenGL::Buffer v_buffer;
+		uint32_t v_buffer_size = 0;
 		OpenGL::VertexArray v_array;
 		OpenGL::ArrayDrawInfo info;
 
@@ -64,6 +68,10 @@ namespace Chemical {
 		void RenderChunks(const std::vector<std::unique_ptr<Chunk>>& chunks);
 
 		void GenerateChunkMesh(const std::unique_ptr<Chunk>& chunk);
+		// 0 = X-, 1 = Z+, 2 = X+, 3 = Z-;
+		void GenerateChunkMeshEdged(const std::unique_ptr<Chunk>& chunk, const std::array<const Chunk*, 4> edges);
+
+		void RegenerateChunkMesh(const std::unique_ptr<Chunk>& chunk);
 	};
 
 
