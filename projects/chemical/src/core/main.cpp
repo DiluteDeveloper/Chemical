@@ -15,98 +15,111 @@
 
 #include "chunk_system.h"
 
+#include "core.h"
+
+namespace Chemical {
+	using namespace Core;
+	namespace Core {
+
+		Transform player_transform = Transform{};
+		glm::mat4 projection = glm::mat4{};
+
+		GLFWwindow* window = nullptr;
+	}
+}
+
 using namespace Chemical;
 
 #ifdef CHEMICAL_DEBUG
-	int64_t prevMessageID = -1;
-	void APIENTRY message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
-	{
+int64_t prevMessageID = -1;
+void APIENTRY message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
+{
 
-		if ((GLuint)prevMessageID == id)
-			return;
-		prevMessageID = id;
-		auto const src_str = [source]() {
-			switch (source)
-			{
-			case GL_DEBUG_SOURCE_API: return "API";
-			case GL_DEBUG_SOURCE_WINDOW_SYSTEM: return "WINDOW SYSTEM";
-			case GL_DEBUG_SOURCE_SHADER_COMPILER: return "SHADER COMPILER";
-			case GL_DEBUG_SOURCE_THIRD_PARTY: return "THIRD PARTY";
-			case GL_DEBUG_SOURCE_APPLICATION: return "APPLICATION";
-			case GL_DEBUG_SOURCE_OTHER: return "OTHER";
-			}
-			return "SOURCE";
-		}();
+	if ((GLuint)prevMessageID == id)
+		return;
+	prevMessageID = id;
+	auto const src_str = [source]() {
+		switch (source)
+		{
+		case GL_DEBUG_SOURCE_API: return "API";
+		case GL_DEBUG_SOURCE_WINDOW_SYSTEM: return "WINDOW SYSTEM";
+		case GL_DEBUG_SOURCE_SHADER_COMPILER: return "SHADER COMPILER";
+		case GL_DEBUG_SOURCE_THIRD_PARTY: return "THIRD PARTY";
+		case GL_DEBUG_SOURCE_APPLICATION: return "APPLICATION";
+		case GL_DEBUG_SOURCE_OTHER: return "OTHER";
+		}
+		return "SOURCE";
+	}();
 
 
-		auto const type_str = [type]() {
-			switch (type)
-			{
-			case GL_DEBUG_TYPE_ERROR: return "ERROR";
-			case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "DEPRECATED_BEHAVIOR";
-			case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: return "UNDEFINED_BEHAVIOR";
-			case GL_DEBUG_TYPE_PORTABILITY: return "PORTABILITY";
-			case GL_DEBUG_TYPE_PERFORMANCE: return "PERFORMANCE";
-			case GL_DEBUG_TYPE_MARKER: return "MARKER";
-			case GL_DEBUG_TYPE_OTHER: return "OTHER";
-			default: break;
-			}
-			return "TYPE";
-		}();
-
-		switch (severity) {
-		case GL_DEBUG_SEVERITY_NOTIFICATION:
-			LOGGER_CONSOLE_CUSTOM_MESSAGE("{}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
-			break;
-		case GL_DEBUG_SEVERITY_LOW:
-			LOGGER_CONSOLE_CUSTOM_WARNING("{}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
-			break;
-		case GL_DEBUG_SEVERITY_MEDIUM:
-			LOGGER_CONSOLE_CUSTOM_WARNING("{}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
-			break;
-		case GL_DEBUG_SEVERITY_HIGH:
-			LOGGER_CONSOLE_CUSTOM_ERROR("{}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
-			throw std::exception();
-			break;
+	auto const type_str = [type]() {
+		switch (type)
+		{
+		case GL_DEBUG_TYPE_ERROR: return "ERROR";
+		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "DEPRECATED_BEHAVIOR";
+		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: return "UNDEFINED_BEHAVIOR";
+		case GL_DEBUG_TYPE_PORTABILITY: return "PORTABILITY";
+		case GL_DEBUG_TYPE_PERFORMANCE: return "PERFORMANCE";
+		case GL_DEBUG_TYPE_MARKER: return "MARKER";
+		case GL_DEBUG_TYPE_OTHER: return "OTHER";
 		default: break;
 		}
+		return "TYPE";
+	}();
 
+	switch (severity) {
+	case GL_DEBUG_SEVERITY_NOTIFICATION:
+		LOGGER_CONSOLE_CUSTOM_MESSAGE("{}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
+		break;
+	case GL_DEBUG_SEVERITY_LOW:
+		LOGGER_CONSOLE_CUSTOM_WARNING("{}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
+		break;
+	case GL_DEBUG_SEVERITY_MEDIUM:
+		LOGGER_CONSOLE_CUSTOM_WARNING("{}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
+		break;
+	case GL_DEBUG_SEVERITY_HIGH:
+		LOGGER_CONSOLE_CUSTOM_ERROR("{}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
+		throw std::exception();
+		break;
+	default: break;
 	}
+
+}
 #endif
 
 double oldx, oldy;
-void movement(Transform& cam, GLFWwindow* window) {
-	glm::fmat4 matrix = cam.GetTransform();
+void UpdatePlayer() {
+	glm::fmat4 matrix = player_transform.GetTransform();
 	glm::fvec3 forward = matrix[2];
 	glm::fvec3 front = glm::normalize(glm::vec3(forward.x, 0, forward.z));
 	glm::fvec3 right = matrix[0];
 
 	if (glfwGetKey(window, GLFW_KEY_W)) {
-		cam.position -= front * 0.05f;
+		player_transform.position -= front * 0.05f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_S)) {
-		cam.position += front * 0.05f;
+		player_transform.position += front * 0.05f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A)) {
-		cam.position -= right * 0.05f;
+		player_transform.position -= right * 0.05f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D)) {
-		cam.position += right * 0.05f;
+		player_transform.position += right * 0.05f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE)) {
-		cam.position.y += 0.05f;
+		player_transform.position.y += 0.05f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
-		cam.position.y -= 0.05f;
+		player_transform.position.y -= 0.05f;
 	}
 
 	double x, y;
 	glfwGetCursorPos(window, &x, &y);
 
-	cam.rotation.y -= static_cast<float>(x - oldx) * 0.002f;
-	cam.rotation.x -= static_cast<float>(y - oldy) * 0.002f;
+	player_transform.rotation.y -= static_cast<float>(x - oldx) * 0.002f;
+	player_transform.rotation.x -= static_cast<float>(y - oldy) * 0.002f;
 
-	cam.rotation.x = glm::clamp(cam.rotation.x, -80.0f, 80.0f);
+	player_transform.rotation.x = glm::clamp(player_transform.rotation.x, -80.0f, 80.0f);
 
 	oldx = x;
 	oldy = y;
@@ -144,7 +157,7 @@ int main(int argc, char* argv[]) {
 
 	// GLFW WINDOW SETUP -------------------------------------------------
 
-	GLFWwindow* window = glfwCreateWindow(1280, 720, "Hello World", NULL, NULL);
+	window = glfwCreateWindow(1280, 720, "Hello World", NULL, NULL);
 
 	if (!window) {
 #ifdef CHEMICAL_DEBUG
@@ -214,7 +227,7 @@ int main(int argc, char* argv[]) {
 	// TESTING CODE --------------------------------------------
 
 
-	OpenGL::Shader vertexShader(Util::ReadFile("resources/shaders/chunk_shader.vert").c_str(), OpenGL::ShaderType::VERTEX_SHADER);
+	/*OpenGL::Shader vertexShader(Util::ReadFile("resources/shaders/chunk_shader.vert").c_str(), OpenGL::ShaderType::VERTEX_SHADER);
 	OpenGL::Shader fragmentShader(Util::ReadFile("resources/shaders/chunk_shader.frag").c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
 
 	OpenGL::VertexLayout layout;
@@ -223,14 +236,14 @@ int main(int argc, char* argv[]) {
 	layout.AddAttribute(OpenGL::VertexAttribute(3, 0, OpenGL::DataType::FLOAT));
 	layout.AddAttribute(OpenGL::VertexAttribute(3, sizeof(float) * 3, OpenGL::DataType::FLOAT));
 
-	std::shared_ptr<OpenGL::ShaderProgram> sp = std::make_shared<OpenGL::ShaderProgram>(std::initializer_list<const OpenGL::Shader*>{ &vertexShader, &fragmentShader }, layout);
-	
+	std::shared_ptr<OpenGL::ShaderProgram> sp = std::make_shared<OpenGL::ShaderProgram>(std::initializer_list<const OpenGL::Shader*>{ &vertexShader, & fragmentShader }, layout);
 
-	Transform view;
-	const glm::mat4 proj = glm::perspective(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
 
+	Transform view;*/
+	projection = glm::perspective(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
+	/*
 	sp->SetUniformMatrix4FV("v_view", 1, false, &glm::inverse(view.GetTransform())[0][0]); // set to true to transpose
-	sp->SetUniformMatrix4FV("v_proj", 1, false, &proj[0][0]);
+	sp->SetUniformMatrix4FV("v_proj", 1, false, &proj[0][0]);*/
 
 	// TESTING CODE --------------------------------------------
 
@@ -242,9 +255,10 @@ int main(int argc, char* argv[]) {
 	uint32_t seed = rd();
 
 	// unique_ptr for heap allocation
-	std::unique_ptr<Chunk> chunk = std::make_unique<Chunk>(glm::dvec3(0), seed);
+	//std::unique_ptr<Chunk> chunk = std::make_unique<Chunk>(glm::dvec3(0), seed);
 
-	std::shared_ptr<ChunkMesh> chunkRender = RenderChunk(chunk, *sp);
+	std::unique_ptr<ChunkLoader> loader = ChunkLoader::CreateChunkLoader(seed);
+	//ChunkLoader chunk_loader(8);
 
 	// MORE TESTING CODE --------------------------------------------
 
@@ -254,14 +268,17 @@ int main(int argc, char* argv[]) {
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		movement(view, window);
-		sp->BindProgram();
+		UpdatePlayer();
 
-		sp->SetUniformMatrix4FV("v_view", 1, false, &glm::inverse(view.GetTransform())[0][0]); // set to true to transpose
-		sp->SetUniform3DV("v_chunk_origin", 1, &chunk->origin[0]);
+		loader->Update();
+		//cr.RenderChunk(*chunk);
+		//sp->BindProgram();
 
-		chunkRender->vArray.Bind();
-		chunkRender->vArray.DrawArrays(chunkRender->info);
+		//sp->SetUniformMatrix4FV("v_view", 1, false, &glm::inverse(view.GetTransform())[0][0]); // set to true to transpose
+		//sp->SetUniform3DV("v_chunk_origin", 1, &chunk->origin[0]);
+
+		//chunkRender->v_array.Bind();
+		//chunkRender->v_array.DrawArrays(chunkRender->info);
 
 		glfwSwapBuffers(window);
 

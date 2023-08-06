@@ -3,6 +3,9 @@
 
 #include "chunk_system.h"
 #include "graphics/opengl/buffer.h"
+#include "util/filestream.h"
+
+#include "core/core.h"
 
 
 namespace Chemical {
@@ -56,8 +59,10 @@ namespace Chemical {
 		return ((y * CHUNK_SIZE_X * CHUNK_SIZE_Z) + (z * CHUNK_SIZE_X) + x);
 	}
 
-	Chunk::Chunk(const glm::dvec3& origin, uint32_t seed) :
-		origin(origin) {
+	std::unique_ptr<Chunk> Chunk::CreateChunk(const glm::ivec2& origin, uint32_t seed) {
+
+		std::unique_ptr<Chunk> chunk = std::make_unique<Chunk>();
+		chunk->origin = origin;
 
 		const siv::PerlinNoise perlin{seed};
 		const siv::PerlinNoise perlin2{seed + 500}; // lazy method
@@ -69,33 +74,118 @@ namespace Chemical {
 			{
 				
 				// goes from 5-25y
-				int16_t genHeight = static_cast<int16_t>((perlin.octave2D_01(x * 0.08f, z * 0.08f, 4) * 20) + 5);
+				int16_t genHeight = static_cast<int16_t>((perlin.octave2D_01((origin.x + x) * 0.02f, (origin.y + z) * 0.02f, 4) * 20) + 5);
+				genHeight += static_cast<int16_t>((perlin2.octave2D_01((origin.x + x) * 0.01f, (origin.y + z) * 0.01f, 4) * 60) + 5);
 
 				// reverse iterator to go from terrain height - 0(bottom y of the chunk)
 				// If genHeight is past CHUNK_SIZE_Y it will crash
 				for (int16_t y = genHeight; y >= 0; y--)
 				{
+					/*if (x % 2 == 0 && z % 2 == 0)
+						chunk->blocks[Dimension(x, y, z)] = BlockType::Bedrock;
+					if (!(x % 2 == 0) && z % 2 == 0)
+						chunk->blocks[Dimension(x, y, z)] = BlockType::Grass;
+					if (x % 2 == 0 && !(z % 2 == 0))
+						chunk->blocks[Dimension(x, y, z)] = BlockType::Dirt;
+					if (!(x % 2 == 0) && !(z % 2 == 0))
+						chunk->blocks[Dimension(x, y, z)] = BlockType::Stone;*/
 
 					if (y == 0) {
-						blocks[Dimension(x, y, z)] = 4;
+						chunk->blocks[Dimension(x, y, z)] = BlockType::Bedrock;
 						continue;
 					}
 
 					
 					if (y <= genHeight - 1) {
 						if (y <= genHeight - 4)
-								blocks[Dimension(x,y,z)] = 1;
+							chunk->blocks[Dimension(x,y,z)] = BlockType::Stone;
 						else
-							blocks[Dimension(x, y, z)] = 2;
+							chunk->blocks[Dimension(x, y, z)] = BlockType::Dirt;
 					}
 					else
-						blocks[Dimension(x, y, z)] = 3;
+						chunk->blocks[Dimension(x, y, z)] = BlockType::Grass;
 				}
 			}
 		}
+		return chunk;
 	}
 
-	std::shared_ptr<ChunkMesh> RenderChunk(const std::unique_ptr<Chunk>& chunk, const OpenGL::ShaderProgram& p) {
+	std::unique_ptr<ChunkLoader> ChunkLoader::CreateChunkLoader(uint8_t render_distance, uint32_t seed) {
+
+		std::unique_ptr<ChunkLoader> chunk_loader = std::make_unique<ChunkLoader>();
+
+		chunk_loader->render_distance = render_distance;
+		chunk_loader->seed = seed;
+		for (size_t i = 0; i < render_distance; i++)
+		{
+			chunk_loader->loaded_chunks.emplace_back(Chunk::CreateChunk(glm::ivec2(i,i), seed));
+		}
+
+		return chunk_loader;
+		//if (render_distance % 2 == 0) // if rd even 
+		//{
+
+		//}
+		//else { // if rd odd
+
+	}
+	std::unique_ptr<ChunkLoader> ChunkLoader::CreateChunkLoader(uint32_t seed) {
+		std::unique_ptr<ChunkLoader> chunk_loader = std::make_unique<ChunkLoader>();
+
+		chunk_loader->seed = seed;
+		for (size_t i = 0; i < chunk_loader->render_distance; i++)
+		{
+			auto& chunk = chunk_loader->loaded_chunks.emplace_back(Chunk::CreateChunk(glm::ivec2(i, i), seed));
+			chunk_loader->renderer.GenerateChunkMesh(chunk);
+		}
+
+		return chunk_loader;
+	}
+
+
+	void ChunkLoader::Update() {
+
+		renderer.RenderChunks(loaded_chunks);
+	}
+
+	ChunkRenderer::ChunkRenderer() {
+		OpenGL::Shader vertex_chunk_shader(Util::ReadFile("resources/shaders/chunk_shader.vert").c_str(), OpenGL::ShaderType::VERTEX_SHADER);
+		OpenGL::Shader fragment_chunk_shader(Util::ReadFile("resources/shaders/chunk_shader.frag").c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
+
+		OpenGL::VertexLayout vertex_layout;
+		vertex_layout.AddAttribute(OpenGL::VertexAttribute{3, 0, OpenGL::DataType::FLOAT, OpenGL::DataTransformation::FLOAT});
+		vertex_layout.AddAttribute(OpenGL::VertexAttribute{3, 3 * sizeof(float), OpenGL::DataType::FLOAT, OpenGL::DataTransformation::FLOAT});
+
+		chunk_shader = std::make_unique<OpenGL::ShaderProgram>(std::initializer_list<
+			const OpenGL::Shader*>{ &vertex_chunk_shader, & fragment_chunk_shader }, vertex_layout);
+
+		chunk_shader->SetUniformMatrix4FV("v_proj", 1, false, &Core::projection[0][0]); 
+	}
+
+	void ChunkRenderer::RenderChunk(const std::unique_ptr<Chunk>& chunk) {
+
+		chunk_shader->BindProgram();
+		chunk_shader->SetUniformMatrix4FV("v_view", 1, false, &glm::inverse(Core::player_transform.GetTransform())[0][0]);
+
+		chunk_shader->SetUniform2IV("v_chunk_origin", 1, &chunk->origin[0]);
+
+		chunk->mesh.v_array.Bind();
+		chunk->mesh.v_array.DrawArrays(chunk->mesh.info);
+	}
+
+	void ChunkRenderer::RenderChunks(const std::vector< std::unique_ptr<Chunk>>& chunks) {
+		chunk_shader->BindProgram();
+		chunk_shader->SetUniformMatrix4FV("v_view", 1, false, &glm::inverse(Core::player_transform.GetTransform())[0][0]);
+
+		for (const auto& chunk : chunks) {
+			chunk_shader->SetUniform2IV("v_chunk_origin", 1, &chunk->origin[0]);
+
+			chunk->mesh.v_array.Bind();
+			chunk->mesh.v_array.DrawArrays(chunk->mesh.info);
+		}
+	}
+
+	void ChunkRenderer::GenerateChunkMesh(const std::unique_ptr<Chunk>& chunk) {
 		std::vector<ChunkVertex> vertices;
 
 		for (size_t x = 0; x < CHUNK_SIZE_X; x++)
@@ -187,15 +277,10 @@ namespace Chemical {
 		OpenGL::Buffer buffer;
 		buffer.CreateImmutableBuffer(vertices.size() * sizeof(ChunkVertex), &vertices[0]);
 
+		chunk->mesh.v_array.SetVertexBuffer(buffer, chunk_shader->GetLayout(), 0, 0);
 
-		std::shared_ptr<ChunkMesh> render = std::make_shared<ChunkMesh>();
-		render->v_array.SetVertexBuffer(buffer, p.GetLayout(), 0, 0);
-
-		render->info.count = static_cast<int32_t>(vertices.size());
-		render->info.first = 0;
-		render->info.mode = OpenGL::DrawMode::TRIANGLES;
-
-		return render;
-
+		chunk->mesh.info.count = static_cast<int32_t>(vertices.size());
+		chunk->mesh.info.first = 0;
+		chunk->mesh.info.mode = OpenGL::DrawMode::TRIANGLES;
 	}
 }
