@@ -231,7 +231,7 @@ int main(int argc, char* argv[]) {
 	std::random_device rd;
 	uint32_t seed = rd();
 
-	ChunkLoader loader(seed, 32);
+	ChunkLoader loader(seed, 15);
 
 	// MORE TESTING CODE --------------------------------------------
 

@@ -1,8 +1,6 @@
 changes this commit:
-removed BlockID's now using BlockType overall
-general TLC
-fixed and finished initial chunk generation
-fixed buffer destructor commented out
+Fixed various bugs and improved chunk generator.
+Infinite terrain has been achieved.
 
 todo:
 finish the chunk generator

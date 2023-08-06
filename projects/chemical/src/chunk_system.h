@@ -67,7 +67,7 @@ namespace Chemical {
 		void RenderChunk(const std::unique_ptr<Chunk>& chunk);
 
 		// More optimized than rendering 1 chunk at a time due to shader binding
-		void RenderChunks(const std::vector<std::unique_ptr<Chunk>>& chunks);
+		void RenderChunks(const std::unordered_map<int32_t, std::unordered_map<int32_t, std::unique_ptr<Chunk>>>& chunks);
 
 		void GenerateChunkMesh(const std::unique_ptr<Chunk>& chunk);
 		// 0 = X-, 1 = Z+, 2 = X+, 3 = Z-;
@@ -82,9 +82,11 @@ namespace Chemical {
 
 		ChunkRenderer renderer;
 
-		std::vector<std::unique_ptr<Chunk>> loaded_chunks;
+		std::unordered_map<int32_t, std::unordered_map<int32_t, std::unique_ptr<Chunk>>> loaded_chunks;
 
-		uint8_t render_distance = 8;
+		glm::ivec2 center_chunk_origin = glm::ivec2(0);
+
+		uint8_t real_rd = 8;
 		uint32_t seed = 8;
 
 	public:

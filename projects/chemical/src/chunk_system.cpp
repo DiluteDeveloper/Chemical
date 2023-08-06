@@ -33,8 +33,8 @@ namespace Chemical {
 		return block_registry[block_type];
 	}
 
-	// converts 3D chunk coordinates to 1D, can crash if out of bounds
-	uint32_t Chunk3Dto1D(uint8_t x, uint16_t y, uint8_t z) {
+	// converts 3D block coordinates to 1D
+	uint32_t Block3Dto1D(uint8_t x, uint16_t y, uint8_t z) {
 		return ((y * CHUNK_SIZE_X * CHUNK_SIZE_Z) + (z * CHUNK_SIZE_X) + x);
 	}
 
@@ -56,57 +56,123 @@ namespace Chemical {
 				{
 
 					if (y == 0) {
-						blocks[Chunk3Dto1D(x, y, z)] = BlockType::Bedrock;
+						blocks[Block3Dto1D(x, y, z)] = BlockType::Bedrock;
 						continue;
 					}
 
 
 					if (y <= genHeight - 1) {
 						if (y <= genHeight - 4)
-							blocks[Chunk3Dto1D(x, y, z)] = BlockType::Stone;
+							blocks[Block3Dto1D(x, y, z)] = BlockType::Stone;
 						else
-							blocks[Chunk3Dto1D(x, y, z)] = BlockType::Dirt;
+							blocks[Block3Dto1D(x, y, z)] = BlockType::Dirt;
 					}
 					else
-						blocks[Chunk3Dto1D(x, y, z)] = BlockType::Grass;
+						blocks[Block3Dto1D(x, y, z)] = BlockType::Grass;
 				}
 			}
 		}
 	}
 
 	ChunkLoader::ChunkLoader(uint32_t seed, uint8_t render_distance) :
-	seed(seed), render_distance(render_distance) {
+	seed(seed), real_rd((render_distance % 2 == 0) ? render_distance : render_distance - 1) {
 
-		uint8_t real_rd = (render_distance % 2 == 0) ? render_distance : render_distance - 1;
-		for (size_t x = 0; x < real_rd; x++)
+		glm::ivec2 player_chunk_coordinates;
+		player_chunk_coordinates.x = std::floor(Core::player_transform.position.x / 16);
+		player_chunk_coordinates.y = std::floor(Core::player_transform.position.z / 16);
+
+		for (int32_t x = -real_rd; x < real_rd + 1; x++)
 		{
-			for (size_t z = 0; z < real_rd; z++)
+			for (int32_t z = -real_rd; z < real_rd + 1; z++)
 			{
-				loaded_chunks.emplace_back(
-					std::make_unique<Chunk>(glm::ivec2((x - (real_rd / 2)) * CHUNK_SIZE_X, (z - (real_rd / 2)) * CHUNK_SIZE_Z), seed));
+				if (x == 0 && z == 0)
+					center_chunk_origin = glm::ivec2(x + player_chunk_coordinates.x, z + player_chunk_coordinates.y);
+				loaded_chunks
+					[x + player_chunk_coordinates.x]
+					[z + player_chunk_coordinates.y] =
+						std::make_unique<Chunk>(glm::ivec2((x + player_chunk_coordinates.x) * CHUNK_SIZE_X, (z + player_chunk_coordinates.y) * CHUNK_SIZE_Z), seed);
 			}
 
 		}
 
-		for (size_t x = 0; x < real_rd; x++)
+		for (int32_t x = -real_rd; x < real_rd + 1; x++)
 		{
-			for (size_t z = 0; z < real_rd; z++)
+			for (int32_t z = -real_rd; z < real_rd + 1; z++)
 			{
 
 				std::array<const Chunk*, 4> edges = {};
 
-				edges[0] = (x > 0) ? loaded_chunks[z + (x * real_rd) - real_rd].get() : nullptr;
-				edges[1] = (z < real_rd - 1) ? loaded_chunks[z + (x * real_rd) + 1].get() : nullptr;
-				edges[2] = (x < real_rd - 1) ? loaded_chunks[z + (x * real_rd) + real_rd].get() : nullptr;
-				edges[3] = (z > 0) ? loaded_chunks[z + (x * real_rd) - 1].get() : nullptr;
+				edges[0] = (x > -real_rd) ? loaded_chunks[(x + player_chunk_coordinates.x) - 1][(z + player_chunk_coordinates.y)].get() : nullptr;
+				edges[1] = (z < real_rd - 1) ? loaded_chunks[x + player_chunk_coordinates.x][(z + player_chunk_coordinates.y) + 1].get() : nullptr;
+				edges[2] = (x < real_rd - 1) ? loaded_chunks[(x + player_chunk_coordinates.x) + 1][(z + player_chunk_coordinates.y)].get() : nullptr;
+				edges[3] = (z > -real_rd) ? loaded_chunks[x + player_chunk_coordinates.x][(z + player_chunk_coordinates.y) - 1].get() : nullptr;
 
-				renderer.GenerateChunkMeshEdged(loaded_chunks[z + (x * real_rd)], edges);
+				renderer.GenerateChunkMeshEdged(loaded_chunks[x + player_chunk_coordinates.x][z + player_chunk_coordinates.y], edges);
 			}
 		}
 	}
 
 
 	void ChunkLoader::Update() {
+
+		//LOGGER_CONSOLE_CUSTOM_MESSAGE("{}, {}", Core::player_transform.position.x, Core::player_transform.position.z);
+		glm::ivec2 player_chunk_coordinates;
+		player_chunk_coordinates.x = std::floor(Core::player_transform.position.x / 16);
+		player_chunk_coordinates.y = std::floor(Core::player_transform.position.z / 16);
+
+		if (player_chunk_coordinates != center_chunk_origin) {
+			glm::ivec2 offset = player_chunk_coordinates - center_chunk_origin;
+
+
+			if (offset.y != 0) { // the player changed z chunk
+				for (int32_t i = -real_rd; i < real_rd + 1; i++)
+				{
+
+					LOGGER_CONSOLE_CUSTOM_MESSAGE("{}", i);
+					loaded_chunks
+						[i + player_chunk_coordinates.x]
+					[player_chunk_coordinates.y + (real_rd * offset.y)] =
+						std::make_unique<Chunk>(glm::ivec2((i + player_chunk_coordinates.x) * CHUNK_SIZE_X, ((player_chunk_coordinates.y + (real_rd * offset.y))) * CHUNK_SIZE_Z), seed);
+
+					loaded_chunks[i + player_chunk_coordinates.x].erase(player_chunk_coordinates.y + ((real_rd + 1) * -offset.y));
+
+					std::array<const Chunk*, 4> edges = {};
+
+					//edges[0] = (i > -real_rd) ? loaded_chunks[(i + player_chunk_coordinates.x) - 1]
+						//[player_chunk_coordinates.y + (real_rd * offset.y)].get() : nullptr;
+					//edges[1] = (z < real_rd - 1) ? loaded_chunks[i + player_chunk_coordinates.x][((abs(player_chunk_coordinates.y) + real_rd + 1) * offset.y) + 1].get() : nullptr;
+					//edges[1] = (z < real_rd - 1) ? loaded_chunks[i + player_chunk_coordinates.x][((abs(player_chunk_coordinates.y) + real_rd + 1) * offset.y) + 1].get() : nullptr;
+					//edges[2] = (x < real_rd - 1) ? loaded_chunks[(i + player_chunk_coordinates.x) + 1][((abs(player_chunk_coordinates.y) + real_rd + 1) * offset.y)].get() : nullptr;
+					//edges[3] = (z > -real_rd) ? loaded_chunks[i + player_chunk_coordinates.x][((abs(player_chunk_coordinates.y) + real_rd + 1) * offset.y) - 1].get() : nullptr;
+
+					renderer.GenerateChunkMesh(loaded_chunks[i + player_chunk_coordinates.x]
+						[(player_chunk_coordinates.y + (real_rd * offset.y))]);
+				}
+			}
+			if(offset.x != 0) { // the player changed x chunk
+				for (int32_t i = -real_rd; i < real_rd + 1; i++)
+				{
+					LOGGER_CONSOLE_CUSTOM_MESSAGE("{}", i);
+					loaded_chunks
+						[player_chunk_coordinates.x + (real_rd * offset.x)]
+					[i + player_chunk_coordinates.y] =
+						std::make_unique<Chunk>(glm::ivec2((player_chunk_coordinates.x + (real_rd * offset.x)) * CHUNK_SIZE_X, (i + player_chunk_coordinates.y) * CHUNK_SIZE_Z), seed);
+
+					loaded_chunks[player_chunk_coordinates.x + ((real_rd + 1) * -offset.x)].erase(i + player_chunk_coordinates.y);
+
+					std::array<const Chunk*, 4> edges = {};
+
+					//edges[0] = (i > -real_rd) ? loaded_chunks[(i + player_chunk_coordinates.x) - 1][((abs(player_chunk_coordinates.y) + real_rd + 1) * offset.y)].get() : nullptr;
+					//edges[1] = (z < real_rd - 1) ? loaded_chunks[i + player_chunk_coordinates.x][((abs(player_chunk_coordinates.y) + real_rd + 1) * offset.y) + 1].get() : nullptr;
+					//edges[2] = (x < real_rd - 1) ? loaded_chunks[(i + player_chunk_coordinates.x) + 1][((abs(player_chunk_coordinates.y) + real_rd + 1) * offset.y)].get() : nullptr;
+					//edges[3] = (z > -real_rd) ? loaded_chunks[i + player_chunk_coordinates.x][((abs(player_chunk_coordinates.y) + real_rd + 1) * offset.y) - 1].get() : nullptr;
+
+					renderer.GenerateChunkMesh(loaded_chunks[player_chunk_coordinates.x + (real_rd * offset.x)]
+						[i + player_chunk_coordinates.y]);
+				}
+			}
+			center_chunk_origin = player_chunk_coordinates;
+		}
 
 		renderer.RenderChunks(loaded_chunks);
 	}
@@ -136,15 +202,19 @@ namespace Chemical {
 		chunk->mesh.v_array.DrawArrays(chunk->mesh.info);
 	}
 
-	void ChunkRenderer::RenderChunks(const std::vector<std::unique_ptr<Chunk>>& chunks) {
+	void ChunkRenderer::RenderChunks(const std::unordered_map<int32_t, std::unordered_map<int32_t, std::unique_ptr<Chunk>>>& chunks) {
 		chunk_shader->BindProgram();
 		chunk_shader->SetUniformMatrix4FV("v_view", 1, false, &glm::inverse(Core::player_transform.GetTransform())[0][0]);
 
-		for (const auto& chunk : chunks) {
-			chunk_shader->SetUniform2IV("v_chunk_origin", 1, &chunk->origin[0]);
+		for (const auto&[x, list] : chunks) {
+			for (const auto& [z, chunk] : list) {
+					
+				chunk_shader->SetUniform2IV("v_chunk_origin", 1, &chunk->origin[0]);
 
-			chunk->mesh.v_array.Bind();
-			chunk->mesh.v_array.DrawArrays(chunk->mesh.info);
+				chunk->mesh.v_array.Bind();
+				chunk->mesh.v_array.DrawArrays(chunk->mesh.info);
+			}
+
 		}
 	}
 	void ChunkRenderer::GenerateChunkMesh(const std::unique_ptr<Chunk>& chunk) {
@@ -156,12 +226,12 @@ namespace Chemical {
 			{
 				for (uint16_t y = 0; y < CHUNK_SIZE_Y; y++)
 				{
-					BlockType block_type = static_cast<BlockType>(chunk->blocks[Chunk3Dto1D(x, y, z)]);
+					BlockType block_type = static_cast<BlockType>(chunk->blocks[Block3Dto1D(x, y, z)]);
 					if (block_type != BlockType::Air) // air
 					{
 						const Block& block = GetBlock(block_type);
 						// TOP
-						if (y < CHUNK_SIZE_Y - 1 && chunk->blocks[Chunk3Dto1D(x, y + 1, z)] == BlockType::Air) {
+						if (y < CHUNK_SIZE_Y - 1 && chunk->blocks[Block3Dto1D(x, y + 1, z)] == BlockType::Air) {
 							vertices.emplace_back(glm::fvec3(x, y + 1, z), block.colour);
 							vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
 							vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
@@ -176,7 +246,7 @@ namespace Chemical {
 						// the program, so if the y is the bottom y of the chunk, the || makes it so the 2nd section
 						// of the if statement will not execute and crash the program
 						// big brain code or bad design? who knows
-						if (y == 0 || chunk->blocks[Chunk3Dto1D(x, y - 1, z)] == BlockType::Air) {
+						if (y == 0 || chunk->blocks[Block3Dto1D(x, y - 1, z)] == BlockType::Air) {
 							vertices.emplace_back(glm::vec3(x + 1, y, z), block.colour);
 							vertices.emplace_back(glm::vec3(x, y, z), block.colour);
 							vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
@@ -186,7 +256,7 @@ namespace Chemical {
 							vertices.emplace_back(glm::vec3(x + 1, y, z + 1), block.colour);
 						}
 
-						if (x < CHUNK_SIZE_X - 1 && chunk->blocks[Chunk3Dto1D(x + 1, y, z)] == BlockType::Air) {
+						if (x < CHUNK_SIZE_X - 1 && chunk->blocks[Block3Dto1D(x + 1, y, z)] == BlockType::Air) {
 
 							vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
 							vertices.emplace_back(glm::vec3(x + 1, y, z), block.colour);
@@ -197,7 +267,7 @@ namespace Chemical {
 							vertices.emplace_back(glm::vec3(x + 1, y + 1, z + 1), block.colour);
 						}
 
-						if (x > 0 && chunk->blocks[Chunk3Dto1D(x - 1, y, z)] == BlockType::Air) {
+						if (x > 0 && chunk->blocks[Block3Dto1D(x - 1, y, z)] == BlockType::Air) {
 
 							vertices.emplace_back(glm::vec3(x, y, z), block.colour);
 							vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
@@ -208,7 +278,7 @@ namespace Chemical {
 							vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
 						}
 
-						if (z < CHUNK_SIZE_Z - 1 && chunk->blocks[Chunk3Dto1D(x, y, z + 1)] == BlockType::Air) {
+						if (z < CHUNK_SIZE_Z - 1 && chunk->blocks[Block3Dto1D(x, y, z + 1)] == BlockType::Air) {
 
 							vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
 							vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
@@ -219,7 +289,7 @@ namespace Chemical {
 							vertices.emplace_back(glm::vec3(x + 1, y + 1, z + 1), block.colour);
 						}
 
-						if (z > 0 && chunk->blocks[Chunk3Dto1D(x, y, z - 1)] == BlockType::Air) {
+						if (z > 0 && chunk->blocks[Block3Dto1D(x, y, z - 1)] == BlockType::Air) {
 
 							vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
 							vertices.emplace_back(glm::vec3(x, y, z), block.colour);
@@ -258,12 +328,12 @@ namespace Chemical {
 			{
 				for (uint16_t y = 0; y < CHUNK_SIZE_Y; y++)
 				{
-					BlockType block_type = static_cast<BlockType>(chunk->blocks[Chunk3Dto1D(x, y, z)]);
+					BlockType block_type = static_cast<BlockType>(chunk->blocks[Block3Dto1D(x, y, z)]);
 					if (block_type != BlockType::Air)
 					{
 						const Block& block = GetBlock(block_type);
 						// TOP
-						if (y < CHUNK_SIZE_Y - 1 && chunk->blocks[Chunk3Dto1D(x, y + 1, z)] == BlockType::Air) {
+						if (y < CHUNK_SIZE_Y - 1 && chunk->blocks[Block3Dto1D(x, y + 1, z)] == BlockType::Air) {
 							vertices.emplace_back(glm::fvec3(x, y + 1, z), block.colour);
 							vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
 							vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
@@ -278,7 +348,7 @@ namespace Chemical {
 						// the program, so if the y is the bottom y of the chunk, the || makes it so the 2nd section
 						// of the if statement will not execute and crash the program
 						// big brain code or bad design? who knows
-						if (y == 0 || chunk->blocks[Chunk3Dto1D(x, y - 1, z)] == BlockType::Air) {
+						if (y == 0 || chunk->blocks[Block3Dto1D(x, y - 1, z)] == BlockType::Air) {
 							vertices.emplace_back(glm::vec3(x + 1, y, z), block.colour);
 							vertices.emplace_back(glm::vec3(x, y, z), block.colour);
 							vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
@@ -289,7 +359,7 @@ namespace Chemical {
 						}
 
 						if (x < CHUNK_SIZE_X - 1) {
-							if (chunk->blocks[Chunk3Dto1D(x + 1, y, z)] == BlockType::Air) {
+							if (chunk->blocks[Block3Dto1D(x + 1, y, z)] == BlockType::Air) {
 
 								vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
 								vertices.emplace_back(glm::vec3(x + 1, y, z), block.colour);
@@ -302,7 +372,7 @@ namespace Chemical {
 						}
 						else {
 							if (edges[2] != nullptr) {
-								if (edges[2]->blocks[Chunk3Dto1D(0, y, z)] == BlockType::Air) {
+								if (edges[2]->blocks[Block3Dto1D(0, y, z)] == BlockType::Air) {
 									vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
 									vertices.emplace_back(glm::vec3(x + 1, y, z), block.colour);
 									vertices.emplace_back(glm::vec3(x + 1, y, z + 1), block.colour);
@@ -315,7 +385,7 @@ namespace Chemical {
 						}
 
 						if (x > 0) {
-							if (chunk->blocks[Chunk3Dto1D(x - 1, y, z)] == BlockType::Air) {
+							if (chunk->blocks[Block3Dto1D(x - 1, y, z)] == BlockType::Air) {
 
 								vertices.emplace_back(glm::vec3(x, y, z), block.colour);
 								vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
@@ -328,7 +398,7 @@ namespace Chemical {
 						}
 						else {
 							if (edges[0] != nullptr) {
-								if (edges[0]->blocks[Chunk3Dto1D(CHUNK_SIZE_X - 1, y, z)] == BlockType::Air) {
+								if (edges[0]->blocks[Block3Dto1D(CHUNK_SIZE_X - 1, y, z)] == BlockType::Air) {
  									vertices.emplace_back(glm::vec3(x, y, z), block.colour);
 									vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
 									vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
@@ -340,7 +410,7 @@ namespace Chemical {
 							}
 						}
 						if (z < CHUNK_SIZE_Z - 1) {
-							if (chunk->blocks[Chunk3Dto1D(x, y, z + 1)] == BlockType::Air) {
+							if (chunk->blocks[Block3Dto1D(x, y, z + 1)] == BlockType::Air) {
 
 								vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
 								vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
@@ -353,7 +423,7 @@ namespace Chemical {
 						}
 						else {
 							if (edges[1] != nullptr) {
-								if (edges[1]->blocks[Chunk3Dto1D(x, y, 0)] == BlockType::Air) {
+								if (edges[1]->blocks[Block3Dto1D(x, y, 0)] == BlockType::Air) {
 
 									vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
 									vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
@@ -367,7 +437,7 @@ namespace Chemical {
 						}
 
 						if (z > 0) {
-							if (chunk->blocks[Chunk3Dto1D(x, y, z - 1)] == BlockType::Air) {
+							if (chunk->blocks[Block3Dto1D(x, y, z - 1)] == BlockType::Air) {
 
 								vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
 								vertices.emplace_back(glm::vec3(x, y, z), block.colour);
@@ -380,7 +450,7 @@ namespace Chemical {
 						}
 						else {
 							if (edges[3] != nullptr) {
-								if (edges[3]->blocks[Chunk3Dto1D(x, y, CHUNK_SIZE_Z - 1)] == BlockType::Air) {
+								if (edges[3]->blocks[Block3Dto1D(x, y, CHUNK_SIZE_Z - 1)] == BlockType::Air) {
 
 									vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
 									vertices.emplace_back(glm::vec3(x, y, z), block.colour);
@@ -421,12 +491,12 @@ namespace Chemical {
 			{
 				for (uint16_t y = 0; y < CHUNK_SIZE_Y; y++)
 				{
-					BlockType block_type = static_cast<BlockType>(chunk->blocks[Chunk3Dto1D(x, y, z)]);
+					BlockType block_type = static_cast<BlockType>(chunk->blocks[Block3Dto1D(x, y, z)]);
 					if (block_type != BlockType::Air) // air
 					{
 						const Block& block = GetBlock(block_type);
 						// TOP
-						if (y < CHUNK_SIZE_Y - 1 && chunk->blocks[Chunk3Dto1D(x, y + 1, z)] == BlockType::Air) {
+						if (y < CHUNK_SIZE_Y - 1 && chunk->blocks[Block3Dto1D(x, y + 1, z)] == BlockType::Air) {
 							vertices.emplace_back(glm::fvec3(x, y + 1, z), block.colour);
 							vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
 							vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
@@ -441,7 +511,7 @@ namespace Chemical {
 						// the program, so if the y is the bottom y of the chunk, the || makes it so the 2nd section
 						// of the if statement will not execute and crash the program
 						// big brain code or bad design? who knows
-						if (y == 0 || chunk->blocks[Chunk3Dto1D(x, y - 1, z)] == BlockType::Air) {
+						if (y == 0 || chunk->blocks[Block3Dto1D(x, y - 1, z)] == BlockType::Air) {
 							vertices.emplace_back(glm::vec3(x + 1, y, z), block.colour);
 							vertices.emplace_back(glm::vec3(x, y, z), block.colour);
 							vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
@@ -451,7 +521,7 @@ namespace Chemical {
 							vertices.emplace_back(glm::vec3(x + 1, y, z + 1), block.colour);
 						}
 
-						if (x < CHUNK_SIZE_X - 1 && chunk->blocks[Chunk3Dto1D(x + 1, y, z)] == BlockType::Air) {
+						if (x < CHUNK_SIZE_X - 1 && chunk->blocks[Block3Dto1D(x + 1, y, z)] == BlockType::Air) {
 
 							vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
 							vertices.emplace_back(glm::vec3(x + 1, y, z), block.colour);
@@ -462,7 +532,7 @@ namespace Chemical {
 							vertices.emplace_back(glm::vec3(x + 1, y + 1, z + 1), block.colour);
 						}
 
-						if (x > 0 && chunk->blocks[Chunk3Dto1D(x - 1, y, z)] == BlockType::Air) {
+						if (x > 0 && chunk->blocks[Block3Dto1D(x - 1, y, z)] == BlockType::Air) {
 
 							vertices.emplace_back(glm::vec3(x, y, z), block.colour);
 							vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
@@ -473,7 +543,7 @@ namespace Chemical {
 							vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
 						}
 
-						if (z < CHUNK_SIZE_Z - 1 && chunk->blocks[Chunk3Dto1D(x, y, z + 1)] == BlockType::Air) {
+						if (z < CHUNK_SIZE_Z - 1 && chunk->blocks[Block3Dto1D(x, y, z + 1)] == BlockType::Air) {
 
 							vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
 							vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
@@ -484,7 +554,7 @@ namespace Chemical {
 							vertices.emplace_back(glm::vec3(x + 1, y + 1, z + 1), block.colour);
 						}
 
-						if (z > 0 && chunk->blocks[Chunk3Dto1D(x, y, z - 1)] == BlockType::Air) {
+						if (z > 0 && chunk->blocks[Block3Dto1D(x, y, z - 1)] == BlockType::Air) {
 
 							vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
 							vertices.emplace_back(glm::vec3(x, y, z), block.colour);
