@@ -231,7 +231,7 @@ int main(int argc, char* argv[]) {
 	std::random_device rd;
 	uint32_t seed = rd();
 
-	std::unique_ptr<ChunkLoader> loader = ChunkLoader::CreateChunkLoader(32, seed);
+	ChunkLoader loader(seed, 32);
 
 	// MORE TESTING CODE --------------------------------------------
 
@@ -243,7 +243,7 @@ int main(int argc, char* argv[]) {
 
 		UpdatePlayer();
 
-		loader->Update();
+		loader.Update();
 
 		glfwSwapBuffers(window);
 

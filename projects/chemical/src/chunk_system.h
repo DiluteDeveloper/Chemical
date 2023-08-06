@@ -15,8 +15,13 @@ namespace Chemical {
 
 	void InitializeBlockData(); // needs to be called before any chunk generation code
 
-	using BlockID = uint16_t;
-
+	enum BlockType {
+		Air = 0,
+		Stone = 1,
+		Dirt = 2,
+		Grass = 3,
+		Bedrock = 4
+	};
 
 	struct ChunkVertex {
 		glm::fvec3 position = glm::fvec3(0);
@@ -38,21 +43,18 @@ namespace Chemical {
 
 	class Chunk
 	{
-		friend class ChunkLoader; friend class ChunkRenderer; friend class std::unique_ptr<Chunk> std::make_unique<Chunk>();
+		friend class ChunkLoader; friend class ChunkRenderer;
 
 		ChunkMesh mesh;
 
 		// x,z,z block origin is at -x-y-z
-		std::array<BlockID, CHUNK_SIZE_X* CHUNK_SIZE_Y* CHUNK_SIZE_Z> blocks = { 0 };
+		std::array<BlockType, CHUNK_SIZE_X* CHUNK_SIZE_Y* CHUNK_SIZE_Z> blocks = { BlockType::Air};
 
-		// chunk origin is at -x-z
+		// chunk origin is at -x-z 
 		glm::ivec2 origin = glm::ivec2(0);
 
-		Chunk() {}; // private constructor, can only be created as unique_ptr on heap
-
 	public:
-
-		static std::unique_ptr<Chunk> CreateChunk(const glm::ivec2& origin, uint32_t seed);
+		Chunk(const glm::ivec2& origin, uint32_t seed); // should be heap allocated
 
 	};
 	class ChunkRenderer {
@@ -78,8 +80,6 @@ namespace Chemical {
 	// loads in chunks around a position(generally the player)
 	class ChunkLoader {
 
-		friend class std::unique_ptr<ChunkLoader> std::make_unique<ChunkLoader>();
-
 		ChunkRenderer renderer;
 
 		std::vector<std::unique_ptr<Chunk>> loaded_chunks;
@@ -87,12 +87,9 @@ namespace Chemical {
 		uint8_t render_distance = 8;
 		uint32_t seed = 8;
 
-		ChunkLoader() {}; // private constructor, can only be created as unique_ptr on heap
-
 	public:
 
-		static std::unique_ptr<ChunkLoader> CreateChunkLoader(uint8_t render_distance, uint32_t seed);
-		static std::unique_ptr<ChunkLoader> CreateChunkLoader(uint32_t seed);
+		ChunkLoader(uint32_t seed, uint8_t render_distance = 8);
 
 		void Update();
 	};
