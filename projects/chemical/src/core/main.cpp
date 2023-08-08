@@ -90,15 +90,17 @@ void APIENTRY message_callback(GLenum source, GLenum type, GLuint id, GLenum sev
 double oldx, oldy;
 void UpdatePlayer() {
 	glm::fmat4 matrix = player_transform.GetTransform();
-	glm::fvec3 forward = matrix[2];
+	glm::fvec3 forward = -matrix[2];
 	glm::fvec3 front = glm::normalize(glm::vec3(forward.x, 0, forward.z));
+
+	//LOGGER_CONSOLE_CUSTOM_MESSAGE("forward x: {}, y: {}, z: {}", forward.x, forward.y, forward.z);
 	glm::fvec3 right = matrix[0];
 
 	if (glfwGetKey(window, GLFW_KEY_W)) {
-		player_transform.position -= front * 0.15f;
+		player_transform.position += front * 0.15f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_S)) {
-		player_transform.position += front * 0.15f;
+		player_transform.position -= front * 0.15f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A)) {
 		player_transform.position -= right * 0.15f;
@@ -231,7 +233,7 @@ int main(int argc, char* argv[]) {
 	std::random_device rd;
 	uint32_t seed = rd();
 
-	ChunkLoader loader(seed, 15);
+	ChunkLoader loader(seed, 2);
 
 	// MORE TESTING CODE --------------------------------------------
 

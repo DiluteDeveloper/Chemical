@@ -35,23 +35,22 @@ namespace Chemical {
 
 	// converts 3D block coordinates to 1D
 	uint32_t Block3Dto1D(uint8_t x, uint16_t y, uint8_t z) {
-		return ((y * CHUNK_SIZE_X * CHUNK_SIZE_Z) + (z * CHUNK_SIZE_X) + x);
+		return ((y * CHUNK_SIZE * CHUNK_SIZE) + (z * CHUNK_SIZE) + x);
 	}
 
-	Chunk::Chunk(const glm::ivec2& origin, uint32_t seed) :
-	origin(origin) {
+	Chunk::Chunk(const glm::ivec2& origin, uint32_t seed) {
 		const siv::PerlinNoise perlin{seed};
 
-		for (uint8_t x = 0; x < CHUNK_SIZE_X; x++)
+		for (uint8_t x = 0; x < CHUNK_SIZE; x++)
 		{
-			for (uint8_t z = 0; z < CHUNK_SIZE_Z; z++)
+			for (uint8_t z = 0; z < CHUNK_SIZE; z++)
 			{
 
 				// goes from 0-71y
-				int16_t genHeight = static_cast<int16_t>((perlin.octave2D_01((origin.x + x) * 0.02f, (origin.y + z) * 0.02f, 4) * 71));
+				int16_t genHeight = static_cast<int16_t>((perlin.octave2D_01(((origin.x * CHUNK_SIZE) + x) * 0.02f, ((origin.y * CHUNK_SIZE) + z) * 0.02f, 4) * 71));
 
 				// reverse iterator to go from terrain height - 0(bottom y of the chunk)
-				// If genHeight is past CHUNK_SIZE_Y it will crash
+				// If genHeight is past CHUNK_HEIGHT it will crash
 				for (int16_t y = genHeight; y >= 0; y--)
 				{
 
@@ -75,39 +74,43 @@ namespace Chemical {
 	}
 
 	ChunkLoader::ChunkLoader(uint32_t seed, uint8_t render_distance) :
-	seed(seed), real_rd((render_distance % 2 == 0) ? render_distance : render_distance - 1) {
+	seed(seed), render_distance(render_distance) {
 
 		glm::ivec2 player_chunk_coordinates;
 		player_chunk_coordinates.x = std::floor(Core::player_transform.position.x / 16);
 		player_chunk_coordinates.y = std::floor(Core::player_transform.position.z / 16);
 
-		for (int32_t x = -real_rd; x < real_rd + 1; x++)
+		// center chunk index = [std::floor((real_rd * real_rd) / 2)]
+
+		// + 1 accounts for the center chunk
+		for (int16_t x = -render_distance; x < render_distance + 1; x++)
 		{
-			for (int32_t z = -real_rd; z < real_rd + 1; z++)
+			for (int16_t z = -render_distance; z < render_distance + 1; z++)
 			{
-				if (x == 0 && z == 0)
-					center_chunk_origin = glm::ivec2(x + player_chunk_coordinates.x, z + player_chunk_coordinates.y);
-				loaded_chunks
-					[x + player_chunk_coordinates.x]
-					[z + player_chunk_coordinates.y] =
-						std::make_unique<Chunk>(glm::ivec2((x + player_chunk_coordinates.x) * CHUNK_SIZE_X, (z + player_chunk_coordinates.y) * CHUNK_SIZE_Z), seed);
+				glm::ivec2 origin = glm::ivec2(
+					(x + player_chunk_coordinates.x),
+					(z + player_chunk_coordinates.y));
+
+				loaded_chunks[origin.x][origin.y] = std::make_unique<Chunk>(origin, seed);
 			}
 
 		}
-
-		for (int32_t x = -real_rd; x < real_rd + 1; x++)
+		for (int16_t x = -render_distance; x < render_distance + 1; x++)
 		{
-			for (int32_t z = -real_rd; z < real_rd + 1; z++)
+			for (int16_t z = -render_distance; z < render_distance + 1; z++)
 			{
+				glm::ivec2 origin = glm::ivec2(
+					(x + player_chunk_coordinates.x),
+					(z + player_chunk_coordinates.y));
 
 				std::array<const Chunk*, 4> edges = {};
 
-				edges[0] = (x > -real_rd) ? loaded_chunks[(x + player_chunk_coordinates.x) - 1][(z + player_chunk_coordinates.y)].get() : nullptr;
-				edges[1] = (z < real_rd - 1) ? loaded_chunks[x + player_chunk_coordinates.x][(z + player_chunk_coordinates.y) + 1].get() : nullptr;
-				edges[2] = (x < real_rd - 1) ? loaded_chunks[(x + player_chunk_coordinates.x) + 1][(z + player_chunk_coordinates.y)].get() : nullptr;
-				edges[3] = (z > -real_rd) ? loaded_chunks[x + player_chunk_coordinates.x][(z + player_chunk_coordinates.y) - 1].get() : nullptr;
+				edges[0] = (x > -render_distance) ? loaded_chunks[origin.x - 1][origin.y].get() : nullptr;
+				edges[1] = (z < render_distance) ?	loaded_chunks[origin.x][origin.y + 1].get() : nullptr;
+				edges[2] = (x < render_distance) ?	loaded_chunks[origin.x + 1][origin.y].get() : nullptr;
+				edges[3] = (z > -render_distance) ? loaded_chunks[origin.x][origin.y - 1].get() : nullptr;
 
-				renderer.GenerateChunkMeshEdged(loaded_chunks[x + player_chunk_coordinates.x][z + player_chunk_coordinates.y], edges);
+				renderer.GenerateChunkMeshEdged(loaded_chunks[origin.x][origin.y], edges);
 			}
 		}
 	}
@@ -115,28 +118,49 @@ namespace Chemical {
 
 	void ChunkLoader::Update() {
 
-		//LOGGER_CONSOLE_CUSTOM_MESSAGE("{}, {}", Core::player_transform.position.x, Core::player_transform.position.z);
-		glm::ivec2 player_chunk_coordinates;
-		player_chunk_coordinates.x = std::floor(Core::player_transform.position.x / 16);
-		player_chunk_coordinates.y = std::floor(Core::player_transform.position.z / 16);
+		/*glm::ivec2 player_chunk_coordinates;
+		player_chunk_coordinates.x = std::floor(Core::player_transform.position.x / CHUNK_SIZE);
+		player_chunk_coordinates.y = std::floor(Core::player_transform.position.z / CHUNK_SIZE);
 
-		if (player_chunk_coordinates != center_chunk_origin) {
-			glm::ivec2 offset = player_chunk_coordinates - center_chunk_origin;
+		LOGGER_CONSOLE_CUSTOM_MESSAGE("player chunk coordinates x: {}, z: {}", player_chunk_coordinates.x, player_chunk_coordinates.y);
+
+		uint32_t center_chunk_index = std::floor((real_rd * real_rd) / 2);
+
+		// excludes the center
+		uint32_t sqr_radius = std::floor((real_rd) / 2);
+
+		Chunk& center_chunk = *loaded_chunks[center_chunk_index];
+		if (player_chunk_coordinates != center_chunk.origin) {
+			glm::ivec2 offset = player_chunk_coordinates - center_chunk.origin;
 
 
-			if (offset.y != 0) { // the player changed z chunk
-				for (int32_t i = -real_rd; i < real_rd + 1; i++)
+			if (offset.y > 0) { // the player went +z chunk
+				for (int32_t x = 0; x < real_rd; x++)
 				{
 
-					LOGGER_CONSOLE_CUSTOM_MESSAGE("{}", i);
-					loaded_chunks
-						[i + player_chunk_coordinates.x]
-					[player_chunk_coordinates.y + (real_rd * offset.y)] =
-						std::make_unique<Chunk>(glm::ivec2((i + player_chunk_coordinates.x) * CHUNK_SIZE_X, ((player_chunk_coordinates.y + (real_rd * offset.y))) * CHUNK_SIZE_Z), seed);
+					//for (const auto& c : loaded_chunks) {
+					//	LOGGER_CONSOLE_CUSTOM_MESSAGE("x: {}, z: {}", c->origin.x, c->origin.y);
+					//}
 
-					loaded_chunks[i + player_chunk_coordinates.x].erase(player_chunk_coordinates.y + ((real_rd + 1) * -offset.y));
+					uint32_t zIndex = real_rd;
+					uint32_t xIndex = x;
+					                   
+					LOGGER_CONSOLE_CUSTOM_MESSAGE("index to add: {}", zIndex + (xIndex * real_rd));
+					//LOGGER_CONSOLE_CUSTOM_MESSAGE("opposite index: {}", std::max(real_rd * -offset.y, 0));
 
-					std::array<const Chunk*, 4> edges = {};
+					loaded_chunks.erase(loaded_chunks.begin() + xIndex);
+
+					// can be em place back
+					loaded_chunks.insert(loaded_chunks.begin() + zIndex + (xIndex * real_rd),
+						std::make_unique<Chunk>(glm::ivec2((xIndex - real_rd) * CHUNK_SIZE, (zIndex)*CHUNK_SIZE), seed));
+					//loaded_chunks.insert(loaded_chunks.begin() + zIndex + (xIndex * real_rd),
+					//	std::make_unique<Chunk>(glm::ivec2((x - real_rd) * CHUNK_SIZE, (zIndex) * CHUNK_SIZE), seed));
+
+					//renderer.GenerateChunkMesh(loaded_chunks[loaded_chunks.size() - 1]);
+
+					//loaded_chunks[i + player_chunk_coordinates.x].erase(player_chunk_coordinates.y + ((real_rd + 1) * -offset.y));
+
+					//std::array<const Chunk*, 4> edges = {};
 
 					//edges[0] = (i > -real_rd) ? loaded_chunks[(i + player_chunk_coordinates.x) - 1]
 						//[player_chunk_coordinates.y + (real_rd * offset.y)].get() : nullptr;
@@ -145,34 +169,34 @@ namespace Chemical {
 					//edges[2] = (x < real_rd - 1) ? loaded_chunks[(i + player_chunk_coordinates.x) + 1][((abs(player_chunk_coordinates.y) + real_rd + 1) * offset.y)].get() : nullptr;
 					//edges[3] = (z > -real_rd) ? loaded_chunks[i + player_chunk_coordinates.x][((abs(player_chunk_coordinates.y) + real_rd + 1) * offset.y) - 1].get() : nullptr;
 
-					renderer.GenerateChunkMesh(loaded_chunks[i + player_chunk_coordinates.x]
-						[(player_chunk_coordinates.y + (real_rd * offset.y))]);
+					//renderer.GenerateChunkMesh(loaded_chunks[i + player_chunk_coordinates.x]
+					//	[(player_chunk_coordinates.y + (real_rd * offset.y))]);
 				}
 			}
-			if(offset.x != 0) { // the player changed x chunk
-				for (int32_t i = -real_rd; i < real_rd + 1; i++)
-				{
-					LOGGER_CONSOLE_CUSTOM_MESSAGE("{}", i);
-					loaded_chunks
-						[player_chunk_coordinates.x + (real_rd * offset.x)]
-					[i + player_chunk_coordinates.y] =
-						std::make_unique<Chunk>(glm::ivec2((player_chunk_coordinates.x + (real_rd * offset.x)) * CHUNK_SIZE_X, (i + player_chunk_coordinates.y) * CHUNK_SIZE_Z), seed);
+			//if(offset.x != 0) { // the player changed x chunk
+			//	for (int32_t i = -real_rd; i < real_rd + 1; i++)
+			//	{
+			//		LOGGER_CONSOLE_CUSTOM_MESSAGE("{}", i);
+			//		loaded_chunks
+			//			[player_chunk_coordinates.x + (real_rd * offset.x)]
+			//		[i + player_chunk_coordinates.y] =
+			//			std::make_unique<Chunk>(glm::ivec2((player_chunk_coordinates.x + (real_rd * offset.x)) * CHUNK_SIZE, (i + player_chunk_coordinates.y) * CHUNK_SIZE), seed);
 
-					loaded_chunks[player_chunk_coordinates.x + ((real_rd + 1) * -offset.x)].erase(i + player_chunk_coordinates.y);
+			//		loaded_chunks[player_chunk_coordinates.x + ((real_rd + 1) * -offset.x)].erase(i + player_chunk_coordinates.y);
 
-					std::array<const Chunk*, 4> edges = {};
+			//		std::array<const Chunk*, 4> edges = {};
 
 					//edges[0] = (i > -real_rd) ? loaded_chunks[(i + player_chunk_coordinates.x) - 1][((abs(player_chunk_coordinates.y) + real_rd + 1) * offset.y)].get() : nullptr;
 					//edges[1] = (z < real_rd - 1) ? loaded_chunks[i + player_chunk_coordinates.x][((abs(player_chunk_coordinates.y) + real_rd + 1) * offset.y) + 1].get() : nullptr;
 					//edges[2] = (x < real_rd - 1) ? loaded_chunks[(i + player_chunk_coordinates.x) + 1][((abs(player_chunk_coordinates.y) + real_rd + 1) * offset.y)].get() : nullptr;
 					//edges[3] = (z > -real_rd) ? loaded_chunks[i + player_chunk_coordinates.x][((abs(player_chunk_coordinates.y) + real_rd + 1) * offset.y) - 1].get() : nullptr;
 
-					renderer.GenerateChunkMesh(loaded_chunks[player_chunk_coordinates.x + (real_rd * offset.x)]
-						[i + player_chunk_coordinates.y]);
-				}
-			}
-			center_chunk_origin = player_chunk_coordinates;
-		}
+				//	renderer.GenerateChunkMesh(loaded_chunks[player_chunk_coordinates.x + (real_rd * offset.x)]
+			//			[i + player_chunk_coordinates.y]);
+			//	}
+			//}
+			//center_chunk_origin = player_chunk_coordinates;
+		}*/
 
 		renderer.RenderChunks(loaded_chunks);
 	}
@@ -191,25 +215,25 @@ namespace Chemical {
 		chunk_shader->SetUniformMatrix4FV("v_proj", 1, false, &Core::projection[0][0]); 
 	}
 
-	void ChunkRenderer::RenderChunk(const std::unique_ptr<Chunk>& chunk) {
+	//void ChunkRenderer::RenderChunk(const std::unique_ptr<Chunk>& chunk) {
 
-		chunk_shader->BindProgram();
-		chunk_shader->SetUniformMatrix4FV("v_view", 1, false, &glm::inverse(Core::player_transform.GetTransform())[0][0]);
+	//	chunk_shader->BindProgram();
+	//	chunk_shader->SetUniformMatrix4FV("v_view", 1, false, &Core::player_transform.GetTransform()[0][0]);
 
-		chunk_shader->SetUniform2IV("v_chunk_origin", 1, &chunk->origin[0]);
+	//	chunk_shader->SetUniform2IV("v_chunk_origin", 1, &chunk->origin[0]);
 
-		chunk->mesh.v_array.Bind();
-		chunk->mesh.v_array.DrawArrays(chunk->mesh.info);
-	}
+	//	chunk->mesh.v_array.Bind();
+	//	chunk->mesh.v_array.DrawArrays(chunk->mesh.info);
+	//}
 
 	void ChunkRenderer::RenderChunks(const std::unordered_map<int32_t, std::unordered_map<int32_t, std::unique_ptr<Chunk>>>& chunks) {
 		chunk_shader->BindProgram();
-		chunk_shader->SetUniformMatrix4FV("v_view", 1, false, &glm::inverse(Core::player_transform.GetTransform())[0][0]);
+		chunk_shader->SetUniformMatrix4FV("v_view", 1, false, &Core::player_transform.GetTransform()[0][0]);
 
-		for (const auto&[x, list] : chunks) {
-			for (const auto& [z, chunk] : list) {
-					
-				chunk_shader->SetUniform2IV("v_chunk_origin", 1, &chunk->origin[0]);
+		for (const auto&[x, yMap] : chunks) {
+			for (const auto& [z, chunk] : yMap) {
+				glm::ivec2 origin = glm::ivec2(x * CHUNK_SIZE, z * CHUNK_SIZE);
+				chunk_shader->SetUniform2IV("v_chunk_origin", 1, &origin[0]);
 
 				chunk->mesh.v_array.Bind();
 				chunk->mesh.v_array.DrawArrays(chunk->mesh.info);
@@ -220,18 +244,18 @@ namespace Chemical {
 	void ChunkRenderer::GenerateChunkMesh(const std::unique_ptr<Chunk>& chunk) {
 		std::vector<ChunkVertex> vertices;
 
-		for (uint8_t x = 0; x < CHUNK_SIZE_X; x++)
+		for (uint8_t x = 0; x < CHUNK_SIZE; x++)
 		{
-			for (uint8_t z = 0; z < CHUNK_SIZE_Z; z++)
+			for (uint8_t z = 0; z < CHUNK_SIZE; z++)
 			{
-				for (uint16_t y = 0; y < CHUNK_SIZE_Y; y++)
+				for (uint16_t y = 0; y < CHUNK_HEIGHT; y++)
 				{
 					BlockType block_type = static_cast<BlockType>(chunk->blocks[Block3Dto1D(x, y, z)]);
 					if (block_type != BlockType::Air) // air
 					{
 						const Block& block = GetBlock(block_type);
 						// TOP
-						if (y < CHUNK_SIZE_Y - 1 && chunk->blocks[Block3Dto1D(x, y + 1, z)] == BlockType::Air) {
+						if (y < CHUNK_HEIGHT - 1 && chunk->blocks[Block3Dto1D(x, y + 1, z)] == BlockType::Air) {
 							vertices.emplace_back(glm::fvec3(x, y + 1, z), block.colour);
 							vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
 							vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
@@ -256,7 +280,7 @@ namespace Chemical {
 							vertices.emplace_back(glm::vec3(x + 1, y, z + 1), block.colour);
 						}
 
-						if (x < CHUNK_SIZE_X - 1 && chunk->blocks[Block3Dto1D(x + 1, y, z)] == BlockType::Air) {
+						if (x < CHUNK_SIZE - 1 && chunk->blocks[Block3Dto1D(x + 1, y, z)] == BlockType::Air) {
 
 							vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
 							vertices.emplace_back(glm::vec3(x + 1, y, z), block.colour);
@@ -278,7 +302,7 @@ namespace Chemical {
 							vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
 						}
 
-						if (z < CHUNK_SIZE_Z - 1 && chunk->blocks[Block3Dto1D(x, y, z + 1)] == BlockType::Air) {
+						if (z < CHUNK_SIZE - 1 && chunk->blocks[Block3Dto1D(x, y, z + 1)] == BlockType::Air) {
 
 							vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
 							vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
@@ -322,18 +346,18 @@ namespace Chemical {
 		std::vector<ChunkVertex> vertices;
 
 
-		for (uint8_t x = 0; x < CHUNK_SIZE_X; x++)
+		for (uint8_t x = 0; x < CHUNK_SIZE; x++)
 		{
-			for (uint8_t z = 0; z < CHUNK_SIZE_Z; z++)
+			for (uint8_t z = 0; z < CHUNK_SIZE; z++)
 			{
-				for (uint16_t y = 0; y < CHUNK_SIZE_Y; y++)
+				for (uint16_t y = 0; y < CHUNK_HEIGHT; y++)
 				{
 					BlockType block_type = static_cast<BlockType>(chunk->blocks[Block3Dto1D(x, y, z)]);
 					if (block_type != BlockType::Air)
 					{
 						const Block& block = GetBlock(block_type);
 						// TOP
-						if (y < CHUNK_SIZE_Y - 1 && chunk->blocks[Block3Dto1D(x, y + 1, z)] == BlockType::Air) {
+						if (y < CHUNK_HEIGHT - 1 && chunk->blocks[Block3Dto1D(x, y + 1, z)] == BlockType::Air) {
 							vertices.emplace_back(glm::fvec3(x, y + 1, z), block.colour);
 							vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
 							vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
@@ -358,7 +382,7 @@ namespace Chemical {
 							vertices.emplace_back(glm::vec3(x + 1, y, z + 1), block.colour);
 						}
 
-						if (x < CHUNK_SIZE_X - 1) {
+						if (x < CHUNK_SIZE - 1) {
 							if (chunk->blocks[Block3Dto1D(x + 1, y, z)] == BlockType::Air) {
 
 								vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
@@ -398,7 +422,7 @@ namespace Chemical {
 						}
 						else {
 							if (edges[0] != nullptr) {
-								if (edges[0]->blocks[Block3Dto1D(CHUNK_SIZE_X - 1, y, z)] == BlockType::Air) {
+								if (edges[0]->blocks[Block3Dto1D(CHUNK_SIZE - 1, y, z)] == BlockType::Air) {
  									vertices.emplace_back(glm::vec3(x, y, z), block.colour);
 									vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
 									vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
@@ -409,7 +433,7 @@ namespace Chemical {
 								}
 							}
 						}
-						if (z < CHUNK_SIZE_Z - 1) {
+						if (z < CHUNK_SIZE - 1) {
 							if (chunk->blocks[Block3Dto1D(x, y, z + 1)] == BlockType::Air) {
 
 								vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
@@ -450,7 +474,7 @@ namespace Chemical {
 						}
 						else {
 							if (edges[3] != nullptr) {
-								if (edges[3]->blocks[Block3Dto1D(x, y, CHUNK_SIZE_Z - 1)] == BlockType::Air) {
+								if (edges[3]->blocks[Block3Dto1D(x, y, CHUNK_SIZE - 1)] == BlockType::Air) {
 
 									vertices.emplace_back(glm::vec3(x, y + 1, z), block.colour);
 									vertices.emplace_back(glm::vec3(x, y, z), block.colour);
@@ -485,18 +509,18 @@ namespace Chemical {
 	void ChunkRenderer::RegenerateChunkMesh(const std::unique_ptr<Chunk>& chunk) {
 		std::vector<ChunkVertex> vertices;
 
-		for (uint8_t x = 0; x < CHUNK_SIZE_X; x++)
+		for (uint8_t x = 0; x < CHUNK_SIZE; x++)
 		{
-			for (uint8_t z = 0; z < CHUNK_SIZE_Z; z++)
+			for (uint8_t z = 0; z < CHUNK_SIZE; z++)
 			{
-				for (uint16_t y = 0; y < CHUNK_SIZE_Y; y++)
+				for (uint16_t y = 0; y < CHUNK_HEIGHT; y++)
 				{
 					BlockType block_type = static_cast<BlockType>(chunk->blocks[Block3Dto1D(x, y, z)]);
 					if (block_type != BlockType::Air) // air
 					{
 						const Block& block = GetBlock(block_type);
 						// TOP
-						if (y < CHUNK_SIZE_Y - 1 && chunk->blocks[Block3Dto1D(x, y + 1, z)] == BlockType::Air) {
+						if (y < CHUNK_HEIGHT - 1 && chunk->blocks[Block3Dto1D(x, y + 1, z)] == BlockType::Air) {
 							vertices.emplace_back(glm::fvec3(x, y + 1, z), block.colour);
 							vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
 							vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
@@ -521,7 +545,7 @@ namespace Chemical {
 							vertices.emplace_back(glm::vec3(x + 1, y, z + 1), block.colour);
 						}
 
-						if (x < CHUNK_SIZE_X - 1 && chunk->blocks[Block3Dto1D(x + 1, y, z)] == BlockType::Air) {
+						if (x < CHUNK_SIZE - 1 && chunk->blocks[Block3Dto1D(x + 1, y, z)] == BlockType::Air) {
 
 							vertices.emplace_back(glm::vec3(x + 1, y + 1, z), block.colour);
 							vertices.emplace_back(glm::vec3(x + 1, y, z), block.colour);
@@ -543,7 +567,7 @@ namespace Chemical {
 							vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);
 						}
 
-						if (z < CHUNK_SIZE_Z - 1 && chunk->blocks[Block3Dto1D(x, y, z + 1)] == BlockType::Air) {
+						if (z < CHUNK_SIZE - 1 && chunk->blocks[Block3Dto1D(x, y, z + 1)] == BlockType::Air) {
 
 							vertices.emplace_back(glm::vec3(x, y, z + 1), block.colour);
 							vertices.emplace_back(glm::vec3(x, y + 1, z + 1), block.colour);

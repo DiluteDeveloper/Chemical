@@ -6,9 +6,8 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#define CHUNK_SIZE_X 16 // MAX OF 64
-#define CHUNK_SIZE_Y 72
-#define CHUNK_SIZE_Z 16 // MAX OF 64
+#define CHUNK_SIZE 16 // MAX OF 64
+#define CHUNK_HEIGHT 72
 
 namespace Chemical {
 
@@ -48,12 +47,10 @@ namespace Chemical {
 		ChunkMesh mesh;
 
 		// x,z,z block origin is at -x-y-z
-		std::array<BlockType, CHUNK_SIZE_X* CHUNK_SIZE_Y* CHUNK_SIZE_Z> blocks = { BlockType::Air};
-
-		// chunk origin is at -x-z 
-		glm::ivec2 origin = glm::ivec2(0);
+		std::array<BlockType, (CHUNK_SIZE*CHUNK_SIZE) * CHUNK_HEIGHT> blocks = { BlockType::Air};
 
 	public:
+		// origin is in chunk-coordinates
 		Chunk(const glm::ivec2& origin, uint32_t seed); // should be heap allocated
 
 	};
@@ -64,7 +61,7 @@ namespace Chemical {
 
 		ChunkRenderer();
 
-		void RenderChunk(const std::unique_ptr<Chunk>& chunk);
+		//void RenderChunk(const std::unique_ptr<Chunk>& chunk);
 
 		// More optimized than rendering 1 chunk at a time due to shader binding
 		void RenderChunks(const std::unordered_map<int32_t, std::unordered_map<int32_t, std::unique_ptr<Chunk>>>& chunks);
@@ -82,11 +79,12 @@ namespace Chemical {
 
 		ChunkRenderer renderer;
 
+
+		//x,z 
 		std::unordered_map<int32_t, std::unordered_map<int32_t, std::unique_ptr<Chunk>>> loaded_chunks;
 
-		glm::ivec2 center_chunk_origin = glm::ivec2(0);
-
-		uint8_t real_rd = 8;
+		// real_rd is used to estimate amount of chunks. real_rd * real_rd
+		uint16_t render_distance = 0;
 		uint32_t seed = 8;
 
 	public:
