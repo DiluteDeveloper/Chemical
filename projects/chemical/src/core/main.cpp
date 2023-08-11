@@ -5,18 +5,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <random>
 
-
-#include "transform/transform.h"
-
-#include "util/filestream.h"
-#include "graphics/opengl/shader_program.h"
-#include "graphics/opengl/buffer.h"
-#include "graphics/opengl/vertex_array.h"
-
 #include "chunk_system.h"
 
 #include "core.h"
 
+// globals
 namespace Chemical {
 	using namespace Core;
 	namespace Core {
@@ -31,7 +24,11 @@ namespace Chemical {
 using namespace Chemical;
 
 #ifdef CHEMICAL_DEBUG
+
+// prevents message duplication
 int64_t prevMessageID = -1;
+
+// OpenGL debug callback
 void APIENTRY message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
 {
 
@@ -87,41 +84,39 @@ void APIENTRY message_callback(GLenum source, GLenum type, GLuint id, GLenum sev
 }
 #endif
 
+// movement controls
 double oldx, oldy;
 void UpdatePlayer() {
 	glm::fmat4 matrix = player_transform.GetTransform();
-	glm::fvec3 forward = -matrix[2];
-	glm::fvec3 front = glm::normalize(glm::vec3(forward.x, 0, forward.z));
-
-	//LOGGER_CONSOLE_CUSTOM_MESSAGE("forward x: {}, y: {}, z: {}", forward.x, forward.y, forward.z);
 	glm::fvec3 right = matrix[0];
+	glm::fvec3 up = matrix[1];
+	glm::fvec3 forward = matrix[2];
+	glm::fvec3 front = glm::normalize(glm::fvec3(forward.x, 0, forward.z));
 
 	if (glfwGetKey(window, GLFW_KEY_W)) {
-		player_transform.position += front * 0.15f;
+		player_transform.position += front * 0.25f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_S)) {
-		player_transform.position -= front * 0.15f;
+		player_transform.position -= front * 0.25f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A)) {
-		player_transform.position -= right * 0.15f;
+		player_transform.position -= right * 0.25f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D)) {
-		player_transform.position += right * 0.15f;
+		player_transform.position += right * 0.25f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE)) {
-		player_transform.position.y += 0.15f;
+		player_transform.position.y += 0.25f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
-		player_transform.position.y -= 0.15f;
+		player_transform.position.y -= 0.25f;
 	}
 
 	double x, y;
 	glfwGetCursorPos(window, &x, &y);
 
-	player_transform.rotation.y -= static_cast<float>(x - oldx) * 0.002f;
-	player_transform.rotation.x -= static_cast<float>(y - oldy) * 0.002f;
-
-	player_transform.rotation.x = glm::clamp(player_transform.rotation.x, -80.0f, 80.0f);
+	player_transform.rotation.y += static_cast<float>(x - oldx) * 0.08f;
+	player_transform.rotation.x += static_cast<float>(y - oldy) * 0.08f;
 
 	oldx = x;
 	oldy = y;
@@ -177,6 +172,7 @@ int main(int argc, char* argv[]) {
 	// GLFW PREFERENCES ----------------------------------
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSwapInterval(1);
 
 	// GLFW PREFERENCES ----------------------------------
 
@@ -216,7 +212,7 @@ int main(int argc, char* argv[]) {
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glEnable(GL_CULL_FACE);
-	glFrontFace(GL_CW);
+	glFrontFace(GL_CCW);
 
 	glProvokingVertex(GL_FIRST_VERTEX_CONVENTION);
 
@@ -226,14 +222,17 @@ int main(int argc, char* argv[]) {
 
 	// MORE TESTING CODE --------------------------------------------
 
-	projection = glm::perspective(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
+
+	projection = glm::perspectiveLH(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
 
 	InitializeBlockData();
 
 	std::random_device rd;
 	uint32_t seed = rd();
 
-	ChunkLoader loader(seed, 2);
+	ChunkLoader loader(seed, 16);
+
+	glfwGetCursorPos(window, &oldx, &oldy);
 
 	// MORE TESTING CODE --------------------------------------------
 

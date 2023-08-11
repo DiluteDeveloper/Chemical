@@ -11,6 +11,6 @@ out vec3 f_colour;
 
 void main()
 {
-	gl_Position = v_proj * inverse(v_view) * vec4(v_chunk_origin.x + v_pos.x, v_pos.y, v_chunk_origin.y + v_pos.z, 1.0);
-	f_colour = v_colour;  
+	gl_Position = v_proj * v_view * vec4(v_chunk_origin.x + v_pos.x, v_pos.y, v_chunk_origin.y + v_pos.z, 1.0);
+	f_colour = vec3(v_colour);  
 }
