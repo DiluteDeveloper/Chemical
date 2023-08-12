@@ -1,5 +1,7 @@
 #include "pch.h"
+
 #include <perlin/PerlinNoise.hpp>
+#include <future>
 
 #include "chunk_system.h"
 #include "util/filestream.h"
@@ -8,25 +10,6 @@
 
 
 namespace Chemical {
-
-	struct Block {
-
-		glm::fvec3 colour = glm::fvec3(0.0f);
-	};
-
-	std::array<Block, 5> block_registry;
-
-	void InitializeBlockData() {
-		// air is left default
-
-		block_registry[BlockType::Stone].colour = glm::fvec3(0.38f, 0.38f, 0.38f);
-		block_registry[BlockType::Dirt].colour = glm::fvec3(0.6f, 0.3f, 0.1f);
-		block_registry[BlockType::Grass].colour = glm::fvec3(0, 1, 0);
-		block_registry[BlockType::Bedrock].colour = glm::fvec3(0.2, 0.2, 0.2);
-	}
-	const Block& GetBlock(BlockType block_type) {
-		return block_registry[block_type];
-	}
 
 	// converts 3D block coordinates to 1D
 	uint32_t Block3Dto1D(uint8_t x, uint16_t y, uint8_t z) {
@@ -41,7 +24,7 @@ namespace Chemical {
 			for (uint8_t z = 0; z < CHUNK_SIZE; z++)
 			{
 
-				int16_t genHeight = static_cast<int16_t>((perlin.octave2D_01(((origin.x * CHUNK_SIZE) + x) * 0.02f, ((origin.y * CHUNK_SIZE) + z) * 0.02f, 4) * 58) + 1);
+				int16_t genHeight = static_cast<int16_t>((perlin.octave2D_01(((origin.x * CHUNK_SIZE) + x) * 0.02f, ((origin.y * CHUNK_SIZE) + z) * 0.02f, 4) * 126) + 1);
 
 				// reverse iterator to go from terrain height - 0(bottom y of the chunk)
 				// If genHeight is past CHUNK_HEIGHT it will be empty past that height
@@ -135,7 +118,7 @@ namespace Chemical {
 					loaded_chunks[x_origin].erase(neg_z_origin);
 					loaded_chunks[x_origin][z_origin] = std::make_unique<Chunk>(glm::ivec2{x_origin, z_origin}, seed);
 
-					
+
 					if (offset.y > 0) {
 						// the player went Z+ chunk
 
@@ -167,17 +150,17 @@ namespace Chemical {
 				}
 			}
 			center_origin.y = player_chunk_coordinates.y;
-			if (offset.x != 0) { 
+			if (offset.x != 0) {
 				// the player changed X chunk
 
+				int32_t neg_x_origin = center_origin.x + (render_distance * -offset.x);
 				for (int16_t z = -render_distance; z < render_distance + 1; z++)
 				{
 
 					int32_t x_origin = center_origin.x + ((render_distance + 1) * offset.x);
 					int32_t z_origin = center_origin.y + z;
-					int32_t neg_x_origin = center_origin.x + (render_distance * -offset.x);
-
 					loaded_chunks[neg_x_origin].erase(z_origin);
+
 					loaded_chunks[x_origin][z_origin] = std::make_unique<Chunk>(glm::ivec2{x_origin, z_origin}, seed);
 
 					if (offset.x > 0) {
@@ -207,6 +190,8 @@ namespace Chemical {
 					renderer.SetupChunkMesh(loaded_chunks[x_origin][z_origin]);
 					renderer.BuildChunkMesh(loaded_chunks[x_origin][z_origin], 1.25f);
 				}
+
+				loaded_chunks.erase(neg_x_origin);
 			}
 			center_origin.x = player_chunk_coordinates.x;
 		}
@@ -219,8 +204,7 @@ namespace Chemical {
 		OpenGL::Shader fragment_chunk_shader(Util::ReadFile("resources/shaders/chunk_shader.frag").c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
 
 		OpenGL::VertexLayout vertex_layout;
-		vertex_layout.AddAttribute(OpenGL::VertexAttribute{3, 0, OpenGL::DataType::FLOAT, OpenGL::DataTransformation::FLOAT});
-		vertex_layout.AddAttribute(OpenGL::VertexAttribute{3, 3 * sizeof(float), OpenGL::DataType::FLOAT, OpenGL::DataTransformation::FLOAT});
+		vertex_layout.AddAttribute(OpenGL::VertexAttribute{1, 0, OpenGL::DataType::UNSIGNED_INT, OpenGL::DataTransformation::INT});
 
 		chunk_shader = std::make_unique<OpenGL::ShaderProgram>(std::initializer_list<
 			const OpenGL::Shader*>{ &vertex_chunk_shader, & fragment_chunk_shader }, vertex_layout);
@@ -256,54 +240,6 @@ namespace Chemical {
 	void ChunkRenderer::BuildChunkMesh(const std::unique_ptr<Chunk>& chunk, float allocation_multiplier) {
 		std::vector<ChunkVertex> vertices;
 
-		vertices.emplace_back(glm::fvec3(2, -1, 0), glm::fvec3(1.0f, 0.0f, 0.0f));
-		vertices.emplace_back(glm::fvec3(4, -1, 0), glm::fvec3(1.0f, 0.0f, 0.0f));
-		vertices.emplace_back(glm::fvec3(4, 1, 0), glm::fvec3(1.0f, 0.0f, 0.0f));
-
-		vertices.emplace_back(glm::fvec3(2, -1, 0), glm::fvec3(1.0f, 0.0f, 0.0f));
-		vertices.emplace_back(glm::fvec3(4, 1, 0), glm::fvec3(1.0f, 0.0f, 0.0f));
-		vertices.emplace_back(glm::fvec3(2, 1, 0), glm::fvec3(1.0f, 0.0f, 0.0f));
-
-		vertices.emplace_back(glm::fvec3(-4, -1, 0), glm::fvec3(0.5f, 0.0f, 0.0f));
-		vertices.emplace_back(glm::fvec3(-2, -1, 0), glm::fvec3(0.5f, 0.0f, 0.0f));
-		vertices.emplace_back(glm::fvec3(-2, 1, 0), glm::fvec3(0.5f, 0.0f, 0.0f));
-
-		vertices.emplace_back(glm::fvec3(-4, -1, 0), glm::fvec3(0.5f, 0.0f, 0.0f));
-		vertices.emplace_back(glm::fvec3(-2, 1, 0), glm::fvec3(0.5f, 0.0f, 0.0f));
-		vertices.emplace_back(glm::fvec3(-4, 1, 0), glm::fvec3(0.5f, 0.0f, 0.0f));
-
-		vertices.emplace_back(glm::fvec3(-1, -1, -2), glm::fvec3(0.0f, 0.0f, 0.5f));
-		vertices.emplace_back(glm::fvec3(1, -1, -2), glm::fvec3(0.0f, 0.0f, 0.5f));
-		vertices.emplace_back(glm::fvec3(1, 1, -2), glm::fvec3(0.0f, 0.0f, 0.5f));
-
-		vertices.emplace_back(glm::fvec3(-1, -1, -2), glm::fvec3(0.0f, 0.0f, 0.5f));
-		vertices.emplace_back(glm::fvec3(1, 1, -2), glm::fvec3(0.0f, 0.0f, 0.5f));
-		vertices.emplace_back(glm::fvec3(-1, 1, -2), glm::fvec3(0.0f, 0.0f, 0.5f));
-
-		vertices.emplace_back(glm::fvec3(-1, -1, 2), glm::fvec3(0.0f, 0.0f, 1.0f));
-		vertices.emplace_back(glm::fvec3(1, -1, 2), glm::fvec3(0.0f, 0.0f, 1.0f));
-		vertices.emplace_back(glm::fvec3(1, 1, 2), glm::fvec3(0.0f, 0.0f, 1.0f));
-
-		vertices.emplace_back(glm::fvec3(-1, -1, 2), glm::fvec3(0.0f, 0.0f, 1.0f));
-		vertices.emplace_back(glm::fvec3(1, 1, 2), glm::fvec3(0.0f, 0.0f, 1.0f));
-		vertices.emplace_back(glm::fvec3(-1, 1, 2), glm::fvec3(0.0f, 0.0f, 1.0f));
-
-		vertices.emplace_back(glm::fvec3(-1, 2, 0), glm::fvec3(0.0f, 1.0f, 0.0f));
-		vertices.emplace_back(glm::fvec3(1, 2, 0), glm::fvec3(0.0f, 1.0f, 0.0f));
-		vertices.emplace_back(glm::fvec3(1, 4, 0), glm::fvec3(0.0f, 1.0f, 0.0f));
-
-		vertices.emplace_back(glm::fvec3(-1, 2, 0), glm::fvec3(0.0f, 1.0f, 0.0f));
-		vertices.emplace_back(glm::fvec3(1, 4, 0), glm::fvec3(0.0f, 1.0f, 0.0f));
-		vertices.emplace_back(glm::fvec3(-1, 4, 0), glm::fvec3(0.0f, 1.0f, 0.0f));
-
-		vertices.emplace_back(glm::fvec3(-1, -4, 0), glm::fvec3(0.0f, 0.5f, 0.0f));
-		vertices.emplace_back(glm::fvec3(1, -4, 0), glm::fvec3(0.0f, 0.5f, 0.0f));
-		vertices.emplace_back(glm::fvec3(1, -2, 0), glm::fvec3(0.0f, 0.5f, 0.0f));
-
-		vertices.emplace_back(glm::fvec3(-1, -4, 0), glm::fvec3(0.0f, 0.5f, 0.0f));
-		vertices.emplace_back(glm::fvec3(1, -2, 0), glm::fvec3(0.0f, 0.5f, 0.0f));
-		vertices.emplace_back(glm::fvec3(-1, -2, 0), glm::fvec3(0.0f, 0.5f, 0.0f));
-
 
 		// iterate through chunk blocks on x, z, y
 		for (uint8_t x = 0; x < CHUNK_SIZE; x++)
@@ -321,10 +257,6 @@ namespace Chemical {
 						// if block is not air, it will need faces rendered
 
 
-						// get actual block data
-						const Block& block = GetBlock(block_type);
-
-
 						// top face
 						if (y < CHUNK_HEIGHT - 1) {
 							// a block exists at Y + 1
@@ -332,26 +264,42 @@ namespace Chemical {
 							if (chunk->blocks[Block3Dto1D(x, y + 1, z)] == BlockType::Air) {
 								// the block at Y + 1 is air so a Y+ face needs to be generated
 
-								vertices.emplace_back(glm::fvec3(x, y + 1, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y + 1, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x, y + 1, z + 1), block.colour);
+								uint32_t vertex = 0x00000000;
 
-								vertices.emplace_back(glm::fvec3(x, y + 1, z + 1), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y + 1, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y + 1, z + 1), block.colour);
+								vertex += static_cast<uint32_t>(block_type) << 20;
+
+								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(y) << 8;
+								vertex += static_cast<uint32_t>(z) << 3;
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
 							}
 
 						}
 						else {
 							// a block at Y + 1 does not exist so a top face needs to be generated
 
-							vertices.emplace_back(glm::fvec3(x, y + 1, z), block.colour);
-							vertices.emplace_back(glm::fvec3(x + 1, y + 1, z), block.colour);
-							vertices.emplace_back(glm::fvec3(x, y + 1, z + 1), block.colour);
+							uint32_t vertex = 0x00000000;
 
-							vertices.emplace_back(glm::fvec3(x, y + 1, z + 1), block.colour);
-							vertices.emplace_back(glm::fvec3(x + 1, y + 1, z), block.colour);
-							vertices.emplace_back(glm::fvec3(x + 1, y + 1, z + 1), block.colour);
+							vertex += static_cast<uint32_t>(block_type) << 20;
+
+							vertex += static_cast<uint32_t>(x) << 15;
+							vertex += static_cast<uint32_t>(y) << 8;
+							vertex += static_cast<uint32_t>(z) << 3;
+
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
 						}
 
 						// bottom face
@@ -359,13 +307,21 @@ namespace Chemical {
 							// the y is 0 so a Y- face needs to be generated or
 							// the block at Y - 1 is air so a Y- face needs to be generated
 
-							vertices.emplace_back(glm::fvec3(x + 1, y, z), block.colour);
-							vertices.emplace_back(glm::fvec3(x, y, z), block.colour);
-							vertices.emplace_back(glm::fvec3(x, y, z + 1), block.colour);
+							uint32_t vertex = 0x00000001;
 
-							vertices.emplace_back(glm::fvec3(x + 1, y, z), block.colour);
-							vertices.emplace_back(glm::fvec3(x, y, z + 1), block.colour);
-							vertices.emplace_back(glm::fvec3(x + 1, y, z + 1), block.colour);
+							vertex += static_cast<uint32_t>(block_type) << 20;
+
+							vertex += static_cast<uint32_t>(x) << 15;
+							vertex += static_cast<uint32_t>(y) << 8;
+							vertex += static_cast<uint32_t>(z) << 3;
+
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
 						}
 
 						// X+ face
@@ -374,13 +330,21 @@ namespace Chemical {
 							if (chunk->blocks[Block3Dto1D(x + 1, y, z)] == BlockType::Air) {
 								// the block at X + 1 is air so a X+ face needs to be generated
 
-								vertices.emplace_back(glm::fvec3(x + 1, y + 1, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y, z + 1), block.colour);
+								uint32_t vertex = 0x00000002;
 
-								vertices.emplace_back(glm::fvec3(x + 1, y + 1, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y, z + 1), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y + 1, z + 1), block.colour);
+								vertex += static_cast<uint32_t>(block_type) << 20;
+
+								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(y) << 8;
+								vertex += static_cast<uint32_t>(z) << 3;
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
 							}
 
 						}
@@ -390,13 +354,21 @@ namespace Chemical {
 							if (chunk->edges.xp_chunk->blocks[Block3Dto1D(0, y, z)] == BlockType::Air) {
 								// the block at X+ in the next chunk is air so a X+ face needs to be generated.
 
-								vertices.emplace_back(glm::fvec3(CHUNK_SIZE, y + 1, z), block.colour);
-								vertices.emplace_back(glm::fvec3(CHUNK_SIZE, y, z), block.colour);
-								vertices.emplace_back(glm::fvec3(CHUNK_SIZE, y, z + 1), block.colour);
+								uint32_t vertex = 0x00000002;
 
-								vertices.emplace_back(glm::fvec3(CHUNK_SIZE, y + 1, z), block.colour);
-								vertices.emplace_back(glm::fvec3(CHUNK_SIZE, y, z + 1), block.colour);
-								vertices.emplace_back(glm::fvec3(CHUNK_SIZE, y + 1, z + 1), block.colour);
+								vertex += static_cast<uint32_t>(block_type) << 20;
+
+								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(y) << 8;
+								vertex += static_cast<uint32_t>(z) << 3;
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
 							}
 
 						}
@@ -408,13 +380,21 @@ namespace Chemical {
 							if (chunk->blocks[Block3Dto1D(x - 1, y, z)] == BlockType::Air) {
 								// the block at X - 1 is air so a X- face needs to be generated
 
-								vertices.emplace_back(glm::fvec3(x, y, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x, y + 1, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x, y, z + 1), block.colour);
+								uint32_t vertex = 0x00000003;
 
-								vertices.emplace_back(glm::fvec3(x, y, z + 1), block.colour);
-								vertices.emplace_back(glm::fvec3(x, y + 1, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x, y + 1, z + 1), block.colour);
+								vertex += static_cast<uint32_t>(block_type) << 20;
+
+								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(y) << 8;
+								vertex += static_cast<uint32_t>(z) << 3;
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
 							}
 
 						}
@@ -424,13 +404,21 @@ namespace Chemical {
 							if (chunk->edges.xm_chunk->blocks[Block3Dto1D(CHUNK_SIZE - 1, y, z)] == BlockType::Air) {
 								// the block at X- in the next chunk is air so a X- face needs to be generated.
 
-								vertices.emplace_back(glm::fvec3(0, y, z), block.colour);
-								vertices.emplace_back(glm::fvec3(0, y + 1, z), block.colour);
-								vertices.emplace_back(glm::fvec3(0, y, z + 1), block.colour);
+								uint32_t vertex = 0x00000003;
 
-								vertices.emplace_back(glm::fvec3(0, y, z + 1), block.colour);
-								vertices.emplace_back(glm::fvec3(0, y + 1, z), block.colour);
-								vertices.emplace_back(glm::fvec3(0, y + 1, z + 1), block.colour);
+								vertex += static_cast<uint32_t>(block_type) << 20;
+
+								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(y) << 8;
+								vertex += static_cast<uint32_t>(z) << 3;
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
 							}
 
 						}
@@ -442,13 +430,21 @@ namespace Chemical {
 							if (chunk->blocks[Block3Dto1D(x, y, z + 1)] == BlockType::Air) {
 								// the block at Z + 1 is air so a Z+ face needs to be generated
 
-								vertices.emplace_back(glm::fvec3(x, y, z + 1), block.colour);
-								vertices.emplace_back(glm::fvec3(x, y + 1, z + 1), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y, z + 1), block.colour);
+								uint32_t vertex = 0x00000004;
 
-								vertices.emplace_back(glm::fvec3(x + 1, y, z + 1), block.colour);
-								vertices.emplace_back(glm::fvec3(x, y + 1, z + 1), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y + 1, z + 1), block.colour);
+								vertex += static_cast<uint32_t>(block_type) << 20;
+
+								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(y) << 8;
+								vertex += static_cast<uint32_t>(z) << 3;
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
 							}
 
 						}
@@ -458,13 +454,21 @@ namespace Chemical {
 							if (chunk->edges.zp_chunk->blocks[Block3Dto1D(x, y, 0)] == BlockType::Air) {
 								// the block at Z+ in the next chunk is air so a Z+ face needs to be generated.
 
-								vertices.emplace_back(glm::fvec3(x, y, CHUNK_SIZE), block.colour);
-								vertices.emplace_back(glm::fvec3(x, y + 1, CHUNK_SIZE), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y, CHUNK_SIZE), block.colour);
+								uint32_t vertex = 0x00000004;
 
-								vertices.emplace_back(glm::fvec3(x + 1, y, CHUNK_SIZE), block.colour);
-								vertices.emplace_back(glm::fvec3(x, y + 1, CHUNK_SIZE), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y + 1, CHUNK_SIZE), block.colour);
+								vertex += static_cast<uint32_t>(block_type) << 20;
+
+								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(y) << 8;
+								vertex += static_cast<uint32_t>(z) << 3;
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
 							}
 
 						}
@@ -476,13 +480,21 @@ namespace Chemical {
 							if (chunk->blocks[Block3Dto1D(x, y, z - 1)] == BlockType::Air) {
 								// the block at Z - 1 is air so a Z- face needs to be generated
 
-								vertices.emplace_back(glm::fvec3(x, y + 1, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x, y, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y, z), block.colour);
+								uint32_t vertex = 0x00000005;
 
-								vertices.emplace_back(glm::fvec3(x, y + 1, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y + 1, z), block.colour);
+								vertex += static_cast<uint32_t>(block_type) << 20;
+
+								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(y) << 8;
+								vertex += static_cast<uint32_t>(z) << 3;
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
 							}
 
 						}
@@ -492,13 +504,21 @@ namespace Chemical {
 							if (chunk->edges.zm_chunk->blocks[Block3Dto1D(x, y, CHUNK_SIZE - 1)] == BlockType::Air) {
 								// the block at Z- in the next chunk is air so a Z- face needs to be generated.
 
-								vertices.emplace_back(glm::fvec3(x, y + 1, 0), block.colour);
-								vertices.emplace_back(glm::fvec3(x, y, 0), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y, 0), block.colour);
+								uint32_t vertex = 0x00000005;
 
-								vertices.emplace_back(glm::fvec3(x, y + 1, 0), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y, 0), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y + 1, 0), block.colour);
+								vertex += static_cast<uint32_t>(block_type) << 20;
+
+								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(y) << 8;
+								vertex += static_cast<uint32_t>(z) << 3;
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
 							}
 
 						}
@@ -528,54 +548,6 @@ namespace Chemical {
 	void ChunkRenderer::BuildChunkMeshNoEdges(const std::unique_ptr<Chunk>& chunk, float allocation_multiplier) {
 		std::vector<ChunkVertex> vertices;
 
-		vertices.emplace_back(glm::fvec3(2, -1, 0), glm::vec3(1.0f, 0.0f, 0.0f));
-		vertices.emplace_back(glm::vec3(4, -1, 0), glm::vec3(1.0f, 0.0f, 0.0f));
-		vertices.emplace_back(glm::vec3(4, 1, 0), glm::vec3(1.0f, 0.0f, 0.0f));
-
-		vertices.emplace_back(glm::vec3(2, -1, 0), glm::vec3(1.0f, 0.0f, 0.0f));
-		vertices.emplace_back(glm::vec3(4, 1, 0), glm::vec3(1.0f, 0.0f, 0.0f));
-		vertices.emplace_back(glm::vec3(2, 1, 0), glm::vec3(1.0f, 0.0f, 0.0f));
-
-		vertices.emplace_back(glm::fvec3(-4, -1, 0), glm::vec3(0.5f, 0.0f, 0.0f));
-		vertices.emplace_back(glm::vec3(-2, -1, 0), glm::vec3(0.5f, 0.0f, 0.0f));
-		vertices.emplace_back(glm::vec3(-2, 1, 0), glm::vec3(0.5f, 0.0f, 0.0f));
-
-		vertices.emplace_back(glm::vec3(-4, -1, 0), glm::vec3(0.5f, 0.0f, 0.0f));
-		vertices.emplace_back(glm::vec3(-2, 1, 0), glm::vec3(0.5f, 0.0f, 0.0f));
-		vertices.emplace_back(glm::vec3(-4, 1, 0), glm::vec3(0.5f, 0.0f, 0.0f));
-
-		vertices.emplace_back(glm::fvec3(-1, -1, -2), glm::vec3(0.0f, 0.0f, 0.5f));
-		vertices.emplace_back(glm::vec3(1, -1, -2), glm::vec3(0.0f, 0.0f, 0.5f));
-		vertices.emplace_back(glm::vec3(1, 1, -2), glm::vec3(0.0f, 0.0f, 0.5f));
-
-		vertices.emplace_back(glm::vec3(-1, -1, -2), glm::vec3(0.0f, 0.0f, 0.5f));
-		vertices.emplace_back(glm::vec3(1, 1, -2), glm::vec3(0.0f, 0.0f, 0.5f));
-		vertices.emplace_back(glm::vec3(-1, 1, -2), glm::vec3(0.0f, 0.0f, 0.5f));
-
-		vertices.emplace_back(glm::fvec3(-1, -1, 2), glm::vec3(0.0f, 0.0f, 1.0f));
-		vertices.emplace_back(glm::vec3(1, -1, 2), glm::vec3(0.0f, 0.0f, 1.0f));
-		vertices.emplace_back(glm::vec3(1, 1, 2), glm::vec3(0.0f, 0.0f, 1.0f));
-
-		vertices.emplace_back(glm::vec3(-1, -1, 2), glm::vec3(0.0f, 0.0f, 1.0f));
-		vertices.emplace_back(glm::vec3(1, 1, 2), glm::vec3(0.0f, 0.0f, 1.0f));
-		vertices.emplace_back(glm::vec3(-1, 1, 2), glm::vec3(0.0f, 0.0f, 1.0f));
-
-		vertices.emplace_back(glm::fvec3(-1, 2, 0), glm::vec3(0.0f, 1.0f, 0.0f));
-		vertices.emplace_back(glm::vec3(1, 2, 0), glm::vec3(0.0f, 1.0f, 0.0f));
-		vertices.emplace_back(glm::vec3(1, 4, 0), glm::vec3(0.0f, 1.0f, 0.0f));
-
-		vertices.emplace_back(glm::vec3(-1, 2, 0), glm::vec3(0.0f, 1.0f, 0.0f));
-		vertices.emplace_back(glm::vec3(1, 4, 0), glm::vec3(0.0f, 1.0f, 0.0f));
-		vertices.emplace_back(glm::vec3(-1, 4, 0), glm::vec3(0.0f, 1.0f, 0.0f));
-
-		vertices.emplace_back(glm::fvec3(-1, -4, 0), glm::vec3(0.0f, 0.5f, 0.0f));
-		vertices.emplace_back(glm::vec3(1, -4, 0), glm::vec3(0.0f, 0.5f, 0.0f));
-		vertices.emplace_back(glm::vec3(1, -2, 0), glm::vec3(0.0f, 0.5f, 0.0f));
-
-		vertices.emplace_back(glm::vec3(-1, -4, 0), glm::vec3(0.0f, 0.5f, 0.0f));
-		vertices.emplace_back(glm::vec3(1, -2, 0), glm::vec3(0.0f, 0.5f, 0.0f));
-		vertices.emplace_back(glm::vec3(-1, -2, 0), glm::vec3(0.0f, 0.5f, 0.0f));
-
 
 		// iterate through chunk blocks on x, z, y
 		for (uint8_t x = 0; x < CHUNK_SIZE; x++)
@@ -593,10 +565,6 @@ namespace Chemical {
 						// if block is not air, it will need faces rendered
 
 
-						// get actual block data
-						const Block& block = GetBlock(block_type);
-
-
 						// top face
 						if (y < CHUNK_HEIGHT - 1) {
 							// a block exists at Y + 1
@@ -604,26 +572,42 @@ namespace Chemical {
 							if (chunk->blocks[Block3Dto1D(x, y + 1, z)] == BlockType::Air) {
 								// the block at Y + 1 is air so a Y+ face needs to be generated
 
-								vertices.emplace_back(glm::fvec3(x, y + 1, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y + 1, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x, y + 1, z + 1), block.colour);
+								uint32_t vertex = 0x00000000;
 
-								vertices.emplace_back(glm::fvec3(x, y + 1, z + 1), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y + 1, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y + 1, z + 1), block.colour);
+								vertex += static_cast<uint32_t>(block_type) << 20;
+
+								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(y) << 8;
+								vertex += static_cast<uint32_t>(z) << 3;
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
 							}
 
 						}
 						else {
 							// a block at Y + 1 does not exist so a top face needs to be generated
 
-							vertices.emplace_back(glm::fvec3(x, y + 1, z), block.colour);
-							vertices.emplace_back(glm::fvec3(x + 1, y + 1, z), block.colour);
-							vertices.emplace_back(glm::fvec3(x, y + 1, z + 1), block.colour);
+							uint32_t vertex = 0x00000000;
 
-							vertices.emplace_back(glm::fvec3(x, y + 1, z + 1), block.colour);
-							vertices.emplace_back(glm::fvec3(x + 1, y + 1, z), block.colour);
-							vertices.emplace_back(glm::fvec3(x + 1, y + 1, z + 1), block.colour);
+							vertex += static_cast<uint32_t>(block_type) << 20;
+
+							vertex += static_cast<uint32_t>(x) << 15;
+							vertex += static_cast<uint32_t>(y) << 8;
+							vertex += static_cast<uint32_t>(z) << 3;
+
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
 						}
 
 						// bottom face
@@ -631,13 +615,21 @@ namespace Chemical {
 							// the y is 0 so a Y- face needs to be generated or
 							// the block at Y - 1 is air so a Y- face needs to be generated
 
-							vertices.emplace_back(glm::fvec3(x + 1, y, z), block.colour);
-							vertices.emplace_back(glm::fvec3(x, y, z), block.colour);
-							vertices.emplace_back(glm::fvec3(x, y, z + 1), block.colour);
+							uint32_t vertex = 0x00000001;
 
-							vertices.emplace_back(glm::fvec3(x + 1, y, z), block.colour);
-							vertices.emplace_back(glm::fvec3(x, y, z + 1), block.colour);
-							vertices.emplace_back(glm::fvec3(x + 1, y, z + 1), block.colour);
+							vertex += static_cast<uint32_t>(block_type) << 20;
+
+							vertex += static_cast<uint32_t>(x) << 15;
+							vertex += static_cast<uint32_t>(y) << 8;
+							vertex += static_cast<uint32_t>(z) << 3;
+
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
 						}
 
 						// X+ face
@@ -646,13 +638,21 @@ namespace Chemical {
 							if (chunk->blocks[Block3Dto1D(x + 1, y, z)] == BlockType::Air) {
 								// the block at X + 1 is air so a X+ face needs to be generated
 
-								vertices.emplace_back(glm::fvec3(x + 1, y + 1, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y, z + 1), block.colour);
+								uint32_t vertex = 0x00000002;
 
-								vertices.emplace_back(glm::fvec3(x + 1, y + 1, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y, z + 1), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y + 1, z + 1), block.colour);
+								vertex += static_cast<uint32_t>(block_type) << 20;
+
+								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(y) << 8;
+								vertex += static_cast<uint32_t>(z) << 3;
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
 							}
 
 						}
@@ -664,13 +664,21 @@ namespace Chemical {
 							if (chunk->blocks[Block3Dto1D(x - 1, y, z)] == BlockType::Air) {
 								// the block at X - 1 is air so a X- face needs to be generated
 
-								vertices.emplace_back(glm::fvec3(x, y, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x, y + 1, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x, y, z + 1), block.colour);
+								uint32_t vertex = 0x00000003;
 
-								vertices.emplace_back(glm::fvec3(x, y, z + 1), block.colour);
-								vertices.emplace_back(glm::fvec3(x, y + 1, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x, y + 1, z + 1), block.colour);
+								vertex += static_cast<uint32_t>(block_type) << 20;
+
+								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(y) << 8;
+								vertex += static_cast<uint32_t>(z) << 3;
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
 							}
 
 						}
@@ -682,13 +690,21 @@ namespace Chemical {
 							if (chunk->blocks[Block3Dto1D(x, y, z + 1)] == BlockType::Air) {
 								// the block at Z + 1 is air so a Z+ face needs to be generated
 
-								vertices.emplace_back(glm::fvec3(x, y, z + 1), block.colour);
-								vertices.emplace_back(glm::fvec3(x, y + 1, z + 1), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y, z + 1), block.colour);
+								uint32_t vertex = 0x00000004;
 
-								vertices.emplace_back(glm::fvec3(x + 1, y, z + 1), block.colour);
-								vertices.emplace_back(glm::fvec3(x, y + 1, z + 1), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y + 1, z + 1), block.colour);
+								vertex += static_cast<uint32_t>(block_type) << 20;
+
+								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(y) << 8;
+								vertex += static_cast<uint32_t>(z) << 3;
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
 							}
 
 						}
@@ -700,13 +716,21 @@ namespace Chemical {
 							if (chunk->blocks[Block3Dto1D(x, y, z - 1)] == BlockType::Air) {
 								// the block at Z - 1 is air so a Z- face needs to be generated
 
-								vertices.emplace_back(glm::fvec3(x, y + 1, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x, y, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y, z), block.colour);
+								uint32_t vertex = 0x00000005;
 
-								vertices.emplace_back(glm::fvec3(x, y + 1, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y, z), block.colour);
-								vertices.emplace_back(glm::fvec3(x + 1, y + 1, z), block.colour);
+								vertex += static_cast<uint32_t>(block_type) << 20;
+
+								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(y) << 8;
+								vertex += static_cast<uint32_t>(z) << 3;
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
+								vertices.emplace_back(vertex);
 							}
 
 						}
@@ -744,18 +768,30 @@ namespace Chemical {
 			for (uint8_t z = 0; z < CHUNK_SIZE; z++) {
 				for (uint16_t y = 0; y < CHUNK_HEIGHT; y++) {
 					BlockType primary_block_type = static_cast<BlockType>(chunk->blocks[Block3Dto1D(CHUNK_SIZE - 1, y, z)]);
-					BlockType secondary_block_type = static_cast<BlockType>(chunk->edges.xp_chunk->blocks[Block3Dto1D(0, y, z)]);
 
-					if (primary_block_type != BlockType::Air && secondary_block_type == BlockType::Air) {
-						const Block& block = GetBlock(primary_block_type);
-						vertices.emplace_back(glm::vec3(CHUNK_SIZE, y + 1, z), block.colour);
-						vertices.emplace_back(glm::vec3(CHUNK_SIZE, y, z), block.colour);
-						vertices.emplace_back(glm::vec3(CHUNK_SIZE, y, z + 1), block.colour);
+					if (primary_block_type != BlockType::Air) {
+						BlockType secondary_block_type = static_cast<BlockType>(chunk->edges.xp_chunk->blocks[Block3Dto1D(0, y, z)]);
 
-						vertices.emplace_back(glm::vec3(CHUNK_SIZE, y + 1, z), block.colour);
-						vertices.emplace_back(glm::vec3(CHUNK_SIZE, y, z + 1), block.colour);
-						vertices.emplace_back(glm::vec3(CHUNK_SIZE, y + 1, z + 1), block.colour);
+						if (secondary_block_type == BlockType::Air) {
+
+							uint32_t vertex = 0x00000002;
+
+							vertex += static_cast<uint32_t>(primary_block_type) << 20;
+
+							vertex += static_cast<uint32_t>(CHUNK_SIZE - 1) << 15;
+							vertex += static_cast<uint32_t>(y) << 8;
+							vertex += static_cast<uint32_t>(z) << 3;
+
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+						}
 					}
+
 
 				}
 			}
@@ -767,18 +803,29 @@ namespace Chemical {
 			for (uint8_t z = 0; z < CHUNK_SIZE; z++) {
 				for (uint16_t y = 0; y < CHUNK_HEIGHT; y++) {
 					BlockType primary_block_type = static_cast<BlockType>(chunk->blocks[Block3Dto1D(0, y, z)]);
-					BlockType secondary_block_type = static_cast<BlockType>(chunk->edges.xm_chunk->blocks[Block3Dto1D(CHUNK_SIZE - 1, y, z)]);
 
-					if (primary_block_type != BlockType::Air && secondary_block_type == BlockType::Air) {
-						const Block& block = GetBlock(primary_block_type);
-						vertices.emplace_back(glm::vec3(0, y, z + 1), block.colour);
-						vertices.emplace_back(glm::vec3(0, y, z), block.colour);
-						vertices.emplace_back(glm::vec3(0, y + 1, z), block.colour);
+					if (primary_block_type != BlockType::Air) {
+						BlockType secondary_block_type = static_cast<BlockType>(chunk->edges.xm_chunk->blocks[Block3Dto1D(CHUNK_SIZE - 1, y, z)]);
 
-						vertices.emplace_back(glm::vec3(0, y + 1, z + 1), block.colour);
-						vertices.emplace_back(glm::vec3(0, y, z + 1), block.colour);
-						vertices.emplace_back(glm::vec3(0, y + 1, z), block.colour);
+						if (secondary_block_type == BlockType::Air) {
+
+							uint32_t vertex = 0x00000003;
+
+							vertex += static_cast<uint32_t>(primary_block_type) << 20;
+
+							vertex += static_cast<uint32_t>(y) << 8;
+							vertex += static_cast<uint32_t>(z) << 3;
+
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+						}
 					}
+
 
 				}
 			}
@@ -790,18 +837,30 @@ namespace Chemical {
 			for (uint8_t x = 0; x < CHUNK_SIZE; x++) {
 				for (uint16_t y = 0; y < CHUNK_HEIGHT; y++) {
 					BlockType primary_block_type = static_cast<BlockType>(chunk->blocks[Block3Dto1D(x, y, CHUNK_SIZE - 1)]);
-					BlockType secondary_block_type = static_cast<BlockType>(chunk->edges.zp_chunk->blocks[Block3Dto1D(x, y, 0)]);
 
-					if (primary_block_type != BlockType::Air && secondary_block_type == BlockType::Air) {
-						const Block& block = GetBlock(primary_block_type);
-						vertices.emplace_back(glm::vec3(x, y, CHUNK_SIZE), block.colour);
-						vertices.emplace_back(glm::vec3(x, y + 1, CHUNK_SIZE), block.colour);
-						vertices.emplace_back(glm::vec3(x + 1, y, CHUNK_SIZE), block.colour);
+					if (primary_block_type != BlockType::Air) {
+						BlockType secondary_block_type = static_cast<BlockType>(chunk->edges.zp_chunk->blocks[Block3Dto1D(x, y, 0)]);
 
-						vertices.emplace_back(glm::vec3(x + 1, y, CHUNK_SIZE), block.colour);
-						vertices.emplace_back(glm::vec3(x, y + 1, CHUNK_SIZE), block.colour);
-						vertices.emplace_back(glm::vec3(x + 1, y + 1, CHUNK_SIZE), block.colour);
+						if (secondary_block_type == BlockType::Air) {
+
+							uint32_t vertex = 0x00000004;
+
+							vertex += static_cast<uint32_t>(primary_block_type) << 20;
+
+							vertex += static_cast<uint32_t>(x) << 15;
+							vertex += static_cast<uint32_t>(y) << 8;
+							vertex += static_cast<uint32_t>(CHUNK_SIZE - 1) << 3;
+
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+						}
 					}
+
 
 				}
 			}
@@ -813,48 +872,63 @@ namespace Chemical {
 			for (uint8_t x = 0; x < CHUNK_SIZE; x++) {
 				for (uint16_t y = 0; y < CHUNK_HEIGHT; y++) {
 					BlockType primary_block_type = static_cast<BlockType>(chunk->blocks[Block3Dto1D(x, y, 0)]);
-					BlockType secondary_block_type = static_cast<BlockType>(chunk->edges.zm_chunk->blocks[Block3Dto1D(x, y, CHUNK_SIZE - 1)]);
 
-					if (primary_block_type != BlockType::Air && secondary_block_type == BlockType::Air) {
-						const Block& block = GetBlock(primary_block_type);
-						vertices.emplace_back(glm::vec3(x, y + 1, 0), block.colour);
-						vertices.emplace_back(glm::vec3(x, y, 0), block.colour);
-						vertices.emplace_back(glm::vec3(x + 1, y, 0), block.colour);
+					if (primary_block_type != BlockType::Air) {
+						BlockType secondary_block_type = static_cast<BlockType>(chunk->edges.zm_chunk->blocks[Block3Dto1D(x, y, CHUNK_SIZE - 1)]);
 
-						vertices.emplace_back(glm::vec3(x, y + 1, 0), block.colour);
-						vertices.emplace_back(glm::vec3(x + 1, y, 0), block.colour);
-						vertices.emplace_back(glm::vec3(x + 1, y + 1, 0), block.colour);
+						if (secondary_block_type == BlockType::Air) {
+
+							uint32_t vertex = 0x00000005;
+
+							vertex += static_cast<uint32_t>(primary_block_type) << 20;
+
+							vertex += static_cast<uint32_t>(x) << 15;
+							vertex += static_cast<uint32_t>(y) << 8;
+
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex);
+
+
+
+
+						}
 					}
+
 
 				}
 			}
-		}
 
-		if (vertices.size() > 0) {
+			if (vertices.size() > 0) {
 
 
-			uint32_t new_size = static_cast<uint32_t>(vertices.size() + chunk->mesh.info.count);
+				uint32_t new_size = static_cast<uint32_t>(vertices.size() + chunk->mesh.info.count);
 
-			if (chunk->mesh.v_buffer_size < new_size * sizeof(ChunkVertex)) {
-				// the buffer is too small for the extra data and an allocation needs to be done
-				// we need to regenerate the entire mesh and then add the edges
+				if (chunk->mesh.v_buffer_size < new_size * sizeof(ChunkVertex)) {
+					// the buffer is too small for the extra data and an allocation needs to be done
+					// we need to regenerate the entire mesh and then add the edges
 
-				chunk->mesh.v_buffer.CreateMutableBuffer(static_cast<int64_t>(new_size * sizeof(ChunkVertex) * allocation_multiplier), nullptr, OpenGL::BufferDataFlags::DYNAMIC_DRAW);
+					chunk->mesh.v_buffer.CreateMutableBuffer(static_cast<int64_t>(new_size * sizeof(ChunkVertex) * allocation_multiplier), nullptr, OpenGL::BufferDataFlags::DYNAMIC_DRAW);
 
-				chunk->mesh.v_buffer_size = static_cast<uint32_t>(new_size * sizeof(ChunkVertex) * allocation_multiplier);
+					chunk->mesh.v_buffer_size = static_cast<uint32_t>(new_size * sizeof(ChunkVertex) * allocation_multiplier);
 
-				BuildChunkMeshNoEdges(chunk);
+					BuildChunkMeshNoEdges(chunk);
 
-				chunk->mesh.v_buffer.SetBufferData(vertices.size() * sizeof(ChunkVertex), &vertices[0], chunk->mesh.info.count * sizeof(ChunkVertex));
+					chunk->mesh.v_buffer.SetBufferData(vertices.size() * sizeof(ChunkVertex), &vertices[0], chunk->mesh.info.count * sizeof(ChunkVertex));
+				}
+				else {
+					// the buffer is large enough for the extra data
+
+					chunk->mesh.v_buffer.SetBufferData(vertices.size() * sizeof(ChunkVertex), &vertices[0], chunk->mesh.info.count * sizeof(ChunkVertex));
+				}
+
+				chunk->mesh.info.count += static_cast<int32_t>(vertices.size());
 			}
-			else {
-				// the buffer is large enough for the extra data
 
-				chunk->mesh.v_buffer.SetBufferData(vertices.size() * sizeof(ChunkVertex), &vertices[0], chunk->mesh.info.count * sizeof(ChunkVertex));
-			}
-
-			chunk->mesh.info.count += static_cast<int32_t>(vertices.size());
 		}
-
 	}
 }

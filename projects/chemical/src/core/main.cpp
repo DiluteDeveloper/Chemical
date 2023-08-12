@@ -94,16 +94,16 @@ void UpdatePlayer() {
 	glm::fvec3 front = glm::normalize(glm::fvec3(forward.x, 0, forward.z));
 
 	if (glfwGetKey(window, GLFW_KEY_W)) {
-		player_transform.position += front * 0.25f;
+		player_transform.position += front * 1.25f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_S)) {
-		player_transform.position -= front * 0.25f;
+		player_transform.position -= front * 1.25f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A)) {
-		player_transform.position -= right * 0.25f;
+		player_transform.position -= right * 1.25f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D)) {
-		player_transform.position += right * 0.25f;
+		player_transform.position += right * 1.25f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE)) {
 		player_transform.position.y += 0.25f;
@@ -117,6 +117,8 @@ void UpdatePlayer() {
 
 	player_transform.rotation.y += static_cast<float>(x - oldx) * 0.08f;
 	player_transform.rotation.x += static_cast<float>(y - oldy) * 0.08f;
+
+	player_transform.rotation.x = glm::clamp(player_transform.rotation.x, -85.0f, 85.0f);
 
 	oldx = x;
 	oldy = y;
@@ -224,8 +226,6 @@ int main(int argc, char* argv[]) {
 
 
 	projection = glm::perspectiveLH(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
-
-	InitializeBlockData();
 
 	std::random_device rd;
 	uint32_t seed = rd();

@@ -8,20 +8,17 @@
 
 // limit of 255 due to uint8_t iterators.
 // determines the X and Z dimensions of every chunk.
+// do not change without modifying shader code.
 #define CHUNK_SIZE 16
 
 // no easily reachable limit.
 // determines the y dimension of a chunk used for iterating over.
-#define CHUNK_HEIGHT 60
+// do not change without modifying shader code.
+#define CHUNK_HEIGHT 128
 
 namespace Chemical {
 
-	// should be called before any other functions in chunk_system.h
-	void InitializeBlockData();
-
-	// a named index into block_registry contained in chunk_system.cpp
-	// used to minimize space taken up by individual instances of a block,
-	// as most will be referencing the same block therefore ID
+	// a named index into the block registry in chunk_shader.
 	enum BlockType {
 		Air = 0,
 		Stone = 1,
@@ -31,11 +28,10 @@ namespace Chemical {
 	};
 
 	struct ChunkVertex {
-		glm::fvec3 position = glm::fvec3(0);
-		glm::fvec3 colour = glm::fvec3(1);
+		uint32_t bit_data = 0;
 
-		ChunkVertex(const glm::fvec3& position, const glm::fvec3 colour) :
-			position(position), colour(colour) {} 
+		ChunkVertex(uint32_t bit_data) :
+			bit_data(bit_data) {} 
 		ChunkVertex() {}
 	};
 
