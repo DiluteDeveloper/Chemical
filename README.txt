@@ -1,4 +1,5 @@
-![A screenshot from the engine](github_image.png "A screenshot from the engine"))
+![A screenshot from the engine](https://github.com/DiluteDeveloper/Chemical/assets/104898633/7b5b5112-db11-4d80-aa66-19a9ae1cbff5)
+
 
 changes this commit:
 
