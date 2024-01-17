@@ -35,6 +35,7 @@ namespace Chemical {
 		ChunkVertex() {}
 	};
 
+	// needs to be removed for SSBO type storage, on the backburner
 	struct ChunkMesh {
 		
 		OpenGL::Buffer v_buffer;
@@ -43,7 +44,7 @@ namespace Chemical {
 		uint32_t v_buffer_size = 0;
 		OpenGL::VertexArray v_array;
 		OpenGL::ArrayDrawInfo info;
-
+		
 	};
 
 	class Chunk;
@@ -62,6 +63,7 @@ namespace Chemical {
 		friend class ChunkLoader; friend class ChunkRenderer;
 
 		ChunkMesh mesh;
+		//std::vector<uint32_t> faces; 	// needs to be added for SSBO type storage, on the backburner
 		ChunkEdges edges;
 
 		// stores BlockType aka an identifier for which block is at which position within the chunk.
@@ -83,6 +85,10 @@ namespace Chemical {
 	class ChunkRenderer {
 
 		std::unique_ptr<OpenGL::ShaderProgram> chunk_shader;
+
+		// contains all chunks faces
+		//OpenGL::Buffer chunk_ssbo;
+		//OpenGL::VertexArray dummyVArray;
 	public:
 
 		// performs setup of chunk_shader and its projection matrix
@@ -110,7 +116,7 @@ namespace Chemical {
 		// allocation_multiplier indicates the multiplier
 		// for the size of the new buffer if an allocation is required.
 		// allocation_multiplier must be greater or equal to 1.0f.
-		void BuildChunkMeshNoEdges(const std::unique_ptr<Chunk>& chunk, float allocation_multiplier = 1.0);
+		void BuildChunkMeshNoEdges(const std::unique_ptr<Chunk>& chunk, float allocation_multiplier = 1.0f);
 
 		// will build/rebuild all the chunk mesh edges.
 		// will not rebuild the chunk mesh itself unless the new buffer

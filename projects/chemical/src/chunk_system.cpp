@@ -224,12 +224,19 @@ namespace Chemical {
 
 				chunk_shader->SetUniform2IV("v_chunk_origin", 1, &origin[0]);
 
+				// ssbo stuff
+
+				//dummyVArray.Bind(); 	// needs to be added for SSBO type storage, on the backburner
+				// draw num faces * 6
+
+
 				chunk->mesh.v_array.Bind();
 				chunk->mesh.v_array.DrawArrays(chunk->mesh.info);
 			}
 
 		}
 	}
+	// needs to be removed for SSBO type storage, on the backburner
 	void ChunkRenderer::SetupChunkMesh(const std::unique_ptr<Chunk>& chunk) {
 
 		chunk->mesh.v_array.SetVertexBuffer(chunk->mesh.v_buffer, chunk_shader->GetLayout(), 0, 0);

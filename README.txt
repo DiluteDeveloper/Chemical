@@ -1,12 +1,11 @@
+![A screenshot from the engine](/github_image.png "A screenshot from the engine"))
+
 changes this commit:
-Fixed memory leak,
-erasure was not happening of the significant coordinate(X) of the chunk maps in the x offset update code.
 
-vertex buffer size is reduced 6 fold due to bit manipulation, 6*6 max vertices are sent to the shader(planned to be reduced to 1*6)
-and each vertice is only 1 32 bit uint to represent position, colour, block type, etc.
-went from 6*6*24 bytes to 6*6*4
-
-Fixed camera inverting when mouse moving too far down or up
+added textures for stone, dirt, grass and bedrock blocks as well as giving texture coordinates to the generated vertex data.
+added commented code as started working towards having every chunk contained in a single SSBO but this may be dropped.
+lowered render distance and camera speed for testing
+stb_image integration properly used as well as texture opengl class
 
 todo:
 
@@ -14,7 +13,11 @@ add a new thread for chunk generation - on the backburner
 
 try using vertex buffer binding index instead of reallocating
 
+known issues:
+
 memory leak came back
+
+seems that chunks on the render distance edge doesnt generate edge faces.
 
 notes:
 
@@ -46,3 +49,11 @@ FACES:
 
 
 Not sure if DYNAMIC_DRAW is the best flag for chunk mesh vertex buffers.
+
+
+shader texID refers to which texture the current block/mesh/pixel is using.
+
+0 = dirt
+1 = grass
+2 = stone
+3 = bedrock

@@ -2,12 +2,12 @@
 
 layout(location = 0) in uint v_bit_data;
 
-
 uniform ivec2 v_chunk_origin;
 uniform mat4 v_proj;
 uniform mat4 v_view;
 
-out vec3 f_colour;
+out flat unsigned int texID;
+out vec2 texCoord;
 
 vec3 GetBlockPositionWithinChunk() {
 
@@ -20,20 +20,20 @@ vec3 GetBlockPositionWithinChunk() {
 	return pos;
 }
 
-vec3 GetBlockColour() {
+unsigned int GetBlockTextureID() {
 
 	switch(v_bit_data >> 20) {
 	case 1: // stone
-		return vec3(0.38, 0.38, 0.38);
+		return 2;
 		break;
 	case 2: // dirt
-		return vec3(0.6, 0.3, 0.1);
+		return 0;
 		break;
 	case 3: // grass
-		return vec3(0, 1, 0);
+		return 1;
 		break;
 	case 4: // bedrock
-		return vec3(0.2, 0.2, 0.2);
+		return 3;
 		break;
 	};
 }
@@ -78,11 +78,11 @@ vec3 GetVertexPosition() {
 		if (gl_VertexID % 6 == 2)
 			return vec3(1.0, 1.0, 0.0);
 		if (gl_VertexID % 6 == 3)
-			return vec3(1.0, 1.0, 1.0);
-		if (gl_VertexID % 6 == 4)
-			return vec3(1.0, 1.0, 0.0);
-		if (gl_VertexID % 6 == 5)
 			return vec3(1.0, 0.0, 1.0);
+		if (gl_VertexID % 6 == 4)
+			return vec3(1.0, 1.0, 1.0);
+		if (gl_VertexID % 6 == 5)
+			return vec3(1.0, 1.0, 0.0);
 		break;
 	case 3: // left
 		if (gl_VertexID % 6 == 0)
@@ -92,11 +92,11 @@ vec3 GetVertexPosition() {
 		if (gl_VertexID % 6 == 2)
 			return vec3(0.0, 0.0, 0.0);
 		if (gl_VertexID % 6 == 3)
-			return vec3(0.0, 0.0, 1.0);
-		if (gl_VertexID % 6 == 4)
 			return vec3(0.0, 1.0, 0.0);
-		if (gl_VertexID % 6 == 5)
+		if (gl_VertexID % 6 == 4)
 			return vec3(0.0, 1.0, 1.0);
+		if (gl_VertexID % 6 == 5)
+			return vec3(0.0, 0.0, 1.0);
 		break;
 	case 4: // front
 		if (gl_VertexID % 6 == 0)
@@ -127,17 +127,107 @@ vec3 GetVertexPosition() {
 			return vec3(1.0, 0.0, 0.0);
 		break;
 	};
+
 }
 
+vec2 GetVertexTexCoord() {
 
+	switch(v_bit_data & 0x00000007) {
+	case 0: // top
+		if (gl_VertexID % 6 == 0)
+			return vec2(0.0, 1.0);
+		if (gl_VertexID % 6 == 1)
+			return vec2(1.0, 1.0);
+		if (gl_VertexID % 6 == 2)
+			return vec2(0.0, 0.0);
+		if (gl_VertexID % 6 == 3)
+			return vec2(0.0, 0.0);
+		if (gl_VertexID % 6 == 4)
+			return vec2(1.0, 1.0);
+		if (gl_VertexID % 6 == 5)
+			return vec2(1.0, 0.0);
+		break;
+	
+	case 1: // bottom
+		if (gl_VertexID % 6 == 0)
+			return vec2(0.0, 1.0);
+		if (gl_VertexID % 6 == 1)
+			return vec2(1.0, 0.0);
+		if (gl_VertexID % 6 == 2)
+			return vec2(0.0, 0.0);
+		if (gl_VertexID % 6 == 3)
+			return vec2(1.0, 1.0);
+		if (gl_VertexID % 6 == 4)
+			return vec2(1.0, 0.0);
+		if (gl_VertexID % 6 == 5)
+			return vec2(0.0, 1.0);
+		break;
+	case 2: // right
+		if (gl_VertexID % 6 == 0)
+			return vec2(0.0, 1.0);
+		if (gl_VertexID % 6 == 1)
+			return vec2(1.0, 1.0);
+		if (gl_VertexID % 6 == 2)
+			return vec2(0.0, 0.0);
+		if (gl_VertexID % 6 == 3)
+			return vec2(1.0, 1.0);
+		if (gl_VertexID % 6 == 4)
+			return vec2(1.0, 0.0);
+		if (gl_VertexID % 6 == 5)
+			return vec2(0.0, 0.0);
+		break;
+	case 3: // left
+		if (gl_VertexID % 6 == 0)
+			return vec2(0.0, 0.0);
+		if (gl_VertexID % 6 == 1)
+			return vec2(1.0, 1.0);
+		if (gl_VertexID % 6 == 2)
+			return vec2(0.0, 1.0);
+		if (gl_VertexID % 6 == 3)
+			return vec2(0.0, 0.0);
+		if (gl_VertexID % 6 == 4)
+			return vec2(1.0, 0.0);
+		if (gl_VertexID % 6 == 5)
+			return vec2(1.0, 1.0);
+		break;
+	case 4: // front
+		if (gl_VertexID % 6 == 0)
+			return vec2(1.0, 1.0);
+		if (gl_VertexID % 6 == 1)
+			return vec2(0.0, 1.0);
+		if (gl_VertexID % 6 == 2)
+			return vec2(0.0, 0.0);
+		if (gl_VertexID % 6 == 3)
+			return vec2(1.0, 1.0);
+		if (gl_VertexID % 6 == 4)
+			return vec2(0.0, 0.0);
+		if (gl_VertexID % 6 == 5)
+			return vec2(1.0, 0.0);
+		break;
+	case 5: // back
+		if (gl_VertexID % 6 == 0)
+			return vec2(1.0, 1.0);
+		if (gl_VertexID % 6 == 1)
+			return vec2(0.0, 1.0);
+		if (gl_VertexID % 6 == 2)
+			return vec2(1.0, 0.0);
+		if (gl_VertexID % 6 == 3)
+			return vec2(0.0, 0.0);
+		if (gl_VertexID % 6 == 4)
+			return vec2(1.0, 0.0);
+		if (gl_VertexID % 6 == 5)
+			return vec2(0.0, 1.0);
+		break;
+	};
+}
 
 
 
 void main()
 {
 
-
-	f_colour = GetBlockColour();
+	texID = GetBlockTextureID();
+	texCoord = GetVertexTexCoord();
 	vec3 v_posi = GetVertexPosition();
 	vec3 rel_posi = GetBlockPositionWithinChunk();
 

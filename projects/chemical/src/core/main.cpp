@@ -7,6 +7,10 @@
 
 #include "chunk_system.h"
 
+#include "graphics/opengl/texture.h"
+
+#include <stb_image/stb_image.h>
+
 #include "core.h"
 
 // globals
@@ -94,22 +98,22 @@ void UpdatePlayer() {
 	glm::fvec3 front = glm::normalize(glm::fvec3(forward.x, 0, forward.z));
 
 	if (glfwGetKey(window, GLFW_KEY_W)) {
-		player_transform.position += front * 1.25f;
+		player_transform.position += front * 0.25f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_S)) {
-		player_transform.position -= front * 1.25f;
+		player_transform.position -= front * 0.25f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A)) {
-		player_transform.position -= right * 1.25f;
+		player_transform.position -= right * 0.25f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D)) {
-		player_transform.position += right * 1.25f;
+		player_transform.position += right * 0.25f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE)) {
-		player_transform.position.y += 0.25f;
+		player_transform.position.y += 0.15f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
-		player_transform.position.y -= 0.25f;
+		player_transform.position.y -= 0.15f;
 	}
 
 	double x, y;
@@ -230,9 +234,82 @@ int main(int argc, char* argv[]) {
 	std::random_device rd;
 	uint32_t seed = rd();
 
-	ChunkLoader loader(seed, 16);
+	ChunkLoader loader(seed, 6);
 
 	glfwGetCursorPos(window, &oldx, &oldy);
+
+	int width=0, height=0, channels=0;
+	void* dirtdata = stbi_load("resources/textures/blocks/dirt.png", &width, &height, &channels, 0);
+
+	OpenGL::TextureStorageParameters p;
+	p.internalFormat = OpenGL::TextureInternalFormat::RGB8;
+	p.width = width;
+	p.height = height;
+	OpenGL::Texture dirt(p);
+
+
+	OpenGL::TextureDataParameters param;
+	param.baseFormat = OpenGL::TextureBaseFormat::RGB;
+	param.dataType = OpenGL::DataType::UNSIGNED_BYTE;
+	param.width = width;
+	param.height = height;
+	param.textureType = OpenGL::TextureType::TEXTURE_2D;
+	dirt.SetTextureData(param, dirtdata);
+
+	stbi_image_free(dirtdata);
+
+	dirt.GenerateMipmaps();
+
+	dirt.BindTexture(0);
+
+	dirt.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MIN_FILTER, GL_NEAREST);
+	dirt.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MAG_FILTER, GL_NEAREST);
+
+
+	void* grassdata = stbi_load("resources/textures/blocks/grass.png", &width, &height, &channels, 0);
+
+	OpenGL::Texture grass(p);
+
+	grass.SetTextureData(param, grassdata);
+
+	stbi_image_free(grassdata);
+
+	grass.GenerateMipmaps();
+
+	grass.BindTexture(1);
+
+	grass.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MIN_FILTER, GL_NEAREST);
+	grass.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	void* stonedata = stbi_load("resources/textures/blocks/stone.png", &width, &height, &channels, 0);
+
+	OpenGL::Texture stone(p);
+
+	stone.SetTextureData(param, stonedata);
+
+	stbi_image_free(stonedata);
+
+	stone.GenerateMipmaps();
+
+	stone.BindTexture(2);
+
+	stone.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MIN_FILTER, GL_NEAREST);
+	stone.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	void* beddata = stbi_load("resources/textures/blocks/bedrock.png", &width, &height, &channels, 0);
+
+	OpenGL::Texture bed(p);
+
+	bed.SetTextureData(param, beddata);
+
+	stbi_image_free(beddata);
+
+	bed.GenerateMipmaps();
+
+	bed.BindTexture(3);
+
+	bed.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MIN_FILTER, GL_NEAREST);
+	bed.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	// MORE TESTING CODE --------------------------------------------
 
