@@ -1,4 +1,4 @@
-![A screenshot from the engine](/github_image.png "A screenshot from the engine"))
+![A screenshot from the engine](github_image.png "A screenshot from the engine"))
 
 changes this commit:
 
