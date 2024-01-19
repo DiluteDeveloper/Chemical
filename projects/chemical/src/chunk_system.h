@@ -146,6 +146,8 @@ namespace Chemical {
 
 	public:
 
+		bool doChunkLoading = true;
+
 		// loads new chunks in a region around the player
 		ChunkLoader(uint32_t seed, uint8_t render_distance = 8);
 

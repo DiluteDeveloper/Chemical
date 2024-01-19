@@ -1,24 +1,24 @@
-[progress screenshot]: https://github.com/DiluteDeveloper/Chemical/assets/104898633/7b5b5112-db11-4d80-aa66-19a9ae1cbff5
-
+Alpha 1.10.1
 
 changes this commit:
 
-added textures for stone, dirt, grass and bedrock blocks as well as giving texture coordinates to the generated vertex data.
-added commented code as started working towards having every chunk contained in a single SSBO but this may be dropped.
-lowered render distance and camera speed for testing
-stb_image integration properly used as well as texture opengl class
+discovered memory leak never existed, app just happens to slightly increase in usage for the first few 10/100s of chunks that get loaded
+
+spent maybe 5 hours fixing a bug where chunk Z+ and X+ edges wouldnt appear upon loading new chunks in the X+, Z- and X- direction only on the lowest Z chunks.
+Turns out it was just some chunk mesh buffer code inside of the wrong brackets.
+
+added doChunkLoading (enable with 7, disable with 6, enabled default) for debugging purposes. do not go more than 1 chunk outside of where you turned it off or game
+will crash due to how the chunkloader is designed.
+
+moved center_origin alignment code in chunkloader update to be inside of if statements, small optimization
+
+small optimization: moved 
 
 todo:
 
 add a new thread for chunk generation - on the backburner
 
 try using vertex buffer binding index instead of reallocating
-
-known issues:
-
-memory leak came back
-
-seems that chunks on the render distance edge doesnt generate edge faces.
 
 notes:
 

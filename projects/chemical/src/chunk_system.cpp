@@ -94,107 +94,134 @@ namespace Chemical {
 
 	void ChunkLoader::Update() {
 
-		// converts player position to chunk coordinates
-		glm::ivec2 player_chunk_coordinates;
-		player_chunk_coordinates.x = static_cast<int>(std::floor(Core::player_transform.position.x / CHUNK_SIZE));
-		player_chunk_coordinates.y = static_cast<int>(std::floor(Core::player_transform.position.z / CHUNK_SIZE));
+
+		if (doChunkLoading) {
+			// converts player position to chunk coordinates
+			glm::ivec2 player_chunk_coordinates;
+			player_chunk_coordinates.x = static_cast<int>(std::floor(Core::player_transform.position.x / CHUNK_SIZE));
+			player_chunk_coordinates.y = static_cast<int>(std::floor(Core::player_transform.position.z / CHUNK_SIZE));
 
 
-		if (player_chunk_coordinates != center_origin) {
-			// player has moved into the bounding region of another chunk
+			if (player_chunk_coordinates != center_origin) {
+				// player has moved into the bounding region of another chunk
 
-			// get which direction the player went in
-			glm::ivec2 offset = player_chunk_coordinates - center_origin;
+				// get which direction the player went in
+				glm::ivec2 offset = player_chunk_coordinates - center_origin;
 
-			if (offset.y != 0) {
-				// the player changed Z chunk
+				if (offset.y != 0) {
+					// the player changed Z chunk
 
-				for (int16_t x = -render_distance; x < render_distance + 1; x++)
-				{
-					int32_t x_origin = center_origin.x + x;
 					int32_t z_origin = center_origin.y + ((render_distance + 1) * offset.y);
-					int32_t neg_z_origin = center_origin.y + (render_distance * -offset.y);
 
-					loaded_chunks[x_origin].erase(neg_z_origin);
-					loaded_chunks[x_origin][z_origin] = std::make_unique<Chunk>(glm::ivec2{x_origin, z_origin}, seed);
+					for (int16_t x = -render_distance; x < render_distance + 1; x++)
+					{
+						int32_t x_origin = center_origin.x + x;
+						int32_t neg_z_origin = center_origin.y + (render_distance * -offset.y);
+
+						loaded_chunks[x_origin].erase(neg_z_origin);
+						loaded_chunks[x_origin][z_origin] = std::make_unique<Chunk>(glm::ivec2{x_origin, z_origin}, seed);
 
 
-					if (offset.y > 0) {
-						// the player went Z+ chunk
+						if (offset.y > 0) {
+							// the player went Z+ chunk
 
-						loaded_chunks[x_origin][z_origin]->edges.zm_chunk = loaded_chunks[x_origin][z_origin - 1].get();
+							loaded_chunks[x_origin][z_origin]->edges.zm_chunk = loaded_chunks[x_origin][z_origin - 1].get();
 
-						loaded_chunks[x_origin][z_origin - 1]->edges.zp_chunk = loaded_chunks[x_origin][z_origin].get();
-						renderer.UpdateChunkMeshEdges(loaded_chunks[x_origin][z_origin - 1], 1.0f);
+							loaded_chunks[x_origin][z_origin - 1]->edges.zp_chunk = loaded_chunks[x_origin][z_origin].get();
+
+
+							//std::cout << "CHUNK UPDATE X: " << x_origin << " CHUNK Z: " << z_origin - 1 << std::endl;
+							renderer.UpdateChunkMeshEdges(loaded_chunks[x_origin][z_origin - 1], 1.05f);
+						}
+
+						else {
+							// the player went Z- chunk
+
+							loaded_chunks[x_origin][z_origin]->edges.zp_chunk = loaded_chunks[x_origin][z_origin + 1].get();
+
+							loaded_chunks[x_origin][z_origin + 1]->edges.zm_chunk = loaded_chunks[x_origin][z_origin].get();
+
+							//std::cout << "CHUNK UPDATE X: " << x_origin << " CHUNK Z: " << z_origin + 1 << std::endl;
+							renderer.UpdateChunkMeshEdges(loaded_chunks[x_origin][z_origin + 1], 1.05f);
+						}
+						if (x > -render_distance) {
+							//std::cout << x << std::endl;
+							loaded_chunks[x_origin][z_origin]->edges.xm_chunk = loaded_chunks[x_origin - 1][z_origin].get();
+
+							loaded_chunks[x_origin - 1][z_origin]->edges.xp_chunk = loaded_chunks[x_origin][z_origin].get();
+
+
+							//std::cout << "CHUNK UPDATE X: " << x_origin - 1 << " CHUNK Z: " << z_origin << std::endl;
+							renderer.UpdateChunkMeshEdges(loaded_chunks[x_origin - 1][z_origin], 1.05f);
+						}
+
+
+						renderer.SetupChunkMesh(loaded_chunks[x_origin][z_origin]);
+						renderer.BuildChunkMesh(loaded_chunks[x_origin][z_origin], 1.25f);
+
 					}
 
-					else {
-						// the player went Z- chunk
-
-						loaded_chunks[x_origin][z_origin]->edges.zp_chunk = loaded_chunks[x_origin][z_origin + 1].get();
-
-						loaded_chunks[x_origin][z_origin + 1]->edges.zm_chunk = loaded_chunks[x_origin][z_origin].get();
-						renderer.UpdateChunkMeshEdges(loaded_chunks[x_origin][z_origin + 1], 1.0f);
-					}
-					if (x > -render_distance) {
-						loaded_chunks[x_origin][z_origin]->edges.xm_chunk = loaded_chunks[x_origin - 1][z_origin].get();
-
-						loaded_chunks[x_origin - 1][z_origin]->edges.xp_chunk = loaded_chunks[x_origin][z_origin].get();
-						renderer.UpdateChunkMeshEdges(loaded_chunks[x_origin - 1][z_origin], 1.0f);
-					}
-
-
-					renderer.SetupChunkMesh(loaded_chunks[x_origin][z_origin]);
-					renderer.BuildChunkMesh(loaded_chunks[x_origin][z_origin], 1.25f);
-
+					center_origin.y = player_chunk_coordinates.y;
 				}
-			}
-			center_origin.y = player_chunk_coordinates.y;
-			if (offset.x != 0) {
-				// the player changed X chunk
+				if (offset.x != 0) {
+					// the player changed X chunk
 
-				int32_t neg_x_origin = center_origin.x + (render_distance * -offset.x);
-				for (int16_t z = -render_distance; z < render_distance + 1; z++)
-				{
-
+					int32_t neg_x_origin = center_origin.x + (render_distance * -offset.x);
 					int32_t x_origin = center_origin.x + ((render_distance + 1) * offset.x);
-					int32_t z_origin = center_origin.y + z;
-					loaded_chunks[neg_x_origin].erase(z_origin);
 
-					loaded_chunks[x_origin][z_origin] = std::make_unique<Chunk>(glm::ivec2{x_origin, z_origin}, seed);
+					for (int16_t z = -render_distance; z < render_distance + 1; z++)
+					{
 
-					if (offset.x > 0) {
-						// the player went X+ chunk
+						int32_t z_origin = center_origin.y + z;
+						loaded_chunks[neg_x_origin].erase(z_origin);
 
-						loaded_chunks[x_origin][z_origin]->edges.xm_chunk = loaded_chunks[x_origin - 1][z_origin].get();
+						//std::cout << x_origin << ", " << z_origin << std::endl;
 
-						loaded_chunks[x_origin - 1][z_origin]->edges.xp_chunk = loaded_chunks[x_origin][z_origin].get();
-						renderer.UpdateChunkMeshEdges(loaded_chunks[x_origin - 1][z_origin], 1.05f);
+						loaded_chunks[x_origin][z_origin] = std::make_unique<Chunk>(glm::ivec2{x_origin, z_origin}, seed);
+
+						// might be able to optimize this if statement out, tried and failed 19/01/2024
+						if (offset.x > 0) {
+							// the player went X+ chunk
+
+							loaded_chunks[x_origin][z_origin]->edges.xm_chunk = loaded_chunks[x_origin - 1][z_origin].get(); // changed to -1 from + 1
+
+							loaded_chunks[x_origin - 1][z_origin]->edges.xp_chunk = loaded_chunks[x_origin][z_origin].get();
+
+							//std::cout << "CHUNK UPDATE X: " << x_origin - 1 << " CHUNK Z: " << z_origin << std::endl;
+							renderer.UpdateChunkMeshEdges(loaded_chunks[x_origin - 1][z_origin], 1.05f);
+						}
+						else {
+							// the player went X- chunk
+
+							loaded_chunks[x_origin][z_origin]->edges.xp_chunk = loaded_chunks[x_origin + 1][z_origin].get();
+
+							loaded_chunks[x_origin + 1][z_origin]->edges.xm_chunk = loaded_chunks[x_origin][z_origin].get();
+							//std::cout << "CHUNK UPDATE X: " << x_origin + 1 << " CHUNK Z: " << z_origin << std::endl;
+							renderer.UpdateChunkMeshEdges(loaded_chunks[x_origin + 1][z_origin], 1.05f);
+						}
+						if (z > -render_distance) {
+							loaded_chunks[x_origin][z_origin]->edges.zm_chunk = loaded_chunks[x_origin][z_origin - 1].get();
+
+							//std::cout << z << std::endl;
+							//std::cout << "z_origin: " << z_origin << std::endl;
+							//std::cout << "-rend: " << -render_distance << std::endl;
+							loaded_chunks[x_origin][z_origin - 1]->edges.zp_chunk = loaded_chunks[x_origin][z_origin].get();
+
+							//std::cout << "CHUNK UPDATE X: " << x_origin << " CHUNK Z: " << z_origin - 1 << std::endl;
+							renderer.UpdateChunkMeshEdges(loaded_chunks[x_origin][z_origin - 1], 1.05f);
+						}
+
+
+						renderer.SetupChunkMesh(loaded_chunks[x_origin][z_origin]);
+						renderer.BuildChunkMesh(loaded_chunks[x_origin][z_origin], 1.25f);
 					}
-					else {
-						// the player went X- chunk
 
-						loaded_chunks[x_origin][z_origin]->edges.xp_chunk = loaded_chunks[x_origin + 1][z_origin].get();
-
-						loaded_chunks[x_origin + 1][z_origin]->edges.xm_chunk = loaded_chunks[x_origin][z_origin].get();
-						renderer.UpdateChunkMeshEdges(loaded_chunks[x_origin + 1][z_origin], 1.05f);
-					}
-					if (z > -render_distance) {
-						loaded_chunks[x_origin][z_origin]->edges.zm_chunk = loaded_chunks[x_origin][z_origin - 1].get();
-
-						loaded_chunks[x_origin][z_origin - 1]->edges.zp_chunk = loaded_chunks[x_origin][z_origin].get();
-						renderer.UpdateChunkMeshEdges(loaded_chunks[x_origin][z_origin - 1], 1.05f);
-					}
-
-
-					renderer.SetupChunkMesh(loaded_chunks[x_origin][z_origin]);
-					renderer.BuildChunkMesh(loaded_chunks[x_origin][z_origin], 1.25f);
+					loaded_chunks.erase(neg_x_origin);
+					center_origin.x = player_chunk_coordinates.x;
 				}
-
-				loaded_chunks.erase(neg_x_origin);
 			}
-			center_origin.x = player_chunk_coordinates.x;
 		}
+
 
 		renderer.RenderChunks(loaded_chunks);
 	}
@@ -764,12 +791,15 @@ namespace Chemical {
 	}
 
 
+	// chunk edge issue could definitely lie in here
 	void ChunkRenderer::UpdateChunkMeshEdges(const std::unique_ptr<Chunk>& chunk, float allocation_multiplier) {
 
 		std::vector<ChunkVertex> vertices;
 
 		if (chunk->edges.xp_chunk != nullptr) {
 			// if a chunk exists at X+
+
+			//std::cout << "HAS X+ EDGE" << std::endl;
 
 			// iterate over z, y
 			for (uint8_t z = 0; z < CHUNK_SIZE; z++) {
@@ -806,6 +836,8 @@ namespace Chemical {
 		if (chunk->edges.xm_chunk != nullptr) {
 			// if a chunk exists at X-
 
+			//std::cout << "HAS X- EDGE" << std::endl;
+
 			// iterate over z, y
 			for (uint8_t z = 0; z < CHUNK_SIZE; z++) {
 				for (uint16_t y = 0; y < CHUNK_HEIGHT; y++) {
@@ -832,13 +864,13 @@ namespace Chemical {
 							vertices.emplace_back(vertex);
 						}
 					}
-
-
 				}
 			}
 		}
 		if (chunk->edges.zp_chunk != nullptr) {
 			// if a chunk exists at Z+
+
+			//std::cout << "HAS Z+ EDGE" << std::endl;
 
 			// iterate over x, y
 			for (uint8_t x = 0; x < CHUNK_SIZE; x++) {
@@ -858,7 +890,7 @@ namespace Chemical {
 							vertex += static_cast<uint32_t>(y) << 8;
 							vertex += static_cast<uint32_t>(CHUNK_SIZE - 1) << 3;
 
-							vertices.emplace_back(vertex);
+							vertices.emplace_back(vertex); // replcae with bufferless rendering
 							vertices.emplace_back(vertex);
 							vertices.emplace_back(vertex);
 
@@ -874,6 +906,8 @@ namespace Chemical {
 		}
 		if (chunk->edges.zm_chunk != nullptr) {
 			// if a chunk exists at Z-
+
+			//std::cout << "HAS Z- EDGE" << std::endl;
 
 			// iterate over x, y
 			for (uint8_t x = 0; x < CHUNK_SIZE; x++) {
@@ -910,32 +944,32 @@ namespace Chemical {
 				}
 			}
 
-			if (vertices.size() > 0) {
+		}
+
+		if (vertices.size() > 0) {
 
 
-				uint32_t new_size = static_cast<uint32_t>(vertices.size() + chunk->mesh.info.count);
+			uint32_t new_size = static_cast<uint32_t>(vertices.size() + chunk->mesh.info.count);
 
-				if (chunk->mesh.v_buffer_size < new_size * sizeof(ChunkVertex)) {
-					// the buffer is too small for the extra data and an allocation needs to be done
-					// we need to regenerate the entire mesh and then add the edges
+			if (chunk->mesh.v_buffer_size < new_size * sizeof(ChunkVertex)) {
+				// the buffer is too small for the extra data and an allocation needs to be done
+				// we need to regenerate the entire mesh and then add the edges
 
-					chunk->mesh.v_buffer.CreateMutableBuffer(static_cast<int64_t>(new_size * sizeof(ChunkVertex) * allocation_multiplier), nullptr, OpenGL::BufferDataFlags::DYNAMIC_DRAW);
+				chunk->mesh.v_buffer.CreateMutableBuffer(static_cast<int64_t>(new_size * sizeof(ChunkVertex) * allocation_multiplier), nullptr, OpenGL::BufferDataFlags::DYNAMIC_DRAW);
 
-					chunk->mesh.v_buffer_size = static_cast<uint32_t>(new_size * sizeof(ChunkVertex) * allocation_multiplier);
+				chunk->mesh.v_buffer_size = static_cast<uint32_t>(new_size * sizeof(ChunkVertex) * allocation_multiplier);
 
-					BuildChunkMeshNoEdges(chunk);
+				BuildChunkMeshNoEdges(chunk);
 
-					chunk->mesh.v_buffer.SetBufferData(vertices.size() * sizeof(ChunkVertex), &vertices[0], chunk->mesh.info.count * sizeof(ChunkVertex));
-				}
-				else {
-					// the buffer is large enough for the extra data
+				chunk->mesh.v_buffer.SetBufferData(vertices.size() * sizeof(ChunkVertex), &vertices[0], chunk->mesh.info.count * sizeof(ChunkVertex));
+			}
+			else {
+				// the buffer is large enough for the extra data
 
-					chunk->mesh.v_buffer.SetBufferData(vertices.size() * sizeof(ChunkVertex), &vertices[0], chunk->mesh.info.count * sizeof(ChunkVertex));
-				}
-
-				chunk->mesh.info.count += static_cast<int32_t>(vertices.size());
+				chunk->mesh.v_buffer.SetBufferData(vertices.size() * sizeof(ChunkVertex), &vertices[0], chunk->mesh.info.count * sizeof(ChunkVertex));
 			}
 
+			chunk->mesh.info.count += static_cast<int32_t>(vertices.size());
 		}
 	}
 }

@@ -88,6 +88,9 @@ void APIENTRY message_callback(GLenum source, GLenum type, GLuint id, GLenum sev
 }
 #endif
 
+
+float camSpeed = 0.5f;
+float sensitivity = 0.08f;
 // movement controls
 double oldx, oldy;
 void UpdatePlayer() {
@@ -98,29 +101,29 @@ void UpdatePlayer() {
 	glm::fvec3 front = glm::normalize(glm::fvec3(forward.x, 0, forward.z));
 
 	if (glfwGetKey(window, GLFW_KEY_W)) {
-		player_transform.position += front * 0.25f;
+		player_transform.position += front * camSpeed;
 	}
 	if (glfwGetKey(window, GLFW_KEY_S)) {
-		player_transform.position -= front * 0.25f;
+		player_transform.position -= front * camSpeed;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A)) {
-		player_transform.position -= right * 0.25f;
+		player_transform.position -= right * camSpeed;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D)) {
-		player_transform.position += right * 0.25f;
+		player_transform.position += right * camSpeed;
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE)) {
-		player_transform.position.y += 0.15f;
+		player_transform.position.y += camSpeed;
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
-		player_transform.position.y -= 0.15f;
+		player_transform.position.y -= camSpeed;
 	}
 
 	double x, y;
 	glfwGetCursorPos(window, &x, &y);
 
-	player_transform.rotation.y += static_cast<float>(x - oldx) * 0.08f;
-	player_transform.rotation.x += static_cast<float>(y - oldy) * 0.08f;
+	player_transform.rotation.y += static_cast<float>(x - oldx) * sensitivity;
+	player_transform.rotation.x += static_cast<float>(y - oldy) * sensitivity;
 
 	player_transform.rotation.x = glm::clamp(player_transform.rotation.x, -85.0f, 85.0f);
 
@@ -316,6 +319,11 @@ int main(int argc, char* argv[]) {
 	while (!glfwWindowShouldClose(window)) {
 
 		glfwMakeContextCurrent(window);
+
+		if (glfwGetKey(window, GLFW_KEY_6))
+			loader.doChunkLoading = false;
+		if (glfwGetKey(window, GLFW_KEY_7))
+			loader.doChunkLoading = true;
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
