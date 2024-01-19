@@ -89,7 +89,7 @@ void APIENTRY message_callback(GLenum source, GLenum type, GLuint id, GLenum sev
 #endif
 
 
-float camSpeed = 0.5f;
+float camSpeed = 0.1f;
 float sensitivity = 0.08f;
 // movement controls
 double oldx, oldy;
@@ -163,7 +163,7 @@ int main(int argc, char* argv[]) {
 
 	// GLFW WINDOW SETUP -------------------------------------------------
 
-	window = glfwCreateWindow(1280, 720, "Hello World", NULL, NULL);
+	window = glfwCreateWindow(1280, 720, "Chemical", NULL, NULL);
 
 	if (!window) {
 #ifdef CHEMICAL_DEBUG
@@ -237,7 +237,7 @@ int main(int argc, char* argv[]) {
 	std::random_device rd;
 	uint32_t seed = rd();
 
-	ChunkLoader loader(seed, 6);
+	ChunkLoader loader(seed, 4);
 
 	glfwGetCursorPos(window, &oldx, &oldy);
 
@@ -263,7 +263,7 @@ int main(int argc, char* argv[]) {
 
 	dirt.GenerateMipmaps();
 
-	dirt.BindTexture(0);
+	dirt.BindTexture(1);
 
 	dirt.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MIN_FILTER, GL_NEAREST);
 	dirt.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -279,7 +279,7 @@ int main(int argc, char* argv[]) {
 
 	grass.GenerateMipmaps();
 
-	grass.BindTexture(1);
+	grass.BindTexture(2);
 
 	grass.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MIN_FILTER, GL_NEAREST);
 	grass.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -294,7 +294,7 @@ int main(int argc, char* argv[]) {
 
 	stone.GenerateMipmaps();
 
-	stone.BindTexture(2);
+	stone.BindTexture(0);
 
 	stone.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MIN_FILTER, GL_NEAREST);
 	stone.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -314,11 +314,48 @@ int main(int argc, char* argv[]) {
 	bed.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MIN_FILTER, GL_NEAREST);
 	bed.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MAG_FILTER, GL_NEAREST);
 
+	void* logtopdata = stbi_load("resources/textures/blocks/oaklogtop.png", &width, &height, &channels, 0);
+
+	OpenGL::Texture logtop(p);
+
+	logtop.SetTextureData(param, logtopdata);
+
+	stbi_image_free(logtopdata);
+
+	logtop.GenerateMipmaps();
+
+	logtop.BindTexture(4);
+
+	logtop.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MIN_FILTER, GL_NEAREST);
+	logtop.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	void* logsidedata = stbi_load("resources/textures/blocks/oaklogside.png", &width, &height, &channels, 0);
+
+	OpenGL::Texture logside(p);
+
+	logside.SetTextureData(param, logsidedata);
+
+	stbi_image_free(logsidedata);
+
+	logside.GenerateMipmaps();
+
+	logside.BindTexture(5);
+
+	logside.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MIN_FILTER, GL_NEAREST);
+	logside.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MAG_FILTER, GL_NEAREST);
+
 	// MORE TESTING CODE --------------------------------------------
 
 	while (!glfwWindowShouldClose(window)) {
 
 		glfwMakeContextCurrent(window);
+
+		if(glfwGetKey(window, GLFW_KEY_T))
+			loader.RemoveBlock(glm::ivec3(floor(player_transform.position.x), floor(player_transform.position.y), floor(player_transform.position.z)));
+		if (glfwGetKey(window, GLFW_KEY_Y)) {
+			loader.PlaceBlock(glm::ivec3(floor(player_transform.position.x), floor(player_transform.position.y), floor(player_transform.position.z)));
+		}
+
 
 		if (glfwGetKey(window, GLFW_KEY_6))
 			loader.doChunkLoading = false;

@@ -24,18 +24,44 @@ unsigned int GetBlockTextureID() {
 
 	switch(v_bit_data >> 20) {
 	case 1: // stone
-		return 2;
-		break;
-	case 2: // dirt
 		return 0;
 		break;
-	case 3: // grass
+	case 2: // dirt
 		return 1;
+		break;
+	case 3: // grass
+		return 2;
 		break;
 	case 4: // bedrock
 		return 3;
 		break;
-	};
+
+	}
+
+	// very stupid code but i just want to see it work
+	if(v_bit_data >> 20 == 5) {
+		switch(v_bit_data & 0x00000007) {
+			case 0:
+				return 4;
+				break;
+			case 1:
+				return 4;
+				break;
+			case 2:
+				return 5;
+				break;
+			case 3:
+				return 5;
+				break;
+			case 4:
+				return 5;
+				break;
+			case 5:
+				return 5;
+				break;
+		}
+	}
+
 }
 
 vec3 GetVertexPosition() {

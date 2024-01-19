@@ -1,18 +1,25 @@
-Alpha 1.10.1
+Alpha 1.10.2 World Manipulation
 
 changes this commit:
 
-discovered memory leak never existed, app just happens to slightly increase in usage for the first few 10/100s of chunks that get loaded
+added oaklogtop and oaklogside to shader textures
+added oaklog to block types
 
-spent maybe 5 hours fixing a bug where chunk Z+ and X+ edges wouldnt appear upon loading new chunks in the X+, Z- and X- direction only on the lowest Z chunks.
-Turns out it was just some chunk mesh buffer code inside of the wrong brackets.
+added oaklog block with 2 different textures for side and top/bottom faces with very silly code
 
-added doChunkLoading (enable with 7, disable with 6, enabled default) for debugging purposes. do not go more than 1 chunk outside of where you turned it off or game
-will crash due to how the chunkloader is designed.
+added function in ChunkLoader to calculate chunk origin from global position
 
-moved center_origin alignment code in chunkloader update to be inside of if statements, small optimization
+added RemoveBlock and PlaceBlock functions in ChunkLoader with functionality using T and Y while holding and will apply
+ontop of your position.
 
-small optimization: moved 
+aligned shader block texture IDs with real block ids
+
+known issues:
+
+world manipulation aka block removing and placing causes chunk edge rendering issues, touched upon in comments near remove block and
+place block function declaration
+world manipulation positioning is miscalculated for chunks in negative axes, touched upon in comments remove block and
+place block function declaration
 
 todo:
 

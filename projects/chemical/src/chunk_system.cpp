@@ -226,6 +226,34 @@ namespace Chemical {
 		renderer.RenderChunks(loaded_chunks);
 	}
 
+	glm::ivec2 ChunkLoader::CalculateChunkOriginFromGlobalPosition(glm::ivec2 pos) {
+		return glm::ivec2(floor(pos.x / 16.0f), floor(pos.y / 16.0f));
+		// 0.0 - 15.99 = 0, 16.0 - 31.99 = 1, 32.0 - 47.99 = 2
+	}
+
+	void ChunkLoader::RemoveBlock(glm::ivec3 pos) {
+		glm::ivec2 chunk_origin = CalculateChunkOriginFromGlobalPosition(glm::ivec2(pos.x, pos.z));
+
+		// finding the chunk the block belongs to
+		if (auto it1 = loaded_chunks.find(chunk_origin.x); it1 != loaded_chunks.end()){
+			if (auto it2 = it1->second.find(chunk_origin.y); it2 != it1->second.end()) {
+				it2->second->blocks[Block3Dto1D(pos.x % 16, pos.y, pos.z % 16)] = BlockType::Air;
+				renderer.BuildChunkMesh(it2->second, 1.0f);
+			}
+		}
+	}
+
+	void ChunkLoader::PlaceBlock(glm::ivec3 pos) {
+		glm::ivec2 chunk_origin = CalculateChunkOriginFromGlobalPosition(glm::ivec2(pos.x, pos.z));
+		// finding the chunk the block belongs to
+		if (auto it1 = loaded_chunks.find(chunk_origin.x); it1 != loaded_chunks.end()) {
+			if (auto it2 = it1->second.find(chunk_origin.y); it2 != it1->second.end()) {
+				it2->second->blocks[Block3Dto1D(pos.x % 16, pos.y, pos.z % 16)] = BlockType::OakLog;
+				renderer.BuildChunkMesh(it2->second, 1.0f);
+			}
+		}
+	}
+
 	ChunkRenderer::ChunkRenderer() {
 		OpenGL::Shader vertex_chunk_shader(Util::ReadFile("resources/shaders/chunk_shader.vert").c_str(), OpenGL::ShaderType::VERTEX_SHADER);
 		OpenGL::Shader fragment_chunk_shader(Util::ReadFile("resources/shaders/chunk_shader.frag").c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);

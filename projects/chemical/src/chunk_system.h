@@ -24,7 +24,8 @@ namespace Chemical {
 		Stone = 1,
 		Dirt = 2,
 		Grass = 3,
-		Bedrock = 4
+		Bedrock = 4,
+		OakLog = 5,
 	};
 
 	struct ChunkVertex {
@@ -150,6 +151,15 @@ namespace Chemical {
 
 		// loads new chunks in a region around the player
 		ChunkLoader(uint32_t seed, uint8_t render_distance = 8);
+
+		glm::ivec2 CalculateChunkOriginFromGlobalPosition(glm::ivec2 pos);
+
+		// probably shouldnt be in a chunk loader
+		// neither of these functions account for chunk edges(as in, other chunks keep the same edge face data even when blocks get 
+		// added and removed in the neighboring chunk.
+		// also doesnt account for chunks in negative axes, it needs to be abs'ed and flipped for Block3Dto1D to recognize it correctly
+		void RemoveBlock(glm::ivec3 pos);
+		void PlaceBlock(glm::ivec3 pos);
 
 		// loads new chunks if needed and renders them
 		void Update();
