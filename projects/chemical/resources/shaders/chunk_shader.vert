@@ -7,14 +7,15 @@ uniform mat4 v_proj;
 uniform mat4 v_view;
 
 out flat unsigned int texID;
+out flat unsigned int faceType;
 out vec2 texCoord;
 
 vec3 GetBlockPositionWithinChunk() {
 
 	vec3 pos;
 
-	pos.x = (v_bit_data >> 15) & 0x0000001F;
-	pos.y = (v_bit_data >> 8) & 0x00000007F;
+	pos.x = (v_bit_data >> 17) & 0x0000001F;
+	pos.y = (v_bit_data >> 8) & 0x0000001FF;
 	pos.z = (v_bit_data >> 3) & 0x0000001F;
 
 	return pos;
@@ -22,7 +23,7 @@ vec3 GetBlockPositionWithinChunk() {
 
 unsigned int GetBlockTextureID() {
 
-	switch(v_bit_data >> 20) {
+	switch(v_bit_data >> 22) {
 	case 1: // stone
 		return 0;
 		break;
@@ -39,7 +40,7 @@ unsigned int GetBlockTextureID() {
 	}
 
 	// very stupid code but i just want to see it work
-	if(v_bit_data >> 20 == 5) {
+	if(v_bit_data >> 22 == 5) {
 		switch(v_bit_data & 0x00000007) {
 			case 0:
 				return 4;
@@ -252,6 +253,7 @@ vec2 GetVertexTexCoord() {
 void main()
 {
 
+	faceType = v_bit_data & 0x00000007;
 	texID = GetBlockTextureID();
 	texCoord = GetVertexTexCoord();
 	vec3 v_posi = GetVertexPosition();

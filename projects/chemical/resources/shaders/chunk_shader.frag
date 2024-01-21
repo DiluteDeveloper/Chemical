@@ -5,6 +5,7 @@ out vec4 fragColor;
 in vec2 texCoord;
 
 in flat unsigned int texID;
+in flat unsigned int faceType;
 
 layout(binding=0)uniform sampler2D stoneTexture;
 layout(binding=1)uniform sampler2D dirtTexture;
@@ -41,6 +42,26 @@ sampler2D GetTexture() {
 
 void main()
 {                          
+	switch(faceType) {
+	case 0:
+		fragColor = texture(GetTexture(), texCoord);
+		break;
+	case 1:
+		fragColor = texture(GetTexture(), texCoord);
+		break;
+	case 2:
+		fragColor = vec4(vec3(texture(GetTexture(), texCoord).xyz * 0.6), 1.0);
+		break;
+	case 3:
+		fragColor = vec4(vec3(texture(GetTexture(), texCoord).xyz * 0.6), 1.0);
+		break;
+	case 4:
+		fragColor = vec4(vec3(texture(GetTexture(), texCoord).xyz * 0.8), 1.0);
+		break;
+	case 5:
+		fragColor = vec4(vec3(texture(GetTexture(), texCoord).xyz * 0.8), 1.0);
+		break;
 
-	fragColor = texture(GetTexture(), texCoord);
+	}
+
 }

@@ -119,6 +119,8 @@ void UpdatePlayer() {
 		player_transform.position.y -= camSpeed;
 	}
 
+	//std::cout << player_transform.position.x << ", " << player_transform.position.y << ", " << player_transform.position.z << std::endl;
+
 	double x, y;
 	glfwGetCursorPos(window, &x, &y);
 
@@ -237,7 +239,7 @@ int main(int argc, char* argv[]) {
 	std::random_device rd;
 	uint32_t seed = rd();
 
-	ChunkLoader loader(seed, 4);
+	ChunkLoader loader(seed, 16);
 
 	glfwGetCursorPos(window, &oldx, &oldy);
 
@@ -355,7 +357,6 @@ int main(int argc, char* argv[]) {
 		if (glfwGetKey(window, GLFW_KEY_Y)) {
 			loader.PlaceBlock(glm::ivec3(floor(player_transform.position.x), floor(player_transform.position.y), floor(player_transform.position.z)));
 		}
-
 
 		if (glfwGetKey(window, GLFW_KEY_6))
 			loader.doChunkLoading = false;

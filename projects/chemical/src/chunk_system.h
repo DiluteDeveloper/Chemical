@@ -14,7 +14,7 @@
 // no easily reachable limit.
 // determines the y dimension of a chunk used for iterating over.
 // do not change without modifying shader code.
-#define CHUNK_HEIGHT 128
+#define CHUNK_HEIGHT 400
 
 namespace Chemical {
 

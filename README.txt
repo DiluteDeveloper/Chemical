@@ -1,18 +1,11 @@
-Alpha 1.10.2 World Manipulation
+Alpha 1.10.4 World Manipulation
 
 changes this commit:
 
-added oaklogtop and oaklogside to shader textures
-added oaklog to block types
-
-added oaklog block with 2 different textures for side and top/bottom faces with very silly code
-
-added function in ChunkLoader to calculate chunk origin from global position
-
-added RemoveBlock and PlaceBlock functions in ChunkLoader with functionality using T and Y while holding and will apply
-ontop of your position.
-
-aligned shader block texture IDs with real block ids
+added very basic lighting
+changed perlin noise generation
+added 2 more bits to the Y value of the chunk block data and removed 2 bits from block type and offset accordingly.
+Increased chunk height to 400
 
 known issues:
 
@@ -33,7 +26,7 @@ have observed blocks getting cut off at high y levels but not all the same level
 not sure on this.
 
 BIT LAYOUT FOR CHUNK BLOCK DATA
-5,5,5,5 5,5,5,5 5,5,5,5 4,4,4,4 4,3,3,3 3,3,3,3 2,2,2,2 2,1,1,1
+5,5,5,5 5,5,5,5 5,5,4,4 4,4,4,3 3,3,3,3 3,3,3,3 2,2,2,2 2,1,1,1
 
 
 1 = face orientation( see below )

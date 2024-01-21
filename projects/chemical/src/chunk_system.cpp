@@ -18,13 +18,17 @@ namespace Chemical {
 
 	Chunk::Chunk(const glm::ivec2& origin, uint32_t seed) {
 		const siv::PerlinNoise perlin{seed};
+		const siv::PerlinNoise perlin2{seed + 50000};
 
 		for (uint8_t x = 0; x < CHUNK_SIZE; x++)
 		{
 			for (uint8_t z = 0; z < CHUNK_SIZE; z++)
 			{
 
-				int16_t genHeight = static_cast<int16_t>((perlin.octave2D_01(((origin.x * CHUNK_SIZE) + x) * 0.02f, ((origin.y * CHUNK_SIZE) + z) * 0.02f, 4) * 126) + 1);
+				int16_t genHeight = static_cast<int16_t>(
+					(((perlin.octave2D_01(((origin.x * CHUNK_SIZE) + x) * 0.005f, ((origin.y * CHUNK_SIZE) + z) * 0.005f, 1) +
+						perlin2.octave2D_01(((origin.x * CHUNK_SIZE) + x) * 0.005f, ((origin.y * CHUNK_SIZE) + z) * 0.005f, 6))
+						/ 2)* 398) + 1);
 
 				// reverse iterator to go from terrain height - 0(bottom y of the chunk)
 				// If genHeight is past CHUNK_HEIGHT it will be empty past that height
@@ -328,9 +332,9 @@ namespace Chemical {
 
 								uint32_t vertex = 0x00000000;
 
-								vertex += static_cast<uint32_t>(block_type) << 20;
+								vertex += static_cast<uint32_t>(block_type) << 22;
 
-								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(x) << 17;
 								vertex += static_cast<uint32_t>(y) << 8;
 								vertex += static_cast<uint32_t>(z) << 3;
 
@@ -349,9 +353,9 @@ namespace Chemical {
 
 							uint32_t vertex = 0x00000000;
 
-							vertex += static_cast<uint32_t>(block_type) << 20;
+							vertex += static_cast<uint32_t>(block_type) << 22;
 
-							vertex += static_cast<uint32_t>(x) << 15;
+							vertex += static_cast<uint32_t>(x) << 17;
 							vertex += static_cast<uint32_t>(y) << 8;
 							vertex += static_cast<uint32_t>(z) << 3;
 
@@ -371,9 +375,9 @@ namespace Chemical {
 
 							uint32_t vertex = 0x00000001;
 
-							vertex += static_cast<uint32_t>(block_type) << 20;
+							vertex += static_cast<uint32_t>(block_type) << 22;
 
-							vertex += static_cast<uint32_t>(x) << 15;
+							vertex += static_cast<uint32_t>(x) << 17;
 							vertex += static_cast<uint32_t>(y) << 8;
 							vertex += static_cast<uint32_t>(z) << 3;
 
@@ -394,9 +398,9 @@ namespace Chemical {
 
 								uint32_t vertex = 0x00000002;
 
-								vertex += static_cast<uint32_t>(block_type) << 20;
+								vertex += static_cast<uint32_t>(block_type) << 22;
 
-								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(x) << 17;
 								vertex += static_cast<uint32_t>(y) << 8;
 								vertex += static_cast<uint32_t>(z) << 3;
 
@@ -418,9 +422,9 @@ namespace Chemical {
 
 								uint32_t vertex = 0x00000002;
 
-								vertex += static_cast<uint32_t>(block_type) << 20;
+								vertex += static_cast<uint32_t>(block_type) << 22;
 
-								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(x) << 17;
 								vertex += static_cast<uint32_t>(y) << 8;
 								vertex += static_cast<uint32_t>(z) << 3;
 
@@ -444,9 +448,9 @@ namespace Chemical {
 
 								uint32_t vertex = 0x00000003;
 
-								vertex += static_cast<uint32_t>(block_type) << 20;
+								vertex += static_cast<uint32_t>(block_type) << 22;
 
-								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(x) << 17;
 								vertex += static_cast<uint32_t>(y) << 8;
 								vertex += static_cast<uint32_t>(z) << 3;
 
@@ -468,9 +472,9 @@ namespace Chemical {
 
 								uint32_t vertex = 0x00000003;
 
-								vertex += static_cast<uint32_t>(block_type) << 20;
+								vertex += static_cast<uint32_t>(block_type) << 22;
 
-								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(x) << 17;
 								vertex += static_cast<uint32_t>(y) << 8;
 								vertex += static_cast<uint32_t>(z) << 3;
 
@@ -494,9 +498,9 @@ namespace Chemical {
 
 								uint32_t vertex = 0x00000004;
 
-								vertex += static_cast<uint32_t>(block_type) << 20;
+								vertex += static_cast<uint32_t>(block_type) << 22;
 
-								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(x) << 17;
 								vertex += static_cast<uint32_t>(y) << 8;
 								vertex += static_cast<uint32_t>(z) << 3;
 
@@ -518,9 +522,9 @@ namespace Chemical {
 
 								uint32_t vertex = 0x00000004;
 
-								vertex += static_cast<uint32_t>(block_type) << 20;
+								vertex += static_cast<uint32_t>(block_type) << 22;
 
-								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(x) << 17;
 								vertex += static_cast<uint32_t>(y) << 8;
 								vertex += static_cast<uint32_t>(z) << 3;
 
@@ -544,9 +548,9 @@ namespace Chemical {
 
 								uint32_t vertex = 0x00000005;
 
-								vertex += static_cast<uint32_t>(block_type) << 20;
+								vertex += static_cast<uint32_t>(block_type) << 22;
 
-								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(x) << 17;
 								vertex += static_cast<uint32_t>(y) << 8;
 								vertex += static_cast<uint32_t>(z) << 3;
 
@@ -568,9 +572,9 @@ namespace Chemical {
 
 								uint32_t vertex = 0x00000005;
 
-								vertex += static_cast<uint32_t>(block_type) << 20;
+								vertex += static_cast<uint32_t>(block_type) << 22;
 
-								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(x) << 17;
 								vertex += static_cast<uint32_t>(y) << 8;
 								vertex += static_cast<uint32_t>(z) << 3;
 
@@ -636,9 +640,9 @@ namespace Chemical {
 
 								uint32_t vertex = 0x00000000;
 
-								vertex += static_cast<uint32_t>(block_type) << 20;
+								vertex += static_cast<uint32_t>(block_type) << 22;
 
-								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(x) << 17;
 								vertex += static_cast<uint32_t>(y) << 8;
 								vertex += static_cast<uint32_t>(z) << 3;
 
@@ -657,9 +661,9 @@ namespace Chemical {
 
 							uint32_t vertex = 0x00000000;
 
-							vertex += static_cast<uint32_t>(block_type) << 20;
+							vertex += static_cast<uint32_t>(block_type) << 22;
 
-							vertex += static_cast<uint32_t>(x) << 15;
+							vertex += static_cast<uint32_t>(x) << 17;
 							vertex += static_cast<uint32_t>(y) << 8;
 							vertex += static_cast<uint32_t>(z) << 3;
 
@@ -679,9 +683,9 @@ namespace Chemical {
 
 							uint32_t vertex = 0x00000001;
 
-							vertex += static_cast<uint32_t>(block_type) << 20;
+							vertex += static_cast<uint32_t>(block_type) << 22;
 
-							vertex += static_cast<uint32_t>(x) << 15;
+							vertex += static_cast<uint32_t>(x) << 17;
 							vertex += static_cast<uint32_t>(y) << 8;
 							vertex += static_cast<uint32_t>(z) << 3;
 
@@ -702,9 +706,9 @@ namespace Chemical {
 
 								uint32_t vertex = 0x00000002;
 
-								vertex += static_cast<uint32_t>(block_type) << 20;
+								vertex += static_cast<uint32_t>(block_type) << 22;
 
-								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(x) << 17;
 								vertex += static_cast<uint32_t>(y) << 8;
 								vertex += static_cast<uint32_t>(z) << 3;
 
@@ -728,9 +732,9 @@ namespace Chemical {
 
 								uint32_t vertex = 0x00000003;
 
-								vertex += static_cast<uint32_t>(block_type) << 20;
+								vertex += static_cast<uint32_t>(block_type) << 22;
 
-								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(x) << 17;
 								vertex += static_cast<uint32_t>(y) << 8;
 								vertex += static_cast<uint32_t>(z) << 3;
 
@@ -754,9 +758,9 @@ namespace Chemical {
 
 								uint32_t vertex = 0x00000004;
 
-								vertex += static_cast<uint32_t>(block_type) << 20;
+								vertex += static_cast<uint32_t>(block_type) << 22;
 
-								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(x) << 17;
 								vertex += static_cast<uint32_t>(y) << 8;
 								vertex += static_cast<uint32_t>(z) << 3;
 
@@ -780,9 +784,9 @@ namespace Chemical {
 
 								uint32_t vertex = 0x00000005;
 
-								vertex += static_cast<uint32_t>(block_type) << 20;
+								vertex += static_cast<uint32_t>(block_type) << 22;
 
-								vertex += static_cast<uint32_t>(x) << 15;
+								vertex += static_cast<uint32_t>(x) << 17;
 								vertex += static_cast<uint32_t>(y) << 8;
 								vertex += static_cast<uint32_t>(z) << 3;
 
@@ -841,9 +845,9 @@ namespace Chemical {
 
 							uint32_t vertex = 0x00000002;
 
-							vertex += static_cast<uint32_t>(primary_block_type) << 20;
+							vertex += static_cast<uint32_t>(primary_block_type) << 22;
 
-							vertex += static_cast<uint32_t>(CHUNK_SIZE - 1) << 15;
+							vertex += static_cast<uint32_t>(CHUNK_SIZE - 1) << 17;
 							vertex += static_cast<uint32_t>(y) << 8;
 							vertex += static_cast<uint32_t>(z) << 3;
 
@@ -878,7 +882,7 @@ namespace Chemical {
 
 							uint32_t vertex = 0x00000003;
 
-							vertex += static_cast<uint32_t>(primary_block_type) << 20;
+							vertex += static_cast<uint32_t>(primary_block_type) << 22;
 
 							vertex += static_cast<uint32_t>(y) << 8;
 							vertex += static_cast<uint32_t>(z) << 3;
@@ -912,9 +916,9 @@ namespace Chemical {
 
 							uint32_t vertex = 0x00000004;
 
-							vertex += static_cast<uint32_t>(primary_block_type) << 20;
+							vertex += static_cast<uint32_t>(primary_block_type) << 22;
 
-							vertex += static_cast<uint32_t>(x) << 15;
+							vertex += static_cast<uint32_t>(x) << 17;
 							vertex += static_cast<uint32_t>(y) << 8;
 							vertex += static_cast<uint32_t>(CHUNK_SIZE - 1) << 3;
 
@@ -949,9 +953,9 @@ namespace Chemical {
 
 							uint32_t vertex = 0x00000005;
 
-							vertex += static_cast<uint32_t>(primary_block_type) << 20;
+							vertex += static_cast<uint32_t>(primary_block_type) << 22;
 
-							vertex += static_cast<uint32_t>(x) << 15;
+							vertex += static_cast<uint32_t>(x) << 17;
 							vertex += static_cast<uint32_t>(y) << 8;
 
 							vertices.emplace_back(vertex);
