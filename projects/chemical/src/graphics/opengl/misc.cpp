@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "misc.h"
+#include "Misc.h"
 
 #include <GLAD/glad.h>
 

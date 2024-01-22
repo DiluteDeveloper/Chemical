@@ -2,7 +2,7 @@
 
 #include <GLAD/glad.h>
 
-#include "buffer.h"
+#include "Buffer.h"
 
 
 namespace Chemical {

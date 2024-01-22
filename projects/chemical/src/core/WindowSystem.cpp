@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "window_system.h"
+#include "WindowSystem.h"
 
 #include <GLFW/glfw3.h>
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "buffer.h"
-#include "misc.h"
+#include "Buffer.h"
+#include "Misc.h"
 
 
 namespace Chemical {

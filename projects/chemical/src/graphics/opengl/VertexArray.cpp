@@ -1,7 +1,7 @@
 #include "pch.h"
 #include <glad/glad.h>
 
-#include "vertex_array.h"
+#include "VertexArray.h"
 
 
 namespace Chemical {
