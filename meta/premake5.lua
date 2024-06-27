@@ -34,6 +34,8 @@ GLAD_SRC_DIR = "%{wks.location}/3rdparty/glad/src"
 GLAD_INC_DIR = "%{wks.location}/3rdparty/glad/include"
 GLFW_SRC_DIR = "%{wks.location}/3rdparty/glfw/src"
 GLFW_INC_DIR = "%{wks.location}/3rdparty/glfw/include"
+IMGUI_SRC_DIR = "%{wks.location}/3rdparty/imgui"
+IMGUI_INC_DIR = "%{wks.location}/3rdparty/imgui"
 
 COPY_RESOURCES_COMMAND = "%{wks.location}meta\\copy_resources.bat %{wks.location}resources %{wks.location}bin\\%{prj.name}\\%{cfg.platform}-%{cfg.buildcfg}\\resources"
 project "GLAD"
@@ -57,6 +59,16 @@ project "GLFW"
     targetdir (BIN_DIR)
     objdir (INT_DIR)
 
+project "IMGUI"
+kind "StaticLib"
+
+location (THIRD_PARTY_DIR)
+files { IMGUI_SRC_DIR .. "/*.c", IMGUI_SRC_DIR .."/*.h", IMGUI_SRC_DIR .. "/*.cpp", IMGUI_SRC_DIR .."/*.hpp", IMGUI_SRC_DIR .. "/*.m",
+        IMGUI_SRC_DIR .. "/backends/imgui_impl_glfw.cpp", IMGUI_SRC_DIR .. "/backends/imgui_impl_opengl3.cpp"}
+includedirs {IMGUI_INC_DIR, GLFW_INC_DIR}
+targetdir (BIN_DIR)
+objdir (INT_DIR)
+
 project "Chemical"
     kind "ConsoleApp"
 
@@ -67,8 +79,8 @@ project "Chemical"
 
     location (CHEMICAL_DIR)
     files {CHEMICAL_DIR .. "/include/**", CHEMICAL_DIR .. "/resources/**", CHEMICAL_DIR .. "/src/**"}
-    includedirs {CHEMICAL_DIR .. "/src/", CHEMICAL_DIR .. "/vendor/", GLAD_INC_DIR, GLFW_INC_DIR}
-    links {"GLFW", "GLAD"}
+    includedirs {CHEMICAL_DIR .. "/src/", CHEMICAL_DIR .. "/vendor/", GLAD_INC_DIR, GLFW_INC_DIR, IMGUI_INC_DIR}
+    links {"GLFW", "GLAD", "IMGUI"}
     targetdir (BIN_DIR)
     objdir (INT_DIR)
 

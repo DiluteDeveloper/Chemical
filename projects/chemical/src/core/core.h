@@ -1,17 +1,23 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include <GLAD/glad.h>
+#include <GLFW/glfw3.h>
 
-#include "transform/transform.h"
-
-struct GLFWwindow;
+/*
+Note to self:
+Think in terms of engine tools.
+Its not an input tool for the user,
+its an input tool for the engine.
+Its not an window tool for the game,
+its an input tool for the engine.
+*/
 
 namespace Chemical {
 	namespace Core {
-		extern Transform player_transform;
-		extern glm::mat4 projection;
 
-		extern GLFWwindow* window;
+		extern GLFWwindow* window; // make a wrapper for this eventually
+		extern std::string glsl_version; // and this
 	
+
 	}
 }
