@@ -3,7 +3,6 @@
 
 namespace Chemical {
 
-
 	namespace OpenGL {
 
 		// Bitfield Flags for buffer storage, only has & operator implemented

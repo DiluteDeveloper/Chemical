@@ -3,6 +3,9 @@
 #include "core.h"
 #include "gui/gui.h"
 #include "gui/surface_gui.h"
+#include "graphics/opengl/shader_program.h"
+#include "util/filestream.h"
+#include "nodes/sprite_2D.h"
 
 using namespace Chemical;
 
@@ -154,11 +157,25 @@ int main(int argc, char* argv[]) {
 
 	// GLAD PREFERENCES -----------------------------------------
 
-	// MORE TESTING CODE --------------------------------------------
+
+	Node::Sprite2D::InitializeSprite2D();
+	Node::Sprite2D sprite;
 
 	GUI::InitializeGUI();
 
 	GUI::SurfaceGUI surfaceGUI;
+
+	OpenGL::Shader vShader(Util::ReadFile("resources/shaders/sprite_2D.vert").c_str(), OpenGL::ShaderType::VERTEX_SHADER);
+	OpenGL::Shader fShader(Util::ReadFile("resources/shaders/sprite_2D.frag").c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
+
+	OpenGL::ShaderProgram shaderProgram = {{&vShader, &fShader}, Node::Sprite2D::layout };
+	shaderProgram.BindProgram();
+
+	shaderProgram.SetUniform2FV("real_position", 1, &sprite.node_2D.position[0]);
+	shaderProgram.SetUniform1UI("zIndex", sprite.zIndex);
+	shaderProgram.SetUniform2FV("scale", 1, &sprite.node_2D.scale[0]);
+
+	// MORE TESTING CODE --------------------------------------------
 
 	while (!glfwWindowShouldClose(Core::window)) {
 
@@ -167,6 +184,9 @@ int main(int argc, char* argv[]) {
 		GUI::NewFrame();
 
 		surfaceGUI.Update();
+
+		Node::Sprite2D::vArray->Bind();
+		Node::Sprite2D::vArray->DrawElements(Node::Sprite2D::info);
 
 		GUI::Render();
 
