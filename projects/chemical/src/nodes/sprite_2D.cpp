@@ -1,41 +1,35 @@
 #include <pch.h>
 
+#include <GLAD/glad.h>
+
 #include "sprite_2D.h"
 
 namespace Chemical {
 	namespace Node {
 
-		std::unique_ptr<OpenGL::VertexArray> Sprite2D::vArray;
-		OpenGL::ElementDrawInfo Sprite2D::info;
-		OpenGL::VertexLayout Sprite2D::layout;
+		void Sprite2D::SetImageTexture(const Util::ImageData& image) {
+			// SPRITES CURRENTLY REQUIRE 4 CHANNELS
 
-		void Sprite2D::InitializeSprite2D() {
-			OpenGL::Buffer vBuffer;
+			image_scale = glm::ivec2(image.x, image.y);
 
-			vArray = std::make_unique<OpenGL::VertexArray>();
+			OpenGL::TextureStorageParameters p;
+			p.internalFormat = OpenGL::TextureInternalFormat::RGBA8;
+			p.width = image.x;
+			p.height = image.y;
+			imageTexture = std::make_unique<OpenGL::Texture>(OpenGL::Texture(p));
 
-			float vertices[] = {
-				-0.5f, -0.5f,
-				-0.5f, 0.5f,
-				0.5f, 0.5f,
-				0.5f, -0.5f
-			};
-			vBuffer.CreateImmutableBuffer(sizeof(float) * 8, &vertices[0]);
-			unsigned int indices[] = {
-				2, 1, 0,
-				2, 0, 3
-			};
-			OpenGL::Buffer eBuffer;
-			eBuffer.CreateImmutableBuffer(sizeof(unsigned int) * 6, &indices[0]);
+			OpenGL::TextureDataParameters param;
+			param.baseFormat = OpenGL::TextureBaseFormat::RGBA;
+			param.dataType = OpenGL::DataType::UNSIGNED_BYTE;
+			param.width = image.x;
+			param.height = image.y;
+			param.textureType = OpenGL::TextureType::TEXTURE_2D;
 
-			layout.AddAttribute(OpenGL::VertexAttribute(2, 0, OpenGL::DataType::FLOAT));
-			info.count = 6;
-			info.dataType = OpenGL::DataType::UNSIGNED_INT;
-			info.mode = OpenGL::DrawMode::TRIANGLES;
-			info.offset = 0;
+			imageTexture->SetTextureData(param, image.data);
+			imageTexture->GenerateMipmaps();
 
-			vArray->SetVertexBuffer(vBuffer, layout, 0, 0);
-			vArray->SetElementBuffer(eBuffer);
+			imageTexture->SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MIN_FILTER, GL_NEAREST);
+			imageTexture->SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MAG_FILTER, GL_NEAREST);
 		}
 	}
 }

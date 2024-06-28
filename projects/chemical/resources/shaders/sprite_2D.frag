@@ -2,8 +2,12 @@
 
 out vec4 fragColor;
 
+in vec2 f_vertex_tex_coord;
+
+uniform sampler2D image_texture;
+
 void main()
 {                          
 
-    fragColor = vec4(1.0, 0.0, 0.0 ,1.0);
+    fragColor = texture(image_texture, f_vertex_tex_coord);
 }

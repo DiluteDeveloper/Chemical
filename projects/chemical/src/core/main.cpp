@@ -5,8 +5,8 @@
 #include "gui/surface_gui.h"
 #include "graphics/opengl/shader_program.h"
 #include "util/filestream.h"
-#include "nodes/sprite_2D.h"
 
+#include "core/sprite_renderer.h"
 using namespace Chemical;
 
 #ifdef CHEMICAL_DEBUG
@@ -102,7 +102,7 @@ int main(int argc, char* argv[]) {
 
 	// GLFW WINDOW SETUP -------------------------------------------------
 
-	Core::window = glfwCreateWindow(1280, 720, "Chemical", NULL, NULL);
+	Core::window = glfwCreateWindow(Core::window_size.x, Core::window_size.y, "Chemical", NULL, NULL);
 
 	if (!Core::window) {
 #ifdef CHEMICAL_DEBUG
@@ -157,23 +157,23 @@ int main(int argc, char* argv[]) {
 
 	// GLAD PREFERENCES -----------------------------------------
 
+	std::vector<Node::Sprite2D> sprites;
 
-	Node::Sprite2D::InitializeSprite2D();
-	Node::Sprite2D sprite;
+	sprites.emplace_back();
+	//sprites.emplace_back();
+	sprites[0].SetImageTexture(Util::LoadImageFromPath("resources/textures/test.png", 4));
+	//sprites[1].SetImageTexture(Util::LoadImageFromPath("resources/textures/chessboard2.png"));
+	//sprites[0].node_2D.set_position(-0.5f, 0);
+	//sprites[0].node_2D.set_scale(0.5f, 1);
+	//sprites[1].node_2D.set_position(0.5f, 0);
+	//sprites[1].node_2D.set_scale(500, 500);
+
+	Core::SpriteRenderer spriteRenderer;
+	spriteRenderer.InitializeSpriteRenderer();
 
 	GUI::InitializeGUI();
 
 	GUI::SurfaceGUI surfaceGUI;
-
-	OpenGL::Shader vShader(Util::ReadFile("resources/shaders/sprite_2D.vert").c_str(), OpenGL::ShaderType::VERTEX_SHADER);
-	OpenGL::Shader fShader(Util::ReadFile("resources/shaders/sprite_2D.frag").c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
-
-	OpenGL::ShaderProgram shaderProgram = {{&vShader, &fShader}, Node::Sprite2D::layout };
-	shaderProgram.BindProgram();
-
-	shaderProgram.SetUniform2FV("real_position", 1, &sprite.node_2D.position[0]);
-	shaderProgram.SetUniform1UI("zIndex", sprite.zIndex);
-	shaderProgram.SetUniform2FV("scale", 1, &sprite.node_2D.scale[0]);
 
 	// MORE TESTING CODE --------------------------------------------
 
@@ -185,8 +185,7 @@ int main(int argc, char* argv[]) {
 
 		surfaceGUI.Update();
 
-		Node::Sprite2D::vArray->Bind();
-		Node::Sprite2D::vArray->DrawElements(Node::Sprite2D::info);
+		spriteRenderer.RenderSprites(sprites);
 
 		GUI::Render();
 

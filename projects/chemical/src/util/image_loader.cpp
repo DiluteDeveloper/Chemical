@@ -9,10 +9,10 @@ namespace Chemical {
 
 	namespace Util {
 
-		ImageData LoadImage(std::string_view filePath, int32_t req_comp) {
+		ImageData LoadImageFromPath(std::string_view filePath, int32_t requiredChannels) {
 
 			ImageData id;
-			id.data = stbi_load(filePath.data(), &id.x, &id.y, &id.bitDepth, req_comp);
+			id.data = stbi_load(filePath.data(), &id.x, &id.y, &id.channels, requiredChannels);
 			return id;
 		}
 	}

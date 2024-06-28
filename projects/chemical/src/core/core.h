@@ -17,6 +17,7 @@ namespace Chemical {
 
 		extern GLFWwindow* window; // make a wrapper for this eventually
 		extern std::string glsl_version; // and this
+		extern glm::ivec2 window_size;
 	
 
 	}

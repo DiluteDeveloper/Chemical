@@ -1,22 +1,25 @@
 #pragma once
 
 #include "graphics/opengl/vertex_array.h"
+#include "graphics/opengl/texture.h"
 
 #include "node_2D.h"
+
+#include "util/image_loader.h"
 
 namespace Chemical {
 	
 	namespace Node {
 		class Sprite2D {
-			// For now just represents a blank square, no texturing
-			// For now is implementing its own OpenGL Mesh
+			// For now is implementing its own OpenGL Texture
+			// 
+			// only supports png currently
 		public:
+			void SetImageTexture(const Util::ImageData& image);
+			std::unique_ptr<OpenGL::Texture> imageTexture;
+			glm::ivec2 image_scale = glm::ivec2(0); // num of pixels on image texture
 			Node2D node_2D;
-			unsigned int zIndex = 0;
-			static void InitializeSprite2D(); // static and called once for all sprites
-			static std::unique_ptr<OpenGL::VertexArray> vArray; // square
-			static OpenGL::ElementDrawInfo info;
-			static OpenGL::VertexLayout layout;
+			int zIndex = 0;
 		};
 	}
 }

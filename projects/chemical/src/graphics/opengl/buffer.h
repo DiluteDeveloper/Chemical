@@ -53,10 +53,13 @@ namespace Chemical {
 
 			Buffer(const Buffer&) = delete;
 			Buffer(Buffer&& other) noexcept :
-				rendererID(std::move(other.rendererID)) { }
+				rendererID(std::move(other.rendererID)) {
+				other.rendererID = 0;
+			}
 			Buffer& operator=(const Buffer&) = delete;
 			Buffer& operator=(Buffer&& other) noexcept {
 				this->rendererID = std::move(other.rendererID);
+				other.rendererID = 0;
 				return *this;
 			}
 

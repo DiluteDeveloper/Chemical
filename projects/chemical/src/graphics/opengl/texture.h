@@ -158,12 +158,15 @@ namespace Chemical {
 
 			Texture(const TextureStorageParameters& parameters);
 			Texture(Texture&& other) noexcept :
-				rendererID(std::move(other.rendererID)) {}
+				rendererID(std::move(other.rendererID)) {
+				other.rendererID = 0;
+			}
 
 			Texture(const Texture&) = delete;
 			Texture& operator=(const Texture&) = delete;
 			Texture& operator=(Texture&& other) noexcept {
 				this->rendererID = std::move(other.rendererID);
+				other.rendererID = 0;
 				return *this;
 			}
 
