@@ -12,15 +12,15 @@ using namespace Chemical;
 #ifdef CHEMICAL_DEBUG
 
 // prevents message duplication
-int64_t prevMessageID = -1;
+int64_t prev_message_id = -1;
 
 // OpenGL debug callback
-void APIENTRY message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
+void APIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
 {
 
-	if ((GLuint)prevMessageID == id)
+	if ((GLuint)prev_message_id == id)
 		return;
-	prevMessageID = id;
+	prev_message_id = id;
 	auto const src_str = [source]() {
 		switch (source)
 		{
@@ -149,7 +149,7 @@ int main(int argc, char* argv[]) {
 	glEnable(GL_DEPTH_TEST);
 
 #ifdef CHEMICAL_DEBUG
-	glDebugMessageCallback(&message_callback, nullptr);
+	glDebugMessageCallback(&MessageCallback, nullptr);
 	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
 #endif
 
@@ -160,20 +160,24 @@ int main(int argc, char* argv[]) {
 	std::vector<Node::Sprite2D> sprites;
 
 	sprites.emplace_back();
+	sprites.emplace_back();
 	//sprites.emplace_back();
 	sprites[0].SetImageTexture(Util::LoadImageFromPath("resources/textures/test.png", 4));
+	sprites[0].node_2d.SetPosition(-500, 0);
+	sprites[1].SetImageTexture(Util::LoadImageFromPath("resources/textures/blocks/dirt.png", 4));
+	sprites[1].node_2d.SetPosition(500, 0);
 	//sprites[1].SetImageTexture(Util::LoadImageFromPath("resources/textures/chessboard2.png"));
 	//sprites[0].node_2D.set_position(-0.5f, 0);
 	//sprites[0].node_2D.set_scale(0.5f, 1);
 	//sprites[1].node_2D.set_position(0.5f, 0);
 	//sprites[1].node_2D.set_scale(500, 500);
 
-	Core::SpriteRenderer spriteRenderer;
-	spriteRenderer.InitializeSpriteRenderer();
+	Core::SpriteRenderer sprite_renderer;
+	sprite_renderer.InitializeSpriteRenderer();
 
 	GUI::InitializeGUI();
 
-	GUI::SurfaceGUI surfaceGUI;
+	GUI::SurfaceGUI surface_gui;
 
 	// MORE TESTING CODE --------------------------------------------
 
@@ -183,9 +187,9 @@ int main(int argc, char* argv[]) {
 
 		GUI::NewFrame();
 
-		surfaceGUI.Update();
+		surface_gui.Update();
 
-		spriteRenderer.RenderSprites(sprites);
+		sprite_renderer.RenderSprites(sprites);
 
 		GUI::Render();
 

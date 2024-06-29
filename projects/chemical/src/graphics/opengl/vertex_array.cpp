@@ -8,62 +8,62 @@ namespace Chemical {
 	namespace OpenGL {
 
 		VertexArray::VertexArray() {
-			glCreateVertexArrays(1, &rendererID);
+			glCreateVertexArrays(1, &renderer_id);
 		}
 
-		void VertexArray::SetVertexBuffer(const Buffer& buffer, const VertexLayout& info, int64_t offset, uint32_t bindingIndex) {
-			glVertexArrayVertexBuffer(rendererID, bindingIndex, buffer.GetRendererID(), offset, info.GetStride());
+		void VertexArray::SetVertexBuffer(const Buffer& buffer, const VertexLayout& info, int64_t offset, uint32_t binding_index) {
+			glVertexArrayVertexBuffer(renderer_id, binding_index, buffer.GetRendererID(), offset, info.GetStride());
 			uint32_t i = 0;
 			for (const VertexAttribute& att : info.GetAttributes())
 			{
 				switch (att.transformation) {
 				case DataTransformation::INT:
-					glVertexArrayAttribIFormat(rendererID, i, att.components, (GLenum)att.dataType, (GLuint)att.offset);
+					glVertexArrayAttribIFormat(renderer_id, i, att.components, (GLenum)att.data_type, (GLuint)att.offset);
 					break;
 				case DataTransformation::NORMALIZED_INT_TO_FLOAT:
-					glVertexArrayAttribFormat(rendererID, i, att.components, (GLenum)att.dataType, GL_TRUE, (GLuint)att.offset);
+					glVertexArrayAttribFormat(renderer_id, i, att.components, (GLenum)att.data_type, GL_TRUE, (GLuint)att.offset);
 					break;
 				case DataTransformation::INT_TO_FLOAT:
 					[[fallthrough]];
 				case DataTransformation::FLOAT:
-					glVertexArrayAttribFormat(rendererID, i, att.components, (GLenum)att.dataType, GL_FALSE, (GLuint)att.offset);
+					glVertexArrayAttribFormat(renderer_id, i, att.components, (GLenum)att.data_type, GL_FALSE, (GLuint)att.offset);
 					break;
 				case DataTransformation::DOUBLE:
-					glVertexArrayAttribLFormat(rendererID, i, att.components, (GLenum)att.dataType, (GLuint)att.offset);
+					glVertexArrayAttribLFormat(renderer_id, i, att.components, (GLenum)att.data_type, (GLuint)att.offset);
 					break;
 				}
-				glEnableVertexArrayAttrib(rendererID, i);
-				glVertexArrayAttribBinding(rendererID, i, bindingIndex);
+				glEnableVertexArrayAttrib(renderer_id, i);
+				glVertexArrayAttribBinding(renderer_id, i, binding_index);
 
 				i++;
 			}
 		}
 		void VertexArray::SetElementBuffer(const Buffer& buffer) {
-			glVertexArrayElementBuffer(rendererID, buffer.GetRendererID());
+			glVertexArrayElementBuffer(renderer_id, buffer.GetRendererID());
 		}
 
 		void VertexArray::Bind() const {
-			glBindVertexArray(rendererID);
+			glBindVertexArray(renderer_id);
 		}
 		void VertexArray::Unbind() const {
 			glBindVertexArray(0);
 		}
 		void VertexArray::DrawElements(const ElementDrawInfo& info) const {
-			glDrawElements((GLenum)info.mode, info.count, (GLenum)info.dataType, (void*)info.offset);
+			glDrawElements((GLenum)info.mode, info.count, (GLenum)info.data_type, (void*)info.offset);
 		}
 		void VertexArray::DrawArrays(const ArrayDrawInfo& info)  const {
 			glDrawArrays((GLenum)info.mode, info.first, info.count);
 		}
 
 		void VertexArray::DrawElementsInstanced(const InstancedElementDrawInfo& info) const {
-			glDrawElementsInstanced((GLenum)info.mode, info.count, (GLenum)info.dataType, (void*)info.offset, info.instanceCount);
+			glDrawElementsInstanced((GLenum)info.mode, info.count, (GLenum)info.data_type, (void*)info.offset, info.instance_count);
 		}
 		void VertexArray::DrawArraysInstanced(const InstancedArrayDrawInfo& info) const {
-			glDrawArraysInstanced((GLenum)info.mode, info.first, info.count, info.instanceCount);
+			glDrawArraysInstanced((GLenum)info.mode, info.first, info.count, info.instance_count);
 		}
 
 		VertexArray::~VertexArray() {
-			glDeleteVertexArrays(1, &rendererID);
+			glDeleteVertexArrays(1, &renderer_id);
 		}
 	}
 }

@@ -12,15 +12,15 @@ namespace Chemical {
 	namespace Core {
 
 
-		std::unique_ptr<OpenGL::VertexArray> vArray; 
+		std::unique_ptr<OpenGL::VertexArray> v_array; 
 		OpenGL::ElementDrawInfo info;
 		OpenGL::VertexLayout layout;
-		std::unique_ptr<OpenGL::ShaderProgram> shaderProgram;
+		std::unique_ptr<OpenGL::ShaderProgram> shader_program;
 
 		void SpriteRenderer::InitializeSpriteRenderer() {
-			OpenGL::Buffer vBuffer;
+			OpenGL::Buffer v_buffer;
 
-			vArray = std::make_unique<OpenGL::VertexArray>();
+			v_array = std::make_unique<OpenGL::VertexArray>();
 
 			float vertices[] = {
 				-0.5f, -0.5f, 0.0f, 0.0f,
@@ -28,48 +28,47 @@ namespace Chemical {
 				0.5f, 0.5f, 1.0f, 1.0f,
 				0.5f, -0.5f, 1.0f, 0.0f
 			};
-			vBuffer.CreateImmutableBuffer(sizeof(float) * 16, &vertices[0]);
+			v_buffer.CreateImmutableBuffer(sizeof(float) * 16, &vertices[0]);
 			unsigned int indices[] = {
 				2, 1, 0,
 				2, 0, 3
 			};
-			OpenGL::Buffer eBuffer;
-			eBuffer.CreateImmutableBuffer(sizeof(unsigned int) * 6, &indices[0]);
+			OpenGL::Buffer e_buffer;
+			e_buffer.CreateImmutableBuffer(sizeof(unsigned int) * 6, &indices[0]);
 
 			layout.AddAttribute(OpenGL::VertexAttribute(2, 0, OpenGL::DataType::FLOAT));
 			layout.AddAttribute(OpenGL::VertexAttribute(2, sizeof(float) * 2, OpenGL::DataType::FLOAT));
 			info.count = 6;
-			info.dataType = OpenGL::DataType::UNSIGNED_INT;
+			info.data_type = OpenGL::DataType::UNSIGNED_INT;
 			info.mode = OpenGL::DrawMode::TRIANGLES;
 			info.offset = 0;
 
-			vArray->SetVertexBuffer(vBuffer, layout, 0, 0);
-			vArray->SetElementBuffer(eBuffer);
+			v_array->SetVertexBuffer(v_buffer, layout, 0, 0);
+			v_array->SetElementBuffer(e_buffer);
 
-			OpenGL::Shader vShader(Util::ReadFile("resources/shaders/sprite_2D.vert").c_str(), OpenGL::ShaderType::VERTEX_SHADER);
-			OpenGL::Shader fShader(Util::ReadFile("resources/shaders/sprite_2D.frag").c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
+			OpenGL::Shader v_shader(Util::ReadFile("resources/shaders/sprite_2D.vert").c_str(), OpenGL::ShaderType::VERTEX_SHADER);
+			OpenGL::Shader f_shader(Util::ReadFile("resources/shaders/sprite_2D.frag").c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
 
-			shaderProgram = std::make_unique<OpenGL::ShaderProgram>(OpenGL::ShaderProgram{ { &vShader, &fShader }, layout });
+			shader_program = std::make_unique<OpenGL::ShaderProgram>(OpenGL::ShaderProgram{ { &v_shader, &f_shader }, layout });
 
 			// screen dimensions
 			glm::mat4 projection_matrix = glm::ortho(-Core::window_size.x / 2.0f, Core::window_size.x / 2.0f,
 				-Core::window_size.y / 2.0f, Core::window_size.y / 2.0f);
-			shaderProgram->SetUniformMatrix4FV("projection_matrix", 1, false, &projection_matrix[0][0]);
+			shader_program->SetUniformMatrix4FV("projection_matrix", 1, false, &projection_matrix[0][0]);
 			glm::mat4 view_matrix = glm::mat4(1.0f);
-			shaderProgram->SetUniformMatrix4FV("view_matrix", 1, false, &view_matrix[0][0]);
+			shader_program->SetUniformMatrix4FV("view_matrix", 1, false, &view_matrix[0][0]);
 		}
-
 		void SpriteRenderer::RenderSprites(const std::vector<Node::Sprite2D>& sprites) {
-			shaderProgram->BindProgram();
+			shader_program->BindProgram();
 
 			for (auto& sprite : sprites) {
-				glm::mat4 real = sprite.node_2D.model_matrix;
+				glm::mat4 real = sprite.node_2d.model_matrix;
 				real = glm::scale(real, glm::vec3(sprite.image_scale, 1));
-				shaderProgram->SetUniformMatrix4FV("model_matrix", 1, false, &real[0][0]);
-				sprite.imageTexture->BindTexture(0);
+				shader_program->SetUniformMatrix4FV("model_matrix", 1, false, &real[0][0]);
+				sprite.image_texture->BindTexture(0);
 
-				vArray->Bind();
-				vArray->DrawElements(info);
+				v_array->Bind();
+				v_array->DrawElements(info);
 			}
 		}
 	}

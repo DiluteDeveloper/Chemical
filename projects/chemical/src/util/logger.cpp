@@ -10,8 +10,8 @@ namespace Chemical {
 		static HANDLE h_console;
 		Stopwatch Logger::stopwatch;
 
-		void Logger::SetConsoleTextColour(int32_t ansiColour) {
-			if (!SetConsoleTextAttribute(h_console, (WORD)ansiColour)) {
+		void Logger::SetConsoleTextColour(int32_t ansi_colour) {
+			if (!SetConsoleTextAttribute(h_console, (WORD)ansi_colour)) {
 				std::cout << "Setting console text attribute failed. Maybe InitializeLogger() wasnt called." << std::endl;
 			}
 		}

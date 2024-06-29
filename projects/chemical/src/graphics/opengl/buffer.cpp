@@ -10,25 +10,25 @@ namespace Chemical {
 	namespace OpenGL {
 
 		Buffer::Buffer() {
-			glCreateBuffers(1, &rendererID);
+			glCreateBuffers(1, &renderer_id);
 		}
 		Buffer::~Buffer() {
-			glDeleteBuffers(1, &rendererID);
+			glDeleteBuffers(1, &renderer_id);
 		}
 		void Buffer::SetBufferData(int64_t size, const void* data, uint32_t offset) {
-			glNamedBufferSubData(rendererID, offset, size, data);
+			glNamedBufferSubData(renderer_id, offset, size, data);
 		}
 		void Buffer::CreateMutableBuffer(int64_t size, const void* data, BufferDataFlags flags) {
-			glNamedBufferData(rendererID, size, data, (GLenum)flags);
+			glNamedBufferData(renderer_id, size, data, (GLenum)flags);
 		}
 		void Buffer::CreateImmutableBuffer(int64_t size, const void* data, BufferStorageFlags flags) {
-			glNamedBufferStorage(rendererID, size, data, (GLbitfield)flags);
+			glNamedBufferStorage(renderer_id, size, data, (GLbitfield)flags);
 		}
 
-		void Buffer::BindBufferBase(BufferBaseTarget target, uint32_t bindingIndex) {
+		void Buffer::BindBufferBase(BufferBaseTarget target, uint32_t binding_index) {
 
-			glBindBuffer((GLenum)target, rendererID);
-			glBindBufferBase((GLenum)target, bindingIndex, rendererID); // may not work like a tall
+			glBindBuffer((GLenum)target, renderer_id);
+			glBindBufferBase((GLenum)target, binding_index, renderer_id); // may not work like a tall
 		}
 
 	}

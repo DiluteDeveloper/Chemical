@@ -19,7 +19,7 @@ namespace Chemical {
 
 		// Recommended to make a shared_ptr as copy constructor is disabled
 		class Shader {
-			uint32_t rendererID = 0;
+			uint32_t renderer_id = 0;
 
 			ShaderType type = ShaderType::VERTEX_SHADER;
 
@@ -27,12 +27,12 @@ namespace Chemical {
 
 			Shader(const char* data, ShaderType type);
 			Shader(Shader&& other) noexcept :
-				rendererID(std::move(other.rendererID)), type(std::move(other.type)) {}
+				renderer_id(std::move(other.renderer_id)), type(std::move(other.type)) {}
 
 			Shader(const Shader&) = delete;
 			Shader& operator =(const Shader&) = delete;
 			Shader& operator=(Shader&& other) noexcept {
-				this->rendererID = std::move(other.rendererID);
+				this->renderer_id = std::move(other.renderer_id);
 				this->type = std::move(other.type);
 				return *this;
 			}
@@ -41,7 +41,7 @@ namespace Chemical {
 			~Shader();
 
 			uint32_t GetRendererID() const {
-				return rendererID;
+				return renderer_id;
 			}
 			ShaderType GetShaderType() const {
 				return type;
@@ -61,7 +61,7 @@ namespace Chemical {
 		// Shaders must be added on creation, cannot be added later
 		class ShaderProgram {
 
-			uint32_t rendererID = 0;
+			uint32_t renderer_id = 0;
 
 			std::unordered_map<std::string, Uniform> uniforms;
 
@@ -71,16 +71,16 @@ namespace Chemical {
 			ShaderProgram(std::initializer_list<const Shader*> shaders, const VertexLayout& layout);
 
 			ShaderProgram(ShaderProgram&& other) noexcept :
-				rendererID(std::move(other.rendererID)), uniforms(std::move(other.uniforms)) {
-				other.rendererID = 0;
+				renderer_id(std::move(other.renderer_id)), uniforms(std::move(other.uniforms)) {
+				other.renderer_id = 0;
 			}
 
 			ShaderProgram(const ShaderProgram&) = delete;
 			ShaderProgram& operator =(const ShaderProgram&) = delete;
 			ShaderProgram& operator=(ShaderProgram&& other) noexcept {
-				this->rendererID = std::move(other.rendererID);
+				this->renderer_id = std::move(other.renderer_id);
 				this->uniforms = std::move(other.uniforms);
-				other.rendererID = 0;
+				other.renderer_id = 0;
 				return *this;
 			}
 
@@ -91,17 +91,17 @@ namespace Chemical {
 			void BindProgram();
 
 			void SetUniform1F(std::string_view name, float value);
-			void SetUniform2F(std::string_view name, float value1, float value2);
-			void SetUniform3F(std::string_view name, float value1, float value2, float value3);
-			void SetUniform4F(std::string_view name, float value1, float value2, float value3, float value4);
+			void SetUniform2F(std::string_view name, float value_1, float value_2);
+			void SetUniform3F(std::string_view name, float value_1, float value_2, float value_3);
+			void SetUniform4F(std::string_view name, float value_1, float value_2, float value_3, float value4);
 			void SetUniform1I(std::string_view name, int32_t value);
-			void SetUniform2I(std::string_view name, int32_t value1, int32_t value2);
-			void SetUniform3I(std::string_view name, int32_t value1, int32_t value2, int32_t value3);
-			void SetUniform4I(std::string_view name, int32_t value1, int32_t value2, int32_t value3, int32_t value4);
+			void SetUniform2I(std::string_view name, int32_t value_1, int32_t value_2);
+			void SetUniform3I(std::string_view name, int32_t value_1, int32_t value_2, int32_t value_3);
+			void SetUniform4I(std::string_view name, int32_t value_1, int32_t value_2, int32_t value_3, int32_t value4);
 			void SetUniform1UI(std::string_view name, uint32_t value);
-			void SetUniform2UI(std::string_view name, uint32_t value1, uint32_t value2);
-			void SetUniform4UI(std::string_view name, uint32_t value1, uint32_t value2, uint32_t value3);
-			void SetUniform4UI(std::string_view name, uint32_t value1, uint32_t value2, uint32_t value3, uint32_t value4);
+			void SetUniform2UI(std::string_view name, uint32_t value_1, uint32_t value_2);
+			void SetUniform4UI(std::string_view name, uint32_t value_1, uint32_t value_2, uint32_t value_3);
+			void SetUniform4UI(std::string_view name, uint32_t value_1, uint32_t value_2, uint32_t value_3, uint32_t value4);
 
 			// count should be 1 unless it is an array, then count is array length.
 			void SetUniform1FV(std::string_view name, int32_t count, float const* value);
@@ -155,9 +155,9 @@ namespace Chemical {
 			void SetUniformMatrix3x2FV(std::string_view name, int32_t count, bool transpose, float const* value);
 
 			void SetUniform1D(std::string_view name, double value);
-			void SetUniform2D(std::string_view name, double value1, double value2);
-			void SetUniform3D(std::string_view name, double value1, double value2, double value3);
-			void SetUniform4D(std::string_view name, double value1, double value2, double value3, double value4);
+			void SetUniform2D(std::string_view name, double value_1, double value_2);
+			void SetUniform3D(std::string_view name, double value_1, double value_2, double value_3);
+			void SetUniform4D(std::string_view name, double value_1, double value_2, double value_3, double value4);
 
 			// count should be 1 unless it is an array, then count is array length.
 			void SetUniform1DV(std::string_view name, int32_t count, double const* value);

@@ -9,7 +9,7 @@ namespace Chemical {
 
 	namespace OpenGL {
 
-		uint64_t ConvertEnumDataTypeToByteSize(DataType type) {
+		uint64_t ConvertDataTypeToByteSize(DataType type) {
 			switch (type) {
 			case DataType::BYTE:
 				return sizeof(GLbyte);
@@ -56,24 +56,8 @@ namespace Chemical {
 
 		}
 
-		extern uint64_t ConvertUnsignedIntegralDataTypeToByteSize(DataType type) {
-			switch (type) {
-			case DataType::UNSIGNED_BYTE:
-				return sizeof(GLubyte);
-				break;
-			case DataType::UNSIGNED_SHORT:
-				return sizeof(GLushort);
-				break;
-			case DataType::UNSIGNED_INT:
-				return sizeof(GLuint);
-				break;
-			default:
-				return 0;
-			}
-		}
-
 		void VertexLayout::AddAttribute(const VertexAttribute& attribute) {
-			stride += static_cast<int32_t>(attribute.components * ConvertEnumDataTypeToByteSize(attribute.dataType));
+			stride += static_cast<int32_t>(attribute.components * ConvertDataTypeToByteSize(attribute.data_type));
 
 			attributes.emplace_back(attribute);
 		}

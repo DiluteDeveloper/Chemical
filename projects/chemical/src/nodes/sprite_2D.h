@@ -16,9 +16,9 @@ namespace Chemical {
 			// only supports png currently
 		public:
 			void SetImageTexture(const Util::ImageData& image);
-			std::unique_ptr<OpenGL::Texture> imageTexture;
+			std::unique_ptr<OpenGL::Texture> image_texture;
 			glm::ivec2 image_scale = glm::ivec2(0); // num of pixels on image texture
-			Node2D node_2D;
+			Node2D node_2d;
 			int zIndex = 0;
 		};
 	}

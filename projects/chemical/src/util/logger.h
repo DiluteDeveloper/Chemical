@@ -13,7 +13,7 @@ namespace Chemical {
 
 			static Stopwatch stopwatch;
 
-			static void SetConsoleTextColour(int32_t ansiColour);
+			static void SetConsoleTextColour(int32_t ansi_colour);
 
 			static void RetrieveConsoleHandle();
 

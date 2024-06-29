@@ -1,25 +1,17 @@
-Alpha 1.02
+Alpha 1.03
 
-OpenGL object wrapper move operations now set rendererID to 0 for
-moved-from object, to prevent deleting an active 
-OpenGL object on deconstruction.
+Added C++Conventions.txt to base directory, and manually changed
+all naming conventions used in C++ scripts to match.
 
-Added texture coordinates and texture to 
-sprite, renderer and shader workflow.
-Switched to model, view, projection 
-matrix for positioning sprites.
+Added CHEMICAL_DEBUG check to see if required channels of 4
+is passed to Sprite2D::SetImage.
 
-Added window_size variable to Core
+ImageData now stores the amount of channels in the actual image
+data, even if forced, as opposed to what was in the original image.
+Changed testing sprites to 2 different textures, no issues.
 
-Added SpriteRenderer for cleanliness and workflow
-
-Changed Sprite2D::InitializeSprite2D() to
-spriteRenderer.initializeSpriteRenderer() but essentially
-the same functionality
-
-Added basic image loading to sprites
-
-Modified Util::LoadImage and Util::ImageData to be accurate
+Added back ConvertTextureSizedInternalFormatToBaseInternalFormat
+renamed to ConvertInternalToBase
 
 todo:
 

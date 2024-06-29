@@ -34,9 +34,7 @@ namespace Chemical {
 		};
 
 		// returns 0 if type isnt found
-		extern uint64_t ConvertEnumDataTypeToByteSize(DataType type);
-		// returns 0 if type isnt found
-		extern uint64_t ConvertUnsignedIntegralDataTypeToByteSize(DataType type);
+		extern uint64_t ConvertDataTypeToByteSize(DataType type);
 
 		enum class DrawMode {
 			POINTS = 0x0000,
@@ -63,7 +61,7 @@ namespace Chemical {
 		};
 
 		struct VertexAttribute {
-			DataType dataType = DataType::FLOAT;
+			DataType data_type = DataType::FLOAT;
 			DataTransformation transformation = DataTransformation::FLOAT;
 
 			uint32_t offset = 0;
@@ -71,8 +69,8 @@ namespace Chemical {
 			int32_t components = 0;
 
 			VertexAttribute() = default;
-			VertexAttribute(int32_t components, uint32_t offset, DataType dataType = DataType::FLOAT, DataTransformation transformation = DataTransformation::FLOAT) :
-				components(components), offset(offset), dataType(dataType), transformation(transformation) {}
+			VertexAttribute(int32_t components, uint32_t offset, DataType data_type = DataType::FLOAT, DataTransformation transformation = DataTransformation::FLOAT) :
+				components(components), offset(offset), data_type(data_type), transformation(transformation) {}
 		};
 
 		class VertexLayout {
@@ -84,7 +82,7 @@ namespace Chemical {
 		public:
 
 
-			VertexLayout(int64_t offset, uint32_t bindingIndex) {}
+			VertexLayout(int64_t offset, uint32_t binding_index) {}
 			VertexLayout() {}
 
 			void AddAttribute(const VertexAttribute& attribute);

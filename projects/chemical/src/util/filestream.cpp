@@ -6,12 +6,12 @@ namespace Chemical {
 
 
 	namespace Util {
-		std::string ReadFile(const std::filesystem::path& filePath) {
+		std::string ReadFile(const std::filesystem::path& file_path) {
 
-			std::ifstream file(filePath);
+			std::ifstream file(file_path);
 #ifdef CHEMICAL_DEBUG
 			if (!file) {
-				LOGGER_CONSOLE_CUSTOM_ERROR("Failed to read file: {}.", filePath.string());
+				LOGGER_CONSOLE_CUSTOM_ERROR("Failed to read file: {}.", file_path.string());
 			}
 #endif
 			std::string str((std::istreambuf_iterator<char>(file)),
@@ -20,11 +20,11 @@ namespace Chemical {
 			return str;
 		}
 
-		std::vector<std::string> ReadFileLineByLine(const std::filesystem::path& filePath) {
-			std::ifstream file(filePath);
+		std::vector<std::string> ReadFileLineByLine(const std::filesystem::path& file_path) {
+			std::ifstream file(file_path);
 #ifdef CHEMICAL_DEBUG
 			if (file.fail()) {
-				LOGGER_CONSOLE_CUSTOM_ERROR("Failed to read file line by line: {}.", filePath.string());
+				LOGGER_CONSOLE_CUSTOM_ERROR("Failed to read file line by line: {}.", file_path.string());
 			}
 #endif
 			std::vector<std::string> lines;
@@ -35,15 +35,15 @@ namespace Chemical {
 
 		}
 
-		void WriteFile(const std::filesystem::path& filePath, const std::string& value) {
-			if (!std::filesystem::exists(filePath)) {
-				std::filesystem::create_directory(filePath.parent_path());
+		void WriteFile(const std::filesystem::path& file_path, const std::string& value) {
+			if (!std::filesystem::exists(file_path)) {
+				std::filesystem::create_directory(file_path.parent_path());
 			}
 
-			std::ofstream file(filePath, std::ios_base::trunc | std::ofstream::out);
+			std::ofstream file(file_path, std::ios_base::trunc | std::ofstream::out);
 
 			if (file.fail()) {
-				file.open(filePath, std::ios_base::app | std::ofstream::out);
+				file.open(file_path, std::ios_base::app | std::ofstream::out);
 				file << "\n";
 			}
 			file << value;

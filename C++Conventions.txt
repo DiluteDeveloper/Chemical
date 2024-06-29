@@ -1,0 +1,20 @@
+namespace MyNamespace {}
+class MyClass {}
+struct MyStruct {}
+class IDManager {}
+class GUI {}
+
+int my_variable
+int my_id
+
+void MyFunction();
+void MyGUI();
+
+// if need to use same variable name for parameter
+void MyFunction(int in_my_variable)
+
+enum class MyEnum { ENUM_IDENTIFIER = 0 }
+
+
+
+

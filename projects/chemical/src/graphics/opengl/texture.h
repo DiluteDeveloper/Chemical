@@ -111,22 +111,23 @@ namespace Chemical {
 			TEXTURE_3D_MULTISAMPLE = 0x9102
 		};
 
-		//uint16_t ConvertTextureSizedInternalFormatToBaseInternalFormat(TextureSizedInternalFormat sizedInternalFormat);
+		// Converts internal format texture enum to relevant base format
+		extern TextureBaseFormat ConvertInternalToBase(TextureInternalFormat internal_format);
 
 		struct TextureStorageParameters {
 
-			TextureInternalFormat internalFormat = TextureInternalFormat::SRGB8;
-			TextureType textureType = TextureType::TEXTURE_2D;
+			TextureInternalFormat internal_format = TextureInternalFormat::SRGB8;
+			TextureType texture_type = TextureType::TEXTURE_2D;
 
 			int32_t width = 0;
 			int32_t height = 0;
 			int32_t depth = 0;
 
-			int32_t mipLevels = 1;
+			int32_t mip_levels = 1;
 
 			// for multisample
 			int32_t samples = 0;
-			bool fixedSampleLocations = false;
+			bool fixed_sample_locations = false;
 
 			TextureStorageParameters() = default;
 
@@ -135,13 +136,13 @@ namespace Chemical {
 
 		// Extra data will be ignored
 		struct TextureDataParameters {
-			TextureBaseFormat baseFormat = TextureBaseFormat::RGB;
-			DataType dataType = DataType::UNSIGNED_BYTE;
-			TextureType textureType = TextureType::TEXTURE_2D;
+			TextureBaseFormat base_format = TextureBaseFormat::RGB;
+			DataType data_type = DataType::UNSIGNED_BYTE;
+			TextureType texture_type = TextureType::TEXTURE_2D;
 
-			int32_t widthOffset = 0;
-			int32_t heightOffset = 0;
-			int32_t depthOffset = 0;
+			int32_t width_offset = 0;
+			int32_t height_offset = 0;
+			int32_t depth_offset = 0;
 
 			int32_t width = 0;
 			int32_t height = 0;
@@ -152,21 +153,21 @@ namespace Chemical {
 		// storage size is immutable
 		// Recommended to make a shared_ptr as copy constructor is disabled
 		class Texture {
-			uint32_t rendererID = 0;
+			uint32_t renderer_id = 0;
 
 		public:
 
 			Texture(const TextureStorageParameters& parameters);
 			Texture(Texture&& other) noexcept :
-				rendererID(std::move(other.rendererID)) {
-				other.rendererID = 0;
+				renderer_id(std::move(other.renderer_id)) {
+				other.renderer_id = 0;
 			}
 
 			Texture(const Texture&) = delete;
 			Texture& operator=(const Texture&) = delete;
 			Texture& operator=(Texture&& other) noexcept {
-				this->rendererID = std::move(other.rendererID);
-				other.rendererID = 0;
+				this->renderer_id = std::move(other.renderer_id);
+				other.renderer_id = 0;
 				return *this;
 			}
 
@@ -183,10 +184,10 @@ namespace Chemical {
 			void SetTextureSetting(TextureSettings setting, float* value);
 
 			// helper function, binds texture buffer to textureUnit slot on shader
-			void BindTexture(uint32_t textureUnit);
+			void BindTexture(uint32_t texture_unit);
 
 			uint32_t GetRendererID() const {
-				return rendererID;
+				return renderer_id;
 			}
 		};
 	}

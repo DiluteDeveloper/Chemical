@@ -44,22 +44,22 @@ namespace Chemical {
 
 		// Recommended to make a shared_ptr as copy constructor is disabled
 		class Buffer {
-			uint32_t rendererID = 0;
+			uint32_t renderer_id = 0;
 		public:
 
 
-			// Creates a buffer rendererID object. data store can be created in CreateImmutableBuffer() or CreateMutableBuffer()
+			// Creates a buffer renderer_id object. data store can be created in CreateImmutableBuffer() or CreateMutableBuffer()
 			Buffer();
 
 			Buffer(const Buffer&) = delete;
 			Buffer(Buffer&& other) noexcept :
-				rendererID(std::move(other.rendererID)) {
-				other.rendererID = 0;
+				renderer_id(std::move(other.renderer_id)) {
+				other.renderer_id = 0;
 			}
 			Buffer& operator=(const Buffer&) = delete;
 			Buffer& operator=(Buffer&& other) noexcept {
-				this->rendererID = std::move(other.rendererID);
-				other.rendererID = 0;
+				this->renderer_id = std::move(other.renderer_id);
+				other.renderer_id = 0;
 				return *this;
 			}
 
@@ -76,10 +76,10 @@ namespace Chemical {
 			// Incompatible with CreateMutableBuffer
 			void CreateImmutableBuffer(int64_t size, const void* data = nullptr, BufferStorageFlags flags = BufferStorageFlags::MAP_READ_BIT & BufferStorageFlags::MAP_WRITE_BIT);
 
-			void BindBufferBase(BufferBaseTarget target, uint32_t bindingIndex);
+			void BindBufferBase(BufferBaseTarget target, uint32_t binding_index);
 
 			uint32_t GetRendererID() const {
-				return rendererID;
+				return renderer_id;
 			}
 
 		};

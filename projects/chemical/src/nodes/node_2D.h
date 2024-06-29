@@ -9,10 +9,10 @@ namespace Chemical {
 		public:
 			glm::fmat4 model_matrix = glm::mat4(1.0f);
 			Node2D() = default;
-			void set_position(float x, float y) {
+			void SetPosition(float x, float y) {
 				model_matrix = glm::translate(model_matrix, glm::vec3(x, y, 0));
 			}
-			void set_scale(float x, float y) {
+			void SetScale(float x, float y) {
 				model_matrix = glm::scale(model_matrix, glm::vec3(x, y, 0));
 			}
 		};
