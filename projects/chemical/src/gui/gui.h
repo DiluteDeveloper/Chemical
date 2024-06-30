@@ -3,7 +3,7 @@
 namespace Chemical {
 	namespace GUI {
 
-		// needs to be called before any other GUI functionality
+		// Requires Chemical::Core::Window
 		void InitializeGUI();
 
 		void NewFrame(); // typically goes at start of engine loop

@@ -6,7 +6,7 @@
 #include "graphics/opengl/shader_program.h"
 #include "util/filestream.h"
 
-#include "core.h"
+#include "window.h"
 
 namespace Chemical {
 	namespace Core {
@@ -17,7 +17,7 @@ namespace Chemical {
 		OpenGL::VertexLayout layout;
 		std::unique_ptr<OpenGL::ShaderProgram> shader_program;
 
-		void SpriteRenderer::InitializeSpriteRenderer() {
+		SpriteRenderer::SpriteRenderer() {
 			OpenGL::Buffer v_buffer;
 
 			v_array = std::make_unique<OpenGL::VertexArray>();
@@ -51,9 +51,10 @@ namespace Chemical {
 
 			shader_program = std::make_unique<OpenGL::ShaderProgram>(OpenGL::ShaderProgram{ { &v_shader, &f_shader }, layout });
 
+
 			// screen dimensions
-			glm::mat4 projection_matrix = glm::ortho(-Core::window_size.x / 2.0f, Core::window_size.x / 2.0f,
-				-Core::window_size.y / 2.0f, Core::window_size.y / 2.0f);
+			glm::mat4 projection_matrix = glm::ortho(-Core::Window::window_size.x / 2.0f, Core::Window::window_size.x / 2.0f,
+				-Core::Window::window_size.y / 2.0f, Core::Window::window_size.y / 2.0f);
 			shader_program->SetUniformMatrix4FV("projection_matrix", 1, false, &projection_matrix[0][0]);
 			glm::mat4 view_matrix = glm::mat4(1.0f);
 			shader_program->SetUniformMatrix4FV("view_matrix", 1, false, &view_matrix[0][0]);

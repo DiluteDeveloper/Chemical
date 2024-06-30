@@ -6,7 +6,9 @@ namespace Chemical {
 		class SpriteRenderer {
 
 		public:
-			void InitializeSpriteRenderer();
+
+			SpriteRenderer();
+
 			void RenderSprites(const std::vector<Node::Sprite2D>& sprites);
 		};
 	}

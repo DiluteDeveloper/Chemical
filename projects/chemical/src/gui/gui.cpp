@@ -5,8 +5,8 @@
 #include <backends/imgui_impl_opengl3.h>
 
 #include "gui.h"
-#include "core/core.h"
 
+#include "core/window.h"
 
 namespace Chemical {
 	namespace GUI {
@@ -19,8 +19,8 @@ namespace Chemical {
 
 			// ImGui::StyleColorsDark();
 
-			ImGui_ImplGlfw_InitForOpenGL(Core::window, true);
-			ImGui_ImplOpenGL3_Init(Core::glsl_version.c_str());
+			ImGui_ImplGlfw_InitForOpenGL(Core::Window::glfw_window, true);
+			ImGui_ImplOpenGL3_Init(Core::Window::glsl_version.c_str());
 		}
 
 		void NewFrame() {
