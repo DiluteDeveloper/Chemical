@@ -1,13 +1,12 @@
-#include "pch.h"
-#include "transform.h"
+#include <pch.h>
 
-#include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "transform.h"
 
 namespace Chemical {
 
-	glm::mat4 Transform::GetTransform() const {
+	glm::mat4 Transform::TransformToMat4() {
 		glm::mat4 m = glm::mat4(1.0f);
 
 		m = glm::translate(m, position);
@@ -18,4 +17,5 @@ namespace Chemical {
 
 		return m;
 	}
+
 }

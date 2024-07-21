@@ -24,4 +24,9 @@
 
 #include <format>
 #include <glm/glm.hpp>
-#include "util/logger.h"
+#include <GLFW/glfw3.h>
+#include <GLAD/glad.h>
+
+#include "util/console_logger.h"
+
+#include "core/defines/debug.h"

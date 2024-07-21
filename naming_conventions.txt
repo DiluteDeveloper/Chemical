@@ -1,0 +1,12 @@
+PascalCase:
+namespaces, classes, structs, classes, functions, enums
+
+snake_case:
+variables, folders, filenames
+
+function variable parameters with same name:
+f_variable
+
+ALL_CAPS:
+
+Enum values

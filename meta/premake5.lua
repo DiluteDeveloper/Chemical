@@ -20,20 +20,16 @@ workspace "Chemical"
 
 BIN_DIR = "%{wks.location}/bin/%{prj.name}/%{cfg.platform}-%{cfg.buildcfg}"
 INT_DIR = BIN_DIR .. "/int"
-RES_SRC_DIR = "%{wks.location}/resources"
-RES_DEST_DIR = BIN_DIR .. "/resources"
-LIB_DIR = "%{wks.location}/libs/%{cfg.platform}-%{cfg.buildcfg}"
 
 CHEMICAL_DIR = "%{wks.location}/projects/chemical"
-
---SANDBOX_DIR = "%{wks.location}/projects/sandbox"
---SANDBOX_SRC_DIR = "%{wks.location}/projects/sandbox"
 
 THIRD_PARTY_DIR = "%{wks.location}/3rdparty"
 GLAD_SRC_DIR = "%{wks.location}/3rdparty/glad/src"
 GLAD_INC_DIR = "%{wks.location}/3rdparty/glad/include"
 GLFW_SRC_DIR = "%{wks.location}/3rdparty/glfw/src"
 GLFW_INC_DIR = "%{wks.location}/3rdparty/glfw/include"
+
+ASSIMP_LIB_DIR = "%{wks.location}/3rdparty/assimp/lib/x64"
 
 COPY_RESOURCES_COMMAND = "%{wks.location}meta\\copy_resources.bat %{wks.location}resources %{wks.location}bin\\%{prj.name}\\%{cfg.platform}-%{cfg.buildcfg}\\resources"
 project "GLAD"
@@ -61,34 +57,17 @@ project "Chemical"
     kind "ConsoleApp"
 
     pchheader "pch.h"
-    pchsource ("../projects/chemical/src/pch.cpp") -- relative to script: has to be changed manually
+    pchsource ("../projects/chemical/src/pch.cpp") -- relative to this script: has to be changed manually
 
     defines "GLFW_INCLUDE_NONE"
 
     location (CHEMICAL_DIR)
     files {CHEMICAL_DIR .. "/include/**", CHEMICAL_DIR .. "/resources/**", CHEMICAL_DIR .. "/src/**"}
-    includedirs {CHEMICAL_DIR .. "/src/", CHEMICAL_DIR .. "/vendor/", GLAD_INC_DIR, GLFW_INC_DIR}
-    links {"GLFW", "GLAD"}
+    includedirs {CHEMICAL_DIR .. "/src/", CHEMICAL_DIR .. "/vendor/", GLAD_INC_DIR, GLFW_INC_DIR, ASSIMP_INC_DIR}
+    libdirs {ASSIMP_LIB_DIR}
+    links {"GLFW", "GLAD", "assimp-vc143-mt.lib"}
     targetdir (BIN_DIR)
     objdir (INT_DIR)
 
     filter "configurations:Debug"
         defines "CHEMICAL_DEBUG"
-
-    -- Copy resources to project directory and to bin
-    postbuildcommands {
-        "call %{wks.location}/meta/copy_resources.bat " .. string.gsub(CHEMICAL_DIR, "/", "\\") .. "\\resources " .. string.gsub(BIN_DIR, "/", "\\") .. "\\resources"                
-    }
-
---[[project "Sandbox"
-    kind "ConsoleApp"
-
-    location (SANDBOX_DIR)
-    files { SANDBOX_DIR .. "/src/**.cpp", SANDBOX_DIR .. "/src/**.h", 
-    SANDBOX_DIR .. "/vendor/**.h", SANDBOX_DIR .. "/vendor/**.hpp"}
-    includedirs { SANDBOX_DIR, CHEMICAL_INC_DIR}
-    links {"GLFW", "GLAD", "Chemical"}
-    targetdir (BIN_DIR)
-    objdir (INT_DIR)
-
-    postbuildcommands ("%{wks.location}meta\\copy_resources.bat %{wks.location}resources " .. string.gsub(BIN_DIR, "/", "\\") .. "\\resources")]]--

@@ -7,9 +7,7 @@ namespace Chemical {
 
 	namespace Util {
 
-#ifdef CHEMICAL_DEBUG
-
-		class Logger {
+		class ConsoleLogger {
 
 			static Stopwatch stopwatch;
 
@@ -28,16 +26,15 @@ namespace Chemical {
 			static void ConsoleLogCustomError(std::string_view message, int32_t line, std::filesystem::path file, std::format_args args);
 			static void ConsoleLogError(std::string_view message, int32_t line, std::filesystem::path file);
 
+
 		};
 
-#endif
-
-#define LOGGER_CONSOLE_MESSAGE(message) Util::Logger::ConsoleLogMessage(message, __LINE__, __FILE__)
-#define LOGGER_CONSOLE_CUSTOM_MESSAGE(message, ...) Util::Logger::ConsoleLogCustomMessage(message, __LINE__, __FILE__, std::make_format_args(__VA_ARGS__))
-#define LOGGER_CONSOLE_WARNING(message) Util::Logger::ConsoleLogWarning(message, __LINE__, __FILE__)
-#define LOGGER_CONSOLE_CUSTOM_WARNING(message, ...) Util::Logger::ConsoleLogCustomWarning(message, __LINE__, __FILE__, std::make_format_args(__VA_ARGS__))
-#define LOGGER_CONSOLE_ERROR(message) Util::Logger::ConsoleLogError(message, __LINE__, __FILE__)
-#define LOGGER_CONSOLE_CUSTOM_ERROR(message, ...) Util::Logger::ConsoleLogCustomError(message, __LINE__, __FILE__, std::make_format_args(__VA_ARGS__))
+#define LOGGER_CONSOLE_MESSAGE(message) Util::ConsoleLogger::ConsoleLogMessage(message, __LINE__, __FILE__)
+#define LOGGER_CONSOLE_CUSTOM_MESSAGE(message, ...) Util::ConsoleLogger::ConsoleLogCustomMessage(message, __LINE__, __FILE__, std::make_format_args(__VA_ARGS__))
+#define LOGGER_CONSOLE_WARNING(message) Util::ConsoleLogger::ConsoleLogWarning(message, __LINE__, __FILE__)
+#define LOGGER_CONSOLE_CUSTOM_WARNING(message, ...) Util::ConsoleLogger::ConsoleLogCustomWarning(message, __LINE__, __FILE__, std::make_format_args(__VA_ARGS__))
+#define LOGGER_CONSOLE_ERROR(message) Util::ConsoleLogger::ConsoleLogError(message, __LINE__, __FILE__)
+#define LOGGER_CONSOLE_CUSTOM_ERROR(message, ...) Util::ConsoleLogger::ConsoleLogCustomError(message, __LINE__, __FILE__, std::make_format_args(__VA_ARGS__))
 
 	}
 

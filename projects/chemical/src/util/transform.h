@@ -1,6 +1,5 @@
 #pragma once
 
-
 namespace Chemical {
 
 	struct Transform {
@@ -8,7 +7,6 @@ namespace Chemical {
 		glm::vec3 rotation = glm::vec3(0.0f);
 		glm::vec3 scale = glm::vec3(1.0f);
 
-		glm::fmat4 GetTransform() const;
+		glm::mat4 TransformToMat4();
 	};
-
 }
