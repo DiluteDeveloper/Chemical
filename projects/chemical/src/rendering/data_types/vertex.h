@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-#include "graphics/opengl/misc.h"
+#include "opengl/misc.h"
 
 namespace Chemical {
 

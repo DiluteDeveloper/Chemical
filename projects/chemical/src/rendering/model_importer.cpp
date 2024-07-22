@@ -5,14 +5,9 @@
 #include <assimp/scene.h>
 
 namespace Chemical {
-	
-	bool ModelImporter::import_success = true;
-	Mesh ModelImporter::imported_mesh;
-
-	Assimp::Importer ModelImporter::importer;
 
 
-	Mesh ProcessMesh(aiMesh* in_mesh) {
+	Mesh ModelImporter::ProcessMesh(aiMesh* in_mesh) {
 
 		Mesh mesh;
 		for (unsigned int i = 0; i < in_mesh->mNumVertices; i++)
@@ -46,18 +41,16 @@ namespace Chemical {
 
 	}
 
-	void ModelImporter::ImportModel(const std::string& file_path) {
+	std::optional<Mesh> ModelImporter::ImportModel(const std::string& file_path) {
 		
 		const aiScene* scene = importer.ReadFile(file_path, 
 			aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_OptimizeMeshes | aiProcess_MakeLeftHanded);
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-			CHEMICAL_DEBUG_CALL(LOGGER_CONSOLE_CUSTOM_WARNING("ImportModel() failed with path: {}", file_path));
-			import_success = false;
-			return;
+			CONSOLE_CUSTOM_PRINT(Severity::_ERROR, "ImportModel failed with file path {}", file_path);
+			return std::nullopt;
 		}
 
 		aiMesh* ai_mesh = scene->mMeshes[0];
-		imported_mesh = ProcessMesh(ai_mesh);
-		import_success = true;
+		return std::optional<Mesh>(ProcessMesh(ai_mesh));
 	}
 }

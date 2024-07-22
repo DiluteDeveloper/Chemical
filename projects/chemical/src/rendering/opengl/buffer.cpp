@@ -13,7 +13,9 @@ namespace Chemical {
 			glCreateBuffers(1, &rendererID);
 		}
 		Buffer::~Buffer() {
-			 //glDeleteBuffers(1, &rendererID);
+
+			// Needs to be taken out for renderdoc to not error that the buffer doesnt exist
+			 glDeleteBuffers(1, &rendererID);
 		}
 		void Buffer::SetBufferData(int64_t size, const void* data, uint32_t offset) {
 			glNamedBufferSubData(rendererID, offset, size, data);

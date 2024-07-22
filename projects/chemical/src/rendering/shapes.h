@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/opengl/vertex_array.h"
+#include "opengl/vertex_array.h"
 namespace Chemical {
 	namespace Shapes {
 

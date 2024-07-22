@@ -3,13 +3,17 @@
 
 namespace Chemical {
 
-
 	namespace Util {
-		std::string ReadFile(const std::filesystem::path& filePath);
 
-		std::vector<std::string> ReadFileLineByLine(const std::filesystem::path& filePath);
+		class FileStream {
+		public:
+			std::optional<std::string> ReadFile(const std::filesystem::path& filePath);
 
-		void WriteFile(const std::filesystem::path& filePath, const std::string& value);
+			std::optional<std::vector<std::string>> ReadFileLineByLine(const std::filesystem::path& filePath);
+
+			void WriteFile(const std::filesystem::path& filePath, const std::string& value);
+		};
+
 	}
 
 

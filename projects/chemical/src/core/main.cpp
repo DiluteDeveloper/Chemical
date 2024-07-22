@@ -11,16 +11,29 @@ using namespace Chemical;
 
 int main(int argc, char* argv[]) {
 
-	Util::ConsoleLogger::InitializeLogger();
-
 	InitializeGLFWGLAD(1280, 720);
-
-	Renderer3D::InitializeRenderer();
-	ModelImporter::ImportModel("resources/models/stanford-dragon.fbx");
-
-	if (ModelImporter::import_success == true) {
-		Renderer3D::AddMeshToRender(ModelImporter::imported_mesh);
+	if (QUERY_ERROR) {
+		CONSOLE_PRINT(Severity::_ERROR, "Error occurred with GLFW or GLAD initialization.");
+		glfwTerminate();
+		return 0;
 	}
+
+	Renderer3D renderer;
+	if (QUERY_ERROR) {
+		CONSOLE_PRINT(Severity::_ERROR, "Error occurred with renderer constructor.");
+		glfwTerminate();
+		return 0;
+	}
+	ModelImporter importer;
+	
+	auto m = importer.ImportModel("resources/models/stanford-dragon.fbx");
+	if (QUERY_ERROR) {
+		CONSOLE_PRINT(Severity::_ERROR, "Error occurred with model import.");
+		glfwTerminate();
+		return 0;
+	}
+
+	renderer.AddMeshToRender(m.value());
 
 
 	// GLAD PREFERENCES -----------------------------------------
@@ -29,11 +42,11 @@ int main(int argc, char* argv[]) {
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		Renderer3D::Render();
+		renderer.Render();
 
 		glfwSwapBuffers(window);
 
 		glfwPollEvents();
 	}
-	return 0;
+	glfwTerminate();
 }

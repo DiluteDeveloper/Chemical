@@ -27,6 +27,4 @@
 #include <GLFW/glfw3.h>
 #include <GLAD/glad.h>
 
-#include "util/console_logger.h"
-
-#include "core/defines/debug.h"
+#include "core/defines.h"

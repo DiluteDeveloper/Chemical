@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "image_loader.h"
+#include "console_logger.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image/stb_image.h"
@@ -9,10 +10,15 @@ namespace Chemical {
 
 	namespace Util {
 
-		ImageData LoadImage(std::string_view filePath, int32_t req_comp) {
+		std::optional<ImageData> LoadImage(std::string_view file_path, int32_t req_comp) {
 
 			ImageData id;
-			id.data = stbi_load(filePath.data(), &id.x, &id.y, &id.bitDepth, req_comp);
+			id.data = stbi_load(file_path.data(), &id.x, &id.y, &id.bit_depth, req_comp);
+			if (!id.data) {
+				CONSOLE_CUSTOM_PRINT(Severity::_ERROR, "LoadImage failed with file path {}", file_path);
+				return std::nullopt;
+			}
+
 			return id;
 		}
 	}

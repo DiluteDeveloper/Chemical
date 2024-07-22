@@ -7,34 +7,49 @@ namespace Chemical {
 
 	namespace Util {
 
+		enum class Severity {
+			_DEFAULT = 7,
+			_SUCCESS = 10,
+			_WARNING = 6,
+			_ERROR = 4,
+			_NONE = 0
+		};
+
+		// singleton pattern
 		class ConsoleLogger {
-
-			static Stopwatch stopwatch;
-
-			static void SetConsoleTextColour(int32_t ansiColour);
-
-			static void RetrieveConsoleHandle();
+			friend std::unique_ptr<ConsoleLogger> std::make_unique<ConsoleLogger>();
 
 		public:
 
-			static void InitializeLogger();
+			static const std::unique_ptr<ConsoleLogger>& GetInstance();
 
-			static void ConsoleLogCustomMessage(std::string_view message, int32_t line, std::filesystem::path file, std::format_args args);
-			static void ConsoleLogMessage(std::string_view message, int32_t line, std::filesystem::path file);
-			static void ConsoleLogCustomWarning(std::string_view message, int32_t line, std::filesystem::path file, std::format_args args);
-			static void ConsoleLogWarning(std::string_view message, int32_t line, std::filesystem::path file);
-			static void ConsoleLogCustomError(std::string_view message, int32_t line, std::filesystem::path file, std::format_args args);
-			static void ConsoleLogError(std::string_view message, int32_t line, std::filesystem::path file);
+			// Only to be called by preprocessor macros in defines.h
+			void CustomPrint(std::string_view message, Severity severity, int32_t line, std::filesystem::path file, std::format_args args);
 
+			// Only to be called by preprocessor macros in defines.h
+			void Print(std::string_view message, Severity severity, int32_t line, std::filesystem::path file);
+
+			// Returns whether an error has occurred since the last time ReadError() was called.
+			bool QueryError();
+
+
+
+		private:
+
+			bool unqueried_error_event = false;
+
+			static std::unique_ptr<ConsoleLogger> instance;
+
+			ConsoleLogger();
+			Stopwatch stopwatch;
+
+			void SetConsoleTextColour(int32_t ansiColour) const;
+
+			void RetrieveConsoleHandle();
+
+			HANDLE h_console;
 
 		};
-
-#define LOGGER_CONSOLE_MESSAGE(message) Util::ConsoleLogger::ConsoleLogMessage(message, __LINE__, __FILE__)
-#define LOGGER_CONSOLE_CUSTOM_MESSAGE(message, ...) Util::ConsoleLogger::ConsoleLogCustomMessage(message, __LINE__, __FILE__, std::make_format_args(__VA_ARGS__))
-#define LOGGER_CONSOLE_WARNING(message) Util::ConsoleLogger::ConsoleLogWarning(message, __LINE__, __FILE__)
-#define LOGGER_CONSOLE_CUSTOM_WARNING(message, ...) Util::ConsoleLogger::ConsoleLogCustomWarning(message, __LINE__, __FILE__, std::make_format_args(__VA_ARGS__))
-#define LOGGER_CONSOLE_ERROR(message) Util::ConsoleLogger::ConsoleLogError(message, __LINE__, __FILE__)
-#define LOGGER_CONSOLE_CUSTOM_ERROR(message, ...) Util::ConsoleLogger::ConsoleLogCustomError(message, __LINE__, __FILE__, std::make_format_args(__VA_ARGS__))
 
 	}
 

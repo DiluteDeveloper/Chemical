@@ -1,5 +1,7 @@
 #include <pch.h>
 
+#include "util/console_logger.h"
+
 namespace Chemical {
 
 #ifdef CHEMICAL_DEBUG
@@ -45,16 +47,16 @@ namespace Chemical {
 
 				switch (severity) {
 				case GL_DEBUG_SEVERITY_NOTIFICATION:
-					LOGGER_CONSOLE_CUSTOM_MESSAGE("{}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
+					CONSOLE_CUSTOM_PRINT(Severity::_DEFAULT, "OpenGL Debug Notification: {}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
 					break;
 				case GL_DEBUG_SEVERITY_LOW:
-					LOGGER_CONSOLE_CUSTOM_WARNING("{}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
+					CONSOLE_CUSTOM_PRINT(Severity::_WARNING, "OpenGL Debug Low Warning: {}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
 					break;
 				case GL_DEBUG_SEVERITY_MEDIUM:
-					LOGGER_CONSOLE_CUSTOM_WARNING("{}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
+					CONSOLE_CUSTOM_PRINT(Severity::_WARNING, "OpenGL Debug Medium Warning: {}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
 					break;
 				case GL_DEBUG_SEVERITY_HIGH:
-					LOGGER_CONSOLE_CUSTOM_ERROR("{}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
+					CONSOLE_CUSTOM_PRINT(Severity::_ERROR, "OpenGL Debug Error: {}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
 					throw std::exception();
 					break;
 				default: break;
@@ -66,19 +68,18 @@ namespace Chemical {
 	GLFWwindow* window = nullptr;
 	unsigned int window_size_x = 0;
 	unsigned int window_size_y = 0;
-	void InitializeGLFWGLAD(unsigned int f_window_size_x, unsigned int f_window_size_y) {
+	bool InitializeGLFWGLAD(unsigned int f_window_size_x, unsigned int f_window_size_y) {
 		window_size_x = f_window_size_x;
 		window_size_y = f_window_size_y;
 
 		// GLFW INITIALIZATION ----------------------------
 
 		if (!glfwInit()) {
+			CONSOLE_PRINT(Severity::_ERROR, "GLFW initialization failed.");
+			return false;
+		} else
+			CONSOLE_PRINT(Severity::_SUCCESS, "GLFW initialization successful.");
 
-			CHEMICAL_DEBUG_CALL(LOGGER_CONSOLE_ERROR("GLFW initialization failed."));
-			throw std::exception();
-		}
-		else
-			CHEMICAL_DEBUG_CALL(LOGGER_CONSOLE_MESSAGE("GLFW initialized."));
 
 		// GLFW INITIALIZATION ----------------------------
 
@@ -96,11 +97,11 @@ namespace Chemical {
 		window = glfwCreateWindow(window_size_x, window_size_y, "Chemical", NULL, NULL);
 
 		if (!window) {
-			CHEMICAL_DEBUG_CALL(LOGGER_CONSOLE_ERROR("GLFW window creation failed."));
-			throw std::exception();
-		}
-		else 
-			CHEMICAL_DEBUG_CALL(LOGGER_CONSOLE_MESSAGE("GLFW window created."));
+			CONSOLE_PRINT(Severity::_ERROR, "Creating GLFW window failed.");
+			return false;
+		} else
+			CONSOLE_PRINT(Severity::_SUCCESS, "GLFW window successfully created.");
+
 
 		// GLFW WINDOW SETUP -------------------------------------------------
 
@@ -116,11 +117,11 @@ namespace Chemical {
 		glfwMakeContextCurrent(window);
 
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-			CHEMICAL_DEBUG_CALL(LOGGER_CONSOLE_ERROR("gladLoadGL failed."));
-			throw std::exception();
-		}
-		else
-			CHEMICAL_DEBUG_CALL(LOGGER_CONSOLE_MESSAGE("gladLoadGL succeeded."));
+			CONSOLE_PRINT(Severity::_ERROR, "GLAD functions failed to load.");
+			return false;
+		} else 
+			CONSOLE_PRINT(Severity::_SUCCESS, "GLAD functions successfully loaded.");
+
 
 		glClearColor(1.0f, 0.2f, 0.3f, 1.0f);
 
@@ -134,8 +135,8 @@ namespace Chemical {
 		glEnable(GL_DEPTH_TEST);
 
 
-		CHEMICAL_DEBUG_CALL(glDebugMessageCallback(&message_callback, nullptr));
-		CHEMICAL_DEBUG_CALL(glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE));
+		DEBUG_CALL(glDebugMessageCallback(&message_callback, nullptr));
+		DEBUG_CALL(glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE));
 
 		//glEnable(GL_BLEND);
 		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -148,6 +149,8 @@ namespace Chemical {
 		//glProvokingVertex(GL_FIRST_VERTEX_CONVENTION);
 
 		glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
+
+		return true;
 
 	}
 

@@ -2,19 +2,17 @@
 
 #include "data_types/mesh.h"
 #include <assimp/Importer.hpp>
+#include <assimp/scene.h>
 
 namespace Chemical {
 	class ModelImporter {
 	public:
 
 		// imports single meshes for now
-		static void ImportModel(const std::string& file_path);
-
-		// Updates after each ImportModel call to reflect the status
-		static bool import_success;
-		static Mesh imported_mesh;
+		std::optional<Mesh> ImportModel(const std::string& file_path);
 	private:
 
-		static Assimp::Importer importer;
+		Mesh ProcessMesh(aiMesh* mesh);
+		Assimp::Importer importer;
 	};
 }

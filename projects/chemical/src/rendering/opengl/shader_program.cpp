@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "util/console_logger.h"
 
 #include <glad/glad.h>
 
@@ -23,11 +24,9 @@ namespace Chemical {
 				char infoLog[1024];
 				glGetShaderInfoLog(rendererID, 1024, nullptr, infoLog);
 
-#ifdef CHEMICAL_DEBUG
-				LOGGER_CONSOLE_CUSTOM_ERROR("Shader compilation failed. [{}] \n{}",
-					(uint8_t)type, infoLog);
-#endif
-				throw std::exception();
+				CONSOLE_CUSTOM_PRINT(Severity::_ERROR, "Shader compilation failed: [{}] \n{}", (uint8_t)type, infoLog);
+
+				return;
 			}
 		}
 
@@ -59,10 +58,8 @@ namespace Chemical {
 				char infoLog[1024];
 				glGetProgramInfoLog(rendererID, 1024, nullptr, infoLog);
 
-#ifdef CHEMICAL_DEBUG
-				LOGGER_CONSOLE_CUSTOM_ERROR("ShaderProgram compilation failed. \n{}", infoLog);
-#endif
-				throw std::exception();
+				CONSOLE_CUSTOM_PRINT(Severity::_ERROR, "ShaderProgram compilation failed: \n{}", infoLog);
+				return;
 			}
 			glValidateProgram(rendererID);
 
