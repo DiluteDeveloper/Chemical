@@ -8,34 +8,34 @@
 
 namespace Chemical {
 
-	glm::mat4 Camera::UpdateMovement() {
+	glm::mat4 Camera::UpdateMovement(const GLFWWrapper* wrapper) {
 		glm::fmat4 matrix = transform.TransformToMat4();
 		glm::fvec3 right = matrix[0];
 		glm::fvec3 up = matrix[1];
 		glm::fvec3 forward = matrix[2];
 		glm::fvec3 front = glm::normalize(glm::fvec3(forward.x, 0, forward.z));
 
-		if (glfwGetKey(window, GLFW_KEY_W)) {
+		if (glfwGetKey(wrapper->window, GLFW_KEY_W)) {
 			transform.position += front * camSpeed;
 		}
-		if (glfwGetKey(window, GLFW_KEY_S)) {
+		if (glfwGetKey(wrapper->window, GLFW_KEY_S)) {
 			transform.position -= front * camSpeed;
 		}
-		if (glfwGetKey(window, GLFW_KEY_A)) {
+		if (glfwGetKey(wrapper->window, GLFW_KEY_A)) {
 			transform.position -= right * camSpeed;
 		}
-		if (glfwGetKey(window, GLFW_KEY_D)) {
+		if (glfwGetKey(wrapper->window, GLFW_KEY_D)) {
 			transform.position += right * camSpeed;
 		}
-		if (glfwGetKey(window, GLFW_KEY_SPACE)) {
+		if (glfwGetKey(wrapper->window, GLFW_KEY_SPACE)) {
 			transform.position.y += camSpeed;
 		}
-		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
+		if (glfwGetKey(wrapper->window, GLFW_KEY_LEFT_SHIFT)) {
 			transform.position.y -= camSpeed;
 		}
 
 		double x, y;
-		glfwGetCursorPos(window, &x, &y);
+		glfwGetCursorPos(wrapper->window, &x, &y);
 
 		transform.rotation.y += static_cast<float>(x - oldx) * sensitivity;
 		transform.rotation.x += static_cast<float>(y - oldy) * sensitivity;

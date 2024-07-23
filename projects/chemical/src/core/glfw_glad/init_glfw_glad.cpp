@@ -1,8 +1,21 @@
 #include <pch.h>
 
+#include "init_glfw_glad.h"
 #include "util/console_logger.h"
 
 namespace Chemical {
+	GLFWCallbackReceiver* GLFWWrapper::receiver;
+	void GLFWWrapper::WindowCloseCallback(GLFWwindow* window) {
+		receiver->WindowCloseCallback(window);
+	}
+
+	void GLFWWrapper::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+		receiver->KeyCallback(window, key, scancode, action, mods);
+	}
+
+	void GLFWWrapper::SetStaticCallbackReceiver(GLFWCallbackReceiver* f_receiver) {
+		receiver = f_receiver;
+	}
 
 #ifdef CHEMICAL_DEBUG
 
@@ -65,10 +78,7 @@ namespace Chemical {
 	}
 #endif
 
-	GLFWwindow* window = nullptr;
-	unsigned int window_size_x = 0;
-	unsigned int window_size_y = 0;
-	bool InitializeGLFWGLAD(unsigned int f_window_size_x, unsigned int f_window_size_y) {
+	GLFWWrapper::GLFWWrapper(unsigned int f_window_size_x, unsigned int f_window_size_y) {
 		window_size_x = f_window_size_x;
 		window_size_y = f_window_size_y;
 
@@ -76,7 +86,6 @@ namespace Chemical {
 
 		if (!glfwInit()) {
 			CONSOLE_PRINT(Severity::_ERROR, "GLFW initialization failed.");
-			return false;
 		} else
 			CONSOLE_PRINT(Severity::_SUCCESS, "GLFW initialization successful.");
 
@@ -98,7 +107,6 @@ namespace Chemical {
 
 		if (!window) {
 			CONSOLE_PRINT(Severity::_ERROR, "Creating GLFW window failed.");
-			return false;
 		} else
 			CONSOLE_PRINT(Severity::_SUCCESS, "GLFW window successfully created.");
 
@@ -118,7 +126,6 @@ namespace Chemical {
 
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 			CONSOLE_PRINT(Severity::_ERROR, "GLAD functions failed to load.");
-			return false;
 		} else 
 			CONSOLE_PRINT(Severity::_SUCCESS, "GLAD functions successfully loaded.");
 
@@ -150,14 +157,15 @@ namespace Chemical {
 
 		glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
 
-		return true;
+		glfwSetWindowCloseCallback(window, WindowCloseCallback);
+		glfwSetKeyCallback(window, KeyCallback);
 
 	}
 
-	unsigned int GetWindowSizeX() {
+	unsigned int GLFWWrapper::GetWindowSizeX() const {
 		return window_size_x;
 	}
-	unsigned int GetWindowSizeY() {
+	unsigned int GLFWWrapper::GetWindowSizeY() const {
 		return window_size_y;
 	}
 }

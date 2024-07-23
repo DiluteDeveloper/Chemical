@@ -5,18 +5,20 @@
 #include "camera.h"
 #include "data_types/mesh.h"
 #include "util/filestream.h"
+#include "core/glfw_glad/init_glfw_glad.h"
 
 namespace Chemical {
 	
 	class Renderer3D {
 	public:
-		Renderer3D();
+		Renderer3D(const GLFWWrapper* f_wrapper);
 
 		void AddMeshToRender(const Mesh& mesh);
 
 		void Render();
 
 	private:
+		const GLFWWrapper* wrapper = nullptr;
 		Camera camera;
 
 		std::vector<OpenGL::VertexArray> v_arrays;

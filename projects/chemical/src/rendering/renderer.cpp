@@ -29,7 +29,9 @@ namespace Chemical {
 		v_infos[v_infos.size() - 1].count = static_cast<int32_t>(mesh.indices.size());
 	}
 
-	Renderer3D::Renderer3D() {
+	Renderer3D::Renderer3D(const GLFWWrapper* f_wrapper) {
+
+		wrapper = f_wrapper;
 		Vertex::InitializeVertexLayout();
 
 		Util::FileStream stream;
@@ -49,7 +51,7 @@ namespace Chemical {
 			const OpenGL::Shader*>{ &vertex_shader, &fragment_shader }, Vertex::vertex_layout);
 
 		// perspectiveLH converts left handed input data to opengls coordinate system
-		projection = glm::perspectiveLH(glm::radians(90.0f), GetWindowSizeX() / static_cast<float>(GetWindowSizeY()), 0.1f, 1000.0f);
+		projection = glm::perspectiveLH(glm::radians(90.0f), wrapper->GetWindowSizeX() / static_cast<float>(wrapper->GetWindowSizeY()), 0.1f, 1000.0f);
 	}
 
 	void Renderer3D::Render() {
@@ -57,7 +59,7 @@ namespace Chemical {
 		program->BindProgram();
 
 		program->SetUniformMatrix4FV("projection", 1, false, &projection[0][0]);
-		program->SetUniformMatrix4FV("view", 1, false, &glm::inverse(camera.UpdateMovement())[0][0]);
+		program->SetUniformMatrix4FV("view", 1, false, &glm::inverse(camera.UpdateMovement(wrapper))[0][0]);
 		program->SetUniformMatrix4FV("model", 1, false, &model[0][0]);
 
 		for (size_t i = 0; i < v_arrays.size(); i++)

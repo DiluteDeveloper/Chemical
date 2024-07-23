@@ -1,11 +1,12 @@
 #pragma once
 
 #include "util/transform.h"
+#include "core/glfw_glad/init_glfw_glad.h"
 
 namespace Chemical {
 	class Camera {
 	public:
-		glm::mat4 UpdateMovement();
+		glm::mat4 UpdateMovement(const GLFWWrapper* wrapper);
 
 	private:
 		Transform transform;
