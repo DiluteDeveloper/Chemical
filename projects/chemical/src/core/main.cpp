@@ -2,11 +2,13 @@
 
 #include "engine.h"
 
+using namespace Chemical;
+
 int main(int argc, char* argv[]) {
 
-	Chemical::ChemicalEngine engine;
+	ChemicalEngine engine;
 	if (QUERY_ERROR) {
-		CONSOLE_PRINT(Severity::_ERROR, "ChemicalEngine initialization failed.");
+		CHEMICAL_PRINT(Severity::_ERROR, "ChemicalEngine initialization failed.");
 	}
 
 

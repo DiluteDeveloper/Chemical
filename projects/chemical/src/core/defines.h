@@ -10,12 +10,12 @@
 
 #endif
 
-#include "util/console_logger.h"
+#include "io/console_logger.h"
 
-#define CONSOLE_PRINT(severity, message) Chemical::Util::ConsoleLogger::GetInstance()->Print(message, Chemical::Util::severity, __LINE__, __FILE__)
+#define CHEMICAL_PRINT(severity, message) Chemical::ConsoleLogger::Print(message, severity, __LINE__, __FILE__)
 
-#define CONSOLE_CUSTOM_PRINT(severity, message, ...) \
-Chemical::Util::ConsoleLogger::GetInstance()->CustomPrint(message, Chemical::Util::severity, __LINE__, __FILE__, std::make_format_args(__VA_ARGS__))
+#define CHEMICAL_CUSTOM_PRINT(severity, message, ...) \
+Chemical::ConsoleLogger::CustomPrint(message, severity, __LINE__, __FILE__, __VA_ARGS__)
 
-#define QUERY_ERROR Chemical::Util::ConsoleLogger::GetInstance()->QueryError()
+#define QUERY_ERROR Chemical::ConsoleLogger::QueryError()
 

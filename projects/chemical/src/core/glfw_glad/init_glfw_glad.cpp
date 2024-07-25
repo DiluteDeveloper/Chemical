@@ -1,7 +1,6 @@
 #include <pch.h>
 
 #include "init_glfw_glad.h"
-#include "util/console_logger.h"
 
 namespace Chemical {
 	GLFWCallbackReceiver* GLFWWrapper::receiver;
@@ -60,16 +59,16 @@ namespace Chemical {
 
 				switch (severity) {
 				case GL_DEBUG_SEVERITY_NOTIFICATION:
-					CONSOLE_CUSTOM_PRINT(Severity::_DEFAULT, "OpenGL Debug Notification: {}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
+					CHEMICAL_CUSTOM_PRINT(Severity::_DEFAULT, "OpenGL Debug Notification: {}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
 					break;
 				case GL_DEBUG_SEVERITY_LOW:
-					CONSOLE_CUSTOM_PRINT(Severity::_WARNING, "OpenGL Debug Low Warning: {}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
+					CHEMICAL_CUSTOM_PRINT(Severity::_WARNING, "OpenGL Debug Low Warning: {}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
 					break;
 				case GL_DEBUG_SEVERITY_MEDIUM:
-					CONSOLE_CUSTOM_PRINT(Severity::_WARNING, "OpenGL Debug Medium Warning: {}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
+					CHEMICAL_CUSTOM_PRINT(Severity::_WARNING, "OpenGL Debug Medium Warning: {}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
 					break;
 				case GL_DEBUG_SEVERITY_HIGH:
-					CONSOLE_CUSTOM_PRINT(Severity::_ERROR, "OpenGL Debug Error: {}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
+					CHEMICAL_CUSTOM_PRINT(Severity::_ERROR, "OpenGL Debug Error: {}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
 					throw std::exception();
 					break;
 				default: break;
@@ -85,9 +84,9 @@ namespace Chemical {
 		// GLFW INITIALIZATION ----------------------------
 
 		if (!glfwInit()) {
-			CONSOLE_PRINT(Severity::_ERROR, "GLFW initialization failed.");
+			CHEMICAL_PRINT(Severity::_ERROR, "GLFW initialization failed.");
 		} else
-			CONSOLE_PRINT(Severity::_SUCCESS, "GLFW initialization successful.");
+			CHEMICAL_PRINT(Severity::_SUCCESS, "GLFW initialization successful.");
 
 
 		// GLFW INITIALIZATION ----------------------------
@@ -106,9 +105,9 @@ namespace Chemical {
 		window = glfwCreateWindow(window_size_x, window_size_y, "Chemical", NULL, NULL);
 
 		if (!window) {
-			CONSOLE_PRINT(Severity::_ERROR, "Creating GLFW window failed.");
+			CHEMICAL_PRINT(Severity::_ERROR, "Creating GLFW window failed.");
 		} else
-			CONSOLE_PRINT(Severity::_SUCCESS, "GLFW window successfully created.");
+			CHEMICAL_PRINT(Severity::_SUCCESS, "GLFW window successfully created.");
 
 
 		// GLFW WINDOW SETUP -------------------------------------------------
@@ -125,9 +124,9 @@ namespace Chemical {
 		glfwMakeContextCurrent(window);
 
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-			CONSOLE_PRINT(Severity::_ERROR, "GLAD functions failed to load.");
+			CHEMICAL_PRINT(Severity::_ERROR, "GLAD functions failed to load.");
 		} else 
-			CONSOLE_PRINT(Severity::_SUCCESS, "GLAD functions successfully loaded.");
+			CHEMICAL_PRINT(Severity::_SUCCESS, "GLAD functions successfully loaded.");
 
 
 		glClearColor(1.0f, 0.2f, 0.3f, 1.0f);
@@ -159,6 +158,8 @@ namespace Chemical {
 
 		glfwSetWindowCloseCallback(window, WindowCloseCallback);
 		glfwSetKeyCallback(window, KeyCallback);
+
+		glfwSwapInterval(1);
 
 	}
 

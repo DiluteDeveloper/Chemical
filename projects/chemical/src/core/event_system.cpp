@@ -13,7 +13,7 @@ namespace Chemical {
 	}
 
 	void EventSystemGLFWCallbackReceiver::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-		CONSOLE_CUSTOM_PRINT(Severity::_SUCCESS, "KEY: {}, ACTION: {}", key, action);
+		CHEMICAL_CUSTOM_PRINT(Severity::_SUCCESS, "KEY: {}, ACTION: {}", key, action);
 	}
 
 	EventSystem::EventSystem(GLFWWrapper* wrapper) {

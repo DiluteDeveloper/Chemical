@@ -10,7 +10,7 @@ namespace Chemical {
 			std::ifstream file(filePath);
 
 			if (!file) { 
-				CONSOLE_CUSTOM_PRINT(Severity::_ERROR, "Failed to read file: {}.", filePath.string()); 
+				CHEMICAL_CUSTOM_PRINT(Severity::_ERROR, "Failed to read file: {}.", filePath.string());
 				return std::nullopt; 
 			}
 
@@ -24,7 +24,7 @@ namespace Chemical {
 			std::ifstream file(filePath);
 
 			if (!file) { 
-				CONSOLE_CUSTOM_PRINT(Severity::_ERROR, "Failed to read file: {}.", filePath.string()); 
+				CHEMICAL_CUSTOM_PRINT(Severity::_ERROR, "Failed to read file: {}.", filePath.string());
 				return std::nullopt; 
 			}
 

@@ -10,6 +10,7 @@
 namespace Chemical {
 	ChemicalEngine::ChemicalEngine() {
 
+		ConsoleLogger::Initialize();
 		glfw_wrapper = std::make_unique<GLFWWrapper>();
 		event_system = std::make_unique<EventSystem>(glfw_wrapper.get());
 		event_system->subscribe_window_close_event([this](GLFWwindow* window) -> void {WindowCloseEvent(window);  });
@@ -17,17 +18,17 @@ namespace Chemical {
 		renderer = std::make_unique<Renderer3D>(glfw_wrapper.get());
 
 		if (QUERY_ERROR) {
-			CONSOLE_PRINT(Severity::_ERROR, "Error occurred with GLFW or GLAD initialization.");
+			CHEMICAL_PRINT(Severity::_ERROR, "Error occurred with GLFW or GLAD initialization.");
 		}
 
 		if (QUERY_ERROR) {
-			CONSOLE_PRINT(Severity::_ERROR, "Error occurred with renderer constructor.");
+			CHEMICAL_PRINT(Severity::_ERROR, "Error occurred with renderer constructor.");
 		}
 		ModelImporter importer;
 
 		auto m = importer.ImportModel("resources/models/stanford-dragon.fbx");
 		if (QUERY_ERROR) {
-			CONSOLE_PRINT(Severity::_ERROR, "Error occurred with model import.");
+			CHEMICAL_PRINT(Severity::_ERROR, "Error occurred with model import.");
 		}
 		else {
 			renderer->AddMeshToRender(m.value());

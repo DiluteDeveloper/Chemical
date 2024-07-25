@@ -40,7 +40,7 @@ namespace Chemical {
 		std::string fragment_shader_source = stream.ReadFile("resources/shaders/test_shader.frag").value();
 
 		if (QUERY_ERROR) {
-			CONSOLE_PRINT(Severity::_ERROR, "Error occurred reading shader source files in Renderer3D constructor, returning.");
+			CHEMICAL_PRINT(Severity::_ERROR, "Error occurred reading shader source files in Renderer3D constructor, returning.");
 			return;
 		}
 

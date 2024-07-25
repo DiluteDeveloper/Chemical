@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "misc.h"
-#include "util/console_logger.h"
 
 #include <GLAD/glad.h>
 
@@ -81,13 +80,13 @@ namespace Chemical {
 
 		const std::vector<VertexAttribute>& VertexLayout::GetAttributes() const {
 			if (attributes.size() == 0)
-				CONSOLE_PRINT(Severity::_ERROR, "VertexLayout GetAttributes() is being called when VertexLayout does not contain any attributes.");
+				CHEMICAL_PRINT(Severity::_ERROR, "VertexLayout GetAttributes() is being called when VertexLayout does not contain any attributes.");
 			return attributes;
 		}
 
 		int32_t VertexLayout::GetStride() const {
 			if (stride == 0)
-				CONSOLE_PRINT(Severity::_ERROR, "VertexLayout GetStride() is being called when stride is 0.");
+				CHEMICAL_PRINT(Severity::_ERROR, "VertexLayout GetStride() is being called when stride is 0.");
 			return stride;
 		}
 	}

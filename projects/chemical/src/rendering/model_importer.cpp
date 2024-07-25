@@ -46,7 +46,7 @@ namespace Chemical {
 		const aiScene* scene = importer.ReadFile(file_path, 
 			aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_OptimizeMeshes | aiProcess_MakeLeftHanded);
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-			CONSOLE_CUSTOM_PRINT(Severity::_ERROR, "ImportModel failed with file path {}", file_path);
+			CHEMICAL_CUSTOM_PRINT(Severity::_ERROR, "ImportModel failed with file path {}", file_path);
 			return std::nullopt;
 		}
 

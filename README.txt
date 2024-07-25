@@ -1,5 +1,5 @@
-engine-dev 1.3
+engine-dev 1.31
 
-Rough event system, glfw wrapper and ChemicalEngine core game class functionality.
-currently a prototype, able to receive input events from glfw in event system. 
-will refine.
+changelog:
+
+Console logger design changes and bugfixes
