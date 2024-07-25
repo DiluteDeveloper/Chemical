@@ -7,9 +7,9 @@
 namespace Chemical {
 
 
-	Mesh ModelImporter::ProcessMesh(aiMesh* in_mesh) {
+	std::shared_ptr<Mesh> ModelImporter::ProcessMesh(aiMesh* in_mesh) {
 
-		Mesh mesh;
+		std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
 		for (unsigned int i = 0; i < in_mesh->mNumVertices; i++)
 		{
 			glm::vec3 pos;
@@ -26,7 +26,7 @@ namespace Chemical {
 			normal.y = in_mesh->mNormals[i].y;
 			normal.z = in_mesh->mNormals[i].z;
 
-			mesh.vertices.emplace_back(Vertex(pos, normal));
+			mesh->vertices.emplace_back(Vertex(pos, normal));
 		}
 
 		for (unsigned int i = 0; i < in_mesh->mNumFaces; i++)
@@ -34,14 +34,15 @@ namespace Chemical {
 			aiFace face = in_mesh->mFaces[i];
 			for (unsigned int j = 0; j < face.mNumIndices; j++)
 			{
-				mesh.indices.emplace_back(face.mIndices[j]);
+				mesh->indices.emplace_back(face.mIndices[j]);
 			}
 		}
+		mesh->GenerateMesh();
 		return mesh;
 
 	}
 
-	std::optional<Mesh> ModelImporter::ImportModel(const std::string& file_path) {
+	std::optional<std::shared_ptr<Mesh>> ModelImporter::ImportModel(const std::string& file_path) {
 		
 		const aiScene* scene = importer.ReadFile(file_path, 
 			aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_OptimizeMeshes | aiProcess_MakeLeftHanded);
@@ -51,6 +52,6 @@ namespace Chemical {
 		}
 
 		aiMesh* ai_mesh = scene->mMeshes[0];
-		return std::optional<Mesh>(ProcessMesh(ai_mesh));
+		return std::optional<std::shared_ptr<Mesh>>(ProcessMesh(ai_mesh));
 	}
 }

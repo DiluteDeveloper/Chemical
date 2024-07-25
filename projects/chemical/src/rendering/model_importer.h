@@ -9,10 +9,10 @@ namespace Chemical {
 	public:
 
 		// imports single meshes for now
-		std::optional<Mesh> ImportModel(const std::string& file_path);
+		std::optional<std::shared_ptr<Mesh>> ImportModel(const std::string& file_path);
 	private:
 
-		Mesh ProcessMesh(aiMesh* mesh);
+		std::shared_ptr<Mesh> ProcessMesh(aiMesh* mesh);
 		Assimp::Importer importer;
 	};
 }

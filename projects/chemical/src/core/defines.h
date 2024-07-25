@@ -2,11 +2,11 @@
 
 #ifdef CHEMICAL_DEBUG
 
-	#define DEBUG_CALL(x) x
+	#define CHEMICAL_DEBUG_CALL(x) x
 
 #else
 
-	#define DEBUG_CALL(x)
+	#define CHEMICAL_DEBUG_CALL(x)
 
 #endif
 
@@ -17,5 +17,5 @@
 #define CHEMICAL_CUSTOM_PRINT(severity, message, ...) \
 Chemical::ConsoleLogger::CustomPrint(message, severity, __LINE__, __FILE__, __VA_ARGS__)
 
-#define QUERY_ERROR Chemical::ConsoleLogger::QueryError()
+#define CHEMICAL_QUERY_ERROR Chemical::ConsoleLogger::QueryError()
 

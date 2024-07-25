@@ -20,12 +20,11 @@ namespace Chemical {
 
 				
 	}
-
 	void ConsoleLogger::SetConsoleTextColour(int32_t ansiColour) {
-#ifdef CHEMICAL_DEBUG
-		if (h_console == nullptr)
-			throw std::exception();
-#endif
+		
+		
+		assert(((void)"ConsoleLogger needs to be initialized before any other ConsoleLogger function calls.", h_console != nullptr));
+
 		SetConsoleTextAttribute(h_console, (WORD)ansiColour);
 	}
 
