@@ -1,14 +1,17 @@
 #pragma once
 
-#include "core/engine.h"
-
 #include "world/scene.h"
+
+namespace Chemical {
+	class ChemicalEngine;
+}
+
 
 class Game {
 public:
-	Game(Chemical::ChemicalEngine& engine);
+	Game(Chemical::ChemicalEngine* engine);
 
-	void Update(Chemical::ChemicalEngine& engine);
+	void Update(Chemical::ChemicalEngine* engine);
 
 private:
 

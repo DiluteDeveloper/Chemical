@@ -3,7 +3,9 @@
 #include "game.h"
 #include "rendering/model_importer.h"
 
-Game::Game(Chemical::ChemicalEngine& engine) {
+#include "core/engine.h"
+
+Game::Game(Chemical::ChemicalEngine* engine) {
 
 	Chemical::ModelImporter importer;
 
@@ -14,8 +16,10 @@ Game::Game(Chemical::ChemicalEngine& engine) {
 	scene.AddMesh(m2.value());
 
 	m.value()->transform.position.x += 15;
+
+	engine->running_scene = &scene;
 }
 
-void Game::Update(Chemical::ChemicalEngine& engine) {
-	engine.renderer->RenderScene(scene);
+void Game::Update(Chemical::ChemicalEngine* engine) {
+
 }

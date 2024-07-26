@@ -11,6 +11,7 @@ namespace Chemical {
 	class GLFWWrapper {
 	public:
 
+		std::string glsl_version = "#version 460";
 		GLFWwindow* window = nullptr;
 		GLFWWrapper(unsigned int f_window_size_x = 720, unsigned int f_window_size_y = 480);
 

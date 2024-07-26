@@ -26,14 +26,24 @@ namespace Chemical {
 			CHEMICAL_PRINT(Severity::_ERROR, "Error occurred with renderer.");
 		}
 
+		gui = std::make_unique<GUI>(this);
+
+		game = std::make_unique<Game>(this);
+
 	}
 	ChemicalEngine::~ChemicalEngine() {
 		glfwTerminate();
 	}
-	void ChemicalEngine::EarlyUpdate() {
+
+	void ChemicalEngine::Update() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	}
-	void ChemicalEngine::LateUpdate() {
+
+		game->Update(this);
+
+		if (running_scene != nullptr)
+			renderer->RenderScene(*running_scene);
+
+		gui->Update(this);
 
 		glfwSwapBuffers(glfw_wrapper->window);
 

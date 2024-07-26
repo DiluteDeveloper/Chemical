@@ -24,10 +24,14 @@ INT_DIR = BIN_DIR .. "/int"
 CHEMICAL_DIR = "%{wks.location}/projects/chemical"
 
 THIRD_PARTY_DIR = "%{wks.location}/3rdparty"
+
 GLAD_SRC_DIR = "%{wks.location}/3rdparty/glad/src"
 GLAD_INC_DIR = "%{wks.location}/3rdparty/glad/include"
+
 GLFW_SRC_DIR = "%{wks.location}/3rdparty/glfw/src"
 GLFW_INC_DIR = "%{wks.location}/3rdparty/glfw/include"
+
+IMGUI_DIR = "%{wks.location}/3rdparty/imgui/imgui-1.90.9"
 
 ASSIMP_LIB_DIR = "%{wks.location}/3rdparty/assimp/lib/x64"
 
@@ -53,6 +57,16 @@ project "GLFW"
     targetdir (BIN_DIR)
     objdir (INT_DIR)
 
+project "IMGUI"
+    kind "StaticLib"
+
+
+    location (THIRD_PARTY_DIR)
+    files {IMGUI_DIR .. "/**.c", IMGUI_DIR .."/**.h", IMGUI_DIR .. "/**.cpp", IMGUI_DIR .."/**.hpp", IMGUI_DIR .. "/**.m"}
+    includedirs(GLFW_INC_DIR, IMGUI_DIR)
+    targetdir (BIN_DIR)
+    objdir (INT_DIR)
+
 project "Chemical"
     kind "ConsoleApp"
 
@@ -62,10 +76,10 @@ project "Chemical"
     defines "GLFW_INCLUDE_NONE"
 
     location (CHEMICAL_DIR)
-    files {CHEMICAL_DIR .. "/include/**", CHEMICAL_DIR .. "/resources/**", CHEMICAL_DIR .. "/src/**"}
-    includedirs {CHEMICAL_DIR .. "/src/", CHEMICAL_DIR .. "/vendor/", GLAD_INC_DIR, GLFW_INC_DIR, ASSIMP_INC_DIR}
+    files {CHEMICAL_DIR .. "/resources/**", CHEMICAL_DIR .. "/src/**"}
+    includedirs {CHEMICAL_DIR .. "/src/", CHEMICAL_DIR .. "/vendor/", GLAD_INC_DIR, GLFW_INC_DIR, IMGUI_DIR, ASSIMP_INC_DIR}
     libdirs {ASSIMP_LIB_DIR}
-    links {"GLFW", "GLAD", "assimp-vc143-mt.lib"}
+    links {"GLFW", "GLAD", "IMGUI", "assimp-vc143-mt.lib"}
     targetdir (BIN_DIR)
     objdir (INT_DIR)
 

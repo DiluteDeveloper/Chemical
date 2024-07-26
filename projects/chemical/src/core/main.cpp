@@ -11,16 +11,11 @@ int main(int argc, char* argv[]) {
 	if (CHEMICAL_QUERY_ERROR) {
 		CHEMICAL_PRINT(Severity::_ERROR, "ChemicalEngine initialization failed.");
 	}
-	Game game(engine);
 
 	// GLAD PREFERENCES -----------------------------------------
 
 	while (engine.is_running()) {
 
-		engine.EarlyUpdate();
-
-		game.Update(engine);
-
-		engine.LateUpdate();
+		engine.Update();
 	}
 }

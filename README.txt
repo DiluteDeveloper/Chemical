@@ -1,15 +1,16 @@
-engine-dev 1.32
+engine-dev 1.33
+
+added assimp dll to 3rd party folder
+moved vendor 'contrib' to deprecated folder dont know what it is and was causing errors
+added imgui as new compiled project
+added basic GUI layer to control engine functions
 
 changelog:
 
-added GetRendererID function to OpenGL::VertexArray
-changed DEBUG_CALL to CHEMICAL_DEBUG_CALL
-changed QUERY_ERROR to CHEMICAL_QUERY_ERROR
-all instances of Mesh type changed to shared_ptr<Mesh>
-changed mesh type to contain opengl render info
-implemented scene type with Meshes and other Scenes
-added an assert or two
-gave transform type to meshes and processing in renderer
-added Game class for testing 
-changed ChemicalEngine::Update into EarlyUpdate and LateUpdate
-with render calls able to go between the two
+todo:
+
+properly integrate event system functionality
+rename GLFW and GLAD functionality wrapper
+supply transform from 3d model loading to actual transform
+load entire model files as scenes, currently only loads first mesh
+ChemicalEngine name is kinda stupid

@@ -93,8 +93,10 @@ namespace Chemical {
 
 		// GLFW WINDOW HINTS ----------------------------------
 
+		// not tied to glsl_version, if this is changed, need to change that
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 

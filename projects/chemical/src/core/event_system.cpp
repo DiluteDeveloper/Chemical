@@ -14,6 +14,14 @@ namespace Chemical {
 
 	void EventSystemGLFWCallbackReceiver::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 		CHEMICAL_CUSTOM_PRINT(Severity::_SUCCESS, "KEY: {}, ACTION: {}", key, action);
+
+		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+			int mode = glfwGetInputMode(window, GLFW_CURSOR);
+			if(mode == GLFW_CURSOR_DISABLED)
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			else
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		}
 	}
 
 	EventSystem::EventSystem(GLFWWrapper* wrapper) {
