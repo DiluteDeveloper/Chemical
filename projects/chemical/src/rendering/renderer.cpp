@@ -1,19 +1,18 @@
 #include <pch.h>
-
+#include <glm/gtc/matrix_transform.hpp>
 #include "renderer.h"
-
 #include "opengl/shader_program.h"
 #include "util/filestream.h"
-#include "core/glfw_glad/init_glfw_glad.h"
+#include "core/glfw_wrapper.h"
 #include "camera.h"
-
 #include "util/transform.h"
+#include "core/defines.h"
 
-#include <glm/gtc/matrix_transform.hpp>
 
 namespace Chemical {
 
-	Renderer3D::Renderer3D(const GLFWWrapper* f_wrapper) {
+	Renderer3D::Renderer3D(const GLFWWrapper* f_wrapper) :
+		camera(f_wrapper) {
 
 		wrapper = f_wrapper;
 		Vertex::InitializeVertexLayout();
@@ -43,7 +42,7 @@ namespace Chemical {
 		program->BindProgram();
 
 		program->SetUniformMatrix4FV("projection", 1, false, &projection[0][0]);
-		program->SetUniformMatrix4FV("view", 1, false, &glm::inverse(camera.UpdateMovement(wrapper))[0][0]);
+		program->SetUniformMatrix4FV("view", 1, false, &glm::inverse(camera.UpdateMovement())[0][0]);
 
 		for(const std::shared_ptr<Mesh>& mesh : scene.meshes) {
 
@@ -60,5 +59,9 @@ namespace Chemical {
 			}
 		}
 
+	}
+
+	Camera& Renderer3D::GetCamera() {
+		return camera;
 	}
 }

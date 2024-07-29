@@ -66,15 +66,15 @@ namespace Chemical {
 	}
 #endif
 
-	std::shared_ptr<EventDispatcher> GLFWWrapper::_dispatcher = nullptr;
+	EventDispatcher* GLFWWrapper::_dispatcher = nullptr;
 
 	void GLFWWrapper::_WindowCloseCallback(GLFWwindow* window) {
-		
+		_dispatcher->post(WindowCloseEvent(window));
 	}
 	void GLFWWrapper::_KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 		_dispatcher->post(InputEvent(window, key, scancode, action, mods));
 	}
-	GLFWWrapper::GLFWWrapper(std::shared_ptr<EventDispatcher> dispatcher, unsigned int window_size_x, unsigned int window_size_y) :
+	GLFWWrapper::GLFWWrapper(EventDispatcher* dispatcher, unsigned int window_size_x, unsigned int window_size_y) :
 		_window_size_x(window_size_x), _window_size_y(window_size_y) {
 
 		_dispatcher = dispatcher;
@@ -156,8 +156,8 @@ namespace Chemical {
 
 		glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
 
-		//glfwSetWindowCloseCallback(window, WindowCloseCallback);
-		//glfwSetKeyCallback(window, KeyCallback);
+		glfwSetWindowCloseCallback(_window, _WindowCloseCallback);
+		glfwSetKeyCallback(_window, _KeyCallback);
 
 		glfwSwapInterval(1);
 

@@ -8,10 +8,12 @@ namespace Chemical {
 
 		ConsoleLogger::Initialize();
 
-		// should error out as not constructing as shared_ptr
 		dispatcher = std::make_unique<EventDispatcher>();
+		
+		dispatcher->subscribe(WindowCloseEvent::descriptor, std::bind(&ChemicalEngine::_OnWindowClose, this, std::placeholders::_1));
+		dispatcher->subscribe(InputEvent::descriptor, std::bind(&ChemicalEngine::_OnInput, this, std::placeholders::_1));
 
-		glfw_wrapper = std::make_unique<GLFWWrapper>(dispatcher);
+		glfw_wrapper = std::make_unique<GLFWWrapper>(dispatcher.get());
 		if (CHEMICAL_QUERY_ERROR) {
 			CHEMICAL_PRINT(Severity::_ERROR, "Error occurred with GLFW or GLAD initialization.");
 		}
@@ -40,16 +42,30 @@ namespace Chemical {
 
 		gui->Update(this);
 
-		glfwSwapBuffers(glfw_wrapper->window);
+		glfwSwapBuffers(glfw_wrapper->GetGLFWWindow());
 
 		glfwPollEvents();
 	}
 
-	void ChemicalEngine::WindowCloseEvent(GLFWwindow* window) {
-		running = false;
+	void ChemicalEngine::_OnWindowClose(const Event& event) {
+		_running = false;
+	}
+
+	void ChemicalEngine::_OnInput(const Event& event) {
+		const InputEvent& event_actual = static_cast<const InputEvent&>(event);
+
+		if (event_actual.key == GLFW_KEY_ESCAPE && event_actual.action == GLFW_PRESS) {
+
+			Camera& camera = renderer->GetCamera();
+			if(glfwGetInputMode(event_actual.window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)
+				glfwSetInputMode(event_actual.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			else
+				glfwSetInputMode(event_actual.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			camera.SetEnabled(!camera.GetEnabled());
+		}
 	}
 
 	bool ChemicalEngine::is_running() {
-		return running;
+		return _running;
 	}
 }

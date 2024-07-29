@@ -22,9 +22,10 @@ namespace Chemical {
 		}
 	};*/
 
-	// can only be constructed as a shared_ptr
 	class EventDispatcher {
 	public:
+
+		EventDispatcher() = default;
 
 		using ObserverType = std::function<void(const Event&)>;
 
@@ -32,11 +33,8 @@ namespace Chemical {
 
 		void post(const Event& event) const;
 
-		friend std::shared_ptr<EventDispatcher> std::make_shared<EventDispatcher>();
-
 	private:
 
-		EventDispatcher() = default;
 		EventDispatcher(const EventDispatcher& dispatcher) = delete;
 
 		EventDispatcher& operator=(const EventDispatcher& dispatcher) = delete;

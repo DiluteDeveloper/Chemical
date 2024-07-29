@@ -27,8 +27,9 @@ namespace Chemical {
 
 	private:
 
-		bool running = true;
+		bool _running = true;
 
-		void WindowCloseEvent(GLFWwindow* window);
+		void _OnWindowClose(const Event& event);
+		void _OnInput(const Event& event);
 	};
 }

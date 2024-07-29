@@ -6,14 +6,20 @@
 namespace Chemical {
 	class Camera {
 	public:
-		glm::mat4 UpdateMovement(const GLFWWrapper* wrapper);
+		Camera(const GLFWWrapper* wrapper);
+		glm::mat4 UpdateMovement();
 
+		bool GetEnabled();
+		void SetEnabled(bool enabled);
 	private:
-		Transform transform;
+		const GLFWWrapper* _wrapper;
+		bool _enabled = true;
 
-		float camSpeed = 0.05f;
-		float sensitivity = 0.08f;
+		Transform _transform;
 
-		double oldx = 0, oldy = 0;
+		float _cam_speed = 0.05f;
+		float _sensitivity = 0.08f;
+
+		double _oldx = 0, _oldy = 0;
 	};
 }
