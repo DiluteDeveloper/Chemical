@@ -1,4 +1,4 @@
-engine-dev 1.33
+engine-dev 1.34 WIP
 
 added assimp dll to 3rd party folder
 moved vendor 'contrib' to deprecated folder dont know what it is and was causing errors
@@ -9,7 +9,7 @@ changelog:
 
 todo:
 
-properly integrate event system functionality
+properly integrate event system functionality in a robust way
 rename GLFW and GLAD functionality wrapper
 supply transform from 3d model loading to actual transform
 load entire model files as scenes, currently only loads first mesh

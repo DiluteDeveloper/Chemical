@@ -1,7 +1,7 @@
 #pragma once
 
 #include "util/transform.h"
-#include "core/glfw_glad/init_glfw_glad.h"
+#include "core/glfw_wrapper.h"
 
 namespace Chemical {
 	class Camera {

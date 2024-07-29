@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 
 #include "shader_program.h"
+#include "core/defines.h"
 
 
 namespace Chemical {

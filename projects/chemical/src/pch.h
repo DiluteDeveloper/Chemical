@@ -20,11 +20,4 @@
 #include <initializer_list>
 #include <type_traits>
 
-#include <Windows.h>
-
-#include <format>
-#include <glm/glm.hpp>
-#include <GLFW/glfw3.h>
-#include <GLAD/glad.h>
-
-#include "core/defines.h"
+#include <assert.h>

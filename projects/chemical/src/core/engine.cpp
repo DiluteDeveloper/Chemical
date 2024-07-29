@@ -1,25 +1,20 @@
 #include <pch.h>
-
+#include <GLAD/glad.h>
 #include "engine.h"
-
-#include "glfw_glad/init_glfw_glad.h"
-
-#include "rendering/renderer.h"
-#include "rendering/model_importer.h"
-#include "world/scene.h"
+#include "defines.h"
 
 namespace Chemical {
 	ChemicalEngine::ChemicalEngine() {
 
 		ConsoleLogger::Initialize();
 
-		glfw_wrapper = std::make_unique<GLFWWrapper>();
+		// should error out as not constructing as shared_ptr
+		dispatcher = std::make_unique<EventDispatcher>();
+
+		glfw_wrapper = std::make_unique<GLFWWrapper>(dispatcher);
 		if (CHEMICAL_QUERY_ERROR) {
 			CHEMICAL_PRINT(Severity::_ERROR, "Error occurred with GLFW or GLAD initialization.");
 		}
-
-		event_system = std::make_unique<EventSystem>(glfw_wrapper.get());
-		event_system->subscribe_window_close_event([this](GLFWwindow* window) -> void {WindowCloseEvent(window);  });
 
 		renderer = std::make_unique<Renderer3D>(glfw_wrapper.get());
 		if (CHEMICAL_QUERY_ERROR) {

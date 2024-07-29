@@ -1,20 +1,9 @@
 #include <pch.h>
-
-#include "init_glfw_glad.h"
+#include <GLAD/glad.h>
+#include "glfw_wrapper.h"
+#include "defines.h"
 
 namespace Chemical {
-	GLFWCallbackReceiver* GLFWWrapper::receiver;
-	void GLFWWrapper::WindowCloseCallback(GLFWwindow* window) {
-		receiver->WindowCloseCallback(window);
-	}
-
-	void GLFWWrapper::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-		receiver->KeyCallback(window, key, scancode, action, mods);
-	}
-
-	void GLFWWrapper::SetStaticCallbackReceiver(GLFWCallbackReceiver* f_receiver) {
-		receiver = f_receiver;
-	}
 
 #ifdef CHEMICAL_DEBUG
 
@@ -77,9 +66,18 @@ namespace Chemical {
 	}
 #endif
 
-	GLFWWrapper::GLFWWrapper(unsigned int f_window_size_x, unsigned int f_window_size_y) {
-		window_size_x = f_window_size_x;
-		window_size_y = f_window_size_y;
+	std::shared_ptr<EventDispatcher> GLFWWrapper::_dispatcher = nullptr;
+
+	void GLFWWrapper::_WindowCloseCallback(GLFWwindow* window) {
+		
+	}
+	void GLFWWrapper::_KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+		_dispatcher->post(InputEvent(window, key, scancode, action, mods));
+	}
+	GLFWWrapper::GLFWWrapper(std::shared_ptr<EventDispatcher> dispatcher, unsigned int window_size_x, unsigned int window_size_y) :
+		_window_size_x(window_size_x), _window_size_y(window_size_y) {
+
+		_dispatcher = dispatcher;
 
 		// GLFW INITIALIZATION ----------------------------
 
@@ -104,9 +102,9 @@ namespace Chemical {
 
 		// GLFW WINDOW SETUP -------------------------------------------------
 
-		window = glfwCreateWindow(window_size_x, window_size_y, "Chemical", NULL, NULL);
+		_window = glfwCreateWindow(window_size_x, window_size_y, "Chemical", NULL, NULL);
 
-		if (!window) {
+		if (!_window) {
 			CHEMICAL_PRINT(Severity::_ERROR, "Creating GLFW window failed.");
 		} else
 			CHEMICAL_PRINT(Severity::_SUCCESS, "GLFW window successfully created.");
@@ -116,14 +114,14 @@ namespace Chemical {
 
 		// GLFW PREFERENCES ----------------------------------
 
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		glfwSwapInterval(1);
 
 		// GLFW PREFERENCES ----------------------------------
 
 		// GLAD SETUP --------------------------------------------
 
-		glfwMakeContextCurrent(window);
+		glfwMakeContextCurrent(_window);
 
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 			CHEMICAL_PRINT(Severity::_ERROR, "GLAD functions failed to load.");
@@ -158,17 +156,24 @@ namespace Chemical {
 
 		glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
 
-		glfwSetWindowCloseCallback(window, WindowCloseCallback);
-		glfwSetKeyCallback(window, KeyCallback);
+		//glfwSetWindowCloseCallback(window, WindowCloseCallback);
+		//glfwSetKeyCallback(window, KeyCallback);
 
 		glfwSwapInterval(1);
 
 	}
 
 	unsigned int GLFWWrapper::GetWindowSizeX() const {
-		return window_size_x;
+		return _window_size_x;
 	}
 	unsigned int GLFWWrapper::GetWindowSizeY() const {
-		return window_size_y;
+		return _window_size_y;
+	}
+
+	const std::string& GLFWWrapper::GetGLSLVersion() const {
+		return _glsl_version;
+	}
+	GLFWwindow* GLFWWrapper::GetGLFWWindow() const {
+		return _window;
 	}
 }

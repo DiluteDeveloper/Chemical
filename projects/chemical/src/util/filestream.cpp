@@ -1,5 +1,7 @@
 #include "pch.h"
+
 #include "filestream.h"
+#include "core/defines.h"
 
 namespace Chemical {
 

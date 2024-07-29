@@ -1,8 +1,9 @@
 #include "pch.h"
-#include "misc.h"
 
 #include <GLAD/glad.h>
 
+#include "misc.h"
+#include "core/defines.h"
 
 namespace Chemical {
 

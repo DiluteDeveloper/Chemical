@@ -1,10 +1,8 @@
 #pragma once
 
-#include "opengl/vertex_array.h"
+#include "core/glfw_wrapper.h"
 #include "opengl/shader_program.h"
 #include "camera.h"
-#include "util/filestream.h"
-#include "core/glfw_glad/init_glfw_glad.h"
 #include "world/scene.h"
 
 namespace Chemical {

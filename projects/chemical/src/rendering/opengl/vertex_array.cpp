@@ -2,7 +2,7 @@
 #include <glad/glad.h>
 
 #include "vertex_array.h"
-
+#include "core/defines.h"
 
 namespace Chemical {
 	namespace OpenGL {

@@ -1,6 +1,7 @@
-#include "pch.h"
-#include "image_loader.h"
+#include <pch.h>
 
+#include "core/defines.h"
+#include "image_loader.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image/stb_image.h"
 
