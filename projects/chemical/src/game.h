@@ -3,15 +3,15 @@
 #include "world/scene.h"
 
 namespace Chemical {
-	class ChemicalEngine;
+	class Application;
 }
 
 
 class Game {
 public:
-	Game(Chemical::ChemicalEngine* engine);
+	Game(Chemical::Application* engine);
 
-	void Update(Chemical::ChemicalEngine* engine);
+	void Update(Chemical::Application* engine);
 
 private:
 

@@ -10,7 +10,7 @@
 
 namespace Chemical {
 
-	GUI::GUI(ChemicalEngine* engine) {
+	GUI::GUI(Application* engine) {
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -24,7 +24,7 @@ namespace Chemical {
 		ImGui_ImplOpenGL3_Init(engine->glfw_wrapper->glsl_version.c_str());
 	}
 
-	void GUI::Update(ChemicalEngine* engine) {
+	void GUI::Update(Application* engine) {
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();

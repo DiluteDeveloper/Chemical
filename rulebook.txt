@@ -1,0 +1,32 @@
+Naming conventions:
+
+PascalCase:
+namespaces, classes, structs, classes, functions, enums
+
+snake_case:
+variables, folders, filenames
+
+ALL_CAPS:
+
+Enum values
+macros
+
+private variables:
+prefix with m_
+
+
+class functions should be used to act upon its own self-contained data.
+It's data should not be able to be modified by any other class 
+haphazardly, getters and setters should be used.
+classes should have a single responsibility; single responsibility principle
+
+structs should be used for data-only containers, only functionality
+being initialization.
+
+EVERYTHING should be inside the Chemical namespace and use sub-namespaces
+for categorization of functionality or data.
+
+#include <> should be used for anything that is outside of the project source.
+#include "" should be used for anything that is inside of the project source.
+
+#define macros should be prefixed with CHEMICAL_

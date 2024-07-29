@@ -5,7 +5,7 @@
 
 #include "core/engine.h"
 
-Game::Game(Chemical::ChemicalEngine* engine) {
+Game::Game(Chemical::Application* engine) {
 
 	Chemical::ModelImporter importer;
 
@@ -20,6 +20,6 @@ Game::Game(Chemical::ChemicalEngine* engine) {
 	engine->running_scene = &scene;
 }
 
-void Game::Update(Chemical::ChemicalEngine* engine) {
+void Game::Update(Chemical::Application* engine) {
 
 }

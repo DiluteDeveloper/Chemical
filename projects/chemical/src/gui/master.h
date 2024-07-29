@@ -2,12 +2,12 @@
 
 namespace Chemical {
 
-	class ChemicalEngine;
+	class Application;
 
 	class GUI {
 	public:
-		GUI(ChemicalEngine* engine);
+		GUI(Application* engine);
 
-		void Update(ChemicalEngine* engine);
+		void Update(Application* engine);
 	};
 }

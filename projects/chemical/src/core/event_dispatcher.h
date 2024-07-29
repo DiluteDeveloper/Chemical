@@ -4,44 +4,45 @@
 
 namespace Chemical {
 
-	struct Event {
-	public:
+	namespace Core {
 
-		using DescriptorType = const char*;
+		struct Event {
+		public:
 
-		virtual DescriptorType type() const = 0;
-	};
+			using DescriptorType = const char*;
 
-	/*struct DemoEvent : public Event {
-	public:
+			virtual DescriptorType GetType() const = 0;
+		};
 
-		static constexpr const char* descriptor = "DemoEvent";
+		/*struct DemoEvent : public Event {
+		public:
 
-		virtual DescriptorType type() const override {
-			return descriptor;
-		}
-	};*/
+			static constexpr const char* descriptor = "DemoEvent";
 
-	// can only be constructed as a shared_ptr
-	class EventDispatcher {
-	public:
+			virtual DescriptorType type() const override {
+				return descriptor;
+			}
+		};*/
 
-		using ObserverType = std::function<void(const Event&)>;
+		class EventDispatcher {
+		public:
 
-		void subscribe(const Event::DescriptorType& descriptor, ObserverType&& slot);
+			EventDispatcher() = default;
+			EventDispatcher(const EventDispatcher& dispatcher) = delete;
 
-		void post(const Event& event) const;
+			EventDispatcher& operator=(const EventDispatcher& dispatcher) = delete;
 
-		friend std::shared_ptr<EventDispatcher> std::make_shared<EventDispatcher>();
+			using ObserverType = std::function<void(const Event&)>;
 
-	private:
+			void Subscribe(const Event::DescriptorType& descriptor, ObserverType&& slot);
 
-		EventDispatcher() = default;
-		EventDispatcher(const EventDispatcher& dispatcher) = delete;
+			void Post(const Event& event) const;
 
-		EventDispatcher& operator=(const EventDispatcher& dispatcher) = delete;
+		private:
 
-		std::unordered_map<Event::DescriptorType, std::vector<ObserverType>> _observers;
-	};
+			std::unordered_map<Event::DescriptorType, std::vector<ObserverType>> m_observers;
+		};
+	}
+
 
 }

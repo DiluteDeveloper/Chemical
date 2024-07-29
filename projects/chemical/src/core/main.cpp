@@ -1,21 +1,15 @@
 #include <pch.h>
 
-#include "engine.h"
-#include "game.h"
+#include "application.h"
 
-using namespace Chemical;
+using namespace Chemical::Core;
 
 int main(int argc, char* argv[]) {
 
-	ChemicalEngine engine;
-	if (CHEMICAL_QUERY_ERROR) {
-		CHEMICAL_PRINT(Severity::_ERROR, "ChemicalEngine initialization failed.");
-	}
+	Application app;
 
-	// GLAD PREFERENCES -----------------------------------------
+	while (app.is_running()) {
 
-	while (engine.is_running()) {
-
-		engine.Update();
+		app.Update();
 	}
 }

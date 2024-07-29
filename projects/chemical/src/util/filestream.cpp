@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #include "filestream.h"
-#include "core/defines.h"
+#include "core/console_logger.h"
 
 namespace Chemical {
 
