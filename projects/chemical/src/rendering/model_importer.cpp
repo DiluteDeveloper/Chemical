@@ -1,8 +1,9 @@
 #include <pch.h>
-#include "model_importer.h"
-
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include "model_importer.h"
+#include "core/defines.h"
+
 
 namespace Chemical {
 

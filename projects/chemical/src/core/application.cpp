@@ -14,6 +14,9 @@ namespace Chemical {
 
 			m_data = std::make_shared<ApplicationData>();
 
+			m_data->GetDispatcher()->Subscribe(WindowCloseEvent::descriptor, std::bind(&Application::OnWindowClose, this, std::placeholders::_1));
+			m_data->GetDispatcher()->Subscribe(InputEvent::descriptor, std::bind(&Application::OnInput, this, std::placeholders::_1));
+
 		}
 		Application::~Application() {
 			glfwTerminate();
@@ -34,8 +37,22 @@ namespace Chemical {
 			glfwPollEvents();
 		}
 
-		void Application::WindowCloseEvent(GLFWwindow* window) {
+		void Application::OnWindowClose(const Event& event) {
 			m_running = false;
+		}
+
+		void Application::OnInput(const Event& event) {
+			const InputEvent& event_actual = static_cast<const InputEvent&>(event);
+
+			if (event_actual.key == GLFW_KEY_ESCAPE && event_actual.action == GLFW_PRESS) {
+
+				//Camera& camera = renderer->GetCamera();
+				if (glfwGetInputMode(event_actual.window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)
+					glfwSetInputMode(event_actual.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				else
+					glfwSetInputMode(event_actual.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+				//camera.SetEnabled(!camera.GetEnabled());
+			}
 		}
 
 		bool Application::is_running() const {

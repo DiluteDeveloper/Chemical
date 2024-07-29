@@ -13,6 +13,8 @@ namespace Chemical {
 
 		void RenderScene(const Scene& scene);
 
+		Camera& GetCamera();
+
 	private:
 		const GLFWWrapper* wrapper = nullptr;
 		Camera camera;

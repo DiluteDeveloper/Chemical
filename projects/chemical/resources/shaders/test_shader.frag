@@ -6,7 +6,7 @@ in vec3 f_pos;
 out vec4 fragColor;
 
 vec3 lightPos = vec3(10, 75, -25);
-vec3 lightColor = vec3(255 / 255.0, 196 / 255.0, 94 / 255.0);
+vec3 lightColor = vec3(50 / 255.0, 200 / 255.0, 50 / 255.0);
 vec3 objectColor = vec3(1,1,1);
 
 void main()

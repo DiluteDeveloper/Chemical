@@ -19,9 +19,9 @@ namespace Chemical {
 
 		ImGui::StyleColorsDark();
 
-		ImGui_ImplGlfw_InitForOpenGL(engine->glfw_wrapper->window, true);
+		ImGui_ImplGlfw_InitForOpenGL(engine->glfw_wrapper->GetGLFWWindow(), true);
 
-		ImGui_ImplOpenGL3_Init(engine->glfw_wrapper->glsl_version.c_str());
+		ImGui_ImplOpenGL3_Init(engine->glfw_wrapper->GetGLSLVersion().c_str());
 	}
 
 	void GUI::Update(Application* engine) {

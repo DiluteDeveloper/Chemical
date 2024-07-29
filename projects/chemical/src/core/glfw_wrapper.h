@@ -26,6 +26,19 @@ namespace Chemical {
 				return descriptor;
 			}
 		};
+		struct WindowCloseEvent : Event {
+		public:
+			WindowCloseEvent(GLFWwindow* window) :
+				window(window) {}
+		
+			GLFWwindow* window = nullptr;
+
+			static constexpr DescriptorType descriptor = "WindowCloseEvent";
+
+			virtual DescriptorType GetType() const override {
+				return descriptor;
+			}
+		};
 
 		class GLFWWrapper {
 		public:
@@ -38,16 +51,16 @@ namespace Chemical {
 			GLFWwindow* GetGLFWWindow() const;
 
 		private:
-			static void _WindowCloseCallback(GLFWwindow* window);
-			static void _KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+			static void WindowCloseCallback(GLFWwindow* window);
+			static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
-			static std::shared_ptr<EventDispatcher> _dispatcher;
+			static std::shared_ptr<EventDispatcher> m_dispatcher;
 
-			unsigned int _window_size_x = 0;
-			unsigned int _window_size_y = 0;
+			unsigned int m_window_size_x = 0;
+			unsigned int m_window_size_y = 0;
 
-			std::string _glsl_version = "#version 460";
-			GLFWwindow* _window = nullptr;
+			std::string m_glsl_version = "#version 460";
+			GLFWwindow* m_window = nullptr;
 		};
 	}
 

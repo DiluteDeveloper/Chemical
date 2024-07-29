@@ -7,45 +7,64 @@
 
 namespace Chemical {
 
-	glm::mat4 Camera::UpdateMovement(const GLFWWrapper* wrapper) {
-		glm::fmat4 matrix = transform.TransformToMat4();
-		glm::fvec3 right = matrix[0];
-		glm::fvec3 up = matrix[1];
-		glm::fvec3 forward = matrix[2];
-		glm::fvec3 front = glm::normalize(glm::fvec3(forward.x, 0, forward.z));
+	Camera::Camera(const GLFWWrapper* wrapper) :
+		_wrapper(wrapper) {}
 
-		GLFWwindow* window = wrapper->GetGLFWWindow();
-		if (glfwGetKey(window, GLFW_KEY_W)) {
-			transform.position += front * camSpeed;
-		}
-		if (glfwGetKey(window, GLFW_KEY_S)) {
-			transform.position -= front * camSpeed;
-		}
-		if (glfwGetKey(window, GLFW_KEY_A)) {
-			transform.position -= right * camSpeed;
-		}
-		if (glfwGetKey(window, GLFW_KEY_D)) {
-			transform.position += right * camSpeed;
-		}
-		if (glfwGetKey(window, GLFW_KEY_SPACE)) {
-			transform.position.y += camSpeed;
-		}
-		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
-			transform.position.y -= camSpeed;
-		}
+	glm::mat4 Camera::UpdateMovement() {
 
-		double x, y;
-		glfwGetCursorPos(window, &x, &y);
+		glm::fmat4 matrix = _transform.TransformToMat4();
 
-		transform.rotation.y += static_cast<float>(x - oldx) * sensitivity;
-		transform.rotation.x += static_cast<float>(y - oldy) * sensitivity;
+		if (_enabled) {
 
-		transform.rotation.x = glm::clamp(transform.rotation.x, -85.0f, 85.0f);
 
-		oldx = x;
-		oldy = y;
+			glm::fvec3 right = matrix[0];
+			glm::fvec3 up = matrix[1];
+			glm::fvec3 forward = matrix[2];
+			glm::fvec3 front = glm::normalize(glm::fvec3(forward.x, 0, forward.z));
+
+			GLFWwindow* window = _wrapper->GetGLFWWindow();
+			if (glfwGetKey(window, GLFW_KEY_W)) {
+				_transform.position += front * _cam_speed;
+			}
+			if (glfwGetKey(window, GLFW_KEY_S)) {
+				_transform.position -= front * _cam_speed;
+			}
+			if (glfwGetKey(window, GLFW_KEY_A)) {
+				_transform.position -= right * _cam_speed;
+			}
+			if (glfwGetKey(window, GLFW_KEY_D)) {
+				_transform.position += right * _cam_speed;
+			}
+			if (glfwGetKey(window, GLFW_KEY_SPACE)) {
+				_transform.position.y += _cam_speed;
+			}
+			if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
+				_transform.position.y -= _cam_speed;
+			}
+
+			double x, y;
+			glfwGetCursorPos(window, &x, &y);
+
+			_transform.rotation.y += static_cast<float>(x - _oldx) * _sensitivity;
+			_transform.rotation.x += static_cast<float>(y - _oldy) * _sensitivity;
+
+			_transform.rotation.x = glm::clamp(_transform.rotation.x, -85.0f, 85.0f);
+
+			_oldx = x;
+			_oldy = y;
+		}
 
 		return matrix;
+	}
+
+	bool Camera::GetEnabled() {
+		return _enabled;
+	}
+	void Camera::SetEnabled(bool enabled) {
+		_enabled = enabled;
+		if (enabled) {
+			glfwGetCursorPos(_wrapper->GetGLFWWindow(), &_oldx, &_oldy);
+		}
 	}
 
 }
