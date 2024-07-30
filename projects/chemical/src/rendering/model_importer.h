@@ -1,18 +1,18 @@
 #pragma once
 
-#include "data_types/mesh.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
+
+#include "scene_objects/mesh_3d.h"
 
 namespace Chemical {
 	class ModelImporter {
 	public:
 
-		// imports single meshes for now
-		std::optional<std::shared_ptr<Mesh>> ImportModel(const std::string& file_path);
+		std::unique_ptr<Scene::Mesh3D> ImportModel(const std::string& file_path);
 	private:
 
-		std::shared_ptr<Mesh> ProcessMesh(aiMesh* mesh);
+		std::unique_ptr<Scene::Mesh3D> ProcessMesh(aiMesh* mesh);
 		Assimp::Importer importer;
 	};
 }

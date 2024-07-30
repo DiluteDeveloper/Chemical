@@ -8,10 +8,10 @@
 
 namespace Chemical {
 
+	using namespace Scene;
+	std::unique_ptr<Mesh3D> ModelImporter::ProcessMesh(aiMesh* in_mesh) {
 
-	std::shared_ptr<Mesh> ModelImporter::ProcessMesh(aiMesh* in_mesh) {
-
-		std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
+		std::unique_ptr<Mesh3D> mesh = std::make_unique<Scene::Mesh3D>();
 		for (unsigned int i = 0; i < in_mesh->mNumVertices; i++)
 		{
 			glm::vec3 pos;
@@ -28,7 +28,7 @@ namespace Chemical {
 			normal.y = in_mesh->mNormals[i].y;
 			normal.z = in_mesh->mNormals[i].z;
 
-			mesh->vertices.emplace_back(Vertex(pos, normal));
+			mesh->vertices.emplace_back(Mesh3D::Vertex(pos, normal));
 		}
 
 		for (unsigned int i = 0; i < in_mesh->mNumFaces; i++)
@@ -44,16 +44,16 @@ namespace Chemical {
 
 	}
 
-	std::optional<std::shared_ptr<Mesh>> ModelImporter::ImportModel(const std::string& file_path) {
+	std::unique_ptr<Mesh3D> ModelImporter::ImportModel(const std::string& file_path) {
 		
 		const aiScene* scene = importer.ReadFile(file_path, 
 			aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_OptimizeMeshes | aiProcess_MakeLeftHanded);
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
 			spdlog::error("ImportModel failed with file path {0}", file_path);
-			return std::nullopt;
+			return nullptr;
 		}
 
 		aiMesh* ai_mesh = scene->mMeshes[0];
-		return std::optional<std::shared_ptr<Mesh>>(ProcessMesh(ai_mesh));
+		return ProcessMesh(ai_mesh);
 	}
 }

@@ -3,8 +3,6 @@
 #include "core/application.h"
 #include "core/glfw_wrapper.h"
 #include "rendering/opengl/shader_program.h"
-#include "rendering/camera.h"
-#include "world/scene.h"
 
 namespace Chemical {
 	
@@ -17,8 +15,6 @@ namespace Chemical {
 
 			void InitializeLayer() override;
 			void UpdateLayer() override;
-
-			std::unique_ptr<Camera> camera;
 
 			glm::mat4 view = glm::mat4(1.0f);
 			OpenGL::VertexLayout layout;

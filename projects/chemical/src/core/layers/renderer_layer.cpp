@@ -6,15 +6,17 @@
 #include "rendering/opengl/shader_program.h"
 #include "util/filestream.h"
 #include "core/glfw_wrapper.h"
-#include "rendering/camera.h"
-#include "util/transform.h"
+
+#include "scene_objects/mesh_3d.h"
 
 
 namespace Chemical {
 
 	namespace Core {
+		using namespace Scene;
+
 		void RendererLayer::InitializeLayer() {
-			Vertex::InitializeVertexLayout();
+			Mesh3D::Vertex::InitializeVertexLayout();
 
 			Util::FileStream stream;
 
@@ -25,29 +27,40 @@ namespace Chemical {
 			OpenGL::Shader fragment_shader(fragment_shader_source.c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
 
 			program = std::make_unique<OpenGL::ShaderProgram>(std::initializer_list<
-				const OpenGL::Shader*>{ &vertex_shader, & fragment_shader }, Vertex::vertex_layout);
+				const OpenGL::Shader*>{ &vertex_shader, & fragment_shader }, Mesh3D::Vertex::vertex_layout);
 
 			// perspectiveLH converts left handed input data to opengls coordinate system
 			projection = glm::perspectiveLH(glm::radians(90.0f), m_app_data.GetGLFWWrapper().GetWindowSizeX() / 
 				static_cast<float>(m_app_data.GetGLFWWrapper().GetWindowSizeY()), 0.1f, 1000.0f);
-
-			camera = std::make_unique<Camera>(m_app_data.GetGLFWWrapper(), m_app_data.GetDispatcher());
 		}
 
 		void RendererLayer::UpdateLayer() {
+			SceneLayer* scene_layer = m_app_data.GetLayer<SceneLayer>("SceneLayer");
+			if (scene_layer == nullptr)
+				return;
+			const Object* root = scene_layer->GetRoot();
+			if (root == nullptr)
+				return;
+			if (root->GetSuperiorDescriptor() != "Mesh3D")
+				return;
+			const Mesh3D& root_mesh = root->GetSuperior<Mesh3D>();
+			Camera3D* camera = scene_layer->GetCamera3D();
+			if (camera == nullptr)
+				return;
 
 			program->BindProgram();
 
 			program->SetUniformMatrix4FV("projection", 1, false, &projection[0][0]);
 			program->SetUniformMatrix4FV("view", 1, false, &glm::inverse(camera->UpdateMovement())[0][0]);
 
-			SceneLayer* scene_layer = m_app_data.GetLayer<SceneLayer>("SceneLayer");
-			if (scene_layer == nullptr)
-				return;
-			const Scene* scene = scene_layer->GetScene();
-			if (scene == nullptr)
-				return;
-			for (const std::shared_ptr<Mesh>& mesh : scene->meshes) {
+			program->SetUniformMatrix4FV("model", 1, false, &root_mesh.object_3d.transform.TransformToMat4()[0][0]);
+			root_mesh.v_array.Bind();
+			root_mesh.v_array.DrawElements(root_mesh.draw_info);
+
+			program->SetUniformMatrix4FV("model", 1, false, &root_mesh.object_3d.transform.TransformToMat4()[0][0]);
+			root_mesh.v_array.Bind();
+			root_mesh.v_array.DrawElements(root_mesh.draw_info);
+			/*for (const std::shared_ptr<Mesh>& mesh : scene->meshes) {
 
 				program->SetUniformMatrix4FV("model", 1, false, &mesh->transform.TransformToMat4()[0][0]);
 				mesh->v_array.Bind();
@@ -60,7 +73,7 @@ namespace Chemical {
 					mesh->v_array.Bind();
 					mesh->v_array.DrawElements(mesh->draw_info);
 				}
-			}
+			}*/
 
 		}
 	}

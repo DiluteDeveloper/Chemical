@@ -71,7 +71,6 @@ namespace Chemical {
 		class Application {
 		public:
 			Application();
-			~Application();
 
 			void Update();
 
@@ -79,7 +78,7 @@ namespace Chemical {
 
 		private:
 
-			ApplicationData* m_data;
+			ApplicationData m_data;
 
 			bool m_running = true;
 

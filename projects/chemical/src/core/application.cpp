@@ -24,6 +24,10 @@ namespace Chemical {
 			m_dispatcher = new EventDispatcher();
 			m_glfw_wrapper = new GLFWWrapper(*m_dispatcher);
 
+			AddLayer<RendererLayer>("RendererLayer");
+			AddLayer<SceneLayer>("SceneLayer");
+			AddLayer<GUILayer>("GUILayer");
+			AddLayer<GameLayer>("GameLayer");
 		}
 
 		void ApplicationData::Update() {
@@ -43,35 +47,18 @@ namespace Chemical {
 		}
 
 		Application::Application() {
-			m_data = new ApplicationData();
 
-			m_data->m_dispatcher->Subscribe(WindowCloseEvent::descriptor, std::bind(&Application::OnWindowClose, this, std::placeholders::_1));
-			m_data->m_dispatcher->Subscribe(InputEvent::descriptor, std::bind(&Application::OnInput, this, std::placeholders::_1));
+			m_data.m_dispatcher->Subscribe(WindowCloseEvent::descriptor, std::bind(&Application::OnWindowClose, this, std::placeholders::_1));
+			m_data.m_dispatcher->Subscribe(InputEvent::descriptor, std::bind(&Application::OnInput, this, std::placeholders::_1));
 
-			m_data->AddLayer<RendererLayer>("RendererLayer");
-			m_data->AddLayer<SceneLayer>("SceneLayer");
-			m_data->AddLayer<GUILayer>("GUILayer");
-			m_data->AddLayer<GameLayer>("GameLayer");
-
-		}
-
-		Application::~Application() {
-			delete(m_data);
 		}
 
 		void Application::Update() {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			m_data->Update();
+			m_data.Update();
 
-			//game->Update(this);
-
-			//if (running_scene != nullptr)
-			//	renderer->RenderScene(*running_scene);
-
-			//gui->Update(this);
-
-			glfwSwapBuffers(m_data->m_glfw_wrapper->GetGLFWWindow());
+			glfwSwapBuffers(m_data.m_glfw_wrapper->GetGLFWWindow());
 
 			glfwPollEvents();
 		}
