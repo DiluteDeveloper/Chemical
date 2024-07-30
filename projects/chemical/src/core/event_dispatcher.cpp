@@ -1,4 +1,5 @@
 #include <pch.h>
+#include <spdlog/spdlog.h>
 
 #include "event_dispatcher.h"
 
@@ -6,7 +7,13 @@ namespace Chemical {
 
 	namespace Core {
 		void EventDispatcher::Subscribe(const Event::DescriptorType& descriptor, ObserverType&& slot) {
-			m_observers[descriptor].emplace_back(slot);
+			try {
+				m_observers[descriptor].emplace_back(slot);
+			}
+			catch (const std::exception& e) {
+				spdlog::warn("Subscribe failed.");
+			}
+
 		}
 
 		void EventDispatcher::Post(const Event& event) const {

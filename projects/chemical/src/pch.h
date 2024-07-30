@@ -20,4 +20,5 @@
 #include <initializer_list>
 #include <type_traits>
 
-#include <assert.h>
+#include <spdlog/spdlog.h>
+#include <glm/glm.hpp>

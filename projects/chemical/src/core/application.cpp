@@ -3,27 +3,84 @@
 #include <GLFW/glfw3.h>
 
 #include "application.h"
-#include "console_logger.h"
+
+#include "layers/renderer_layer.h"
+#include "layers/gui_layer.h"
+#include "layers/game_layer.h"
+#include "layers/scene_layer.h"
 
 namespace Chemical {
 
 	namespace Core {
+
+		const EventDispatcher& ApplicationData::GetDispatcher() const {
+			return *m_dispatcher;
+		}
+		const GLFWWrapper& ApplicationData::GetGLFWWrapper() const {
+			return *m_glfw_wrapper;
+		}
+		const GUILayer& ApplicationData::GetGUILayer() const  {
+			return *m_gui_layer;
+		}
+		const RendererLayer& ApplicationData::GetRendererLayer() const {
+			return *m_renderer_layer;
+		}
+		const GameLayer& ApplicationData::GetGameLayer() const {
+			return *m_game_layer;
+		}
+		SceneLayer& ApplicationData::GetSceneLayer() const {
+			return *m_scene_layer;
+		}
+
+		ApplicationData::ApplicationData() {
+			m_dispatcher = new EventDispatcher();
+			m_glfw_wrapper = new GLFWWrapper(m_dispatcher);
+
+			m_scene_layer = new SceneLayer(*this);
+			m_renderer_layer = new RendererLayer(*this);
+			m_gui_layer = new GUILayer(*this);
+			m_game_layer = new GameLayer(*this);
+
+			m_renderer_layer->InitializeLayer();
+			m_gui_layer->InitializeLayer();
+			m_game_layer->InitializeLayer();
+		}
+
+		void ApplicationData::Update() {
+			m_renderer_layer->UpdateLayer();
+			m_gui_layer->UpdateLayer();
+			m_game_layer->UpdateLayer();
+		}
+
+		ApplicationData::~ApplicationData() {
+			m_game_layer->DestroyLayer();
+			m_gui_layer->DestroyLayer();
+			m_renderer_layer->DestroyLayer();
+
+			delete(m_game_layer);
+			delete(m_gui_layer);
+			delete(m_renderer_layer);
+
+			delete(m_glfw_wrapper);
+			delete(m_dispatcher);
+		}
+
 		Application::Application() {
+			m_data = new ApplicationData();
 
-			ConsoleLogger::Initialize();
-
-			m_data = std::make_shared<ApplicationData>();
-
-			m_data->GetDispatcher()->Subscribe(WindowCloseEvent::descriptor, std::bind(&Application::OnWindowClose, this, std::placeholders::_1));
-			m_data->GetDispatcher()->Subscribe(InputEvent::descriptor, std::bind(&Application::OnInput, this, std::placeholders::_1));
+			m_data->m_dispatcher->Subscribe(WindowCloseEvent::descriptor, std::bind(&Application::OnWindowClose, this, std::placeholders::_1));
+			m_data->m_dispatcher->Subscribe(InputEvent::descriptor, std::bind(&Application::OnInput, this, std::placeholders::_1));
 
 		}
+
 		Application::~Application() {
-			glfwTerminate();
+			delete(m_data);
 		}
 
 		void Application::Update() {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			m_data->Update();
 
 			//game->Update(this);
 
@@ -32,7 +89,7 @@ namespace Chemical {
 
 			//gui->Update(this);
 
-			glfwSwapBuffers(m_data->GetGLFWWrapper()->GetGLFWWindow());
+			glfwSwapBuffers(m_data->m_glfw_wrapper->GetGLFWWindow());
 
 			glfwPollEvents();
 		}

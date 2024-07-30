@@ -1,7 +1,6 @@
 #include "pch.h"
 
 #include "filestream.h"
-#include "core/console_logger.h"
 
 namespace Chemical {
 
@@ -12,7 +11,7 @@ namespace Chemical {
 			std::ifstream file(filePath);
 
 			if (!file) { 
-				CHEMICAL_CUSTOM_PRINT(Severity::_ERROR, "Failed to read file: {}.", filePath.string());
+				spdlog::error("Failed to read file: {0}.", filePath.string());
 				return std::nullopt; 
 			}
 
@@ -26,7 +25,7 @@ namespace Chemical {
 			std::ifstream file(filePath);
 
 			if (!file) { 
-				CHEMICAL_CUSTOM_PRINT(Severity::_ERROR, "Failed to read file: {}.", filePath.string());
+				spdlog::error("Failed to read file: {0}.", filePath.string());
 				return std::nullopt; 
 			}
 

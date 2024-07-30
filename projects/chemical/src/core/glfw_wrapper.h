@@ -43,7 +43,8 @@ namespace Chemical {
 		class GLFWWrapper {
 		public:
 
-			GLFWWrapper(std::shared_ptr<EventDispatcher> dispatcher, unsigned int window_size_x = 720, unsigned int window_size_y = 480);
+			GLFWWrapper(EventDispatcher* dispatcher, unsigned int window_size_x = 720, unsigned int window_size_y = 480);
+			~GLFWWrapper();
 
 			unsigned int GetWindowSizeX() const;
 			unsigned int GetWindowSizeY() const;
@@ -54,7 +55,7 @@ namespace Chemical {
 			static void WindowCloseCallback(GLFWwindow* window);
 			static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
-			static std::shared_ptr<EventDispatcher> m_dispatcher;
+			static EventDispatcher* m_dispatcher;
 
 			unsigned int m_window_size_x = 0;
 			unsigned int m_window_size_y = 0;

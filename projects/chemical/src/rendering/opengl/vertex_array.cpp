@@ -1,8 +1,7 @@
-#include "pch.h"
+#include <pch.h>
 #include <glad/glad.h>
 
 #include "vertex_array.h"
-#include "core/defines.h"
 
 namespace Chemical {
 	namespace OpenGL {
@@ -49,32 +48,32 @@ namespace Chemical {
 			glBindVertexArray(0);
 		}
 		void VertexArray::DrawElements(const ElementDrawInfo& info) const {
-			CHEMICAL_DEBUG_CALL(if (rendererID == 0) {
-				CHEMICAL_PRINT(Severity::_ERROR, "Vertex Array trying to be drawn with renderer ID of 0. returning...");
+			if (rendererID == 0) {
+				spdlog::warn("Vertex Array trying to be drawn with renderer ID of 0. returning...");
 				return;
-			});
+			};
 			glDrawElements((GLenum)info.mode, info.count, (GLenum)info.dataType, (void*)info.offset);
 		}
 		void VertexArray::DrawArrays(const ArrayDrawInfo& info)  const {
-			CHEMICAL_DEBUG_CALL(if (rendererID == 0) {
-				CHEMICAL_PRINT(Severity::_ERROR, "Vertex Array trying to be drawn with renderer ID of 0. returning...");
+			if (rendererID == 0) {
+				spdlog::warn("Vertex Array trying to be drawn with renderer ID of 0. returning...");
 				return;
-			});
+			};
 			glDrawArrays((GLenum)info.mode, info.first, info.count);
 		}
 
 		void VertexArray::DrawElementsInstanced(const InstancedElementDrawInfo& info) const {
-			CHEMICAL_DEBUG_CALL(if (rendererID == 0) {
-				CHEMICAL_PRINT(Severity::_ERROR, "Vertex Array trying to be drawn with renderer ID of 0. returning...");
+			if (rendererID == 0) {
+				spdlog::warn("Vertex Array trying to be drawn with renderer ID of 0. returning...");
 				return;
-			});
+			};
 			glDrawElementsInstanced((GLenum)info.mode, info.count, (GLenum)info.dataType, (void*)info.offset, info.instanceCount);
 		}
 		void VertexArray::DrawArraysInstanced(const InstancedArrayDrawInfo& info) const {
-			CHEMICAL_DEBUG_CALL(if (rendererID == 0) {
-				CHEMICAL_PRINT(Severity::_ERROR, "Vertex Array trying to be drawn with renderer ID of 0. returning...");
+			if (rendererID == 0) {
+				spdlog::warn("Vertex Array trying to be drawn with renderer ID of 0. returning...");
 				return;
-			});
+			};
 			glDrawArraysInstanced((GLenum)info.mode, info.first, info.count, info.instanceCount);
 		}
 

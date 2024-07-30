@@ -3,8 +3,6 @@
 #include <GLFW/glfw3.h>
 
 #include "glfw_wrapper.h"
-#include "console_logger.h"
-#include "debug.h"
 
 namespace Chemical {
 
@@ -51,23 +49,23 @@ namespace Chemical {
 
 			switch (severity) {
 				case GL_DEBUG_SEVERITY_NOTIFICATION:
-					CHEMICAL_CUSTOM_PRINT(Severity::_DEFAULT, "OpenGL Debug Notification: {}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
+					spdlog::info("OpenGL Debug Notification: {0}, {1}, {2}: {3}", src_str, type_str, (int)id, (char*)message);
 					break;
 				case GL_DEBUG_SEVERITY_LOW:
-					CHEMICAL_CUSTOM_PRINT(Severity::_WARNING, "OpenGL Debug Low Warning: {}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
+					spdlog::warn("OpenGL Debug Low Warning: {0}, {1}, {2}: {3}", src_str, type_str, (int)id, (char*)message);
 					break;
 				case GL_DEBUG_SEVERITY_MEDIUM:
-					CHEMICAL_CUSTOM_PRINT(Severity::_WARNING, "OpenGL Debug Medium Warning: {}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
+					spdlog::error("OpenGL Debug Medium Warning: {0}, {1}, {2}: {3}", src_str, type_str, (int)id, (char*)message);
 					break;
 				case GL_DEBUG_SEVERITY_HIGH:
-					CHEMICAL_CUSTOM_PRINT(Severity::_ERROR, "OpenGL Debug Error: {}, {}, {}: {}", src_str, type_str, (int)id, (char*)message);
+					spdlog::critical("OpenGL Debug Error: {0}, {1}, {2}: {3}", src_str, type_str, (int)id, (char*)message);
 					throw std::exception();
 					break;
 				default: break;
 				}
 
 		}
-	std::shared_ptr<EventDispatcher> GLFWWrapper::m_dispatcher = nullptr;
+	EventDispatcher* GLFWWrapper::m_dispatcher = nullptr;
 
 	void GLFWWrapper::WindowCloseCallback(GLFWwindow* window) {
 		m_dispatcher->Post(WindowCloseEvent(window));
@@ -75,7 +73,7 @@ namespace Chemical {
 	void GLFWWrapper::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 		m_dispatcher->Post(InputEvent(window, key, scancode, action, mods));
 	}
-	GLFWWrapper::GLFWWrapper(std::shared_ptr<EventDispatcher> dispatcher, unsigned int window_size_x, unsigned int window_size_y) :
+	GLFWWrapper::GLFWWrapper(EventDispatcher* dispatcher, unsigned int window_size_x, unsigned int window_size_y) :
 		m_window_size_x(window_size_x), m_window_size_y(window_size_y) {
 
 		m_dispatcher = dispatcher;
@@ -83,10 +81,10 @@ namespace Chemical {
 		// GLFW INITIALIZATION ----------------------------
 
 		if (!glfwInit()) {
-			CHEMICAL_PRINT(Severity::_ERROR, "GLFW initialization failed.");
+			spdlog::critical("GLFW initialization failed.");
+			throw std::exception();
 		}
-		else
-			CHEMICAL_PRINT(Severity::_SUCCESS, "GLFW initialization successful.");
+		spdlog::info("GLFW initialization successful.");
 
 
 		// GLFW INITIALIZATION ----------------------------
@@ -107,10 +105,9 @@ namespace Chemical {
 		m_window = glfwCreateWindow(window_size_x, window_size_y, "Chemical", NULL, NULL);
 
 		if (!m_window) {
-			CHEMICAL_PRINT(Severity::_ERROR, "Creating GLFW window failed.");
+			spdlog::critical("GLFW window creation failed.");
 		}
-		else
-			CHEMICAL_PRINT(Severity::_SUCCESS, "GLFW window successfully created.");
+		spdlog::info("GLFW window creation successful.");
 
 
 		// GLFW WINDOW SETUP -------------------------------------------------
@@ -127,10 +124,10 @@ namespace Chemical {
 		glfwMakeContextCurrent(m_window);
 
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-			CHEMICAL_PRINT(Severity::_ERROR, "GLAD functions failed to load.");
+			spdlog::critical("GLAD functions failed to load.");
+			throw std::exception();
 		}
-		else
-			CHEMICAL_PRINT(Severity::_SUCCESS, "GLAD functions successfully loaded.");
+		spdlog::info("GLAD functions loaded successfully.");
 
 
 		glClearColor(1.0f, 0.2f, 0.3f, 1.0f);
@@ -145,8 +142,8 @@ namespace Chemical {
 		glEnable(GL_DEPTH_TEST);
 
 
-		CHEMICAL_DEBUG_CALL(glDebugMessageCallback(&message_callback, nullptr));
-		CHEMICAL_DEBUG_CALL(glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE));
+		glDebugMessageCallback(&message_callback, nullptr);
+		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
 
 		//glEnable(GL_BLEND);
 		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -166,6 +163,8 @@ namespace Chemical {
 
 		glfwSwapInterval(1);
 
+		spdlog::info("GLFWWrapper creation successful.");
+
 		}
 
 		unsigned int GLFWWrapper::GetWindowSizeX() const {
@@ -181,5 +180,12 @@ namespace Chemical {
 		GLFWwindow* GLFWWrapper::GetGLFWWindow() const {
 			return m_window;
 		}
+
+		GLFWWrapper::~GLFWWrapper() {
+			glfwDestroyWindow(m_window);
+			glfwTerminate();
+		}
 	}
+
+
 }

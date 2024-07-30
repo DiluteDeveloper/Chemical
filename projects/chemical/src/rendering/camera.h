@@ -1,25 +1,28 @@
 #pragma once
 
 #include "util/transform.h"
-#include "core/glfw_wrapper.h"
 
 namespace Chemical {
+
+	namespace Core {
+		class GLFWWrapper;
+	}
 	class Camera {
 	public:
-		Camera(const GLFWWrapper* wrapper);
+		Camera(const Core::GLFWWrapper& wrapper);
 		glm::mat4 UpdateMovement();
 
-		bool GetEnabled();
+		bool GetEnabled() const;
 		void SetEnabled(bool enabled);
 	private:
-		const GLFWWrapper* _wrapper;
-		bool _enabled = true;
+		const Core::GLFWWrapper& m_wrapper;
+		bool m_enabled = true;
 
-		Transform _transform;
+		Transform m_transform;
 
-		float _cam_speed = 0.05f;
-		float _sensitivity = 0.08f;
+		float m_cam_speed = 0.05f;
+		float m_sensitivity = 0.08f;
 
-		double _oldx = 0, _oldy = 0;
+		double m_oldx = 0, m_oldy = 0;
 	};
 }

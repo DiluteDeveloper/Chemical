@@ -1,48 +1,64 @@
 #pragma once
 
-//#include "rendering/renderer.h"
 #include "event_dispatcher.h"
-//#include "gui/master.h"
-//#include "game.h"
 #include "glfw_wrapper.h"
 
+class GameLayer;
 namespace Chemical {
 
 	namespace Core {
 
+		class ApplicationData;
+
+		class ApplicationLayer {
+		public:
+			friend class ApplicationData;
+		protected:
+			const ApplicationData& m_app_data;
+		private:
+
+			explicit ApplicationLayer(ApplicationData& app_data) :
+				m_app_data(app_data) {}
+
+			virtual void InitializeLayer() {};
+			virtual void UpdateLayer() {};
+			virtual void DestroyLayer() {};
+
+		};
+
+		class GUILayer;
+		class RendererLayer;
+		class SceneLayer;
+
 		class ApplicationData {
 		public:
-			ApplicationData() :
-				m_dispatcher(std::make_shared<EventDispatcher>()),
-				m_glfw_wrapper(std::make_shared<GLFWWrapper>(m_dispatcher))
-				//m_renderer(std::make_shared<Renderer3D>()),
-				//m_gui(std::make_shared<GUI>()),
-				//m_game(std::make_shared<Game>()) 
-				 {}
+			friend class Application;
 
-			std::shared_ptr<EventDispatcher> GetDispatcher() {
-				return m_dispatcher;
-			}
-			std::shared_ptr<GLFWWrapper> GetGLFWWrapper() {
-				return m_glfw_wrapper;
-			}
-			/*std::shared_ptr<Renderer3D> GetRenderer() {
-				return m_renderer;
-			}
-			std::shared_ptr<GUI> GetGUI() {
-				return m_gui;
-			}
-			std::shared_ptr<Game> GetGame() {
-				return m_game;
-			}*/
+			// Returning by reference indicates that should not be nullptr.
+
+			const EventDispatcher& GetDispatcher() const;
+			const GLFWWrapper& GetGLFWWrapper() const;
+
+			const GUILayer& GetGUILayer() const;
+			const RendererLayer& GetRendererLayer() const;
+			const GameLayer& GetGameLayer() const;
+			SceneLayer& GetSceneLayer() const;
 
 		private:
 
-			std::shared_ptr<EventDispatcher> m_dispatcher;
-			std::shared_ptr<GLFWWrapper> m_glfw_wrapper;
-			//std::shared_ptr<Renderer3D> m_renderer;
-			//std::shared_ptr<GUI> m_gui;
-			//std::shared_ptr<Game> m_game;
+			ApplicationData();
+
+			void Update();
+
+			~ApplicationData();
+
+			GUILayer* m_gui_layer = nullptr;
+			RendererLayer* m_renderer_layer = nullptr;
+			SceneLayer* m_scene_layer = nullptr;
+			GameLayer* m_game_layer = nullptr;
+
+			EventDispatcher* m_dispatcher = nullptr;
+			GLFWWrapper* m_glfw_wrapper = nullptr;
 		};
 
 		class Application {
@@ -56,9 +72,7 @@ namespace Chemical {
 
 		private:
 
-			std::shared_ptr<ApplicationData> m_data;
-
-			//Scene* m_running_scene = nullptr;
+			ApplicationData* m_data;
 
 			bool m_running = true;
 

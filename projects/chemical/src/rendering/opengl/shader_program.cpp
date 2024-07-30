@@ -1,10 +1,7 @@
-#include "pch.h"
-
+#include <pch.h>
 #include <glad/glad.h>
 
 #include "shader_program.h"
-#include "core/defines.h"
-
 
 namespace Chemical {
 
@@ -24,7 +21,7 @@ namespace Chemical {
 				char infoLog[1024];
 				glGetShaderInfoLog(rendererID, 1024, nullptr, infoLog);
 
-				CHEMICAL_CUSTOM_PRINT(Severity::_ERROR, "Shader compilation failed: [{}] \n{}", (uint8_t)type, infoLog);
+				spdlog::error("Shader compilation failed: [{0}] \n{1}", (uint8_t)type, infoLog);
 
 				return;
 			}
@@ -58,7 +55,7 @@ namespace Chemical {
 				char infoLog[1024];
 				glGetProgramInfoLog(rendererID, 1024, nullptr, infoLog);
 
-				CHEMICAL_CUSTOM_PRINT(Severity::_ERROR, "ShaderProgram compilation failed: \n{}", infoLog);
+				spdlog::error("ShaderProgram compilation failed: \n{0}", infoLog);
 				return;
 			}
 			glValidateProgram(rendererID);

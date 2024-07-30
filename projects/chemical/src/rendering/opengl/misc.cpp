@@ -1,9 +1,9 @@
-#include "pch.h"
-
+#include <pch.h>
 #include <GLAD/glad.h>
+#include <spdlog/spdlog.h>
 
 #include "misc.h"
-#include "core/defines.h"
+
 
 namespace Chemical {
 
@@ -81,13 +81,13 @@ namespace Chemical {
 
 		const std::vector<VertexAttribute>& VertexLayout::GetAttributes() const {
 			if (attributes.size() == 0)
-				CHEMICAL_PRINT(Severity::_ERROR, "VertexLayout GetAttributes() is being called when VertexLayout does not contain any attributes.");
+				spdlog::warn("VertexLayout GetAttributes() is being called when VertexLayout does not contain any attributes.");
 			return attributes;
 		}
 
 		int32_t VertexLayout::GetStride() const {
 			if (stride == 0)
-				CHEMICAL_PRINT(Severity::_ERROR, "VertexLayout GetStride() is being called when stride is 0.");
+				spdlog::warn("VertexLayout GetStride() is being called when stride is 0.");
 			return stride;
 		}
 	}

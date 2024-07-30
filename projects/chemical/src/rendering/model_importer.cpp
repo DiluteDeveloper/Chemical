@@ -1,8 +1,9 @@
 #include <pch.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include <spdlog/spdlog.h>
+
 #include "model_importer.h"
-#include "core/defines.h"
 
 
 namespace Chemical {
@@ -48,7 +49,7 @@ namespace Chemical {
 		const aiScene* scene = importer.ReadFile(file_path, 
 			aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_OptimizeMeshes | aiProcess_MakeLeftHanded);
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-			CHEMICAL_CUSTOM_PRINT(Severity::_ERROR, "ImportModel failed with file path {}", file_path);
+			spdlog::error("ImportModel failed with file path {0}", file_path);
 			return std::nullopt;
 		}
 
