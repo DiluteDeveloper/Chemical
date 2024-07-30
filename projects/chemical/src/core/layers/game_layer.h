@@ -3,7 +3,7 @@
 #include "core/application.h"
 #include "world/scene.h"
 
-class GameLayer : protected Chemical::Core::ApplicationLayer {
+class GameLayer : public Chemical::Core::ApplicationLayer {
 
 private:
 	using Chemical::Core::ApplicationLayer::ApplicationLayer;

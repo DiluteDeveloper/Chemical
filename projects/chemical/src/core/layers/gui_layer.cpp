@@ -4,6 +4,7 @@
 #include <imgui/imgui_impl_opengl3.h>
 
 #include "gui_layer.h"
+#include "scene_layer.h"
 
 namespace Chemical {
 
@@ -29,16 +30,20 @@ namespace Chemical {
 
 			ImGui::Begin("Scene Hierarchy");                          // Create a window called "Hello, world!" and append into it.
 
-			//if (app_data->running_scene != nullptr) {
-			//	unsigned int i = 0;
-			//	for (const auto& mesh : app_data->running_scene->meshes) {
-			//		ImGui::InputFloat3(std::format("position {}", i).c_str(), &mesh->transform.position[0]);
-			//		ImGui::InputFloat3(std::format("rotation {}", i).c_str(), &mesh->transform.rotation[0]);
-			//		ImGui::InputFloat3(std::format("scale {}", i).c_str(), &mesh->transform.scale[0]);
-			//		i++;
-			//	}
-			//}
-			ImGui::Text("This is some useful text.");
+			Scene* scene = m_app_data.GetLayer<SceneLayer>("SceneLayer")->GetScene();
+			if (scene != nullptr) {
+				unsigned int i = 0;
+				for (const auto& mesh : scene->meshes) {
+					ImGui::Text("Mesh %d", i + 1);
+					ImGui::Indent();
+					ImGui::PushItemWidth(130.0f);
+					ImGui::InputFloat3(std::format("position##{}", i).c_str(), &mesh->transform.position[0]);
+					ImGui::InputFloat3(std::format("rotation##{}", i).c_str(), &mesh->transform.rotation[0]);
+					ImGui::InputFloat3(std::format("scale##{}", i).c_str(), &mesh->transform.scale[0]);
+					ImGui::Unindent();
+					i++;
+				}
+			}
 
 			ImGui::End();
 

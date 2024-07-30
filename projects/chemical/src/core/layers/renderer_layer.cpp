@@ -31,7 +31,7 @@ namespace Chemical {
 			projection = glm::perspectiveLH(glm::radians(90.0f), m_app_data.GetGLFWWrapper().GetWindowSizeX() / 
 				static_cast<float>(m_app_data.GetGLFWWrapper().GetWindowSizeY()), 0.1f, 1000.0f);
 
-			camera = std::make_unique<Camera>(m_app_data.GetGLFWWrapper());
+			camera = std::make_unique<Camera>(m_app_data.GetGLFWWrapper(), m_app_data.GetDispatcher());
 		}
 
 		void RendererLayer::UpdateLayer() {
@@ -41,7 +41,10 @@ namespace Chemical {
 			program->SetUniformMatrix4FV("projection", 1, false, &projection[0][0]);
 			program->SetUniformMatrix4FV("view", 1, false, &glm::inverse(camera->UpdateMovement())[0][0]);
 
-			const Scene* scene = m_app_data.GetSceneLayer().GetScene();
+			SceneLayer* scene_layer = m_app_data.GetLayer<SceneLayer>("SceneLayer");
+			if (scene_layer == nullptr)
+				return;
+			const Scene* scene = scene_layer->GetScene();
 			if (scene == nullptr)
 				return;
 			for (const std::shared_ptr<Mesh>& mesh : scene->meshes) {

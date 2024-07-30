@@ -10,7 +10,7 @@ namespace Chemical {
 	
 	namespace Core {
 
-		class RendererLayer : protected ApplicationLayer {
+		class RendererLayer : public ApplicationLayer {
 		private:
 			using ApplicationLayer::ApplicationLayer;
 			friend ApplicationData;

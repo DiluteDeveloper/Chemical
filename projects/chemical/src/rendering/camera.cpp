@@ -7,8 +7,10 @@
 
 namespace Chemical {
 
-	Camera::Camera(const Core::GLFWWrapper& wrapper) :
-		m_wrapper(wrapper) {}
+	Camera::Camera(const Core::GLFWWrapper& wrapper, Core::EventDispatcher& dispatcher) :
+		m_wrapper(wrapper) {
+		dispatcher.Subscribe(Core::InputEvent::descriptor, std::bind(&Camera::OnInput, this, std::placeholders::_1));
+	}
 
 	glm::mat4 Camera::UpdateMovement() {
 
@@ -57,13 +59,14 @@ namespace Chemical {
 		return matrix;
 	}
 
-	bool Camera::GetEnabled() const {
-		return m_enabled;
-	}
-	void Camera::SetEnabled(bool enabled) {
-		m_enabled = enabled;
-		if (enabled) {
-			glfwGetCursorPos(m_wrapper.GetGLFWWindow(), &m_oldx, &m_oldy);
+	void Camera::OnInput(const Core::Event& event) {
+		const Core::InputEvent& event_actual = static_cast<const Core::InputEvent&>(event);
+
+		if (event_actual.key == GLFW_KEY_ESCAPE && event_actual.action == GLFW_PRESS) {
+
+			if(!m_enabled)
+				glfwGetCursorPos(event_actual.window, &m_oldx, &m_oldy);
+			m_enabled = !m_enabled;
 		}
 	}
 

@@ -4,10 +4,11 @@
 #include "scene_layer.h"
 #include "rendering/model_importer.h"
 
+using namespace Chemical;
+
 void GameLayer::InitializeLayer() {
 
 	Chemical::ModelImporter importer;
-
 	auto m = importer.ImportModel("resources/models/stanford-dragon.fbx");
 	scene.AddMesh(m.value());
 
@@ -16,5 +17,7 @@ void GameLayer::InitializeLayer() {
 
 	m.value()->transform.position.x += 15;
 
-	m_app_data.GetSceneLayer().SetScene(&scene);
+	Core::SceneLayer* scene_layer = m_app_data.GetLayer<Core::SceneLayer>("SceneLayer");
+	if(scene_layer != nullptr)
+		scene_layer->SetScene(&scene);
 }

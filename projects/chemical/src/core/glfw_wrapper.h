@@ -43,7 +43,7 @@ namespace Chemical {
 		class GLFWWrapper {
 		public:
 
-			GLFWWrapper(EventDispatcher* dispatcher, unsigned int window_size_x = 720, unsigned int window_size_y = 480);
+			GLFWWrapper(EventDispatcher& dispatcher, unsigned int window_size_x = 720, unsigned int window_size_y = 480);
 			~GLFWWrapper();
 
 			unsigned int GetWindowSizeX() const;

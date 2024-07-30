@@ -1,9 +1,8 @@
-engine-dev 1.4
+engine-dev 1.41
 
 changelog:
 
-too many to count
-added layers
+well-integrated application layer system
 
 todo:
 

@@ -7,7 +7,7 @@ namespace Chemical {
 	namespace Core {
 
 
-		class GUILayer : protected ApplicationLayer {
+		class GUILayer : public ApplicationLayer {
 		private:
 			using ApplicationLayer::ApplicationLayer;
 			friend ApplicationData;

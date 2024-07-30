@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util/transform.h"
+#include "core/event_dispatcher.h"
 
 namespace Chemical {
 
@@ -9,14 +10,13 @@ namespace Chemical {
 	}
 	class Camera {
 	public:
-		Camera(const Core::GLFWWrapper& wrapper);
+		Camera(const Core::GLFWWrapper& wrapper, Core::EventDispatcher& dispatcher);
 		glm::mat4 UpdateMovement();
-
-		bool GetEnabled() const;
-		void SetEnabled(bool enabled);
 	private:
 		const Core::GLFWWrapper& m_wrapper;
 		bool m_enabled = true;
+
+		void OnInput(const Core::Event& event);
 
 		Transform m_transform;
 

@@ -3,7 +3,6 @@
 #include "event_dispatcher.h"
 #include "glfw_wrapper.h"
 
-class GameLayer;
 namespace Chemical {
 
 	namespace Core {
@@ -15,6 +14,8 @@ namespace Chemical {
 			friend class ApplicationData;
 		protected:
 			const ApplicationData& m_app_data;
+
+			using LayerName = std::string;
 		private:
 
 			explicit ApplicationLayer(ApplicationData& app_data) :
@@ -26,23 +27,23 @@ namespace Chemical {
 
 		};
 
-		class GUILayer;
-		class RendererLayer;
-		class SceneLayer;
-
 		class ApplicationData {
 		public:
 			friend class Application;
 
 			// Returning by reference indicates that should not be nullptr.
 
-			const EventDispatcher& GetDispatcher() const;
-			const GLFWWrapper& GetGLFWWrapper() const;
+			EventDispatcher& GetDispatcher() const;
+			GLFWWrapper& GetGLFWWrapper() const;
 
-			const GUILayer& GetGUILayer() const;
-			const RendererLayer& GetRendererLayer() const;
-			const GameLayer& GetGameLayer() const;
-			SceneLayer& GetSceneLayer() const;
+			template<typename LayerType>
+			LayerType* GetLayer(ApplicationLayer::LayerName layer_name) const {
+
+				auto get = m_layer_ids.find(layer_name);
+				if (get != m_layer_ids.end())
+					return static_cast<LayerType*>(m_layers[get->second]);
+				return nullptr;
+			}
 
 		private:
 
@@ -52,10 +53,16 @@ namespace Chemical {
 
 			~ApplicationData();
 
-			GUILayer* m_gui_layer = nullptr;
-			RendererLayer* m_renderer_layer = nullptr;
-			SceneLayer* m_scene_layer = nullptr;
-			GameLayer* m_game_layer = nullptr;
+			template<typename LayerType>
+			void AddLayer(ApplicationLayer::LayerName layer_name) {
+				ApplicationLayer* layer = static_cast<ApplicationLayer*>(new LayerType(*this));
+				layer->InitializeLayer();
+				m_layers.emplace_back(layer);
+				m_layer_ids[layer_name] = m_layers.size() - 1;
+			}
+
+			std::vector<ApplicationLayer*> m_layers;
+			std::unordered_map<ApplicationLayer::LayerName, size_t> m_layer_ids;
 
 			EventDispatcher* m_dispatcher = nullptr;
 			GLFWWrapper* m_glfw_wrapper = nullptr;

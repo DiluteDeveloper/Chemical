@@ -73,10 +73,10 @@ namespace Chemical {
 	void GLFWWrapper::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 		m_dispatcher->Post(InputEvent(window, key, scancode, action, mods));
 	}
-	GLFWWrapper::GLFWWrapper(EventDispatcher* dispatcher, unsigned int window_size_x, unsigned int window_size_y) :
+	GLFWWrapper::GLFWWrapper(EventDispatcher& dispatcher, unsigned int window_size_x, unsigned int window_size_y) :
 		m_window_size_x(window_size_x), m_window_size_y(window_size_y) {
 
-		m_dispatcher = dispatcher;
+		m_dispatcher = &dispatcher;
 
 		// GLFW INITIALIZATION ----------------------------
 
