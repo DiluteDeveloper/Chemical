@@ -6,9 +6,10 @@ using namespace Chemical::Core;
 
 int main(int argc, char* argv[]) {
 
+
 	Application app;
 
-	while (app.is_running()) {
+	while (app.IsRunning()) {
 
 		app.Update();
 	}

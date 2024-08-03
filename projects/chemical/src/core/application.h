@@ -11,17 +11,19 @@ namespace Chemical {
 
 		class ApplicationLayer {
 		public:
-			friend class ApplicationData;
-		protected:
-			const ApplicationData& m_app_data;
-
 			using LayerName = std::string;
+
+			bool IsInitialized() {
+				return m_initialised;
+			}
+
 		private:
+			friend class ApplicationData;
 
-			explicit ApplicationLayer(ApplicationData& app_data) :
-				m_app_data(app_data) {}
+			bool m_initialised = false;
 
-			virtual void InitializeLayer() {};
+			// store values if needed in Update or Destroy
+			virtual void InitializeLayer(ApplicationData& appData) {};
 			virtual void UpdateLayer() {};
 			virtual void DestroyLayer() {};
 
@@ -29,43 +31,45 @@ namespace Chemical {
 
 		class ApplicationData {
 		public:
-			friend class Application;
 
-			// Returning by reference indicates that should not be nullptr.
+			EventDispatcher& GetDispatcher();
+			GLFWWrapper& GetGLFWWrapper();
 
-			EventDispatcher& GetDispatcher() const;
-			GLFWWrapper& GetGLFWWrapper() const;
-
+			// can return nullptr
 			template<typename LayerType>
-			LayerType* GetLayer(ApplicationLayer::LayerName layer_name) const {
+			LayerType* GetLayer(ApplicationLayer::LayerName layerName) {
 
-				auto get = m_layer_ids.find(layer_name);
-				if (get != m_layer_ids.end())
-					return static_cast<LayerType*>(m_layers[get->second]);
+				auto get = m_layerIDs.find(layerName);
+				if (get != m_layerIDs.end())
+					return static_cast<LayerType*>(m_layers[get->second].get());
 				return nullptr;
 			}
 
 		private:
+			friend class Application;
 
 			ApplicationData();
 
 			void Update();
 
-			~ApplicationData();
+			// calls InitializeLayer on all layers
+			void InitializeLayers();
+
+			// calls DestroyLayer on all layers
+			void DestroyLayers();
 
 			template<typename LayerType>
-			void AddLayer(ApplicationLayer::LayerName layer_name) {
-				ApplicationLayer* layer = static_cast<ApplicationLayer*>(new LayerType(*this));
-				layer->InitializeLayer();
-				m_layers.emplace_back(layer);
-				m_layer_ids[layer_name] = m_layers.size() - 1;
+			void AddLayer(ApplicationLayer::LayerName layerName) {
+				m_layers.emplace_back(std::make_unique<LayerType>());
+				m_layerIDs[layerName] = m_layers.size() - 1;
 			}
 
-			std::vector<ApplicationLayer*> m_layers;
-			std::unordered_map<ApplicationLayer::LayerName, size_t> m_layer_ids;
+			// unique_ptr is used so each element can refer to different memory
+			std::vector<std::unique_ptr<ApplicationLayer>> m_layers;
+			std::unordered_map<ApplicationLayer::LayerName, size_t> m_layerIDs;
 
-			EventDispatcher* m_dispatcher = nullptr;
-			GLFWWrapper* m_glfw_wrapper = nullptr;
+			EventDispatcher m_dispatcher;
+			GLFWWrapper m_GLFWWrapper;
 		};
 
 		class Application {
@@ -74,7 +78,7 @@ namespace Chemical {
 
 			void Update();
 
-			bool is_running() const;
+			bool IsRunning() const;
 
 		private:
 

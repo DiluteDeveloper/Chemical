@@ -73,8 +73,8 @@ namespace Chemical {
 	void GLFWWrapper::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 		m_dispatcher->Post(InputEvent(window, key, scancode, action, mods));
 	}
-	GLFWWrapper::GLFWWrapper(EventDispatcher& dispatcher, unsigned int window_size_x, unsigned int window_size_y) :
-		m_window_size_x(window_size_x), m_window_size_y(window_size_y) {
+	GLFWWrapper::GLFWWrapper(EventDispatcher& dispatcher, unsigned int windowSizeX, unsigned int windowSizeY) :
+		m_windowSizeX(windowSizeX), m_windowSizeY(windowSizeY) {
 
 		m_dispatcher = &dispatcher;
 
@@ -102,7 +102,7 @@ namespace Chemical {
 
 		// GLFW WINDOW SETUP -------------------------------------------------
 
-		m_window = glfwCreateWindow(window_size_x, window_size_y, "Chemical", NULL, NULL);
+		m_window = glfwCreateWindow(windowSizeX, windowSizeY, "Chemical", NULL, NULL);
 
 		if (!m_window) {
 			spdlog::critical("GLFW window creation failed.");
@@ -168,14 +168,14 @@ namespace Chemical {
 		}
 
 		unsigned int GLFWWrapper::GetWindowSizeX() const {
-			return m_window_size_x;
+			return m_windowSizeX;
 		}
 		unsigned int GLFWWrapper::GetWindowSizeY() const {
-			return m_window_size_y;
+			return m_windowSizeY;
 		}
 
 		const std::string& GLFWWrapper::GetGLSLVersion() const {
-			return m_glsl_version;
+			return m_GLSLVersion;
 		}
 		GLFWwindow* GLFWWrapper::GetGLFWWindow() const {
 			return m_window;

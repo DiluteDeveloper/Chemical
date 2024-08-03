@@ -8,52 +8,51 @@
 
 namespace Chemical {
 
-	using namespace Scene;
-	std::unique_ptr<Mesh3D> ModelImporter::ProcessMesh(aiMesh* in_mesh) {
+	GeneratedMesh3D ModelImporter::ProcessMesh(aiMesh* f_mesh) {
 
-		std::unique_ptr<Mesh3D> mesh = std::make_unique<Scene::Mesh3D>();
-		for (unsigned int i = 0; i < in_mesh->mNumVertices; i++)
+		GeneratedMesh3D mesh;
+		for (unsigned int i = 0; i < f_mesh->mNumVertices; i++)
 		{
 			glm::vec3 pos;
-			pos.x = in_mesh->mVertices[i].x;
-			pos.y = in_mesh->mVertices[i].y;
-			pos.z = in_mesh->mVertices[i].z;
+			pos.x = f_mesh->mVertices[i].x;
+			pos.y = f_mesh->mVertices[i].y;
+			pos.z = f_mesh->mVertices[i].z;
 			//glm::vec2 tex = glm::vec2(0, 0);
 			//if (in_mesh->mTextureCoords[0]) {
 			//	tex.x = in_mesh->mTextureCoords[0][i].x;
 			//	tex.y = in_mesh->mTextureCoords[0][i].y;
 			//}
 			glm::vec3 normal;
-			normal.x = in_mesh->mNormals[i].x;
-			normal.y = in_mesh->mNormals[i].y;
-			normal.z = in_mesh->mNormals[i].z;
+			normal.x = f_mesh->mNormals[i].x;
+			normal.y = f_mesh->mNormals[i].y;
+			normal.z = f_mesh->mNormals[i].z;
 
-			mesh->vertices.emplace_back(Mesh3D::Vertex(pos, normal));
+			mesh.vertices.emplace_back(GeneratedMesh3D::Vertex(pos, normal));
 		}
 
-		for (unsigned int i = 0; i < in_mesh->mNumFaces; i++)
+		for (unsigned int i = 0; i < f_mesh->mNumFaces; i++)
 		{
-			aiFace face = in_mesh->mFaces[i];
+			aiFace face = f_mesh->mFaces[i];
 			for (unsigned int j = 0; j < face.mNumIndices; j++)
 			{
-				mesh->indices.emplace_back(face.mIndices[j]);
+				mesh.indices.emplace_back(face.mIndices[j]);
 			}
 		}
-		mesh->GenerateMesh();
+		mesh.GenerateMesh();
 		return mesh;
 
 	}
 
-	std::unique_ptr<Mesh3D> ModelImporter::ImportModel(const std::string& file_path) {
+	std::unique_ptr<GeneratedMesh3D> ModelImporter::ImportModel(const std::string& filePath) {
 		
-		const aiScene* scene = importer.ReadFile(file_path, 
+		const aiScene* scene = importer.ReadFile(filePath, 
 			aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_OptimizeMeshes | aiProcess_MakeLeftHanded);
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-			spdlog::error("ImportModel failed with file path {0}", file_path);
+			spdlog::error("ImportModel failed with file path {0}", filePath);
 			return nullptr;
 		}
 
-		aiMesh* ai_mesh = scene->mMeshes[0];
-		return ProcessMesh(ai_mesh);
+		aiMesh* aiMesh = scene->mMeshes[0];
+		return std::make_unique<GeneratedMesh3D>(ProcessMesh(aiMesh));
 	}
 }

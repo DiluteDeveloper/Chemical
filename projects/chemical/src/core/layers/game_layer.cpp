@@ -6,17 +6,20 @@
 
 using namespace Chemical;
 
-void GameLayer::InitializeLayer() {
+void GameLayer::InitializeLayer(Chemical::Core::ApplicationData& appData) {
 
-	Chemical::ModelImporter importer;
-	root = importer.ImportModel("resources/models/stanford-dragon.fbx");
-	if (root != nullptr)
-		m_app_data.GetLayer<Core::SceneLayer>("SceneLayer")->SetRoot(&root->object);
+	Core::SceneLayer* sceneLayer = appData.GetLayer<Core::SceneLayer>("SceneLayer");
+	if (sceneLayer != nullptr) {
+		ModelImporter importer;
 
-	camera_3d = std::make_unique<Scene::Camera3D>(m_app_data.GetGLFWWrapper(), m_app_data.GetDispatcher());
-	m_app_data.GetLayer<Core::SceneLayer>("SceneLayer")->SetCamera3D(camera_3d.get());
+		std::unique_ptr<GeneratedMesh3D> mesh = importer.ImportModel("resources/models/stanford-dragon.fbx");
 
-	//Core::SceneLayer* scene_layer = m_app_data.GetLayer<Core::SceneLayer>("SceneLayer");
-	//if(scene_layer != nullptr)
-	//	scene_layer->SetScene(&scene);
+		if (mesh != nullptr) {
+			sceneLayer->scene->AddMesh3D(std::move(Mesh3D(std::move(*mesh.get()))));
+		}
+
+	}
+
+
+
 };

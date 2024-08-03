@@ -7,59 +7,53 @@
 #include "util/filestream.h"
 #include "core/glfw_wrapper.h"
 
-#include "scene_objects/mesh_3d.h"
-
 
 namespace Chemical {
 
 	namespace Core {
-		using namespace Scene;
 
-		void RendererLayer::InitializeLayer() {
-			Mesh3D::Vertex::InitializeVertexLayout();
+		void RendererLayer::InitializeLayer(ApplicationData& appdata) {
+
+			m_sceneLayer = appdata.GetLayer<SceneLayer>("SceneLayer");
+			if (m_sceneLayer == nullptr)
+				throw std::exception();
+
+
+			GeneratedMesh3D::Vertex::InitializeVertexLayout();
 
 			Util::FileStream stream;
 
-			std::string vertex_shader_source = stream.ReadFile("resources/shaders/test_shader.vert").value();
-			std::string fragment_shader_source = stream.ReadFile("resources/shaders/test_shader.frag").value();
+			std::string vertexShaderSource = stream.ReadFile("resources/shaders/test_shader.vert").value();
+			std::string fragmentShaderSource = stream.ReadFile("resources/shaders/test_shader.frag").value();
 
-			OpenGL::Shader vertex_shader(vertex_shader_source.c_str(), OpenGL::ShaderType::VERTEX_SHADER);
-			OpenGL::Shader fragment_shader(fragment_shader_source.c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
+			OpenGL::Shader vertexShader(vertexShaderSource.c_str(), OpenGL::ShaderType::VERTEX_SHADER);
+			OpenGL::Shader fragmentShader(fragmentShaderSource.c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
 
-			program = std::make_unique<OpenGL::ShaderProgram>(std::initializer_list<
-				const OpenGL::Shader*>{ &vertex_shader, & fragment_shader }, Mesh3D::Vertex::vertex_layout);
+			m_program = std::make_unique<OpenGL::ShaderProgram>(std::initializer_list<
+				const OpenGL::Shader*>{ &vertexShader, & fragmentShader }, GeneratedMesh3D::Vertex::vertexLayout);
 
 			// perspectiveLH converts left handed input data to opengls coordinate system
-			projection = glm::perspectiveLH(glm::radians(90.0f), m_app_data.GetGLFWWrapper().GetWindowSizeX() / 
-				static_cast<float>(m_app_data.GetGLFWWrapper().GetWindowSizeY()), 0.1f, 1000.0f);
+			m_projection = glm::perspectiveLH(glm::radians(90.0f), appdata.GetGLFWWrapper().GetWindowSizeX() / 
+				static_cast<float>(appdata.GetGLFWWrapper().GetWindowSizeY()), 0.1f, 1000.0f);
 		}
 
 		void RendererLayer::UpdateLayer() {
-			SceneLayer* scene_layer = m_app_data.GetLayer<SceneLayer>("SceneLayer");
-			if (scene_layer == nullptr)
-				return;
-			const Object* root = scene_layer->GetRoot();
-			if (root == nullptr)
-				return;
-			if (root->GetSuperiorDescriptor() != "Mesh3D")
-				return;
-			const Mesh3D& root_mesh = root->GetSuperior<Mesh3D>();
-			Camera3D* camera = scene_layer->GetCamera3D();
-			if (camera == nullptr)
-				return;
+			
+			const Camera3D& camera = m_sceneLayer->scene->GetCamera3D();
+			const Mesh3D& mesh = m_sceneLayer->scene->GetMeshes3D()[0];
 
-			program->BindProgram();
+			m_program->BindProgram();
 
-			program->SetUniformMatrix4FV("projection", 1, false, &projection[0][0]);
-			program->SetUniformMatrix4FV("view", 1, false, &glm::inverse(camera->UpdateMovement())[0][0]);
+			m_program->SetUniformMatrix4FV("projection", 1, false, &m_projection[0][0]);
+			m_program->SetUniformMatrix4FV("view", 1, false, &glm::inverse(camera.GetView())[0][0]);
 
-			program->SetUniformMatrix4FV("model", 1, false, &root_mesh.object_3d.transform.TransformToMat4()[0][0]);
-			root_mesh.v_array.Bind();
-			root_mesh.v_array.DrawElements(root_mesh.draw_info);
+			m_program->SetUniformMatrix4FV("model", 1, false, &mesh.transform.TransformToMat4()[0][0]);
+			mesh.genMesh.vArray.Bind();
+			mesh.genMesh.vArray.DrawElements(mesh.genMesh.drawInfo);
 
-			program->SetUniformMatrix4FV("model", 1, false, &root_mesh.object_3d.transform.TransformToMat4()[0][0]);
-			root_mesh.v_array.Bind();
-			root_mesh.v_array.DrawElements(root_mesh.draw_info);
+			m_program->SetUniformMatrix4FV("model", 1, false, &mesh.transform.TransformToMat4()[0][0]);
+			mesh.genMesh.vArray.Bind();
+			mesh.genMesh.vArray.DrawElements(mesh.genMesh.drawInfo);
 			/*for (const std::shared_ptr<Mesh>& mesh : scene->meshes) {
 
 				program->SetUniformMatrix4FV("model", 1, false, &mesh->transform.TransformToMat4()[0][0]);

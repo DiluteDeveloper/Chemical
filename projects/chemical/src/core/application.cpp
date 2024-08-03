@@ -1,7 +1,6 @@
 #include <pch.h>
 #include <GLAD/glad.h>
 #include <GLFW/glfw3.h>
-#include <ranges>
 
 #include "application.h"
 #include "layers/renderer_layer.h"
@@ -13,21 +12,37 @@ namespace Chemical {
 
 	namespace Core {
 
-		EventDispatcher& ApplicationData::GetDispatcher() const {
-			return *m_dispatcher;
+		
+		EventDispatcher& ApplicationData::GetDispatcher() {
+			return m_dispatcher;
 		}
-		GLFWWrapper& ApplicationData::GetGLFWWrapper() const {
-			return *m_glfw_wrapper;
+		
+		GLFWWrapper& ApplicationData::GetGLFWWrapper() {
+			return m_GLFWWrapper;
 		}
 
-		ApplicationData::ApplicationData() {
-			m_dispatcher = new EventDispatcher();
-			m_glfw_wrapper = new GLFWWrapper(*m_dispatcher);
+		void ApplicationData::InitializeLayers() {
+			for (auto& layer : m_layers) {
+				layer->InitializeLayer(*this);
+				layer->m_initialised = true;
+			}
+		}
+
+		void ApplicationData::DestroyLayers() {
+			for (auto& layer : m_layers) {
+				layer->DestroyLayer();
+			}
+		}
+
+		ApplicationData::ApplicationData() :
+		m_dispatcher(), m_GLFWWrapper(m_dispatcher) {
 
 			AddLayer<RendererLayer>("RendererLayer");
 			AddLayer<SceneLayer>("SceneLayer");
 			AddLayer<GUILayer>("GUILayer");
 			AddLayer<GameLayer>("GameLayer");
+
+			InitializeLayers();
 		}
 
 		void ApplicationData::Update() {
@@ -36,20 +51,10 @@ namespace Chemical {
 			}
 		}
 
-		ApplicationData::~ApplicationData() {
-			using namespace std::ranges;
-			for (auto& layer : views::reverse(m_layers)) {
-				delete(layer); // may have to inverse iterate
-			}
-
-			delete(m_glfw_wrapper);
-			delete(m_dispatcher);
-		}
-
 		Application::Application() {
 
-			m_data.m_dispatcher->Subscribe(WindowCloseEvent::descriptor, std::bind(&Application::OnWindowClose, this, std::placeholders::_1));
-			m_data.m_dispatcher->Subscribe(InputEvent::descriptor, std::bind(&Application::OnInput, this, std::placeholders::_1));
+			m_data.m_dispatcher.Subscribe(WindowCloseEvent::descriptor, std::bind(&Application::OnWindowClose, this, std::placeholders::_1));
+			m_data.m_dispatcher.Subscribe(InputEvent::descriptor, std::bind(&Application::OnInput, this, std::placeholders::_1));
 
 		}
 
@@ -58,7 +63,7 @@ namespace Chemical {
 
 			m_data.Update();
 
-			glfwSwapBuffers(m_data.m_glfw_wrapper->GetGLFWWindow());
+			glfwSwapBuffers(m_data.m_GLFWWrapper.GetGLFWWindow());
 
 			glfwPollEvents();
 		}
@@ -79,7 +84,7 @@ namespace Chemical {
 			}
 		}
 
-		bool Application::is_running() const {
+		bool Application::IsRunning() const {
 			return m_running;
 		}
 	}

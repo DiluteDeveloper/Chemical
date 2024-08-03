@@ -9,10 +9,8 @@ namespace Chemical {
 
 		class GUILayer : public ApplicationLayer {
 		private:
-			using ApplicationLayer::ApplicationLayer;
-			friend ApplicationData;
 
-			void InitializeLayer() override;
+			void InitializeLayer(ApplicationData& appData) override;
 			void UpdateLayer() override;
 			void DestroyLayer() override;
 		};

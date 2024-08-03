@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/application.h"
-#include "core/glfw_wrapper.h"
+#include "core/layers/scene_layer.h"
 #include "rendering/opengl/shader_program.h"
 
 namespace Chemical {
@@ -10,18 +10,16 @@ namespace Chemical {
 
 		class RendererLayer : public ApplicationLayer {
 		private:
-			using ApplicationLayer::ApplicationLayer;
-			friend ApplicationData;
 
-			void InitializeLayer() override;
+			// only valid after initialization
+			SceneLayer* m_sceneLayer = nullptr;
+
+			void InitializeLayer(ApplicationData& appData) override;
 			void UpdateLayer() override;
 
-			glm::mat4 view = glm::mat4(1.0f);
-			OpenGL::VertexLayout layout;
+			glm::mat4 m_projection = glm::mat4(1.0f);
 
-			glm::mat4 projection = glm::mat4(1.0f);
-
-			std::unique_ptr<OpenGL::ShaderProgram> program;
+			std::unique_ptr<OpenGL::ShaderProgram> m_program;
 		};
 	}
 

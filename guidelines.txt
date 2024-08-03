@@ -3,8 +3,11 @@ Naming conventions:
 PascalCase:
 namespaces, classes, structs, classes, functions, enums
 
+CamelCase:
+variables
+
 snake_case:
-variables, folders, filenames
+folders, filenames
 
 ALL_CAPS:
 
@@ -16,8 +19,6 @@ prefix with m_
 
 
 class functions should be used to act upon its own self-contained data.
-It's data should not be able to be modified by any other class 
-haphazardly, getters and setters should be used.
 classes should have a single responsibility; single responsibility principle
 
 structs should be used for data-only containers, only functionality

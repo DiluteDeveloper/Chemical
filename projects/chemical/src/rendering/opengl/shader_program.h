@@ -71,12 +71,15 @@ namespace Chemical {
 			ShaderProgram(std::initializer_list<const Shader*> shaders, const VertexLayout& layout);
 
 			ShaderProgram(ShaderProgram&& other) noexcept :
-				rendererID(std::move(other.rendererID)), uniforms(std::move(other.uniforms)) {}
+				rendererID(std::move(other.rendererID)), uniforms(std::move(other.uniforms)) {
+				other.rendererID = 0;
+			}
 
 			ShaderProgram(const ShaderProgram&) = delete;
 			ShaderProgram& operator =(const ShaderProgram&) = delete;
 			ShaderProgram& operator=(ShaderProgram&& other) noexcept {
 				this->rendererID = std::move(other.rendererID);
+				other.rendererID = 0;
 				this->uniforms = std::move(other.uniforms);
 				return *this;
 			}

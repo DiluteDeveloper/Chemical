@@ -43,7 +43,7 @@ namespace Chemical {
 		class GLFWWrapper {
 		public:
 
-			GLFWWrapper(EventDispatcher& dispatcher, unsigned int window_size_x = 720, unsigned int window_size_y = 480);
+			GLFWWrapper(EventDispatcher& dispatcher, unsigned int windowSizeX = 720, unsigned int windowSizeY = 480);
 			~GLFWWrapper();
 
 			unsigned int GetWindowSizeX() const;
@@ -57,10 +57,10 @@ namespace Chemical {
 
 			static EventDispatcher* m_dispatcher;
 
-			unsigned int m_window_size_x = 0;
-			unsigned int m_window_size_y = 0;
+			unsigned int m_windowSizeX = 0;
+			unsigned int m_windowSizeY = 0;
 
-			std::string m_glsl_version = "#version 460";
+			std::string m_GLSLVersion = "#version 460";
 			GLFWwindow* m_window = nullptr;
 		};
 	}

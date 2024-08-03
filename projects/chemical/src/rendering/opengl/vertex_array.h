@@ -70,11 +70,14 @@ namespace Chemical {
 			VertexArray();
 
 			VertexArray(VertexArray&& other) noexcept :
-				rendererID(std::move(other.rendererID)) {}
+				rendererID(std::move(other.rendererID)) {
+				other.rendererID = 0;
+			}
 			VertexArray(const VertexArray&) = delete;
 			VertexArray& operator=(const VertexArray&) = delete;
 			VertexArray& operator=(VertexArray&& other) noexcept {
 				this->rendererID = std::move(other.rendererID);
+				other.rendererID = 0;
 				return *this;
 			}
 
