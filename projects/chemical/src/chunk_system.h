@@ -6,27 +6,9 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-// limit of 255 due to uint8_t iterators.
-// determines the X and Z dimensions of every chunk.
-// do not change without modifying shader code.
-#define CHUNK_SIZE 16
-
-// no easily reachable limit.
-// determines the y dimension of a chunk used for iterating over.
-// do not change without modifying shader code.
-#define CHUNK_HEIGHT 400
+#include "chunk/chunk.h"
 
 namespace Chemical {
-
-	// a named index into the block registry in chunk_shader.
-	enum BlockType {
-		Air = 0,
-		Stone = 1,
-		Dirt = 2,
-		Grass = 3,
-		Bedrock = 4,
-		OakLog = 5,
-	};
 
 	struct ChunkVertex {
 		uint32_t bit_data = 0;
@@ -85,12 +67,12 @@ namespace Chemical {
 
 	class ChunkRenderer {
 
-		std::unique_ptr<OpenGL::ShaderProgram> chunk_shader;
-
 		// contains all chunks faces
 		//OpenGL::Buffer chunk_ssbo;
 		//OpenGL::VertexArray dummyVArray;
 	public:
+
+		std::unique_ptr<OpenGL::ShaderProgram> chunk_shader;
 
 		// performs setup of chunk_shader and its projection matrix
 		ChunkRenderer();
@@ -131,8 +113,6 @@ namespace Chemical {
 	// loads in chunks based on player_transform 
 	class ChunkLoader {
 
-		ChunkRenderer renderer;
-
 
 		// chunk coordinate mapping [x][z] of all loaded and rendered chunks
 		std::unordered_map<int32_t, std::unordered_map<int32_t, std::unique_ptr<Chunk>>> loaded_chunks;
@@ -146,6 +126,8 @@ namespace Chemical {
 		uint32_t seed = 0;
 
 	public:
+
+		ChunkRenderer renderer;
 
 		bool doChunkLoading = true;
 

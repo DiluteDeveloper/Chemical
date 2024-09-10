@@ -11,11 +11,6 @@
 
 namespace Chemical {
 
-	// converts 3D block coordinates to 1D
-	uint32_t Block3Dto1D(uint8_t x, uint16_t y, uint8_t z) {
-		return ((y * CHUNK_SIZE * CHUNK_SIZE) + (z * CHUNK_SIZE) + x);
-	}
-
 	Chunk::Chunk(const glm::ivec2& origin, uint32_t seed) {
 		const siv::PerlinNoise perlin{seed};
 		const siv::PerlinNoise perlin2{seed + 50000};

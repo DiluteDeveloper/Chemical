@@ -7,6 +7,9 @@
 
 #include "chunk_system.h"
 
+#include "chunk/chunk.h"
+#include "chunk/noise.h"
+
 #include "graphics/opengl/texture.h"
 
 #include <stb_image/stb_image.h>
@@ -239,7 +242,7 @@ int main(int argc, char* argv[]) {
 	std::random_device rd;
 	uint32_t seed = rd();
 
-	ChunkLoader loader(seed, 16);
+	ChunkLoader loader(seed, 4);
 
 	glfwGetCursorPos(window, &oldx, &oldy);
 
@@ -346,6 +349,27 @@ int main(int argc, char* argv[]) {
 	logside.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MIN_FILTER, GL_NEAREST);
 	logside.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MAG_FILTER, GL_NEAREST);
 
+	// --------------------------
+
+	ChunkData chunk_data;
+	ChunkData chunk_data2;
+
+	const siv::PerlinNoise noise_gen{ 505 };
+
+	ChunkHeightMapData chunk_heightmap_data = GenerateChunkHeightMapData(noise_gen, glm::vec2(0, 0));
+	ChunkHeightMapData chunk_heightmap_data2 = GenerateChunkHeightMapData(noise_gen, glm::vec2(1, 0));
+
+	GenerateTerrainChunkBlockData(chunk_data.blocks, chunk_heightmap_data);
+	GenerateTerrainChunkBlockData(chunk_data2.blocks, chunk_heightmap_data2);
+
+	chunk_data.edges[1] = &chunk_data2;
+	chunk_data2.edges[3] = &chunk_data;
+
+	ChunkMeshData chunk_mesh_data = GenerateChunkMeshData(chunk_data, true, 1.2f);
+	ChunkMeshData chunk_mesh_data2 = GenerateChunkMeshData(chunk_data2, true, 1.2f);
+
+
+
 	// MORE TESTING CODE --------------------------------------------
 
 	while (!glfwWindowShouldClose(window)) {
@@ -367,7 +391,21 @@ int main(int argc, char* argv[]) {
 
 		UpdatePlayer();
 
-		loader.Update();
+		//loader.Update();
+
+		loader.renderer.chunk_shader->BindProgram();
+		loader.renderer.chunk_shader->SetUniformMatrix4FV("v_view", 1, false, &glm::inverse(Core::player_transform.GetTransform())[0][0]);
+
+		loader.renderer.chunk_shader->SetUniform2IV("v_chunk_origin", 1, &glm::ivec2(0, 0)[0]);
+
+		chunk_mesh_data.v_array.Bind();
+		chunk_mesh_data.v_array.DrawArrays(chunk_mesh_data.info);
+
+
+		loader.renderer.chunk_shader->SetUniform2IV("v_chunk_origin", 1, &glm::ivec2(16, 0)[0]);
+
+		chunk_mesh_data2.v_array.Bind();
+		chunk_mesh_data2.v_array.DrawArrays(chunk_mesh_data2.info);
 
 		glfwSwapBuffers(window);
 
