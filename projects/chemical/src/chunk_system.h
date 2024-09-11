@@ -6,7 +6,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#include "chunk/chunk.h"
+#include "world/chunk.h"
 
 namespace Chemical {
 

@@ -2,7 +2,7 @@
 
 namespace Chemical {
 	// a named index into the block registry in chunk_shader.
-	enum class BlockType {
+	enum BlockType:uint8_t {
 		Air = 0,
 		Stone = 1,
 		Dirt = 2,

@@ -5,12 +5,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <random>
 
-#include "chunk_system.h"
-
-#include "chunk/chunk.h"
-#include "chunk/noise.h"
+#include "world/chunk.h"
+#include "world/noise.h"
+#include "world/chunk_loader.h"
+#include "world/chunk_renderer.h"
 
 #include "graphics/opengl/texture.h"
+#include "util/filestream.h"
 
 #include <stb_image/stb_image.h>
 
@@ -92,7 +93,7 @@ void APIENTRY message_callback(GLenum source, GLenum type, GLuint id, GLenum sev
 #endif
 
 
-float camSpeed = 0.1f;
+float camSpeed = 5.0f;
 float sensitivity = 0.08f;
 // movement controls
 double oldx, oldy;
@@ -242,8 +243,6 @@ int main(int argc, char* argv[]) {
 	std::random_device rd;
 	uint32_t seed = rd();
 
-	ChunkLoader loader(seed, 4);
-
 	glfwGetCursorPos(window, &oldx, &oldy);
 
 	int width=0, height=0, channels=0;
@@ -351,24 +350,18 @@ int main(int argc, char* argv[]) {
 
 	// --------------------------
 
-	ChunkData chunk_data;
-	ChunkData chunk_data2;
+	ChunkGridMap c_map = GenerateChunkSquare(ChunkGridOrigin{ 0,0 }, 80, 80);
 
-	const siv::PerlinNoise noise_gen{ 505 };
+	OpenGL::Shader vertex_chunk_shader(Util::ReadFile("resources/shaders/chunk_shader.vert").c_str(), OpenGL::ShaderType::VERTEX_SHADER);
+	OpenGL::Shader fragment_chunk_shader(Util::ReadFile("resources/shaders/chunk_shader.frag").c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
 
-	ChunkHeightMapData chunk_heightmap_data = GenerateChunkHeightMapData(noise_gen, glm::vec2(0, 0));
-	ChunkHeightMapData chunk_heightmap_data2 = GenerateChunkHeightMapData(noise_gen, glm::vec2(1, 0));
+	OpenGL::VertexLayout vertex_layout;
+	vertex_layout.AddAttribute(OpenGL::VertexAttribute{ 1, 0, OpenGL::DataType::UNSIGNED_INT, OpenGL::DataTransformation::INT });
 
-	GenerateTerrainChunkBlockData(chunk_data.blocks, chunk_heightmap_data);
-	GenerateTerrainChunkBlockData(chunk_data2.blocks, chunk_heightmap_data2);
+	std::unique_ptr<OpenGL::ShaderProgram> chunk_shader = std::make_unique<OpenGL::ShaderProgram>(std::initializer_list<
+		const OpenGL::Shader*>{ &vertex_chunk_shader, & fragment_chunk_shader }, vertex_layout);
 
-	chunk_data.edges[1] = &chunk_data2;
-	chunk_data2.edges[3] = &chunk_data;
-
-	ChunkMeshData chunk_mesh_data = GenerateChunkMeshData(chunk_data, true, 1.2f);
-	ChunkMeshData chunk_mesh_data2 = GenerateChunkMeshData(chunk_data2, true, 1.2f);
-
-
+	chunk_shader->SetUniformMatrix4FV("v_proj", 1, false, &Core::projection[0][0]);
 
 	// MORE TESTING CODE --------------------------------------------
 
@@ -376,7 +369,7 @@ int main(int argc, char* argv[]) {
 
 		glfwMakeContextCurrent(window);
 
-		if(glfwGetKey(window, GLFW_KEY_T))
+		/*if (glfwGetKey(window, GLFW_KEY_T))
 			loader.RemoveBlock(glm::ivec3(floor(player_transform.position.x), floor(player_transform.position.y), floor(player_transform.position.z)));
 		if (glfwGetKey(window, GLFW_KEY_Y)) {
 			loader.PlaceBlock(glm::ivec3(floor(player_transform.position.x), floor(player_transform.position.y), floor(player_transform.position.z)));
@@ -385,27 +378,13 @@ int main(int argc, char* argv[]) {
 		if (glfwGetKey(window, GLFW_KEY_6))
 			loader.doChunkLoading = false;
 		if (glfwGetKey(window, GLFW_KEY_7))
-			loader.doChunkLoading = true;
+			loader.doChunkLoading = true;*/
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		UpdatePlayer();
-
-		//loader.Update();
-
-		loader.renderer.chunk_shader->BindProgram();
-		loader.renderer.chunk_shader->SetUniformMatrix4FV("v_view", 1, false, &glm::inverse(Core::player_transform.GetTransform())[0][0]);
-
-		loader.renderer.chunk_shader->SetUniform2IV("v_chunk_origin", 1, &glm::ivec2(0, 0)[0]);
-
-		chunk_mesh_data.v_array.Bind();
-		chunk_mesh_data.v_array.DrawArrays(chunk_mesh_data.info);
-
-
-		loader.renderer.chunk_shader->SetUniform2IV("v_chunk_origin", 1, &glm::ivec2(16, 0)[0]);
-
-		chunk_mesh_data2.v_array.Bind();
-		chunk_mesh_data2.v_array.DrawArrays(chunk_mesh_data2.info);
+		
+		RenderChunkGridMap(c_map, *chunk_shader, glm::inverse(Core::player_transform.GetTransform()));
 
 		glfwSwapBuffers(window);
 
