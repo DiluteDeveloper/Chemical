@@ -12,7 +12,8 @@ namespace Chemical {
 			for (int z = starting_point.z; z < z_size + starting_point.z; z++)
 			{
 				Chunk& chunk = grid_map.CreateChunk(ChunkGridOrigin{ x, z });
-				chunk.GenerateTerrainFromHeightMap(GenerateChunkHeightMapData(100, glm::vec2(x, z)));
+				ChunkHeightMap height_map = GenerateChunkHeightMapData(100, glm::vec2(x, z));
+				chunk.GenerateTerrainFromHeightMap(height_map);
 			}
 		}
 		auto& chunks = grid_map.GetGridMap();

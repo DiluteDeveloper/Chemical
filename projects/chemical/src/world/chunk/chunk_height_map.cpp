@@ -1,11 +1,13 @@
 #include <pch.h>
 
-#include "noise.h"
+#include <perlin/PerlinNoise.hpp>
+
+#include "chunk_height_map.h"
 
 namespace Chemical {
 
-	int16_t GenerateNoiseLayer(const siv::PerlinNoise& noise_gen, glm::vec2 position, float scale, unsigned int amplitude) {
-		return static_cast<int16_t>(noise_gen.octave2D_01(position.x * scale, position.y * scale, 1) * amplitude);
+	unsigned int GenerateNoiseLayer(const siv::PerlinNoise& noise_gen, glm::vec2 position, float scale, unsigned int amplitude) {
+		return static_cast<unsigned int>(noise_gen.octave2D_01(position.x * scale, position.y * scale, 1) * amplitude);
 	}
 
 	ChunkHeightMap GenerateChunkHeightMapData(unsigned int seed, glm::vec2 origin) {
