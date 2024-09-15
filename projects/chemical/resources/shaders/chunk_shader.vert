@@ -36,6 +36,9 @@ unsigned int GetBlockTextureID() {
 	case 4: // bedrock
 		return 3;
 		break;
+	case 6: // leaves
+		return 6;
+		break;
 
 	}
 

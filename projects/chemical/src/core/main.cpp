@@ -5,13 +5,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <random>
 
-#include "world/chunk.h"
-#include "world/noise.h"
-#include "world/chunk_loader.h"
-#include "world/chunk_renderer.h"
-
 #include "graphics/opengl/texture.h"
+#include "graphics/opengl/shader_program.h"
 #include "util/filestream.h"
+#include "world/chunk/loader.h"
+#include "world/chunk/renderer.h"
 
 #include <stb_image/stb_image.h>
 
@@ -223,7 +221,6 @@ int main(int argc, char* argv[]) {
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glEnable(GL_CULL_FACE);
@@ -233,12 +230,13 @@ int main(int argc, char* argv[]) {
 
 	glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
 
+
 	// GLAD PREFERENCES -----------------------------------------
 
 	// MORE TESTING CODE --------------------------------------------
 
 
-	projection = glm::perspectiveLH(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
+	projection = glm::perspectiveLH(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f, 100000.0f);
 
 	std::random_device rd;
 	uint32_t seed = rd();
@@ -348,9 +346,36 @@ int main(int argc, char* argv[]) {
 	logside.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MIN_FILTER, GL_NEAREST);
 	logside.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MAG_FILTER, GL_NEAREST);
 
+	OpenGL::TextureStorageParameters pleaves;
+	pleaves.internalFormat = OpenGL::TextureInternalFormat::RGBA8;
+	pleaves.width = width;
+	pleaves.height = height;
+
+	OpenGL::TextureDataParameters paramleaves;
+	paramleaves.baseFormat = OpenGL::TextureBaseFormat::RGBA;
+	paramleaves.dataType = OpenGL::DataType::UNSIGNED_BYTE;
+	paramleaves.width = width;
+	paramleaves.height = height;
+	paramleaves.textureType = OpenGL::TextureType::TEXTURE_2D;
+
+	void* leavesdata = stbi_load("resources/textures/blocks/leaves.png", &width, &height, &channels, 0);
+
+	OpenGL::Texture leaves(pleaves);
+
+	leaves.SetTextureData(paramleaves, leavesdata);
+
+	stbi_image_free(leavesdata);
+
+	leaves.GenerateMipmaps();
+
+	leaves.BindTexture(6);
+
+	leaves.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MIN_FILTER, GL_NEAREST);
+	leaves.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MAG_FILTER, GL_NEAREST);
+
 	// --------------------------
 
-	ChunkGridMap c_map = GenerateChunkSquare(ChunkGridOrigin{ 0,0 }, 80, 80);
+	std::unique_ptr<ChunkGrid> grid = GenerateChunkSquare(ChunkGridOrigin{ 0,0 }, 300, 300);
 
 	OpenGL::Shader vertex_chunk_shader(Util::ReadFile("resources/shaders/chunk_shader.vert").c_str(), OpenGL::ShaderType::VERTEX_SHADER);
 	OpenGL::Shader fragment_chunk_shader(Util::ReadFile("resources/shaders/chunk_shader.frag").c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
@@ -384,7 +409,7 @@ int main(int argc, char* argv[]) {
 
 		UpdatePlayer();
 		
-		RenderChunkGridMap(c_map, *chunk_shader, glm::inverse(Core::player_transform.GetTransform()));
+		RenderChunkGrid(grid, *chunk_shader, glm::inverse(Core::player_transform.GetTransform()));
 
 		glfwSwapBuffers(window);
 

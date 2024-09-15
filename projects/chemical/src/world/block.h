@@ -9,5 +9,6 @@ namespace Chemical {
 		Grass = 3,
 		Bedrock = 4,
 		OakLog = 5,
+		OakLeaves = 6
 	};
 }
