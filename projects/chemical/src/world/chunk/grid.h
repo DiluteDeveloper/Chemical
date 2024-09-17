@@ -8,26 +8,29 @@ namespace Chemical {
 
 	// Chunk origin coordinates in chunk space
 	// aka x * CHUNK_SIZE & z * CHUNK_SIZE
-	struct ChunkGridOrigin {
+	struct ChunkOrigin {
 		int x = 0;
 		int z = 0;
 
-		ChunkGridOrigin(int x = 0, int z = 0) :
+		ChunkOrigin(int x = 0, int z = 0) :
 			x(x), z(z) {}
+
+		ChunkOrigin operator-(const ChunkOrigin& rhs) const {
+			return ChunkOrigin(x - rhs.x, z - rhs.z);
+		}
+		bool operator !=(const ChunkOrigin& rhs) const {
+			return x != rhs.x && z != rhs.z;
+		}
 	};
 	struct ChunkGrid {
 	public:
-		friend std::unique_ptr<ChunkGrid> std::make_unique<ChunkGrid>();
-		static std::unique_ptr<ChunkGrid> CreateChunkGrid() {
-			return std::make_unique<ChunkGrid>();
-		}
 
 
 		std::unordered_map<int, std::unordered_map<int, ChunkBlockGrid>> chunk_blocks;
 		std::unordered_map<int, std::unordered_map<int, ChunkMesh>> chunk_meshes;
 
 	private:
-		ChunkGrid() = default;
+
 
 	};
 }

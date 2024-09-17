@@ -91,7 +91,7 @@ void APIENTRY message_callback(GLenum source, GLenum type, GLuint id, GLenum sev
 #endif
 
 
-float camSpeed = 5.0f;
+float camSpeed = 0.2f;
 float sensitivity = 0.08f;
 // movement controls
 double oldx, oldy;
@@ -236,7 +236,7 @@ int main(int argc, char* argv[]) {
 	// MORE TESTING CODE --------------------------------------------
 
 
-	projection = glm::perspectiveLH(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f, 100000.0f);
+	projection = glm::perspectiveLH(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f, 10000.0f);
 
 	std::random_device rd;
 	uint32_t seed = rd();
@@ -375,7 +375,7 @@ int main(int argc, char* argv[]) {
 
 	// --------------------------
 
-	std::unique_ptr<ChunkGrid> grid = GenerateChunkSquare(ChunkGridOrigin{ 0,0 }, 300, 300);
+	ChunkLoader loader(glm::vec3{}, 300, 30);
 
 	OpenGL::Shader vertex_chunk_shader(Util::ReadFile("resources/shaders/chunk_shader.vert").c_str(), OpenGL::ShaderType::VERTEX_SHADER);
 	OpenGL::Shader fragment_chunk_shader(Util::ReadFile("resources/shaders/chunk_shader.frag").c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
@@ -409,7 +409,8 @@ int main(int argc, char* argv[]) {
 
 		UpdatePlayer();
 		
-		RenderChunkGrid(grid, *chunk_shader, glm::inverse(Core::player_transform.GetTransform()));
+		loader.UpdateCenter(Core::player_transform.position);
+		RenderChunkGrid(loader.GetChunkGrid(), *chunk_shader, glm::inverse(Core::player_transform.GetTransform()));
 
 		glfwSwapBuffers(window);
 

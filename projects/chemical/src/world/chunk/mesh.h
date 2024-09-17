@@ -23,7 +23,7 @@ namespace Chemical {
 
 		ChunkMesh();
 		void BuildMeshFromVertices(const std::vector<ChunkVertex>& vertices, float alloc_mult = 1.0f);
-		void BindAndDraw();
+		void BindAndDraw() const;
 
 	};
 

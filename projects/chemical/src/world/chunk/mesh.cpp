@@ -17,7 +17,7 @@ namespace Chemical {
 		info.count = static_cast<int32_t>(vertices.size());
 	}
 
-	void ChunkMesh::BindAndDraw() {
+	void ChunkMesh::BindAndDraw() const{
 		v_array.Bind();
 		v_array.DrawArrays(info);
 	}

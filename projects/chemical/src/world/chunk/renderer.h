@@ -8,7 +8,7 @@
 
 namespace Chemical {
 
-	inline void RenderChunkGrid(const std::unique_ptr<ChunkGrid>& grid, OpenGL::ShaderProgram& chunk_shader, const glm::mat4& view) {
+	inline void RenderChunkGrid(std::shared_ptr<ChunkGrid> grid, OpenGL::ShaderProgram& chunk_shader, const glm::mat4& view) {
 		chunk_shader.BindProgram();
 		chunk_shader.SetUniformMatrix4FV("v_view", 1, false, &view[0][0]);
 

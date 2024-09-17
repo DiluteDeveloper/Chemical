@@ -15,12 +15,9 @@ namespace Chemical {
 
 		uint16_t GetMaxHeight(uint8_t x, uint8_t z) const;
 
-		std::array<std::array<std::array<BlockType, 50>, CHUNK_SIZE>, CHUNK_SIZE>& GetGrid();
-		const std::array<std::array<std::array<BlockType, 50>, CHUNK_SIZE>, CHUNK_SIZE>& ConstGetGrid() const;
-
 	private:
 		// X, Z, Y format
-		std::array<std::array<std::array<BlockType, 50>, CHUNK_SIZE>, CHUNK_SIZE> grid = {};
+		std::array<std::array<std::array<BlockType, HEIGHT_LIMIT>, CHUNK_SIZE>, CHUNK_SIZE> grid = {};
 		std::array<std::array<uint16_t, CHUNK_SIZE>, CHUNK_SIZE> max_height = {};
 	};
 }
