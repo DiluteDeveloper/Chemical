@@ -41,6 +41,9 @@ filter "configurations:Release"
 
 GLFW_LIB = "glfw3"
 
+GLAD_LIB_DIR = IMPORTED_MODULES_DIR .. "/glad/"
+GLAD_LIB = "glad"
+
 project "Chemical"
     kind "StaticLib"
 
@@ -53,8 +56,8 @@ project "Chemical"
     files {CHEMICAL_DIR .. "/**"}
     includedirs {IMPORTED_MODULES_DIR, CHEMICAL_SOURCE_DIR, CHEMICAL_INCLUDE_DIR}
 
-    libdirs (GLFW_LIB_DIR)
-    links (GLFW_LIB)
+    libdirs {GLFW_LIB_DIR, GLAD_LIB_DIR}
+    links {GLFW_LIB, GLAD_LIB}
 
     targetdir (BIN_DIR)
     objdir (INT_DIR)
