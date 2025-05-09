@@ -2,13 +2,13 @@ workspace "Chemical"
     location "../"
     configurations { "Debug", "Release"}
     platforms "Win64"
-    startproject "Sandbox"
+    startproject "Chemical"
     architecture "x86_64"
     language "C++"
     cppdialect "C++20"
     systemversion "latest"
     debugformat "c7"
-    --toolset "clang"
+    toolset "clang"
 
     filter "configurations:Debug"
         symbols "On"
@@ -18,77 +18,56 @@ workspace "Chemical"
         symbols "Off"
         optimize "On"
 
+
 BIN_DIR = "%{wks.location}/bin/%{prj.name}/%{cfg.platform}-%{cfg.buildcfg}"
 INT_DIR = BIN_DIR .. "/int"
-RES_SRC_DIR = "%{wks.location}/resources"
-RES_DEST_DIR = BIN_DIR .. "/resources"
-LIB_DIR = "%{wks.location}/libs/%{cfg.platform}-%{cfg.buildcfg}"
 
-CHEMICAL_DIR = "%{wks.location}/projects/chemical"
-
---SANDBOX_DIR = "%{wks.location}/projects/sandbox"
---SANDBOX_SRC_DIR = "%{wks.location}/projects/sandbox"
-
-THIRD_PARTY_DIR = "%{wks.location}/3rdparty"
-GLAD_SRC_DIR = "%{wks.location}/3rdparty/glad/src"
-GLAD_INC_DIR = "%{wks.location}/3rdparty/glad/include"
-GLFW_SRC_DIR = "%{wks.location}/3rdparty/glfw/src"
-GLFW_INC_DIR = "%{wks.location}/3rdparty/glfw/include"
-
-COPY_RESOURCES_COMMAND = "%{wks.location}meta\\copy_resources.bat %{wks.location}resources %{wks.location}bin\\%{prj.name}\\%{cfg.platform}-%{cfg.buildcfg}\\resources"
-project "GLAD"
-    kind "StaticLib"
+MODULES_DIR = "%{wks.location}/modules"
+IMPORTED_MODULES_DIR = MODULES_DIR .. "/imported"
 
 
-    location (THIRD_PARTY_DIR)
-    files { GLAD_SRC_DIR .. "/**.c", GLAD_SRC_DIR .. "/**.h", GLAD_SRC_DIR .. "/**.cpp", GLAD_SRC_DIR .."/**.hpp", GLAD_SRC_DIR .. "/**.m"}
-    includedirs(GLAD_INC_DIR .. "/GLAD/")
-    targetdir (BIN_DIR)
-    objdir (INT_DIR)
 
-project "GLFW"
-    kind "StaticLib"
+CHEMICAL_DIR = MODULES_DIR .. "/chemical"
+CHEMICAL_INCLUDE_DIR = CHEMICAL_DIR .. "/include"
+CHEMICAL_SOURCE_DIR = CHEMICAL_DIR .. "/src"
 
-    defines "_GLFW_WIN32"
+SANDBOX_DIR = MODULES_DIR .. "/sandbox"
+SANDBOX_SOURCE_DIR = SANDBOX_DIR .. "/src"
 
+filter "configurations:Debug"
+    GLFW_LIB_DIR = IMPORTED_MODULES_DIR .. "/glfw/lib/debug"
+filter "configurations:Release"
+    GLFW_LIB_DIR = IMPORTED_MODULES_DIR .. "/glfw/lib/release"
 
-    location (THIRD_PARTY_DIR)
-    files { GLFW_SRC_DIR .. "/**.c", GLFW_SRC_DIR .."/**.h", GLFW_SRC_DIR .. "/**.cpp", GLFW_SRC_DIR .."/**.hpp", GLFW_SRC_DIR .. "/**.m"}
-    targetdir (BIN_DIR)
-    objdir (INT_DIR)
+GLFW_LIB = "glfw3"
 
 project "Chemical"
-    kind "ConsoleApp"
+    kind "StaticLib"
 
     pchheader "pch.h"
-    pchsource ("../projects/chemical/src/pch.cpp") -- relative to script: has to be changed manually
+    pchsource "pch.cpp" -- relative to this script: has to be changed manually
 
     defines "GLFW_INCLUDE_NONE"
 
     location (CHEMICAL_DIR)
-    files {CHEMICAL_DIR .. "/include/**", CHEMICAL_DIR .. "/resources/**", CHEMICAL_DIR .. "/src/**"}
-    includedirs {CHEMICAL_DIR .. "/src/", CHEMICAL_DIR .. "/vendor/", GLAD_INC_DIR, GLFW_INC_DIR}
-    links {"GLFW", "GLAD"}
+    files {CHEMICAL_DIR .. "/**"}
+    includedirs {IMPORTED_MODULES_DIR, CHEMICAL_SOURCE_DIR, CHEMICAL_INCLUDE_DIR}
+
+    libdirs (GLFW_LIB_DIR)
+    links (GLFW_LIB)
+
     targetdir (BIN_DIR)
     objdir (INT_DIR)
 
-    filter "configurations:Debug"
-        defines "CHEMICAL_DEBUG"
 
-    -- Copy resources to project directory and to bin
-    postbuildcommands {
-        "call %{wks.location}/meta/copy_resources.bat " .. string.gsub(CHEMICAL_DIR, "/", "\\") .. "\\resources " .. string.gsub(BIN_DIR, "/", "\\") .. "\\resources"                
-    }
-
---[[project "Sandbox"
+project "Sandbox"
     kind "ConsoleApp"
 
     location (SANDBOX_DIR)
-    files { SANDBOX_DIR .. "/src/**.cpp", SANDBOX_DIR .. "/src/**.h", 
-    SANDBOX_DIR .. "/vendor/**.h", SANDBOX_DIR .. "/vendor/**.hpp"}
-    includedirs { SANDBOX_DIR, CHEMICAL_INC_DIR}
-    links {"GLFW", "GLAD", "Chemical"}
+    files {SANDBOX_SOURCE_DIR .. "/**"}
+    includedirs {SANDBOX_SOURCE_DIR, CHEMICAL_INCLUDE_DIR}
+
+    links ("Chemical")
+
     targetdir (BIN_DIR)
     objdir (INT_DIR)
-
-    postbuildcommands ("%{wks.location}meta\\copy_resources.bat %{wks.location}resources " .. string.gsub(BIN_DIR, "/", "\\") .. "\\resources")]]--
