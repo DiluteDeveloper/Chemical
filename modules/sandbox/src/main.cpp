@@ -8,7 +8,7 @@ using namespace Chemical;
 int main() {
 	InitialiseChemical();
 
-	std::optional<Window> window = CreateNewWindow("Chemical 1.1", 1280, 720);
+	std::optional<Window> window = CreateNewWindow("Chemical 1.1.1", 1280, 720);
 
 	if (!window.has_value())
 		return -1;
