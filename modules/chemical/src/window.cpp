@@ -19,13 +19,17 @@ namespace Chemical {
 		}
 		glfwMakeContextCurrent(window);
 
-		spdlog::info("Initialising GLAD for window \"{0}\"", title.data());
-		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-			spdlog::critical("GLAD initialisation failed");
-			return nullptr;
-		}
+    spdlog::info("Initialising GLAD for window \"{0}\"", title.data());
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+      spdlog::critical("GLAD initialisation failed");
+      return nullptr;
+    }
 
 		return (Window)window;
+	}
+
+	void DestroyWindow(Window window) {
+		glfwDestroyWindow(window);
 	}
 
 	void BindWindow(Window window) {

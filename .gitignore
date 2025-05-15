@@ -3,6 +3,11 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+Makefile
+*.sh
+compile_commands.json
+.clang-format
+
 # User-specific files
 *.rsuser
 *.suo

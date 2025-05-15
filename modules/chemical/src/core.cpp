@@ -17,13 +17,17 @@ namespace Chemical {
 			spdlog::critical("GLFW initialisation failed");
 			throw std::runtime_error("GLFW initialisation failed");
 		}
-
+    std::cout << "Hello World!" << std::endl;
 		spdlog::info("Setting GLFW window hints");
 
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+	}
+
+	void TerminateChemical() {
+		glfwTerminate();
 	}
 
 	void PollEvents() {

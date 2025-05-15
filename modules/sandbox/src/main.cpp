@@ -1,40 +1,42 @@
-#include <chemical/window.h>
 #include <chemical/core.h>
-#include <chemical/graphics/misc.h>
 #include <chemical/graphics/mesh.h>
+#include <chemical/graphics/misc.h>
+#include <chemical/window.h>
 
 using namespace Chemical;
 
 int main() {
-	InitialiseChemical();
+  InitialiseChemical();
 
-	std::optional<Window> window = CreateNewWindow("Chemical 1.1.1", 1280, 720);
+  std::optional<Window> window = CreateNewWindow("Chemical 1.1.1", 1280, 720);
 
-	if (!window.has_value())
-		return -1;
+  if (!window.has_value())
+    return -1;
 
-	Graphics::RGBColour background(30, 60, 85);
+  Graphics::RGBColour background(30, 60, 85);
 
-	Graphics::SetBackgroundColour(background);
+  Graphics::SetBackgroundColour(background);
+  //
+  // const std::vector<float> vertices = {
+  // 	-0.5f, -0.5f,
+  // 	0.0f, 0.5f,
+  // 	0.5f, -0.5f
+  // };
+  // const std::vector<unsigned int> indices = {
+  // 	0,1,2
+  // };
 
-	const std::vector<float> vertices = {
-		-0.5f, -0.5f,
-		0.0f, 0.5f,
-		0.5f, -0.5f
-	};
-	const std::vector<unsigned int> indices = {
-		0,1,2
-	};
+  Graphics::StaticMesh2D mesh =
+      Graphics::CreateStaticMesh2D(Graphics::Shape2D::TRIANGLE);
 
-	Graphics::StaticMesh2D mesh = Graphics::CreateStaticMesh2D(vertices, indices);
+  while (!WindowShouldClose(window.value())) {
+    PollEvents();
 
-	while (!WindowShouldClose(window.value())) {
-		PollEvents();
+    Graphics::ClearColourBuffer();
 
-		Graphics::ClearColourBuffer();
+    mesh.Draw();
 
-		mesh.Draw();
-
-		Graphics::SwapBuffers(window.value());
-	}
+    Graphics::SwapBuffers(window.value());
+  }
+  TerminateChemical();
 }
