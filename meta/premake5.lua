@@ -1,23 +1,22 @@
-workspace "Chemical"
-    location "../"
-    configurations { "Debug", "Release"}
-    platforms "Win64"
-    startproject "Chemical"
-    architecture "x86_64"
-    language "C++"
-    cppdialect "C++20"
-    systemversion "latest"
-    debugformat "c7"
-    toolset "gcc"
+workspace("Chemical")
+location("../")
+configurations({ "Debug", "Release" })
+platforms("Win64")
+startproject("Chemical")
+architecture("x86_64")
+language("C++")
+cppdialect("C++20")
+systemversion("latest")
+debugformat("c7")
+toolset("clang")
 
-    filter "configurations:Debug"
-        symbols "On"
-        optimize "Off"
+filter("configurations:Debug")
+symbols("On")
+optimize("Off")
 
-    filter "configurations:Release"
-        symbols "Off"
-        optimize "On"
-
+filter("configurations:Release")
+symbols("Off")
+optimize("On")
 
 BIN_DIR = "%{wks.location}/bin/%{prj.name}/%{cfg.platform}-%{cfg.buildcfg}"
 INT_DIR = BIN_DIR .. "/int"
@@ -25,10 +24,8 @@ INT_DIR = BIN_DIR .. "/int"
 MODULES_DIR = "%{wks.location}/modules"
 IMPORTED_MODULES_DIR = MODULES_DIR .. "/imported"
 
-
-
 CHEMICAL_DIR = MODULES_DIR .. "/chemical"
-CHEMICAL_INCLUDE_DIR = CHEMICAL_DIR .. "/include"
+CHEMICAL_API_DIR = CHEMICAL_DIR .. "/api"
 CHEMICAL_SOURCE_DIR = CHEMICAL_DIR .. "/src"
 
 SANDBOX_DIR = MODULES_DIR .. "/sandbox"
@@ -39,35 +36,33 @@ GLAD_LIB_DIR = IMPORTED_MODULES_DIR .. "/glad"
 GLFW_LIB = "glfw3"
 GLAD_LIB = "glad"
 
-project "Chemical"
-    kind "StaticLib"
+project("Chemical")
+kind("StaticLib")
 
-    pchheader "pch.h"
-    pchsource "pch.cpp" -- relative to this script: has to be changed manually
+-- pchheader("pch.h")
+-- pchsource("../modules/chemical/src/pch.cpp") -- relative to this script: has to be changed manually
 
-    defines "GLFW_INCLUDE_NONE"
+defines("GLFW_INCLUDE_NONE")
 
-    location (CHEMICAL_DIR)
-    files {CHEMICAL_DIR .. "/**"}
-    includedirs {IMPORTED_MODULES_DIR, CHEMICAL_SOURCE_DIR, CHEMICAL_INCLUDE_DIR}
+location(CHEMICAL_DIR)
+files({ CHEMICAL_DIR .. "/**" })
+includedirs({ IMPORTED_MODULES_DIR, CHEMICAL_SOURCE_DIR, CHEMICAL_API_DIR })
 
-    libdirs {GLFW_LIB_DIR, GLAD_LIB_DIR}
-    links {GLFW_LIB, GLAD_LIB}
+libdirs({ GLFW_LIB_DIR, GLAD_LIB_DIR })
+links({ GLFW_LIB, GLAD_LIB })
 
-    targetdir (BIN_DIR)
-    objdir (INT_DIR)
+targetdir(BIN_DIR)
+objdir(INT_DIR)
 
+project("Sandbox")
+kind("ConsoleApp")
 
-project "Sandbox"
-    kind "ConsoleApp"
+location(SANDBOX_DIR)
+files({ SANDBOX_SOURCE_DIR .. "/**" })
+includedirs({ SANDBOX_SOURCE_DIR, CHEMICAL_API_DIR })
 
+libdirs({ GLFW_LIB_DIR, GLAD_LIB_DIR })
+links({ "Chemical", GLFW_LIB, GLAD_LIB })
 
-    location (SANDBOX_DIR)
-    files {SANDBOX_SOURCE_DIR .. "/**"}
-    includedirs {SANDBOX_SOURCE_DIR, CHEMICAL_INCLUDE_DIR}
-
-    libdirs{GLFW_LIB_DIR, GLAD_LIB_DIR}
-    links {"Chemical", GLFW_LIB, GLAD_LIB}
-
-    targetdir (BIN_DIR)
-    objdir (INT_DIR)
+targetdir(BIN_DIR)
+objdir(INT_DIR)
