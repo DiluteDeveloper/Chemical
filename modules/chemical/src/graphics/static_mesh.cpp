@@ -7,7 +7,8 @@
 namespace Chemical {
 
   namespace Graphics {
-    StaticMeshTraits::StaticMeshTraits(Shape shape, ShaderID shader_id) : shader_id(shader_id) {
+    StaticMeshTraits::StaticMeshTraits(Shape shape, const ShaderID &shader_id, const MaterialID &material_id)
+        : shader_id(shader_id), material_id(material_id) {
 
       switch (shape) {
       case Shape::TRIANGLE:
@@ -22,11 +23,12 @@ namespace Chemical {
     }
 
     StaticMeshTraits::StaticMeshTraits(const std::vector<float> &vertices,
-                                       const std::vector<unsigned int> &indices, ShaderID shader_id)
-        : vertices(vertices), indices(indices), shader_id(shader_id) {};
+                                       const std::vector<unsigned int> &indices, const ShaderID &shader_id,
+                                       const MaterialID &material_id)
+        : vertices(vertices), indices(indices), shader_id(shader_id), material_id(material_id) {};
 
     StaticMesh::StaticMesh(const Graphics::StaticMeshTraits &traits)
-        : indice_count(traits.indices.size()), shader_id(traits.shader_id) {
+        : indice_count(traits.indices.size()), shader_id(traits.shader_id), material_id(traits.material_id) {
 
       unsigned int VBO = 0;
       glCreateBuffers(1, &VBO);

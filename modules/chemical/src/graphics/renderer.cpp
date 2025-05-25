@@ -11,101 +11,115 @@ namespace Chemical {
 
       spdlog::info("Initialising and registering default 2D shader");
       // Create and register default 2D shader
-      ShaderTraits s;
+      ShaderTraits s("default");
       s.vs_file_path = "shaders/test_shader.vs";
       s.fs_file_path = "shaders/test_shader.fs";
 
       RegisterShader(s);
     }
 
-    StaticMeshID Renderer::RegisterStaticMesh(const StaticMeshTraits &traits) {
-      if (traits.shader_id >= shaders.size()) {
+    int Renderer::RegisterStaticMesh(const StaticMeshTraits &traits) {
+
+      auto find = ssm.find(traits.shader_id);
+      if (find == ssm.end()) {
         spdlog::error("Shader {} is invalid", traits.shader_id);
         return -1;
       }
-
-      spdlog::info("Registering static mesh {}", static_meshes.size());
-
-      static_meshes.emplace_back(traits);
-
-      if (auto v = shader_mesh_map.find(traits.shader_id); v != shader_mesh_map.end()) {
-        v->second.emplace_back(&static_meshes[static_meshes.size() - 1]);
+      auto find2 = materials.find(traits.material_id);
+      if (find2 == materials.end()) {
+        spdlog::error("Material {} is invalid", traits.material_id);
+        return -1;
       }
-      return static_meshes.size() - 1;
+      ShadersStaticMeshes &ssm = find->second;
+
+      spdlog::info("Registering static mesh {}", ssm.static_meshes.size());
+
+      ssm.static_meshes.emplace_back(traits);
+
+      return ssm.static_meshes.size() - 1;
     }
-    Renderer::DynamicMeshID Renderer::RegisterDynamicMesh(const StaticMeshTraits &traits) {
-      if (traits.shader_id >= shaders.size()) {
+    std::optional<Renderer::DynamicMeshID> Renderer::RegisterDynamicMesh(const StaticMeshTraits &traits,
+                                                                         const DynamicMeshID &id) {
+      auto find = ssm.find(traits.shader_id);
+      if (find == ssm.end()) {
         spdlog::error("Shader {} is invalid", traits.shader_id);
-        return -1;
+        return std::nullopt;
       }
+      auto find2 = materials.find(traits.material_id);
+      if (find2 == materials.end()) {
+        spdlog::error("Material {} is invalid", traits.material_id);
+        return std::nullopt;
+      }
+      spdlog::info("Registering dynamic mesh {}", id);
 
-      spdlog::info("Registering dynamic mesh {}", dynamic_meshes.size());
-
-      dynamic_meshes.emplace(std::piecewise_construct, std::forward_as_tuple(dynamic_meshes.size()),
+      dynamic_meshes.emplace(std::piecewise_construct, std::forward_as_tuple(id),
                              std::forward_as_tuple(traits));
-      return dynamic_meshes.size() - 1;
+      return id;
     }
-    void Renderer::DeregisterDynamicMesh(DynamicMeshID id) {
+    void Renderer::DeregisterDynamicMesh(const DynamicMeshID &id) {
 
       spdlog::info("Deregistering dynamic mesh {}", id);
       dynamic_meshes.erase(id);
     }
 
-    StaticMesh *Renderer::GetStaticMesh(StaticMeshID id) {
-      if (id < static_meshes.size())
-        return &static_meshes[id];
-      else
-        return nullptr;
-    }
-    StaticMesh *Renderer::GetDynamicMesh(DynamicMeshID id) {
+    StaticMesh *Renderer::GetDynamicMesh(const DynamicMeshID &id) {
       if (auto mesh = dynamic_meshes.find(id); mesh != dynamic_meshes.end()) {
         return &mesh->second;
-      } else
+      } else {
         return nullptr;
+      }
     }
 
-    void Renderer::SetDynamicMeshShader(StaticMesh &mesh, ShaderID shader_id) {
+    void Renderer::SetDynamicMeshShader(StaticMesh &mesh, const ShaderID &shader_id) {
       spdlog::info("Setting dynamic mesh shader to {}", shader_id);
       mesh.shader_id = shader_id;
     }
 
-    ShaderID Renderer::RegisterShader(const ShaderTraits &traits) {
+    std::optional<ShaderID> Renderer::RegisterShader(const ShaderTraits &traits) {
 
       Shader s(traits);
       if (s.GetCompileStatus() == 0) {
         spdlog::error("Shader failed to compile");
-        return -1;
+        return std::nullopt;
       }
-      spdlog::info("Registering shader {}", shaders.size());
-      shaders.emplace_back(std::move(s));
-      shader_mesh_map.emplace(shaders.size() - 1, std::move(std::vector<StaticMesh *>()));
+      spdlog::info("Registering shader {}", traits.id);
+      ssm.emplace(traits.id, std::move(s));
 
-      assert(shader_mesh_map.size() == shaders.size());
-
-      return shaders.size() - 1;
+      return traits.id;
     }
 
-    Shader *Renderer::GetShader(ShaderID id) {
-      if (id < shaders.size())
-        return &shaders[id];
-      else
+    Shader *Renderer::GetShader(const ShaderID &id) {
+      auto find = ssm.find(id);
+      if (find == ssm.end()) {
+        spdlog::error("Shader {} is invalid", id);
         return nullptr;
+      }
+      return &find->second.shader;
+    }
+
+    Material &Renderer::RegisterMaterial(const Material &material, const MaterialID &id) {
+      return materials.emplace(id, material).first->second;
     }
 
     void Renderer::Render() const {
 
-      unsigned int idx = 0;
-      for (auto &shader : shaders) {
-        shader.Bind();
-        const std::vector<StaticMesh *> &meshes = shader_mesh_map.at(idx);
-        for (auto mesh : meshes) {
-          mesh->Draw();
+      for (const auto &[shader_id, ssm] : ssm) {
+        ssm.shader.Bind();
+
+        for (const auto &mesh : ssm.static_meshes) {
+          glm::vec3 albedo = materials.at(mesh.material_id).albedo;
+          ssm.shader.SetUniform3F("colour", albedo.r / 255.0f, albedo.g / 255.0f, albedo.b / 255.0f);
+          mesh.Draw();
         }
-        idx++;
       }
 
       for (auto &[_, mesh] : dynamic_meshes) {
-        shaders[mesh.shader_id].Bind();
+
+        ssm.at(mesh.shader_id).shader.Bind();
+        glm::vec3 albedo = materials.at(mesh.material_id).albedo;
+        ssm.at(mesh.shader_id)
+            .shader.SetUniform3F("colour", albedo.r / 255.0f, albedo.g / 255.0f, albedo.b / 255.0f);
+
         mesh.Draw();
       }
     }

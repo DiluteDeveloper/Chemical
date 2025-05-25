@@ -25,7 +25,7 @@ MODULES_DIR = "%{wks.location}/modules"
 IMPORTED_MODULES_DIR = MODULES_DIR .. "/imported"
 
 CHEMICAL_DIR = MODULES_DIR .. "/chemical"
-CHEMICAL_API_DIR = CHEMICAL_DIR .. "/api"
+CHEMICAL_INCLUDE_DIR = CHEMICAL_DIR .. "/include"
 CHEMICAL_SOURCE_DIR = CHEMICAL_DIR .. "/src"
 
 SANDBOX_DIR = MODULES_DIR .. "/sandbox"
@@ -46,7 +46,7 @@ defines("GLFW_INCLUDE_NONE")
 
 location(CHEMICAL_DIR)
 files({ CHEMICAL_DIR .. "/**" })
-includedirs({ IMPORTED_MODULES_DIR, CHEMICAL_SOURCE_DIR, CHEMICAL_API_DIR })
+includedirs({ IMPORTED_MODULES_DIR, CHEMICAL_SOURCE_DIR, CHEMICAL_INCLUDE_DIR })
 
 libdirs({ GLFW_LIB_DIR, GLAD_LIB_DIR })
 links({ GLFW_LIB, GLAD_LIB })
@@ -59,7 +59,9 @@ kind("ConsoleApp")
 
 location(SANDBOX_DIR)
 files({ SANDBOX_SOURCE_DIR .. "/**" })
-includedirs({ SANDBOX_SOURCE_DIR, CHEMICAL_API_DIR })
+
+-- Imported modules inclusion is a quick-fix for glm
+includedirs({ SANDBOX_SOURCE_DIR, CHEMICAL_INCLUDE_DIR, IMPORTED_MODULES_DIR })
 
 libdirs({ GLFW_LIB_DIR, GLAD_LIB_DIR })
 links({ "Chemical", GLFW_LIB, GLAD_LIB })

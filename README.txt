@@ -1,3 +1,20 @@
+Chemical 1.1.5
+
+changed api directory to include 
+added imported modules directory to sandbox include 
+paths as a hacky fix for glm 
+added image loading function and struct using stb
+added quick test of image loading function in core.cpp
+changed all but static mesh object IDs to be strings instead
+of integers
+combined renderer static mesh vector to shader id array and
+renderer static mesh array into one ShaderStaticMeshes struct referred
+to by shaderid
+returning std::nullopt instead of nullptr for std::optional; bugfix
+added materials and material string ids that have an albedo attribute,
+added test in sandbox main.cpp to test this functionality
+changed shader uniform set functions to const
+
 Chemical 1.1.3
 
 Renamed mesh.h and mesh.cpp files to static_mesh.h and static_mesh.cpp

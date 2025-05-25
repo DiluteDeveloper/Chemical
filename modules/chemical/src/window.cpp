@@ -6,13 +6,11 @@
 
 namespace Chemical {
 
-  std::optional<Window> CreateNewWindow(const std::string_view &title,
-                                        unsigned int width,
+  std::optional<Window> CreateNewWindow(const std::string_view &title, unsigned int width,
                                         unsigned int height) {
     spdlog::info("Creating Window");
 
-    GLFWwindow *window =
-        glfwCreateWindow(width, height, title.data(), nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(width, height, title.data(), nullptr, nullptr);
 
     if (!window) {
       spdlog::error("GLFW window creation failed");
@@ -26,6 +24,8 @@ namespace Chemical {
       return nullptr;
     }
 
+    glfwSwapInterval(1);
+
     return (Window)window;
   }
 
@@ -33,7 +33,5 @@ namespace Chemical {
 
   void BindWindow(Window window) { glfwMakeContextCurrent(window); }
 
-  bool WindowShouldClose(Window window) {
-    return glfwWindowShouldClose(window);
-  }
+  bool WindowShouldClose(Window window) { return glfwWindowShouldClose(window); }
 } // namespace Chemical
