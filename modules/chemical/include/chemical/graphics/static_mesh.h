@@ -1,6 +1,7 @@
 #pragma once
 
 #include "chemical/graphics/static_material.h"
+#include "chemical/util/transform.h"
 #include "shader.h"
 
 #include <vector>
@@ -23,6 +24,7 @@ namespace Chemical {
 
       ShaderID shader_id = "default";
       MaterialID material_id = "default";
+      Transform transform;
     };
 
     class StaticMesh {
@@ -30,11 +32,17 @@ namespace Chemical {
       StaticMesh(const StaticMeshTraits &traits);
 
       ~StaticMesh();
-      StaticMesh(StaticMesh &&other) : vao(other.vao), indice_count(other.indice_count) { other.vao = 0; }
+      StaticMesh(StaticMesh &&other)
+          : vao(other.vao), indice_count(other.indice_count), transform(std::move(other.transform)),
+            material_id(other.material_id) {
+        other.vao = 0;
+      }
       StaticMesh &operator=(StaticMesh &&other) {
         vao = other.vao;
         other.vao = 0;
         indice_count = other.indice_count;
+        material_id = other.material_id;
+        transform = std::move(other.transform);
         return *this;
       }
       StaticMesh(const StaticMesh &other) = delete;
@@ -42,6 +50,8 @@ namespace Chemical {
 
       // temporarily publicised
       MaterialID material_id = "default";
+
+      Transform transform;
 
     private:
       friend class Renderer;

@@ -1,3 +1,10 @@
+Chemical 1.1.6
+
+Added transform component to StaticMesh and StaticMeshTraits,
+applied to mat3 uniform in shader. No renderer indexable array yet,
+will be implemented later on as doesnt make sense for renderer to contain transforms.
+added testing scenario to main for circling mesh transform
+
 Chemical 1.1.5
 
 changed api directory to include 

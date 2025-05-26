@@ -109,17 +109,19 @@ namespace Chemical {
         for (const auto &mesh : ssm.static_meshes) {
           glm::vec3 albedo = materials.at(mesh.material_id).albedo;
           ssm.shader.SetUniform3F("colour", albedo.r / 255.0f, albedo.g / 255.0f, albedo.b / 255.0f);
+          ssm.shader.SetUniformMatrix3FV("v_model", 1, false, &mesh.transform.GetTransform()[0][0]);
           mesh.Draw();
         }
       }
 
       for (auto &[_, mesh] : dynamic_meshes) {
 
-        ssm.at(mesh.shader_id).shader.Bind();
+        const Shader &shader = ssm.at(mesh.shader_id).shader;
+        shader.Bind();
         glm::vec3 albedo = materials.at(mesh.material_id).albedo;
-        ssm.at(mesh.shader_id)
-            .shader.SetUniform3F("colour", albedo.r / 255.0f, albedo.g / 255.0f, albedo.b / 255.0f);
+        shader.SetUniform3F("colour", albedo.r / 255.0f, albedo.g / 255.0f, albedo.b / 255.0f);
 
+        shader.SetUniformMatrix3FV("v_model", 1, false, &mesh.transform.GetTransform()[0][0]);
         mesh.Draw();
       }
     }

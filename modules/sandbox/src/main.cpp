@@ -9,7 +9,7 @@ int main() {
   InitialiseChemical();
 
   {
-    std::optional<Window> window = CreateNewWindow("Chemical 1.1.5", 1280, 720);
+    std::optional<Window> window = CreateNewWindow("Chemical 1.1.6", 1280, 720);
 
     if (!window.has_value())
       return -1;
@@ -39,7 +39,12 @@ int main() {
     auto dyn = renderer.RegisterDynamicMesh(mesh_traits, "dyn_mesh");
     if (!dyn.has_value())
       return -1;
-
+    auto meshid = renderer.RegisterDynamicMesh(mesh_traits_2, "mymesh");
+    if (!meshid.has_value())
+      return -1;
+    auto mesh = renderer.GetDynamicMesh(meshid.value());
+    mesh->transform.position.x = -0.5f;
+    mesh->transform.scale = glm::vec2(0.1f, 0.1f);
     bool square = true;
     int i = 0;
     while (!WindowShouldClose(window.value())) {
@@ -50,6 +55,9 @@ int main() {
       m.albedo.r = std::sin((i / 100.0f)) * 255;
       m.albedo.g = std::sin(((i + 100) / 100.0f)) * 255;
       m.albedo.b = std::sin(((i + 200) / 100.0f)) * 255;
+
+      mesh->transform.position.x = std::cos(i / 10.0f);
+      mesh->transform.position.y = std::sin(i / 10.0f);
 
       if (i % 50 == 0) {
         renderer.DeregisterDynamicMesh("dyn_mesh");
