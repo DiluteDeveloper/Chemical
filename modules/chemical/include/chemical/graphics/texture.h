@@ -3,6 +3,7 @@
 #include "chemical/util/image.h"
 
 namespace Chemical {
+
   namespace Graphics {
 
     struct TextureTraits {
@@ -15,13 +16,18 @@ namespace Chemical {
     };
 
     using TextureID = std::string;
+
     class Texture {
     public:
+      // Constructor is only public for in-place construction with
+      // standard library types
       Texture(const TextureTraits &traits);
+      Texture(Texture &&other) : gl_texture_id(other.gl_texture_id) { other.gl_texture_id = 0; }
       ~Texture();
 
-      void Bind() const;
-      Texture(Texture &&other) : gl_texture_id(other.gl_texture_id) { other.gl_texture_id = 0; }
+    protected:
+      friend class Renderer;
+
       Texture &operator=(Texture &&other) {
         gl_texture_id = other.gl_texture_id;
         other.gl_texture_id = 0;
@@ -30,7 +36,7 @@ namespace Chemical {
       Texture(const Texture &other) = delete;
       Texture &operator=(const Texture &other) = delete;
 
-    private:
+      void Bind() const;
       unsigned int gl_texture_id = 0;
     };
   } // namespace Graphics

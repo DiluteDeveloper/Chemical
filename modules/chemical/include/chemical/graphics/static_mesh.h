@@ -1,10 +1,11 @@
 #pragma once
 
-#include "chemical/graphics/static_material.h"
 #include "chemical/util/transform.h"
+#include "material.h"
 #include "shader.h"
 
 #include <vector>
+
 namespace Chemical {
 
   namespace Graphics {
@@ -14,10 +15,9 @@ namespace Chemical {
     enum class Shape { SQUARE, TRIANGLE };
 
     struct StaticMeshTraits {
-      StaticMeshTraits(const std::vector<float> &vertices, const std::vector<unsigned int> &indices,
-                       const ShaderID &shader_id = "default", const MaterialID &material_id = "default");
-      StaticMeshTraits(Shape shape, const ShaderID &shader_id = "default",
-                       const MaterialID &material_id = "default");
+      StaticMeshTraits(Shape shape);
+      StaticMeshTraits(const std::vector<float> &vertices, const std::vector<unsigned int> &indices)
+          : vertices(vertices), indices(indices) {};
 
       std::vector<unsigned int> indices;
       std::vector<float> vertices;
@@ -29,14 +29,19 @@ namespace Chemical {
 
     class StaticMesh {
     public:
+      // Constructor is only public for in-place construction with
+      // standard library types
       StaticMesh(const StaticMeshTraits &traits);
-
-      ~StaticMesh();
       StaticMesh(StaticMesh &&other)
           : vao(other.vao), indice_count(other.indice_count), transform(std::move(other.transform)),
             material_id(other.material_id) {
         other.vao = 0;
       }
+      ~StaticMesh();
+
+    protected:
+      friend class Renderer;
+
       StaticMesh &operator=(StaticMesh &&other) {
         vao = other.vao;
         other.vao = 0;
@@ -48,18 +53,15 @@ namespace Chemical {
       StaticMesh(const StaticMesh &other) = delete;
       StaticMesh &operator=(const StaticMesh &other) = delete;
 
-      // temporarily publicised
       MaterialID material_id = "default";
 
       Transform transform;
 
-    private:
-      friend class Renderer;
       void Draw() const;
 
       unsigned int vao = 0;
       unsigned int indice_count = 0;
-      ShaderID shader_id = 0;
+      ShaderID shader_id = "default";
     };
 
   } // namespace Graphics

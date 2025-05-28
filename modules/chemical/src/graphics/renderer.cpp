@@ -1,6 +1,6 @@
 #include "chemical/graphics/renderer.h"
 
-#include "resources.h"
+#include "chemical/resources.h"
 
 #include <spdlog/spdlog.h>
 #include <tuple>
@@ -23,7 +23,7 @@ namespace Chemical {
       Material default_material;
       RegisterMaterial(default_material, "default");
 
-      TextureTraits default_texture(GetResourceDirectory("textures/funny2.png"));
+      TextureTraits default_texture(GetResourceDirectory("textures/1x1.png"));
 
       RegisterTexture(default_texture, "default");
     }

@@ -1,7 +1,5 @@
 #include "chemical/graphics/shader.h"
 
-#include "resources.h"
-
 #include <cassert>
 #include <fstream>
 #include <glad/glad.h>

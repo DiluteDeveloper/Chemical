@@ -11,8 +11,8 @@ namespace Chemical {
       glTextureParameteri(gl_texture_id, GL_TEXTURE_MIN_FILTER, (GLint)traits.scaling_filter);
       glTextureParameteri(gl_texture_id, GL_TEXTURE_MAG_FILTER, (GLint)traits.scaling_filter);
 
-      glTextureStorage2D(gl_texture_id, 1, GL_RGBA8, traits.image.width, traits.image.height);
-      glTextureSubImage2D(gl_texture_id, 0, 0, 0, traits.image.width, traits.image.height, GL_RGBA,
+      glTextureStorage2D(gl_texture_id, 1, GL_RGB8, traits.image.width, traits.image.height);
+      glTextureSubImage2D(gl_texture_id, 0, 0, 0, traits.image.width, traits.image.height, GL_RGB,
                           GL_UNSIGNED_BYTE, &traits.image.data[0]);
 
       glGenerateTextureMipmap(gl_texture_id);

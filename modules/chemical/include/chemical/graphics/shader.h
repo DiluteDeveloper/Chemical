@@ -4,6 +4,7 @@
 #include <unordered_map>
 
 namespace Chemical {
+
   namespace Graphics {
 
     using ShaderID = std::string;
@@ -20,13 +21,18 @@ namespace Chemical {
 
     class Shader {
     public:
+      // Constructor is only public for in-place construction with
+      // standard library types
       Shader(const ShaderTraits &traits);
-      ~Shader();
-
       Shader(Shader &&other)
           : uniform_locations(std::move(other.uniform_locations)), renderer_id(other.renderer_id) {
         other.renderer_id = 0;
       }
+      ~Shader();
+
+    protected:
+      friend class Renderer;
+
       Shader &operator=(Shader &&other) {
         uniform_locations = std::move(other.uniform_locations);
         renderer_id = other.renderer_id;
@@ -182,7 +188,6 @@ namespace Chemical {
       void SetUniformMatrix3x2DV(const std::string_view &name, int count, bool transpose,
                                  double const *value) const;
 
-    private:
       unsigned int renderer_id = 0;
 
       std::unordered_map<std::string, int> uniform_locations;

@@ -1,25 +1,24 @@
 #pragma once
 
-#include "chemical/graphics/static_material.h"
+#include "chemical/graphics/material.h"
 #include "chemical/graphics/static_mesh.h"
 #include "chemical/graphics/texture.h"
 
+#include <memory>
 #include <optional>
 #include <unordered_map>
 #include <vector>
 
 namespace Chemical {
+
   namespace Graphics {
 
-    struct ShadersStaticMeshes;
     // Dynamic meshes are represented by static meshes temporarily until
     // dynamic meshes are actually implemented
     class Renderer {
     public:
       // Will be moved to new DynamicMesh class in a future version
       using DynamicMeshID = std::string;
-
-      Renderer();
 
       int RegisterStaticMesh(const StaticMeshTraits &traits);
 
@@ -39,6 +38,18 @@ namespace Chemical {
       void Render() const;
 
     private:
+      friend std::unique_ptr<Renderer> std::make_unique<Renderer>();
+
+      Renderer();
+
+      struct ShadersStaticMeshes {
+        Shader shader;
+        std::vector<StaticMesh> static_meshes;
+
+        ShadersStaticMeshes(const ShaderTraits &traits) : shader(traits) {}
+        ShadersStaticMeshes(Shader &&mv_shader) : shader(std::move(mv_shader)) {}
+      };
+
       std::unordered_map<ShaderID, ShadersStaticMeshes> ssm;
 
       std::unordered_map<DynamicMeshID, StaticMesh> dynamic_meshes;
@@ -48,12 +59,5 @@ namespace Chemical {
       std::unordered_map<TextureID, Texture> textures;
     };
 
-    struct ShadersStaticMeshes {
-      Shader shader;
-      std::vector<StaticMesh> static_meshes;
-
-      ShadersStaticMeshes(const ShaderTraits &traits) : shader(traits) {}
-      ShadersStaticMeshes(Shader &&mv_shader) : shader(std::move(mv_shader)) {}
-    };
   } // namespace Graphics
 } // namespace Chemical

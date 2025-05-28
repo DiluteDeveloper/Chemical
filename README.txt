@@ -1,3 +1,11 @@
+Chemical 1.1.8
+
+Changed Core module into a class
+Put Renderer object onto Core module
+Fixed a bug related to renderer
+Gameloop is now contained in Core and is subscribed to. see main.cpp
+Removed misc.h and misc.cpp and put functionality in Core
+
 Chemical 1.1.7
 
 Added support for textures in renderer and texture traits and shader
