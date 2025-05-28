@@ -1,6 +1,5 @@
-#include "resources.h"
+#include "chemical/core.h"
 
-#include <chemical/util/image_loader.h>
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include <spdlog/spdlog.h>
@@ -20,11 +19,6 @@ namespace Chemical {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    // for testing
-    Util::Image image = Util::LoadImage(GetResourceDirectory("textures/chess.jpg"));
-
-    spdlog::info("x: {}, y: {}", image.x, image.y);
   }
 
   void TerminateChemical() {

@@ -9,7 +9,7 @@ int main() {
   InitialiseChemical();
 
   {
-    std::optional<Window> window = CreateNewWindow("Chemical 1.1.6", 1280, 720);
+    std::optional<Window> window = CreateNewWindow("Chemical 1.1.7", 1280, 720);
 
     if (!window.has_value())
       return -1;
@@ -19,23 +19,19 @@ int main() {
     Graphics::SetBackgroundColour(background);
 
     Graphics::Material mat1(glm::vec3(200, 100, 100));
-    Graphics::Material def(glm::vec3(255, 255, 255));
 
-    Graphics::StaticMeshTraits mesh_traits(Graphics::Shape::SQUARE, "default", "mat1");
+    Graphics::StaticMeshTraits mesh_traits(Graphics::Shape::SQUARE);
     Graphics::StaticMeshTraits mesh_traits_2(Graphics::Shape::TRIANGLE, "default", "mat1");
+    Graphics::StaticMeshTraits mesh_traits_3(Graphics::Shape::SQUARE);
+    mesh_traits_3.transform.position.x = -0.5f;
+    mesh_traits_3.transform.position.y = 0.5f;
+    mesh_traits_3.transform.scale = glm::vec2(0.5f, 0.5f);
 
     Graphics::Renderer renderer;
 
-    // Graphics::Shader *default_shader = renderer.GetShader("default");
-    //
-    // if (default_shader != nullptr) {
-    //   default_shader->SetUniform3F("colour", 0.5f, 0.8f, 0.9f);
-    // }
-
     Graphics::Material &m = renderer.RegisterMaterial(mat1, "mat1");
 
-    renderer.RegisterMaterial(def, "default");
-
+    renderer.RegisterStaticMesh(mesh_traits_3);
     auto dyn = renderer.RegisterDynamicMesh(mesh_traits, "dyn_mesh");
     if (!dyn.has_value())
       return -1;

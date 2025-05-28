@@ -12,7 +12,7 @@ namespace Chemical {
     unsigned int BuildShaderFromSourceFile(const std::string_view &file_path, GLenum type) {
       // Reading in source from file -------------------------------------
 
-      std::fstream file(GetResourceDirectory(file_path));
+      std::fstream file(file_path.data());
 
       if (!file) {
         spdlog::error("File \"{}\" failed to open.", file_path);

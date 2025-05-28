@@ -2,6 +2,7 @@
 
 #include "chemical/graphics/static_material.h"
 #include "chemical/graphics/static_mesh.h"
+#include "chemical/graphics/texture.h"
 
 #include <optional>
 #include <unordered_map>
@@ -33,6 +34,8 @@ namespace Chemical {
 
       Material &RegisterMaterial(const Material &material, const MaterialID &id);
 
+      TextureID RegisterTexture(const TextureTraits &traits, const TextureID &id);
+
       void Render() const;
 
     private:
@@ -41,6 +44,8 @@ namespace Chemical {
       std::unordered_map<DynamicMeshID, StaticMesh> dynamic_meshes;
 
       std::unordered_map<MaterialID, Material> materials;
+
+      std::unordered_map<TextureID, Texture> textures;
     };
 
     struct ShadersStaticMeshes {

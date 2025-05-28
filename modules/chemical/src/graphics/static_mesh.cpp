@@ -12,11 +12,12 @@ namespace Chemical {
 
       switch (shape) {
       case Shape::TRIANGLE:
-        vertices = {-0.5f, -0.5f, 0.0f, 0.5f, 0.5f, -0.5f};
+        vertices = {-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 1.0f, 0.5f, -0.5f, 1.0f, 0.0f};
         indices = {0, 1, 2};
         break;
       case Shape::SQUARE:
-        vertices = {-0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f, 0.5f, -0.5f};
+        vertices = {-0.5f, -0.5f, 0.0f, 0.0f, -0.5f, 0.5f,  0.0f, 1.0f,
+                    0.5f,  0.5f,  1.0f, 1.0f, 0.5f,  -0.5f, 1.0f, 0.0f};
         indices = {0, 1, 2, 3, 0, 2};
         break;
       }
@@ -43,17 +44,20 @@ namespace Chemical {
 
       glCreateVertexArrays(1, &vao);
 
-      glVertexArrayVertexBuffer(vao, 0, VBO, 0, sizeof(float) * 2);
+      glVertexArrayVertexBuffer(vao, 0, VBO, 0, sizeof(float) * 4);
       glVertexArrayElementBuffer(vao, IBO);
 
       glEnableVertexArrayAttrib(vao, 0);
+      glEnableVertexArrayAttrib(vao, 1);
 
       glVertexArrayAttribFormat(vao, 0, 2, GL_FLOAT, GL_FALSE, 0);
+      glVertexArrayAttribFormat(vao, 1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2);
 
       glVertexArrayAttribBinding(vao, 0, 0);
+      glVertexArrayAttribBinding(vao, 1, 0);
 
-      glDeleteBuffers(1, &VBO);
-      glDeleteBuffers(1, &IBO);
+      // glDeleteBuffers(1, &VBO);
+      // glDeleteBuffers(1, &IBO);
     }
 
     void StaticMesh::Draw() const {

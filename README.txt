@@ -1,3 +1,10 @@
+Chemical 1.1.7
+
+Added support for textures in renderer and texture traits and shader
+renamed image_loader.h to image.h 
+removed test image load in core
+definitely needs refactoring
+
 Chemical 1.1.6
 
 Added transform component to StaticMesh and StaticMeshTraits,

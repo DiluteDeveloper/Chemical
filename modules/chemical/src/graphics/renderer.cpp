@@ -1,5 +1,7 @@
 #include "chemical/graphics/renderer.h"
 
+#include "resources.h"
+
 #include <spdlog/spdlog.h>
 #include <tuple>
 #include <utility>
@@ -11,11 +13,19 @@ namespace Chemical {
 
       spdlog::info("Initialising and registering default 2D shader");
       // Create and register default 2D shader
-      ShaderTraits s("default");
-      s.vs_file_path = "shaders/test_shader.vs";
-      s.fs_file_path = "shaders/test_shader.fs";
+      ShaderTraits default_shader("default");
 
-      RegisterShader(s);
+      default_shader.vs_file_path = GetResourceDirectory("shaders/test_shader.vs");
+      default_shader.fs_file_path = GetResourceDirectory("shaders/test_shader.fs");
+
+      RegisterShader(default_shader);
+
+      Material default_material;
+      RegisterMaterial(default_material, "default");
+
+      TextureTraits default_texture(GetResourceDirectory("textures/funny2.png"));
+
+      RegisterTexture(default_texture, "default");
     }
 
     int Renderer::RegisterStaticMesh(const StaticMeshTraits &traits) {
@@ -101,14 +111,19 @@ namespace Chemical {
       return materials.emplace(id, material).first->second;
     }
 
+    TextureID Renderer::RegisterTexture(const TextureTraits &traits, const TextureID &id) {
+      return textures.emplace(id, traits).first->first;
+    }
     void Renderer::Render() const {
 
       for (const auto &[shader_id, ssm] : ssm) {
         ssm.shader.Bind();
 
         for (const auto &mesh : ssm.static_meshes) {
-          glm::vec3 albedo = materials.at(mesh.material_id).albedo;
-          ssm.shader.SetUniform3F("colour", albedo.r / 255.0f, albedo.g / 255.0f, albedo.b / 255.0f);
+
+          const Material &m = materials.at(mesh.material_id);
+          textures.at(m.texture_id).Bind();
+          ssm.shader.SetUniform3F("colour", m.albedo.r / 255.0f, m.albedo.g / 255.0f, m.albedo.b / 255.0f);
           ssm.shader.SetUniformMatrix3FV("v_model", 1, false, &mesh.transform.GetTransform()[0][0]);
           mesh.Draw();
         }
@@ -118,8 +133,9 @@ namespace Chemical {
 
         const Shader &shader = ssm.at(mesh.shader_id).shader;
         shader.Bind();
-        glm::vec3 albedo = materials.at(mesh.material_id).albedo;
-        shader.SetUniform3F("colour", albedo.r / 255.0f, albedo.g / 255.0f, albedo.b / 255.0f);
+        const Material &m = materials.at(mesh.material_id);
+        textures.at(m.texture_id).Bind();
+        shader.SetUniform3F("colour", m.albedo.r / 255.0f, m.albedo.g / 255.0f, m.albedo.b / 255.0f);
 
         shader.SetUniformMatrix3FV("v_model", 1, false, &mesh.transform.GetTransform()[0][0]);
         mesh.Draw();
