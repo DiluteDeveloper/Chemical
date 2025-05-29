@@ -1,3 +1,9 @@
+Chemical 1.1.9
+
+Implemented new Scene system and new renderer SceneRenderer
+Resources are stored in Scene for now till ResourceManager
+is implemented in the next update
+
 Chemical 1.1.8
 
 Changed Core module into a class

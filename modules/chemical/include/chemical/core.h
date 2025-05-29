@@ -1,8 +1,9 @@
 #pragma once
 
-#include "graphics/renderer.h"
+#include "graphics/scene_renderer.h"
 
 #include <functional>
+#include <memory>
 
 class GLFWwindow;
 namespace Chemical {
@@ -16,12 +17,13 @@ namespace Chemical {
     void SetGameLoopCallback(const std::function<void(Core &)> &callback);
     void StartGameLoop();
 
-    Graphics::Renderer &GetRenderer();
+    Scene &GetScene();
 
     void SetBackgroundColour(const glm::vec3 &colour);
 
   private:
-    std::unique_ptr<Graphics::Renderer> renderer;
+    std::unique_ptr<Graphics::SceneRenderer> renderer;
+    std::unique_ptr<Scene> scene;
 
     Window window;
 

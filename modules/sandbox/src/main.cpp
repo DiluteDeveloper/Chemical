@@ -1,38 +1,43 @@
 #include "chemical/core.h"
-#include "chemical/graphics/material.h"
-#include "chemical/graphics/texture.h"
 #include "chemical/resources.h"
 
 using namespace Chemical;
 
-void GameLoop(Core &core) { core.GetRenderer().Render(); }
+void GameLoop(Core &core) {
+
+  Scene &scene = core.GetScene();
+  scene.GetTransform("right")->rotation += 0.6f;
+}
 
 int main() {
-  Chemical::Core core;
+  Core core;
+  Scene &scene = core.GetScene();
 
   core.SetGameLoopCallback(GameLoop);
-
-  Graphics::Renderer &renderer = core.GetRenderer();
 
   core.SetBackgroundColour(glm::vec3(50, 100, 50));
 
   Graphics::TextureTraits texture(GetResourceDirectory("textures/funny.png"));
+  scene.CreateTexture(texture, "funny_texture");
 
-  Graphics::Material mat1;
-  mat1.albedo = glm::vec3(200, 10, 10);
-  mat1.texture_id = "funny";
+  Graphics::Material *mat1 = scene.CreateMaterial("mat1");
+  mat1->albedo = glm::vec3(255, 255, 255);
+  mat1->texture_id = "funny_texture";
 
-  Graphics::StaticMeshTraits mesh(Graphics::Shape::SQUARE);
-  mesh.transform.position.x -= 0.5f;
-  mesh.transform.scale *= 0.5f;
-  mesh.material_id = "mat1";
-  Graphics::StaticMeshTraits mesh2(Graphics::Shape::TRIANGLE);
+  Graphics::StaticMeshTraits square(Graphics::Shape::SQUARE);
+  square.material_id = "mat1";
+  square.transform_id = "left";
+  Graphics::StaticMeshTraits triangle(Graphics::Shape::TRIANGLE);
+  triangle.material_id = "mat1";
+  triangle.transform_id = "right";
 
-  renderer.RegisterTexture(texture, "funny");
-  renderer.RegisterMaterial(mat1, "mat1");
+  Transform *left = scene.CreateTransform("left");
+  left->position.x = -0.5f;
+  Transform *right = scene.CreateTransform("right");
+  right->position.x = 0.5f;
 
-  renderer.RegisterStaticMesh(mesh);
-  renderer.RegisterStaticMesh(mesh2);
+  scene.CreateStaticMesh(square);
+  scene.CreateStaticMesh(triangle);
 
   core.StartGameLoop();
   return 0;

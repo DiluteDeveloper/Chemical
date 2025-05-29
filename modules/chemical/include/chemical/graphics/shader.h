@@ -7,31 +7,22 @@ namespace Chemical {
 
   namespace Graphics {
 
-    using ShaderID = std::string;
     struct ShaderTraits {
       std::string vs_file_path = "";
       std::string fs_file_path = "";
       std::string gs_file_path = "";
       std::string cs_file_path = "";
-
-      ShaderID id = "";
-
-      ShaderTraits(const ShaderID &id) : id(id) {}
     };
 
     class Shader {
     public:
-      // Constructor is only public for in-place construction with
-      // standard library types
+      ~Shader();
+
       Shader(const ShaderTraits &traits);
       Shader(Shader &&other)
           : uniform_locations(std::move(other.uniform_locations)), renderer_id(other.renderer_id) {
         other.renderer_id = 0;
       }
-      ~Shader();
-
-    protected:
-      friend class Renderer;
 
       Shader &operator=(Shader &&other) {
         uniform_locations = std::move(other.uniform_locations);
@@ -41,6 +32,10 @@ namespace Chemical {
       }
       Shader(const Shader &other) = delete;
       Shader &operator=(const Shader &other) = delete;
+
+    protected:
+      friend class Renderer;
+      friend class SceneRenderer;
 
       void Bind() const;
 

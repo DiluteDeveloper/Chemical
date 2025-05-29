@@ -21,7 +21,7 @@ namespace Chemical {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    std::optional<Window> opt_window = CreateNewWindow("Chemical 1.1.8", 1280, 720);
+    std::optional<Window> opt_window = CreateNewWindow("Chemical 1.1.9", 1280, 720);
 
     if (!opt_window.has_value()) {
       spdlog::critical("Window initialisation failed");
@@ -30,7 +30,8 @@ namespace Chemical {
 
     window = opt_window.value();
 
-    renderer = std::make_unique<Graphics::Renderer>();
+    renderer = std::make_unique<Graphics::SceneRenderer>();
+    scene = std::make_unique<Scene>();
 
     stbi_set_flip_vertically_on_load(true);
   }
@@ -38,6 +39,7 @@ namespace Chemical {
 
     spdlog::info("Terminating Chemical");
     delete renderer.release();
+    delete scene.release();
     glfwTerminate();
   }
 
@@ -52,6 +54,8 @@ namespace Chemical {
       glClear(GL_COLOR_BUFFER_BIT);
       game_loop_callback(*this);
 
+      renderer->RenderScene(*scene.get());
+
       glfwSwapBuffers(window);
 
       glfwPollEvents();
@@ -61,5 +65,5 @@ namespace Chemical {
   void Core::SetBackgroundColour(const glm::vec3 &colour) {
     glClearColor(colour.r / 255.0f, colour.g / 255.0f, colour.b / 255.0f, 1.0f);
   }
-  Graphics::Renderer &Core::GetRenderer() { return *renderer.get(); }
+  Scene &Core::GetScene() { return *scene.get(); }
 } // namespace Chemical

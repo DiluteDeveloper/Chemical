@@ -15,8 +15,6 @@ namespace Chemical {
       TextureTraits(const Util::Image image_data) : image(image_data) {}
     };
 
-    using TextureID = std::string;
-
     class Texture {
     public:
       // Constructor is only public for in-place construction with
@@ -27,6 +25,7 @@ namespace Chemical {
 
     protected:
       friend class Renderer;
+      friend class SceneRenderer;
 
       Texture &operator=(Texture &&other) {
         gl_texture_id = other.gl_texture_id;

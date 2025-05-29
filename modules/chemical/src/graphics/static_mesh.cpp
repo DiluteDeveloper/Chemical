@@ -23,8 +23,8 @@ namespace Chemical {
     }
 
     StaticMesh::StaticMesh(const Graphics::StaticMeshTraits &traits)
-        : indice_count(traits.indices.size()), shader_id(traits.shader_id), material_id(traits.material_id),
-          transform(traits.transform) {
+        : indice_count(traits.indices.size()), material_id(traits.material_id),
+          transform_id(traits.transform_id) {
 
       unsigned int VBO = 0;
       glCreateBuffers(1, &VBO);

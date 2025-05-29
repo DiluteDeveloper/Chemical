@@ -7,6 +7,7 @@ Makefile
 *.sh
 compile_commands.json
 .clang-format
+.ignore
 
 # User-specific files
 *.rsuser
