@@ -1,5 +1,6 @@
 #include "chemical/core.h"
 
+#include "chemical/resource_manager.h"
 #include "chemical/window.h"
 
 #include <glad/glad.h>
@@ -21,7 +22,7 @@ namespace Chemical {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    std::optional<Window> opt_window = CreateNewWindow("Chemical 1.1.9", 1280, 720);
+    std::optional<Window> opt_window = CreateNewWindow("Chemical 1.1.9.5", 1280, 720);
 
     if (!opt_window.has_value()) {
       spdlog::critical("Window initialisation failed");
@@ -30,8 +31,10 @@ namespace Chemical {
 
     window = opt_window.value();
 
-    renderer = std::make_unique<Graphics::SceneRenderer>();
-    scene = std::make_unique<Scene>();
+    resources = std::make_unique<ResourceManager>("/mnt/storage/Chemical/Chemical/modules/chemical/res/");
+
+    renderer = std::make_unique<Graphics::Renderer>(*resources.get());
+    active_scene = std::make_unique<Scene>();
 
     stbi_set_flip_vertically_on_load(true);
   }
@@ -39,7 +42,8 @@ namespace Chemical {
 
     spdlog::info("Terminating Chemical");
     delete renderer.release();
-    delete scene.release();
+    delete active_scene.release();
+    delete resources.release();
     glfwTerminate();
   }
 
@@ -54,7 +58,7 @@ namespace Chemical {
       glClear(GL_COLOR_BUFFER_BIT);
       game_loop_callback(*this);
 
-      renderer->RenderScene(*scene.get());
+      renderer->RenderScene(*active_scene.get());
 
       glfwSwapBuffers(window);
 
@@ -65,5 +69,7 @@ namespace Chemical {
   void Core::SetBackgroundColour(const glm::vec3 &colour) {
     glClearColor(colour.r / 255.0f, colour.g / 255.0f, colour.b / 255.0f, 1.0f);
   }
-  Scene &Core::GetScene() { return *scene.get(); }
+  Scene *Core::GetActiveScene() { return active_scene.get(); }
+  ResourceManager &Core::GetResourceManager() { return *resources.get(); }
+
 } // namespace Chemical

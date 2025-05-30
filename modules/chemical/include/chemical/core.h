@@ -1,6 +1,7 @@
 #pragma once
 
-#include "graphics/scene_renderer.h"
+#include "chemical/resource_manager.h"
+#include "graphics/renderer.h"
 
 #include <functional>
 #include <memory>
@@ -17,13 +18,15 @@ namespace Chemical {
     void SetGameLoopCallback(const std::function<void(Core &)> &callback);
     void StartGameLoop();
 
-    Scene &GetScene();
+    Scene *GetActiveScene();
+    ResourceManager &GetResourceManager();
 
     void SetBackgroundColour(const glm::vec3 &colour);
 
   private:
-    std::unique_ptr<Graphics::SceneRenderer> renderer;
-    std::unique_ptr<Scene> scene;
+    std::unique_ptr<Graphics::Renderer> renderer;
+    std::unique_ptr<Scene> active_scene;
+    std::unique_ptr<ResourceManager> resources;
 
     Window window;
 

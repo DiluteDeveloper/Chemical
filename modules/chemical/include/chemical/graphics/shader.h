@@ -33,13 +33,12 @@ namespace Chemical {
       Shader(const Shader &other) = delete;
       Shader &operator=(const Shader &other) = delete;
 
+      unsigned int GetCompileStatus();
+
     protected:
       friend class Renderer;
-      friend class SceneRenderer;
 
       void Bind() const;
-
-      unsigned int GetCompileStatus();
 
       void SetUniform1F(const std::string_view &name, float value) const;
       void SetUniform2F(const std::string_view &name, float value1, float value2) const;

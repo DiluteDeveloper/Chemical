@@ -25,7 +25,6 @@ namespace Chemical {
 
     protected:
       friend class Renderer;
-      friend class SceneRenderer;
 
       Texture &operator=(Texture &&other) {
         gl_texture_id = other.gl_texture_id;

@@ -1,3 +1,7 @@
+Chemical 1.1.9.5
+
+Added ResourceManager
+
 Chemical 1.1.9
 
 Implemented new Scene system and new renderer SceneRenderer

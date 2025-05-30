@@ -9,8 +9,6 @@ namespace Chemical {
 
   namespace Graphics {
 
-    class StaticMesh;
-
     enum class Shape { SQUARE, TRIANGLE };
 
     struct StaticMeshTraits {
@@ -38,9 +36,11 @@ namespace Chemical {
       }
       ~StaticMesh();
 
+      ObjectID material_id = "default";
+      ObjectID transform_id = "default";
+
     protected:
       friend class Renderer;
-      friend class SceneRenderer;
 
       StaticMesh &operator=(StaticMesh &&other) {
         vao = other.vao;
@@ -57,8 +57,6 @@ namespace Chemical {
 
       unsigned int vao = 0;
       unsigned int indice_count = 0;
-      ObjectID material_id = "default";
-      ObjectID transform_id = "default";
     };
 
   } // namespace Graphics
