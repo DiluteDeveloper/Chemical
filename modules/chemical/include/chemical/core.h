@@ -1,15 +1,14 @@
 #pragma once
 
-#include "chemical/resource_manager.h"
+#include "chemical/window.h"
 #include "graphics/renderer.h"
 
 #include <functional>
 #include <memory>
 
-class GLFWwindow;
 namespace Chemical {
 
-  using Window = GLFWwindow *;
+  // Represents the entire Chemical Engine
   class Core {
   public:
     Core();
@@ -19,17 +18,21 @@ namespace Chemical {
     void StartGameLoop();
 
     Scene *GetActiveScene();
-    ResourceManager &GetResourceManager();
 
     void SetBackgroundColour(const glm::vec3 &colour);
+
+    bool doTerminate = false;
 
   private:
     std::unique_ptr<Graphics::Renderer> renderer;
     std::unique_ptr<Scene> active_scene;
-    std::unique_ptr<ResourceManager> resources;
 
     Window window;
 
     std::function<void(Core &)> game_loop_callback;
+
+    void Terminate();
+
+    void ConfigureSpdlog() const;
   };
 } // namespace Chemical

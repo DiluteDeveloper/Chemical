@@ -7,6 +7,8 @@ namespace Chemical {
 
   namespace Graphics {
 
+    // Eventually this will be loaded from file,
+    // so keep it as it is
     struct ShaderTraits {
       std::string vs_file_path = "";
       std::string fs_file_path = "";
@@ -14,29 +16,37 @@ namespace Chemical {
       std::string cs_file_path = "";
     };
 
+    // Represents an OpenGL shader program object and its functionality
+    // Deleted copy ctor & operator, custom move ctor and operator
     class Shader {
     public:
+      // Creates and compiles the OpenGL shader program object,
+      // if this fails GetCompileStatus() returns 0
+      Shader(const ShaderTraits &traits);
+
+      // Deletes the OpenGL shader program object
       ~Shader();
 
-      Shader(const ShaderTraits &traits);
-      Shader(Shader &&other)
-          : uniform_locations(std::move(other.uniform_locations)), renderer_id(other.renderer_id) {
-        other.renderer_id = 0;
+      int compile_status = 1;
+
+      Shader(Shader &&other) : uniform_locations(std::move(other.uniform_locations)), gl_id(other.gl_id) {
+        other.gl_id = 0;
       }
 
       Shader &operator=(Shader &&other) {
         uniform_locations = std::move(other.uniform_locations);
-        renderer_id = other.renderer_id;
-        other.renderer_id = 0;
+        gl_id = other.gl_id;
+        other.gl_id = 0;
         return *this;
       }
-      Shader(const Shader &other) = delete;
-      Shader &operator=(const Shader &other) = delete;
-
-      unsigned int GetCompileStatus();
 
     protected:
+      // All functionality that only the renderer/s should have access to
+
       friend class Renderer;
+
+      Shader(const Shader &other) = delete;
+      Shader &operator=(const Shader &other) = delete;
 
       void Bind() const;
 
@@ -182,11 +192,19 @@ namespace Chemical {
       void SetUniformMatrix3x2DV(const std::string_view &name, int count, bool transpose,
                                  double const *value) const;
 
-      unsigned int renderer_id = 0;
+      // Not intended to be accessed by renderer/s
+      unsigned int gl_id = 0;
 
+      // Not intended to be accessed by renderer/s
       std::unordered_map<std::string, int> uniform_locations;
 
-      void FinaliseProgram();
+      // Not intended to be accessed by renderer/s
+      // Compiles the shader program
+      bool FinaliseProgram();
+
+      // Not intended to be accessed by renderer/s
+      // Compiles a shader from a file containing its source
+      unsigned int CompileShaderFromFile(const std::string_view &file_path, int type);
     };
   } // namespace Graphics
 } // namespace Chemical

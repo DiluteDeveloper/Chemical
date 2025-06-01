@@ -10,7 +10,8 @@ namespace Chemical {
     glm::vec2 scale = glm::vec2(1.0f);
     float rotation = 0.0f;
 
-    Transform(glm::vec2 position = glm::vec2(0.0f), float rotation = 0.0f, glm::vec2 scale = glm::vec2(1.0f))
+    Transform(const glm::vec2 &position = glm::vec2(0.0f), float rotation = 0.0f,
+              const glm::vec2 &scale = glm::vec2(1.0f))
         : position(position), rotation(rotation), scale(scale) {}
     glm::mat3 GetTransform() const {
 

@@ -8,30 +8,37 @@ namespace Chemical {
 
   std::optional<Window> CreateNewWindow(const std::string_view &title, unsigned int width,
                                         unsigned int height) {
-    spdlog::info("Creating Window");
+    SPDLOG_INFO(R"(Creating window "{}")", title);
 
     GLFWwindow *window = glfwCreateWindow(width, height, title.data(), nullptr, nullptr);
 
     if (!window) {
-      spdlog::error("GLFW window creation failed");
+      SPDLOG_CRITICAL(R"(Failed to create window "{}" : glfwCreateWindow failed)", title);
       return nullptr;
     }
     glfwMakeContextCurrent(window);
 
-    spdlog::info("Initialising GLAD for window \"{0}\"", title.data());
+    SPDLOG_INFO(R"(Loading OpenGL functions for window "{}")", title);
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-      spdlog::critical("GLAD initialisation failed");
+      SPDLOG_CRITICAL(R"(Failed to create window "{}" : gladLoadGLLoader failed)", title);
       return nullptr;
     }
 
+    SPDLOG_INFO(R"(Turning on VSync for window "{}")", title);
     glfwSwapInterval(1);
 
     return (Window)window;
   }
 
-  void DestroyWindow(Window window) { glfwDestroyWindow(window); }
+  void DestroyWindow(Window window) {
+    glfwDestroyWindow(window);
+  }
 
-  void BindWindow(Window window) { glfwMakeContextCurrent(window); }
+  void BindWindow(Window window) {
+    glfwMakeContextCurrent(window);
+  }
 
-  bool WindowShouldClose(Window window) { return glfwWindowShouldClose(window); }
+  bool WindowShouldClose(Window window) {
+    return glfwWindowShouldClose(window);
+  }
 } // namespace Chemical

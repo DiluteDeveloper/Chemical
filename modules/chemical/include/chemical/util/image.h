@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <string_view>
 
 namespace Chemical {
@@ -13,9 +14,8 @@ namespace Chemical {
           : width(x), height(y), bit_depth(bit_depth), data(data) {}
       Image() {}
     };
-
     // Always outputs a bit depth of 8
-    extern Image LoadImage(const std::string_view &file_path, int req_comp = 0);
+    extern std::optional<Image> LoadImage(const std::string_view &file_path, int req_comp = 0);
 
   } // namespace Util
 

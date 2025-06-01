@@ -8,28 +8,31 @@
 #include <unordered_map>
 namespace Chemical {
 
-  namespace Graphics {
-    class Renderer;
-  }
+  namespace Graphics { class Renderer; }
 
   using ResourceFilePath = std::string;
 
-  // Loads resources from file into memory;
+  // loads resources from file into memory;
   // Intended to exist for the lifetime of application
   // resources in this class are essentially const on load
-  // TODO: Make this class actually load assets from file
+  // TODO: Make this class actually load resources from file
+  // TODO: Split Acquire into Create and Get; having them one in the same
+  // makes it hard to know when you have accidentally created a new object
+  // instead of using an existing one
   class ResourceManager {
   public:
-    Graphics::Material *LoadMaterial(const ResourceFilePath &id);
-    Graphics::Material *GetMaterial(const ResourceFilePath &id);
+    // Get existing material if id exists, otherwise create and get
+    Graphics::Material &AcquireMaterial(const ResourceFilePath &id);
 
-    Graphics::Texture *LoadTexture(const Graphics::TextureTraits &traits, const ResourceFilePath &id);
+    Graphics::Texture &
+    CreateTexture(const Util::Image &image, const ResourceFilePath &id,
+                  Graphics::Texture::ScalingFilter scaling_filter = Graphics::Texture::ScalingFilter::LINEAR);
     Graphics::Texture *GetTexture(const ResourceFilePath &id);
 
-    Graphics::Shader *LoadShader(const Graphics::ShaderTraits &traits, const ResourceFilePath &id);
+    Graphics::Shader *CreateShader(const Graphics::ShaderTraits &traits, const ResourceFilePath &id);
     Graphics::Shader *GetShader(const ResourceFilePath &id);
 
-    std::string GetResourceFilePath(const ResourceFilePath &affix = "");
+    std::string GetResourceFilePath(const ResourceFilePath &affix = "") const;
 
     ResourceManager(const std::string_view &resource_directory) : resource_directory(resource_directory) {}
 

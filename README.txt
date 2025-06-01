@@ -1,3 +1,20 @@
+Chemical 1.2
+
+Completely overhauled Scene
+Deprecated ResourceManager
+Change to C++ dialect 23
+Added a fair few code comments
+Added very verbose logging system throughout
+Renamed albedo to tint in material and added
+default argument constructor
+Made opengl object naming consistent with naming 
+object identifier variables gl_id
+Changed static mesh traits constructor
+Changed indice_count to idx_count in static mesh
+Scene now constructs the default shader object in ctor
+Changed main.cpp to reflect changes but kept same testing
+scenario as 1.1.9.5
+
 Chemical 1.1.9.5
 
 Added ResourceManager

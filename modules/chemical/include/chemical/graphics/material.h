@@ -10,8 +10,11 @@ namespace Chemical {
 
     struct Material {
 
-      glm::vec3 albedo = glm::vec3(255.0f, 255.0f, 255.0f);
+      glm::vec3 tint = glm::vec3(255.0f);
       ObjectID texture_id = "default";
+
+      Material(const ObjectID &texture_id = "default", const glm::vec3 &tint = glm::vec3(255.0f))
+          : tint(tint), texture_id(texture_id) {}
     };
   } // namespace Graphics
 } // namespace Chemical

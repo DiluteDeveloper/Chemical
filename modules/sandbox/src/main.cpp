@@ -1,10 +1,13 @@
 #include "chemical/core.h"
-#include "chemical/resource_manager.h"
+#include "chemical/graphics/shader.h"
+#include "chemical/util/image.h"
+#include "spdlog/spdlog.h"
+
+#include <tuple>
 
 using namespace Chemical;
 
 void GameLoop(Core &core) {
-
   Scene *scene = core.GetActiveScene();
   scene->GetTransform("right")->rotation += 0.6f;
 }
@@ -12,40 +15,44 @@ void GameLoop(Core &core) {
 int main() {
   Core core;
   Scene *scene = core.GetActiveScene();
-  ResourceManager &resources = core.GetResourceManager();
 
   core.SetGameLoopCallback(GameLoop);
 
   core.SetBackgroundColour(glm::vec3(50, 100, 50));
 
-  Graphics::TextureTraits texture(resources.GetResourceFilePath("textures/funny.png"));
-  resources.LoadTexture(texture, "funny_texture");
+  std::optional<Util::Image> image = Util::LoadImage(scene->GetResourcePath("textures/funny.png"));
 
-  Graphics::Material *mat1 = resources.LoadMaterial("mat1");
-  mat1->albedo = glm::vec3(255, 255, 255);
-  mat1->texture_id = "funny_texture";
+  if (!image.has_value()) {
+    SPDLOG_ERROR("Failed to load image.");
+    return -1;
+  }
+  auto [texture, inserted] = scene->CreateTexture("funny", image.value());
+  if (!inserted)
+    return -1;
 
-  Transform *left = scene->CreateTransform("left");
-  left->position.x = -0.5f;
-  Transform *right = scene->CreateTransform("right");
-  right->position.x = 0.5f;
+  scene->CreateMaterial("default", "funny");
+
+  scene->CreateTransform("left", glm::vec2(-0.5f, 0.0f));
+  scene->CreateTransform("right", glm::vec2(0.5f, 0.0f));
 
   Graphics::StaticMeshTraits square(Graphics::Shape::SQUARE);
-  square.material_id = "mat1";
+  square.material_id = "default";
   square.transform_id = "left";
   Graphics::StaticMeshTraits triangle(Graphics::Shape::TRIANGLE);
-  triangle.material_id = "mat1";
+  triangle.material_id = "default";
   triangle.transform_id = "right";
-  triangle.shader_id = "test_shader";
 
   Graphics::ShaderTraits st;
-  st.vs_file_path = resources.GetResourceFilePath("shaders/test_shader.vs");
-  st.fs_file_path = resources.GetResourceFilePath("shaders/test_shader_2.fs");
+  st.vs_file_path = scene->GetResourcePath("shaders/test_shader.vs");
+  st.fs_file_path = scene->GetResourcePath("shaders/test_shader_2.fs");
 
-  resources.LoadShader(st, "test_shader");
+  Graphics::Shader shader(st);
 
-  scene->CreateStaticMesh(square);
-  scene->CreateStaticMesh(triangle);
+  if (!scene->MoveConstructShader("test_shader", std::move(shader)))
+    return -1;
+
+  scene->CreateStaticMesh("default", square);
+  scene->CreateStaticMesh("test_shader", triangle);
 
   core.StartGameLoop();
   return 0;

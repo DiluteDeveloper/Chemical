@@ -1,54 +1,74 @@
 #include "chemical/core.h"
 
-#include "chemical/resource_manager.h"
 #include "chemical/window.h"
 
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
+#include <iostream>
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
+#include <spdlog/sinks/stdout_color_sinks-inl.h>
 #include <spdlog/spdlog.h>
 #include <stb_image/stb_image.h>
 
 namespace Chemical {
-  Core::Core() {
-    spdlog::info("Initialising Chemical");
 
-    spdlog::info("Initialising GLFW");
+  void Core::ConfigureSpdlog() const {
+    spdlog::set_pattern("%^[%s] [%!] [%#] %$%v");
+  }
+  Core::Core() {
+    std::cout << "================================= Chemical 1.2 "
+                 "===================================================="
+              << std::endl;
+    ConfigureSpdlog();
+
+    SPDLOG_INFO("Initialising GLFW");
     if (!glfwInit()) {
-      spdlog::critical("GLFW initialisation failed");
+      SPDLOG_CRITICAL("Failed to initialise Chemical : GLFW initialisation failed");
       throw std::runtime_error("GLFW initialisation failed");
     }
-    spdlog::info("Setting GLFW window hints");
+    SPDLOG_INFO("Configuring GLFW window hints");
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    std::optional<Window> opt_window = CreateNewWindow("Chemical 1.1.9.5", 1280, 720);
+
+    std::optional<Window> opt_window = CreateNewWindow("Chemical 1.2", 1280, 720);
 
     if (!opt_window.has_value()) {
-      spdlog::critical("Window initialisation failed");
-      throw std::runtime_error("Window initialisation failed");
+      SPDLOG_CRITICAL("Failed to initialise Chemical : window creation failed");
+      throw std::runtime_error("Window creation failed");
     }
 
     window = opt_window.value();
 
-    resources = std::make_unique<ResourceManager>("/mnt/storage/Chemical/Chemical/modules/chemical/res/");
+    SPDLOG_INFO("Initialising Renderer");
+    renderer = std::make_unique<Graphics::Renderer>();
 
-    renderer = std::make_unique<Graphics::Renderer>(*resources.get());
-    active_scene = std::make_unique<Scene>();
+    SPDLOG_INFO("Initialising Scene");
+    active_scene = std::make_unique<Scene>("/mnt/storage/Chemical/Chemical/modules/chemical/res/");
 
+    SPDLOG_INFO("Configuring stbi_image");
     stbi_set_flip_vertically_on_load(true);
   }
   Core::~Core() {
-
-    spdlog::info("Terminating Chemical");
-    delete renderer.release();
-    delete active_scene.release();
-    delete resources.release();
-    glfwTerminate();
+    if (!doTerminate)
+      Terminate();
   }
 
+  void Core::Terminate() {
+
+    SPDLOG_INFO("Deleting Renderer");
+    delete renderer.release();
+    SPDLOG_INFO("Deleting Scene");
+    delete active_scene.release();
+    SPDLOG_INFO("Destroying window");
+    DestroyWindow(window);
+    SPDLOG_INFO("Terminating GLFW");
+    glfwTerminate();
+  }
   void Core::SetGameLoopCallback(const std::function<void(Core &)> &callback) {
 
+    SPDLOG_INFO("Setting game loop callback");
     game_loop_callback = callback;
   }
   void Core::StartGameLoop() {
@@ -58,18 +78,24 @@ namespace Chemical {
       glClear(GL_COLOR_BUFFER_BIT);
       game_loop_callback(*this);
 
+      if (doTerminate)
+        break;
+
       renderer->RenderScene(*active_scene.get());
 
       glfwSwapBuffers(window);
 
       glfwPollEvents();
     }
+    Terminate();
   }
 
   void Core::SetBackgroundColour(const glm::vec3 &colour) {
+    SPDLOG_INFO("Setting OpenGL clear colour to [{}, {}, {}]", colour.r, colour.g, colour.b);
     glClearColor(colour.r / 255.0f, colour.g / 255.0f, colour.b / 255.0f, 1.0f);
   }
-  Scene *Core::GetActiveScene() { return active_scene.get(); }
-  ResourceManager &Core::GetResourceManager() { return *resources.get(); }
+  Scene *Core::GetActiveScene() {
+    return active_scene.get();
+  }
 
 } // namespace Chemical

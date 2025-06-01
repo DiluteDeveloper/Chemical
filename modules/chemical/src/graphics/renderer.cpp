@@ -5,30 +5,40 @@
 namespace Chemical {
   namespace Graphics {
 
-    Renderer::Renderer(ResourceManager &resources) : resources(resources) {
+    void Renderer::RenderScene(Scene &scene) {
 
-      ShaderTraits traits("default");
-
-      traits.vs_file_path = resources.GetResourceFilePath("shaders/test_shader.vs");
-      traits.fs_file_path = resources.GetResourceFilePath("shaders/test_shader.fs");
-
-      resources.LoadShader(traits, "default");
-    }
-
-    void Renderer::RenderScene(const Scene &scene) {
-
-      for (const auto &[shader_id, shader] : resources.shaders) {
+      for (const auto &[shader_id, shader] : scene.shaders) {
         shader.Bind();
 
-        for (const auto &mesh : scene.shader_mapped_static_meshes.at(shader_id)) {
-          const Material &material = resources.materials.at(mesh.material_id);
-          const Transform &transform = scene.transforms.at(mesh.transform_id);
-          const Texture &texture = resources.textures.at(material.texture_id);
+        if (!scene.shader_mapped_static_meshes.contains(shader_id))
+          continue;
 
-          texture.Bind();
-          shader.SetUniform3F("colour", material.albedo.r / 255.0f, material.albedo.g / 255.0f,
-                              material.albedo.b / 255.0f);
-          shader.SetUniformMatrix3FV("v_model", 1, false, &transform.GetTransform()[0][0]);
+        for (const auto &mesh : scene.shader_mapped_static_meshes.at(shader_id)) {
+          const Transform *transform = scene.GetTransform(mesh.transform_id);
+
+          if (transform == nullptr) {
+            SPDLOG_ERROR(R"(Failed to render static mesh: transform "{}" does not exist!)",
+                         mesh.transform_id);
+            continue;
+          }
+
+          const Material *material = scene.GetMaterial(mesh.material_id);
+          if (material == nullptr) {
+            SPDLOG_ERROR(R"(Failed to render static mesh: material "{}" does not exist!)", mesh.material_id);
+
+            continue;
+          }
+          const Texture *texture = scene.GetTexture(material->texture_id);
+          if (texture == nullptr) {
+            SPDLOG_ERROR(R"(Failed to render static mesh: texture "{}" does not exist!)",
+                         material->texture_id);
+            continue;
+          }
+
+          texture->Bind();
+          shader.SetUniform3F("colour", material->tint.r / 255.0f, material->tint.g / 255.0f,
+                              material->tint.b / 255.0f);
+          shader.SetUniformMatrix3FV("v_model", 1, false, &transform->GetTransform()[0][0]);
           mesh.Draw();
         }
       }
@@ -39,7 +49,7 @@ namespace Chemical {
       //   shader.Bind();
       //   const Material &m = materials.at(mesh.material_id);
       //   textures.at(m.texture_id).Bind();
-      //   shader.SetUniform3F("colour", m.albedo.r / 255.0f, m.albedo.g / 255.0f, m.albedo.b / 255.0f);
+      //   shader.SetUniform3F("colour", m.tint.r / 255.0f, m.tint.g / 255.0f, m.tint.b / 255.0f);
       //
       //   shader.SetUniformMatrix3FV("v_model", 1, false, &mesh.transform.GetTransform()[0][0]);
       //   mesh.Draw();

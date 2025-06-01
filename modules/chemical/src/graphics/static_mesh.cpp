@@ -1,20 +1,24 @@
 #include "chemical/graphics/static_mesh.h"
 
 #include "chemical/graphics/shader.h"
+#include "spdlog/spdlog.h"
 
 #include <glad/glad.h>
 
 namespace Chemical {
 
   namespace Graphics {
-    StaticMeshTraits::StaticMeshTraits(Shape shape) {
+    StaticMeshTraits::StaticMeshTraits(Shape shape, const ObjectID &transform_id, const ObjectID &material_id)
+        : transform_id(transform_id), material_id(material_id) {
 
       switch (shape) {
       case Shape::TRIANGLE:
+        SPDLOG_INFO("Initialising vertices and indices for Shape::TRIANGLE");
         vertices = {-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 1.0f, 0.5f, -0.5f, 1.0f, 0.0f};
         indices = {0, 1, 2};
         break;
       case Shape::SQUARE:
+        SPDLOG_INFO("Initialising vertices and indices for Shape::SQUARE");
         vertices = {-0.5f, -0.5f, 0.0f, 0.0f, -0.5f, 0.5f,  0.0f, 1.0f,
                     0.5f,  0.5f,  1.0f, 1.0f, 0.5f,  -0.5f, 1.0f, 0.0f};
         indices = {0, 1, 2, 3, 0, 2};
@@ -22,8 +26,11 @@ namespace Chemical {
       }
     }
 
+    StaticMeshTraits::StaticMeshTraits(const ObjectID &transform_id, const ObjectID &material_id)
+        : transform_id(transform_id), material_id(material_id) {}
+
     StaticMesh::StaticMesh(const Graphics::StaticMeshTraits &traits)
-        : indice_count(traits.indices.size()), material_id(traits.material_id),
+        : idx_count(traits.indices.size()), material_id(traits.material_id),
           transform_id(traits.transform_id) {
 
       unsigned int VBO = 0;
@@ -37,6 +44,7 @@ namespace Chemical {
                            GL_DYNAMIC_STORAGE_BIT);
 
       glCreateVertexArrays(1, &vao);
+      SPDLOG_INFO(R"(Initialising OpenGL vertex array "{}")", vao);
 
       glVertexArrayVertexBuffer(vao, 0, VBO, 0, sizeof(float) * 4);
       glVertexArrayElementBuffer(vao, IBO);
@@ -50,15 +58,19 @@ namespace Chemical {
       glVertexArrayAttribBinding(vao, 0, 0);
       glVertexArrayAttribBinding(vao, 1, 0);
 
-      // glDeleteBuffers(1, &VBO);
-      // glDeleteBuffers(1, &IBO);
+      // Remove these when graphics debugging
+      glDeleteBuffers(1, &VBO);
+      glDeleteBuffers(1, &IBO);
     }
 
     void StaticMesh::Draw() const {
       glBindVertexArray(vao);
-      glDrawElements(GL_TRIANGLES, indice_count, GL_UNSIGNED_INT, nullptr);
+      glDrawElements(GL_TRIANGLES, idx_count, GL_UNSIGNED_INT, nullptr);
     }
-    StaticMesh::~StaticMesh() { glDeleteVertexArrays(1, &vao); }
+    StaticMesh::~StaticMesh() {
+      SPDLOG_INFO(R"(Deleting OpenGL vertex array "{}")", vao);
+      glDeleteVertexArrays(1, &vao);
+    }
 
   } // namespace Graphics
 

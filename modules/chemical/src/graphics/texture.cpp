@@ -1,24 +1,34 @@
 #include "chemical/graphics/texture.h"
 
+#include "chemical/util/image.h"
+#include "spdlog/spdlog.h"
+
 #include <glad/glad.h>
 
 namespace Chemical {
   namespace Graphics {
 
-    Texture::Texture(const TextureTraits &traits) {
-      glCreateTextures(GL_TEXTURE_2D, 1, &gl_texture_id);
+    Texture::Texture(const Util::Image &image, ScalingFilter scaling_filter) {
 
-      glTextureParameteri(gl_texture_id, GL_TEXTURE_MIN_FILTER, (GLint)traits.scaling_filter);
-      glTextureParameteri(gl_texture_id, GL_TEXTURE_MAG_FILTER, (GLint)traits.scaling_filter);
+      glCreateTextures(GL_TEXTURE_2D, 1, &gl_id);
+      SPDLOG_INFO(R"(Initialising OpenGL texture {})", gl_id);
 
-      glTextureStorage2D(gl_texture_id, 1, GL_RGB8, traits.image.width, traits.image.height);
-      glTextureSubImage2D(gl_texture_id, 0, 0, 0, traits.image.width, traits.image.height, GL_RGB,
-                          GL_UNSIGNED_BYTE, &traits.image.data[0]);
+      glTextureParameteri(gl_id, GL_TEXTURE_MIN_FILTER, (GLint)scaling_filter);
+      glTextureParameteri(gl_id, GL_TEXTURE_MAG_FILTER, (GLint)scaling_filter);
 
-      glGenerateTextureMipmap(gl_texture_id);
+      glTextureStorage2D(gl_id, 1, GL_RGB8, image.width, image.height);
+      glTextureSubImage2D(gl_id, 0, 0, 0, image.width, image.height, GL_RGB, GL_UNSIGNED_BYTE,
+                          &image.data[0]);
+
+      glGenerateTextureMipmap(gl_id);
     }
-    Texture::~Texture() { glDeleteTextures(1, &gl_texture_id); }
+    Texture::~Texture() {
+      SPDLOG_INFO(R"(Deleting OpenGL texture {})", gl_id);
+      glDeleteTextures(1, &gl_id);
+    }
 
-    void Texture::Bind() const { glBindTextureUnit(0, gl_texture_id); }
+    void Texture::Bind() const {
+      glBindTextureUnit(0, gl_id);
+    }
   } // namespace Graphics
 } // namespace Chemical

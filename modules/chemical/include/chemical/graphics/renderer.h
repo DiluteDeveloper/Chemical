@@ -1,19 +1,21 @@
 #pragma once
 
-#include "chemical/resource_manager.h"
 #include "chemical/scene.h"
 
 namespace Chemical {
   namespace Graphics {
 
+    // Responsible for managing data that is exclusively used
+    // for rendering and performing rendering processes
     class Renderer {
     public:
-      Renderer(ResourceManager &resources);
+      // Depends on resource manager for persistent rendering data
+      Renderer() = default;
 
-      void RenderScene(const Scene &scene);
+      // Renders a scene frame
+      void RenderScene(Scene &scene);
 
     protected:
-      ResourceManager &resources;
     };
   } // namespace Graphics
 } // namespace Chemical
