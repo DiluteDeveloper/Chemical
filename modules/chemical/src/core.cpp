@@ -16,7 +16,7 @@ namespace Chemical {
     spdlog::set_pattern("%^[%s] [%!] [%#] %$%v");
   }
   Core::Core() {
-    std::cout << "================================= Chemical 1.2 "
+    std::cout << "================================= Chemical 1.2.1 "
                  "===================================================="
               << std::endl;
     ConfigureSpdlog();
@@ -32,7 +32,7 @@ namespace Chemical {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    std::optional<Window> opt_window = CreateNewWindow("Chemical 1.2", 1280, 720);
+    std::optional<Window> opt_window = CreateNewWindow("Chemical 1.2.1", 1280, 720);
 
     if (!opt_window.has_value()) {
       SPDLOG_CRITICAL("Failed to initialise Chemical : window creation failed");
@@ -40,6 +40,9 @@ namespace Chemical {
     }
 
     window = opt_window.value();
+
+    SPDLOG_INFO("Initialising Input");
+    input = std::make_unique<Input>(window);
 
     SPDLOG_INFO("Initialising Renderer");
     renderer = std::make_unique<Graphics::Renderer>();
@@ -51,12 +54,6 @@ namespace Chemical {
     stbi_set_flip_vertically_on_load(true);
   }
   Core::~Core() {
-    if (!doTerminate)
-      Terminate();
-  }
-
-  void Core::Terminate() {
-
     SPDLOG_INFO("Deleting Renderer");
     delete renderer.release();
     SPDLOG_INFO("Deleting Scene");
@@ -66,7 +63,8 @@ namespace Chemical {
     SPDLOG_INFO("Terminating GLFW");
     glfwTerminate();
   }
-  void Core::SetGameLoopCallback(const std::function<void(Core &)> &callback) {
+
+  void Core::SetGameLoopCallback(const std::function<int(Core &)> &callback) {
 
     SPDLOG_INFO("Setting game loop callback");
     game_loop_callback = callback;
@@ -76,9 +74,7 @@ namespace Chemical {
     while (!WindowShouldClose(window)) {
 
       glClear(GL_COLOR_BUFFER_BIT);
-      game_loop_callback(*this);
-
-      if (doTerminate)
+      if (game_loop_callback(*this) == -1)
         break;
 
       renderer->RenderScene(*active_scene.get());
@@ -87,7 +83,6 @@ namespace Chemical {
 
       glfwPollEvents();
     }
-    Terminate();
   }
 
   void Core::SetBackgroundColour(const glm::vec3 &colour) {
@@ -96,6 +91,9 @@ namespace Chemical {
   }
   Scene *Core::GetActiveScene() {
     return active_scene.get();
+  }
+  Input *Core::GetInput() {
+    return input.get();
   }
 
 } // namespace Chemical

@@ -1,3 +1,17 @@
+Chemical 1.2.1
+
+Added new Input class with very basic functionality
+to get keyboard keys (basically a glfwGetKey wrapper).
+Input class instance is accessed in Core via GetInput()
+Added new function StartGame(Core& core) to main.cpp
+to mitigate a segfault on termination of core;
+Issue is due to opengl objects created in main being destroyed at end
+of program after opengl context is unloaded in ~Core 
+Removed Terminate() from Core as well as do_terminate.
+GameLoop now returns an int with -1 being used to terminate the game loop.
+Terminate functionality is now in Core dtor.
+Added a character controller demo to main.cpp to test chemical api capabilities
+
 Chemical 1.2
 
 Completely overhauled Scene

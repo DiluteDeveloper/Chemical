@@ -1,5 +1,6 @@
 #pragma once
 
+#include "chemical/input.h"
 #include "chemical/window.h"
 #include "graphics/renderer.h"
 
@@ -14,24 +15,22 @@ namespace Chemical {
     Core();
     ~Core();
 
-    void SetGameLoopCallback(const std::function<void(Core &)> &callback);
+    void SetGameLoopCallback(const std::function<int(Core &)> &callback);
     void StartGameLoop();
 
     Scene *GetActiveScene();
+    Input *GetInput();
 
     void SetBackgroundColour(const glm::vec3 &colour);
-
-    bool doTerminate = false;
 
   private:
     std::unique_ptr<Graphics::Renderer> renderer;
     std::unique_ptr<Scene> active_scene;
+    std::unique_ptr<Input> input;
 
     Window window;
 
-    std::function<void(Core &)> game_loop_callback;
-
-    void Terminate();
+    std::function<int(Core &)> game_loop_callback;
 
     void ConfigureSpdlog() const;
   };
