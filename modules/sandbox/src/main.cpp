@@ -1,13 +1,13 @@
 #include "chemical/core.h"
 #include "chemical/graphics/shader.h"
 #include "chemical/util/image.h"
-#include "spdlog/spdlog.h"
 
 #include <algorithm>
 
 using namespace Chemical;
 
 glm::vec2 velocity = glm::vec2(0);
+float rotspeed = 00.0f;
 int GameLoop(Core &core) {
   Scene *scene = core.GetActiveScene();
 
@@ -18,23 +18,48 @@ int GameLoop(Core &core) {
   Input *input = core.GetInput();
 
   if (input->GetKey(Input::Key::SPACE) == Input::KeyState::PRESS && left->position.y <= -0.69f) {
-    velocity.y = 0.04f;
+    velocity.y = 0.08f;
+    left->position.y += 0.1f;
+    rotspeed += 0.3f;
   }
   if (input->GetKey(Input::Key::D) == Input::KeyState::PRESS) {
-    velocity.x += 0.001f;
+    velocity.x += 0.0005f;
   } else if (input->GetKey(Input::Key::A) == Input::KeyState::PRESS) {
-    velocity.x -= 0.002f;
+    velocity.x -= 0.0005f;
   } else
     velocity.x *= 0.8f;
 
   velocity.x = std::min(velocity.x, 0.03f);
   velocity.x = std::max(velocity.x, -0.03f);
-  if (left->position.y <= -0.7f)
+  if (left->position.y <= -0.7f && std::abs(left->position.x) < 12.8f) {
+
     left->position.y = -0.7f;
-  else
-    velocity.y -= 0.001f;
+
+    float rot = ((int(std::abs(left->rotation) + 360) % 360) / 90.0f) - 1.8f;
+    // SPDLOG_INFO("{}", rot);
+    if (velocity.y != 0)
+      velocity.y = (std::abs(velocity.y)) + (std::abs(rot) * 0.04f) * glm::sign(rot);
+  } else {
+    velocity.y -= 0.0005f;
+    rotspeed -= velocity.x * 20;
+    rotspeed -= ((std::abs(velocity.y * 1.4f)) * glm::sign(velocity.x));
+    left->rotation += rotspeed;
+  }
+  rotspeed = std::max(rotspeed, -3.0f);
+  rotspeed = std::min(rotspeed, 3.0f);
+
   left->position += velocity;
 
+  Camera *camera = scene->GetCamera("default");
+  Transform *cam_transform = scene->GetTransform(camera->transform_id);
+  cam_transform->position = scene->GetTransform("left")->position;
+
+  if (input->GetKey(Input::Key::Z) == Input::KeyState::PRESS) {
+    camera->SetZoomLevel(camera->GetZoomLevel() - 6.0f);
+  }
+  if (input->GetKey(Input::Key::X) == Input::KeyState::PRESS) {
+    camera->SetZoomLevel(camera->GetZoomLevel() + 6.0f);
+  }
   return 0;
 }
 
@@ -44,19 +69,20 @@ int StartGame(Core &core) {
 
   core.SetBackgroundColour(glm::vec3(50, 100, 50));
 
-  std::optional<Util::Image> image = Util::LoadImage(scene->GetResourcePath("textures/funny.png"));
+  std::optional<Util::Image> image = Util::LoadImage(scene->GetResourcePath("textures/1x1.png"), 3);
 
   auto [texture, _1] = scene->CreateTexture("funny", image.value());
 
-  std::optional<Util::Image> background_image = Util::LoadImage(scene->GetResourcePath("textures/xp.jpg"));
+  std::optional<Util::Image> background_image =
+      Util::LoadImage(scene->GetResourcePath("textures/sky.png"), 3);
 
   auto [bg_texture, _2] = scene->CreateTexture("background", background_image.value());
   scene->CreateMaterial("background", "background");
   scene->CreateMaterial("default", "funny");
 
-  scene->CreateTransform("left", glm::vec2(-0.5f, 0.0f), 0, glm::vec2(0.3f, 0.7f));
+  scene->CreateTransform("left", glm::vec2(-0.5f, -0.7f), 0, glm::vec2(0.3f, 0.7f));
   scene->CreateTransform("right", glm::vec2(0.5f, 0.0f), 0, glm::vec2(0.6f, 0.6f));
-  scene->CreateTransform("background", glm::vec2(0.0f), 0, glm::vec2(2.0f, 2.0f));
+  scene->CreateTransform("background", glm::vec2(0.0f), 0, glm::vec2(32.8f, 27.2f));
 
   Graphics::StaticMeshTraits square(Graphics::Shape::SQUARE);
   square.material_id = "default";
@@ -69,13 +95,6 @@ int StartGame(Core &core) {
   background_mesh.material_id = "background";
   background_mesh.transform_id = "background";
 
-  Graphics::ShaderTraits st;
-  st.vs_file_path = scene->GetResourcePath("shaders/test_shader.vs");
-  st.fs_file_path = scene->GetResourcePath("shaders/test_shader_2.fs");
-
-  Graphics::Shader shader(st);
-
-  scene->MoveConstructShader("test_shader", std::move(shader));
   Graphics::ShaderTraits st2;
   st2.vs_file_path = scene->GetResourcePath("shaders/test_shader.vs");
   st2.fs_file_path = scene->GetResourcePath("shaders/test_shader.fs");
@@ -85,8 +104,11 @@ int StartGame(Core &core) {
   scene->MoveConstructShader("default2", std::move(shader2));
 
   scene->CreateStaticMesh("default2", background_mesh);
-  scene->CreateStaticMesh("default", square);
   scene->CreateStaticMesh("test_shader", triangle);
+
+  scene->CreateStaticMesh("default", square);
+
+  scene->GetCamera("default")->SetZoomLevel(-2000.0f);
 
   return 0;
 }

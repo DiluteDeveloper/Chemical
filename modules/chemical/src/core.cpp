@@ -32,7 +32,7 @@ namespace Chemical {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    std::optional<Window> opt_window = CreateNewWindow("Chemical 1.2.1", 1280, 720);
+    std::optional<Window> opt_window = CreateNewWindow("Chemical 1.2.2", 1280, 720);
 
     if (!opt_window.has_value()) {
       SPDLOG_CRITICAL("Failed to initialise Chemical : window creation failed");

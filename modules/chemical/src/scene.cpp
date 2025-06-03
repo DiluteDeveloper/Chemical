@@ -33,6 +33,19 @@ namespace Chemical {
     }
     return &find->second;
   }
+  Camera *Scene::GetCamera(const ObjectID &id) {
+
+    auto find = cameras.find(id);
+    if (find == cameras.end()) {
+      SPDLOG_ERROR(R"(Tried to get camera "{}" that does not exist!)", id);
+      return nullptr;
+    }
+    return &find->second;
+  }
+  void Scene::SetPrimaryCamera(const ObjectID &id) {
+    primary_camera = id;
+  }
+
   bool Scene::MoveConstructShader(const ObjectID &id, Graphics::Shader &&mv) {
     if (mv.compile_status == -1) {
       SPDLOG_ERROR(R"(Failed to move construct shader "{}" : shader doesnt compile!)", id);
@@ -52,6 +65,11 @@ namespace Chemical {
     Graphics::Shader default_shader(traits);
 
     MoveConstructShader("default", std::move(default_shader));
+
+    CreateTransform("default");
+    CreateTransform("camera");
+
+    CreateCamera("default", "camera");
   }
 
   std::string Scene::GetResourcePath(const std::string_view &affix) {

@@ -1,3 +1,14 @@
+Chemical 1.2.2
+
+Added new Camera class with zooming functionality,
+projection matrix and view matrix for moving and zooming
+the camera
+Added new functionality to scene to create and add cameras,
+and set primary camera
+renamed transform.h GetTransform() to CreateMat3()
+added projection matrix and view matrix to shader
+added new physics to testing scenario with zooming via Z and X keys
+
 Chemical 1.2.1
 
 Added new Input class with very basic functionality

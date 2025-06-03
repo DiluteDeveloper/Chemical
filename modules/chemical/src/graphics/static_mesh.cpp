@@ -14,13 +14,13 @@ namespace Chemical {
       switch (shape) {
       case Shape::TRIANGLE:
         SPDLOG_INFO("Initialising vertices and indices for Shape::TRIANGLE");
-        vertices = {-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 1.0f, 0.5f, -0.5f, 1.0f, 0.0f};
+        vertices = {-1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 0.0f};
         indices = {0, 1, 2};
         break;
       case Shape::SQUARE:
         SPDLOG_INFO("Initialising vertices and indices for Shape::SQUARE");
-        vertices = {-0.5f, -0.5f, 0.0f, 0.0f, -0.5f, 0.5f,  0.0f, 1.0f,
-                    0.5f,  0.5f,  1.0f, 1.0f, 0.5f,  -0.5f, 1.0f, 0.0f};
+        vertices = {-1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f,  0.0f, 1.0f,
+                    1.0f,  1.0f,  1.0f, 1.0f, 1.0f,  -1.0f, 1.0f, 0.0f};
         indices = {0, 1, 2, 3, 0, 2};
         break;
       }

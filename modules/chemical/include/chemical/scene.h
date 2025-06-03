@@ -1,12 +1,12 @@
 #pragma once
 
+#include "chemical/camera.h"
 #include "chemical/graphics/material.h"
 #include "chemical/graphics/shader.h"
 #include "chemical/graphics/static_mesh.h"
 #include "chemical/graphics/texture.h"
 #include "util/transform.h"
 
-#include <iostream>
 #include <unordered_map>
 
 namespace Chemical {
@@ -39,6 +39,14 @@ namespace Chemical {
     }
     Graphics::Texture *GetTexture(const ObjectID &id);
 
+    template <class... CameraArgs>
+    std::pair<Camera &, bool> CreateCamera(const ObjectID &id, CameraArgs &&...camera_args) {
+      auto it = cameras.try_emplace(id, camera_args...);
+      return std::pair<Camera &, bool>(it.first->second, it.second);
+    }
+    Camera *GetCamera(const ObjectID &id);
+    void SetPrimaryCamera(const ObjectID &id);
+
     bool MoveConstructShader(const ObjectID &id, Graphics::Shader &&mv);
 
     template <class... StaticMeshArgs>
@@ -63,6 +71,9 @@ namespace Chemical {
     std::unordered_map<ObjectID, Graphics::Material> materials;
     std::unordered_map<ObjectID, Graphics::Texture> textures;
     std::unordered_map<ObjectID, Graphics::Shader> shaders;
+
+    std::unordered_map<ObjectID, Camera> cameras;
+    ObjectID primary_camera = "default";
 
     std::unordered_map<ObjectID, std::vector<Graphics::StaticMesh>> shader_mapped_static_meshes;
 

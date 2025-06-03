@@ -1,7 +1,6 @@
 workspace("Chemical")
 location("../")
 configurations({ "Debug", "Release" })
-platforms("Win64")
 startproject("Chemical")
 architecture("x86_64")
 language("C++")
@@ -18,7 +17,7 @@ filter("configurations:Release")
 symbols("Off")
 optimize("On")
 
-BIN_DIR = "%{wks.location}/bin/%{prj.name}/%{cfg.platform}-%{cfg.buildcfg}"
+BIN_DIR = "%{wks.location}/bin/%{prj.name}/%{cfg.system}-%{cfg.buildcfg}"
 INT_DIR = BIN_DIR .. "/int"
 
 MODULES_DIR = "%{wks.location}/modules"

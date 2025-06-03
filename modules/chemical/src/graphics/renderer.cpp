@@ -13,6 +13,20 @@ namespace Chemical {
         if (!scene.shader_mapped_static_meshes.contains(shader_id))
           continue;
 
+        Camera *camera = scene.GetCamera(scene.primary_camera);
+
+        if (camera == nullptr)
+          SPDLOG_ERROR(R"(Failed to render: primary camera "{}" does not exist!)", scene.primary_camera);
+
+        Transform *camera_transform = scene.GetTransform(camera->transform_id);
+
+        if (camera_transform == nullptr)
+          SPDLOG_ERROR(R"(Failed to render: primary camera transform "{}" does not exist!)",
+                       camera->transform_id);
+
+        shader.SetUniformMatrix3FV("v_proj", 1, false, &camera->projection_matrix[0][0]);
+        shader.SetUniformMatrix3FV("v_view", 1, false, &glm::inverse(camera_transform->CreateMat3())[0][0]);
+
         for (const auto &mesh : scene.shader_mapped_static_meshes.at(shader_id)) {
           const Transform *transform = scene.GetTransform(mesh.transform_id);
 
@@ -38,22 +52,10 @@ namespace Chemical {
           texture->Bind();
           shader.SetUniform3F("colour", material->tint.r / 255.0f, material->tint.g / 255.0f,
                               material->tint.b / 255.0f);
-          shader.SetUniformMatrix3FV("v_model", 1, false, &transform->GetTransform()[0][0]);
+          shader.SetUniformMatrix3FV("v_model", 1, false, &transform->CreateMat3()[0][0]);
           mesh.Draw();
         }
       }
-      //
-      // for (auto &[_, mesh] : dynamic_meshes) {
-      //
-      //   const Shader &shader = at(mesh.shader_id).shader;
-      //   shader.Bind();
-      //   const Material &m = materials.at(mesh.material_id);
-      //   textures.at(m.texture_id).Bind();
-      //   shader.SetUniform3F("colour", m.tint.r / 255.0f, m.tint.g / 255.0f, m.tint.b / 255.0f);
-      //
-      //   shader.SetUniformMatrix3FV("v_model", 1, false, &mesh.transform.GetTransform()[0][0]);
-      //   mesh.Draw();
-      // }
     }
 
   } // namespace Graphics
