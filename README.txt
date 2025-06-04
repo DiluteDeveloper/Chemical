@@ -1,3 +1,12 @@
+Chemical 1.2.3
+
+Added GLFW error callback to window
+Added window title and window size to core constructor
+Renamed StaticMesh to StaticSprite and removed API functionality for
+custom vertices and indices; only supply size of rect to describe mesh;
+removed StaticMeshTraits struct
+renamed shader_mapped_static_meshes to static_sprites
+
 Chemical 1.2.2
 
 Added new Camera class with zooming functionality,

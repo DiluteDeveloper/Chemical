@@ -15,8 +15,8 @@ namespace Chemical {
   void Core::ConfigureSpdlog() const {
     spdlog::set_pattern("%^[%s] [%!] [%#] %$%v");
   }
-  Core::Core() {
-    std::cout << "================================= Chemical 1.2.1 "
+  Core::Core(const char *window_title, glm::vec2 window_size) {
+    std::cout << "================================= Chemical 1.2.3 "
                  "===================================================="
               << std::endl;
     ConfigureSpdlog();
@@ -32,7 +32,7 @@ namespace Chemical {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    std::optional<Window> opt_window = CreateNewWindow("Chemical 1.2.2", 1280, 720);
+    std::optional<Window> opt_window = CreateNewWindow(window_title, window_size.x, window_size.y);
 
     if (!opt_window.has_value()) {
       SPDLOG_CRITICAL("Failed to initialise Chemical : window creation failed");

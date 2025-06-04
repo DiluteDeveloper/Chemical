@@ -69,7 +69,7 @@ int StartGame(Core &core) {
 
   core.SetBackgroundColour(glm::vec3(50, 100, 50));
 
-  std::optional<Util::Image> image = Util::LoadImage(scene->GetResourcePath("textures/1x1.png"), 3);
+  std::optional<Util::Image> image = Util::LoadImage(scene->GetResourcePath("textures/white.png"), 3);
 
   auto [texture, _1] = scene->CreateTexture("funny", image.value());
 
@@ -80,20 +80,9 @@ int StartGame(Core &core) {
   scene->CreateMaterial("background", "background");
   scene->CreateMaterial("default", "funny");
 
-  scene->CreateTransform("left", glm::vec2(-0.5f, -0.7f), 0, glm::vec2(0.3f, 0.7f));
-  scene->CreateTransform("right", glm::vec2(0.5f, 0.0f), 0, glm::vec2(0.6f, 0.6f));
-  scene->CreateTransform("background", glm::vec2(0.0f), 0, glm::vec2(32.8f, 27.2f));
-
-  Graphics::StaticMeshTraits square(Graphics::Shape::SQUARE);
-  square.material_id = "default";
-  square.transform_id = "left";
-  Graphics::StaticMeshTraits triangle(Graphics::Shape::TRIANGLE);
-  triangle.material_id = "default";
-  triangle.transform_id = "right";
-
-  Graphics::StaticMeshTraits background_mesh(Graphics::Shape::SQUARE);
-  background_mesh.material_id = "background";
-  background_mesh.transform_id = "background";
+  scene->CreateTransform("left", glm::vec2(-0.5f, -0.7f), 0);
+  scene->CreateTransform("right", glm::vec2(0.5f, 0.0f), 0);
+  scene->CreateTransform("background", glm::vec2(0.0f), 0);
 
   Graphics::ShaderTraits st2;
   st2.vs_file_path = scene->GetResourcePath("shaders/test_shader.vs");
@@ -103,18 +92,18 @@ int StartGame(Core &core) {
 
   scene->MoveConstructShader("default2", std::move(shader2));
 
-  scene->CreateStaticMesh("default2", background_mesh);
-  scene->CreateStaticMesh("test_shader", triangle);
+  scene->CreateStaticSprite("default2", "background", "background", glm::vec2(128.0f, 72.0f));
+  scene->CreateStaticSprite("test_shader", "right", "default");
 
-  scene->CreateStaticMesh("default", square);
+  scene->CreateStaticSprite("default", "left", "default", glm::vec2(1.0f, 2.0f));
 
-  scene->GetCamera("default")->SetZoomLevel(-2000.0f);
+  // scene->GetCamera("default")->SetZoomLevel(-2000.0f);
 
   return 0;
 }
 
 int main() {
-  Core core;
+  Core core("Chemical 1.2.3", glm::vec2(1280, 720));
 
   core.SetGameLoopCallback(GameLoop);
 

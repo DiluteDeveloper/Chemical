@@ -6,9 +6,14 @@
 
 namespace Chemical {
 
+  void GLFWErrorCallback(int error_code, const char *description) {
+    SPDLOG_ERROR("GLFW error {} occurred : {}", error_code, description);
+  }
   std::optional<Window> CreateNewWindow(const std::string_view &title, unsigned int width,
                                         unsigned int height) {
     SPDLOG_INFO(R"(Creating window "{}")", title);
+
+    glfwSetErrorCallback(GLFWErrorCallback);
 
     GLFWwindow *window = glfwCreateWindow(width, height, title.data(), nullptr, nullptr);
 

@@ -12,7 +12,7 @@ namespace Chemical {
   // Represents the entire Chemical Engine
   class Core {
   public:
-    Core();
+    Core(const char *window_title, glm::vec2 window_size);
     ~Core();
 
     void SetGameLoopCallback(const std::function<int(Core &)> &callback);

@@ -3,11 +3,12 @@
 #include "chemical/camera.h"
 #include "chemical/graphics/material.h"
 #include "chemical/graphics/shader.h"
-#include "chemical/graphics/static_mesh.h"
+#include "chemical/graphics/static_sprite.h"
 #include "chemical/graphics/texture.h"
 #include "util/transform.h"
 
 #include <unordered_map>
+#include <vector>
 
 namespace Chemical {
   namespace Graphics { class Renderer; }
@@ -49,9 +50,9 @@ namespace Chemical {
 
     bool MoveConstructShader(const ObjectID &id, Graphics::Shader &&mv);
 
-    template <class... StaticMeshArgs>
-    void CreateStaticMesh(const ObjectID &shader_id, StaticMeshArgs... static_mesh_args) {
-      shader_mapped_static_meshes[shader_id].emplace_back(static_mesh_args...);
+    template <class... StaticSpriteArgs>
+    void CreateStaticSprite(const ObjectID &shader_id, StaticSpriteArgs... static_sprite_args) {
+      static_sprites[shader_id].emplace_back(static_sprite_args...);
     }
 
     Scene(const std::string_view &file_path);
@@ -75,7 +76,7 @@ namespace Chemical {
     std::unordered_map<ObjectID, Camera> cameras;
     ObjectID primary_camera = "default";
 
-    std::unordered_map<ObjectID, std::vector<Graphics::StaticMesh>> shader_mapped_static_meshes;
+    std::unordered_map<ObjectID, std::vector<Graphics::StaticSprite>> static_sprites;
 
     std::string file_path = "";
   };

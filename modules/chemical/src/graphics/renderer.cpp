@@ -10,7 +10,7 @@ namespace Chemical {
       for (const auto &[shader_id, shader] : scene.shaders) {
         shader.Bind();
 
-        if (!scene.shader_mapped_static_meshes.contains(shader_id))
+        if (!scene.static_sprites.contains(shader_id))
           continue;
 
         Camera *camera = scene.GetCamera(scene.primary_camera);
@@ -27,24 +27,25 @@ namespace Chemical {
         shader.SetUniformMatrix3FV("v_proj", 1, false, &camera->projection_matrix[0][0]);
         shader.SetUniformMatrix3FV("v_view", 1, false, &glm::inverse(camera_transform->CreateMat3())[0][0]);
 
-        for (const auto &mesh : scene.shader_mapped_static_meshes.at(shader_id)) {
-          const Transform *transform = scene.GetTransform(mesh.transform_id);
+        for (const auto &sprite : scene.static_sprites.at(shader_id)) {
+          const Transform *transform = scene.GetTransform(sprite.transform_id);
 
           if (transform == nullptr) {
-            SPDLOG_ERROR(R"(Failed to render static mesh: transform "{}" does not exist!)",
-                         mesh.transform_id);
+            SPDLOG_ERROR(R"(Failed to render static sprite: transform "{}" does not exist!)",
+                         sprite.transform_id);
             continue;
           }
 
-          const Material *material = scene.GetMaterial(mesh.material_id);
+          const Material *material = scene.GetMaterial(sprite.material_id);
           if (material == nullptr) {
-            SPDLOG_ERROR(R"(Failed to render static mesh: material "{}" does not exist!)", mesh.material_id);
+            SPDLOG_ERROR(R"(Failed to render static sprite: material "{}" does not exist!)",
+                         sprite.material_id);
 
             continue;
           }
           const Texture *texture = scene.GetTexture(material->texture_id);
           if (texture == nullptr) {
-            SPDLOG_ERROR(R"(Failed to render static mesh: texture "{}" does not exist!)",
+            SPDLOG_ERROR(R"(Failed to render static sprite: texture "{}" does not exist!)",
                          material->texture_id);
             continue;
           }
@@ -53,7 +54,7 @@ namespace Chemical {
           shader.SetUniform3F("colour", material->tint.r / 255.0f, material->tint.g / 255.0f,
                               material->tint.b / 255.0f);
           shader.SetUniformMatrix3FV("v_model", 1, false, &transform->CreateMat3()[0][0]);
-          mesh.Draw();
+          sprite.Draw();
         }
       }
     }
