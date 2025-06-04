@@ -1,6 +1,5 @@
 #include "chemical/graphics/static_sprite.h"
 
-#include "chemical/graphics/shader.h"
 #include "spdlog/spdlog.h"
 
 #include <glad/glad.h>

@@ -28,6 +28,7 @@ CHEMICAL_INCLUDE_DIR = CHEMICAL_DIR .. "/include"
 CHEMICAL_SOURCE_DIR = CHEMICAL_DIR .. "/src"
 
 SANDBOX_DIR = MODULES_DIR .. "/sandbox"
+SANDBOX_INCLUDE_DIR = SANDBOX_DIR .. "/include"
 SANDBOX_SOURCE_DIR = SANDBOX_DIR .. "/src"
 
 GLFW_LIB_DIR = IMPORTED_MODULES_DIR .. "/glfw"
@@ -36,7 +37,7 @@ GLFW_LIB = "glfw3"
 GLAD_LIB = "glad"
 
 project("Chemical")
-kind("StaticLib")
+kind("ConsoleApp")
 
 -- pchheader("pch.h")
 -- pchsource("../modules/chemical/src/pch.cpp") -- relative to this script: has to be changed manually
@@ -44,8 +45,13 @@ kind("StaticLib")
 defines("GLFW_INCLUDE_NONE")
 
 location(CHEMICAL_DIR)
-files({ CHEMICAL_DIR .. "/src/**", CHEMICAL_DIR .. "/include/**" })
-includedirs({ IMPORTED_MODULES_DIR, CHEMICAL_SOURCE_DIR, CHEMICAL_INCLUDE_DIR })
+files({
+	CHEMICAL_SOURCE_DIR .. "/**",
+	SANDBOX_SOURCE_DIR .. "/**",
+	SANDBOX_INCLUDE_DIR .. "/**",
+	CHEMICAL_INCLUDE_DIR .. "/**",
+})
+includedirs({ IMPORTED_MODULES_DIR, CHEMICAL_INCLUDE_DIR, SANDBOX_INCLUDE_DIR })
 
 libdirs({ GLFW_LIB_DIR, GLAD_LIB_DIR })
 links({ GLFW_LIB, GLAD_LIB })
@@ -54,16 +60,9 @@ targetdir(BIN_DIR)
 objdir(INT_DIR)
 
 project("Sandbox")
-kind("ConsoleApp")
+kind("Utility")
 
 location(SANDBOX_DIR)
-files({ SANDBOX_SOURCE_DIR .. "/**" })
 
 -- Imported modules inclusion is a quick-fix for glm
-includedirs({ SANDBOX_SOURCE_DIR, CHEMICAL_INCLUDE_DIR, IMPORTED_MODULES_DIR })
-
-libdirs({ GLFW_LIB_DIR, GLAD_LIB_DIR })
-links({ "Chemical", GLFW_LIB, GLAD_LIB })
-
-targetdir(BIN_DIR)
-objdir(INT_DIR)
+includedirs({ SANDBOX_INCLUDE_DIR, CHEMICAL_INCLUDE_DIR, IMPORTED_MODULES_DIR })

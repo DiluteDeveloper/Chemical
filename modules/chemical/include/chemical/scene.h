@@ -5,8 +5,10 @@
 #include "chemical/graphics/shader.h"
 #include "chemical/graphics/static_sprite.h"
 #include "chemical/graphics/texture.h"
+#include "chemical/scene_script.h"
 #include "util/transform.h"
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -14,6 +16,7 @@ namespace Chemical {
   namespace Graphics { class Renderer; }
 
   using ObjectID = std::string;
+  class Core;
 
   class Scene {
   public:
@@ -55,12 +58,20 @@ namespace Chemical {
       static_sprites[shader_id].emplace_back(static_sprite_args...);
     }
 
+    template <class SceneScriptType> void MountSceneScript(SafePtr<Core> core) {
+      scripts.emplace_back(std::make_unique<SceneScriptType>(core))->BeginScript();
+    }
+
     Scene(const std::string_view &file_path);
+    ~Scene();
 
     std::string GetResourcePath(const std::string_view &affix);
 
   protected:
     friend class Graphics::Renderer;
+    friend class Core;
+
+    void UpdateScene();
 
     Scene(const Scene &) = delete;
     Scene(Scene &&) = delete;
@@ -77,6 +88,8 @@ namespace Chemical {
     ObjectID primary_camera = "default";
 
     std::unordered_map<ObjectID, std::vector<Graphics::StaticSprite>> static_sprites;
+
+    std::vector<std::unique_ptr<SceneScript>> scripts;
 
     std::string file_path = "";
   };

@@ -16,9 +16,8 @@ namespace Chemical {
     spdlog::set_pattern("%^[%s] [%!] [%#] %$%v");
   }
   Core::Core(const char *window_title, glm::vec2 window_size) {
-    std::cout << "================================= Chemical 1.2.3 "
-                 "===================================================="
-              << std::endl;
+    std::cout << "================================= " << window_title
+              << " ====================================================" << std::endl;
     ConfigureSpdlog();
 
     SPDLOG_INFO("Initialising GLFW");
@@ -54,28 +53,22 @@ namespace Chemical {
     stbi_set_flip_vertically_on_load(true);
   }
   Core::~Core() {
-    SPDLOG_INFO("Deleting Renderer");
-    delete renderer.release();
     SPDLOG_INFO("Deleting Scene");
     delete active_scene.release();
+    SPDLOG_INFO("Deleting Renderer");
+    delete renderer.release();
     SPDLOG_INFO("Destroying window");
     DestroyWindow(window);
     SPDLOG_INFO("Terminating GLFW");
     glfwTerminate();
   }
 
-  void Core::SetGameLoopCallback(const std::function<int(Core &)> &callback) {
-
-    SPDLOG_INFO("Setting game loop callback");
-    game_loop_callback = callback;
-  }
   void Core::StartGameLoop() {
 
     while (!WindowShouldClose(window)) {
 
       glClear(GL_COLOR_BUFFER_BIT);
-      if (game_loop_callback(*this) == -1)
-        break;
+      active_scene->UpdateScene();
 
       renderer->RenderScene(*active_scene.get());
 
@@ -88,12 +81,6 @@ namespace Chemical {
   void Core::SetBackgroundColour(const glm::vec3 &colour) {
     SPDLOG_INFO("Setting OpenGL clear colour to [{}, {}, {}]", colour.r, colour.g, colour.b);
     glClearColor(colour.r / 255.0f, colour.g / 255.0f, colour.b / 255.0f, 1.0f);
-  }
-  Scene *Core::GetActiveScene() {
-    return active_scene.get();
-  }
-  Input *Core::GetInput() {
-    return input.get();
   }
 
 } // namespace Chemical

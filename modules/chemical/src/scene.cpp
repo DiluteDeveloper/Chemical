@@ -54,6 +54,11 @@ namespace Chemical {
     shaders.try_emplace(id, std::move(mv));
     return true;
   }
+  void Scene::UpdateScene() {
+    for (auto &script : scripts) {
+      script->FrameUpdate();
+    }
+  }
 
   Scene::Scene(const std::string_view &file_path) : file_path(file_path) {
 
@@ -70,6 +75,11 @@ namespace Chemical {
     CreateTransform("camera");
 
     CreateCamera("default", "camera");
+  }
+  Scene::~Scene() {
+    for (auto &script : scripts) {
+      script->EndScript();
+    }
   }
 
   std::string Scene::GetResourcePath(const std::string_view &affix) {

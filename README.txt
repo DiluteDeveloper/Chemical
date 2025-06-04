@@ -1,3 +1,13 @@
+Chemical 1.2.4
+
+Added scene scripts for user to control the scene.
+Completely changed build methodology; sandbox headers
+and TUs are incorporated into chemical executable.
+I.E Entry point is now controlled by Chemical, not Sandbox
+Added new SafePtr type (T* typedef) to represent pointer values that are not null;
+This was needed to fix include loops happening that cant be fixed with
+references but unsure if the type will stay, just on trial for now
+
 Chemical 1.2.3
 
 Added GLFW error callback to window
