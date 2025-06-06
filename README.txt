@@ -1,3 +1,13 @@
+Chemical 1.2.5
+
+Rudimentary Scene loading from JSON implemented with nholmann-json
+Alot of code needs some cleanup
+Moved/added public deleted copy ctor/op and added default move ctor/op to Scene
+Switched shader fstream file read to ifstream
+uncommented GlDeleteBuffers
+Changed core to load scene from json, removed scene asset loading code from Scene ctor
+as well as user code in Player.cpp and Background.cpp
+
 Chemical 1.2.4
 
 Added scene scripts for user to control the scene.

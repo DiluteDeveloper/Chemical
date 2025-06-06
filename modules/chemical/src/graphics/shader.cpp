@@ -11,7 +11,7 @@ namespace Chemical {
       // Reading in source from file -------------------------------------
 
       SPDLOG_INFO(R"(Processing file "{}")", file_path);
-      std::fstream file(file_path.data());
+      std::ifstream file(file_path.data());
 
       if (!file) {
         SPDLOG_ERROR(R"(Failed to read file "{}" : returning 0)", file_path);

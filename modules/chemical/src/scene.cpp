@@ -60,22 +60,8 @@ namespace Chemical {
     }
   }
 
-  Scene::Scene(const std::string_view &file_path) : file_path(file_path) {
+  Scene::Scene(const std::string_view &file_path) : file_path(file_path) {}
 
-    Graphics::ShaderTraits traits("default");
-
-    traits.vs_file_path = GetResourcePath("shaders/test_shader.vs");
-    traits.fs_file_path = GetResourcePath("shaders/test_shader.fs");
-
-    Graphics::Shader default_shader(traits);
-
-    MoveConstructShader("default", std::move(default_shader));
-
-    CreateTransform("default");
-    CreateTransform("camera");
-
-    CreateCamera("default", "camera");
-  }
   Scene::~Scene() {
     for (auto &script : scripts) {
       script->EndScript();

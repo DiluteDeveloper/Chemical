@@ -67,17 +67,16 @@ namespace Chemical {
 
     std::string GetResourcePath(const std::string_view &affix);
 
+    Scene &operator=(Scene &&) = default;
+    Scene(Scene &&) = default;
+    Scene(const Scene &) = delete;
+    Scene &operator=(const Scene &) = delete;
+
   protected:
     friend class Graphics::Renderer;
     friend class Core;
 
     void UpdateScene();
-
-    Scene(const Scene &) = delete;
-    Scene(Scene &&) = delete;
-
-    Scene &operator=(const Scene &) = delete;
-    Scene &operator=(Scene &&) = delete;
 
     std::unordered_map<ObjectID, Transform> transforms;
     std::unordered_map<ObjectID, Graphics::Material> materials;

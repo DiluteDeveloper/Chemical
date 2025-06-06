@@ -39,8 +39,8 @@ namespace Chemical {
       glVertexArrayAttribBinding(vao, 1, 0);
 
       // Remove these when graphics debugging
-      // glDeleteBuffers(1, &VBO);
-      // glDeleteBuffers(1, &IBO);
+      glDeleteBuffers(1, &VBO);
+      glDeleteBuffers(1, &IBO);
     }
 
     void StaticSprite::Draw() const {

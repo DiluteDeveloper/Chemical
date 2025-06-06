@@ -1,5 +1,6 @@
 #include "chemical/core.h"
 
+#include "chemical/io/json_scene.h"
 #include "chemical/window.h"
 
 #include <glad/glad.h>
@@ -47,7 +48,13 @@ namespace Chemical {
     renderer = std::make_unique<Graphics::Renderer>();
 
     SPDLOG_INFO("Initialising Scene");
-    active_scene = std::make_unique<Scene>("/mnt/storage/Chemical/Chemical/modules/chemical/res/");
+
+    std::optional<Scene> scene =
+        LoadSceneFromJSONFile("/mnt/storage/Chemical/Chemical/modules/chemical/res/json/scene.json");
+
+    if (scene) {
+      active_scene = std::make_unique<Scene>(std::move(scene.value()));
+    }
 
     SPDLOG_INFO("Configuring stbi_image");
     stbi_set_flip_vertically_on_load(true);
