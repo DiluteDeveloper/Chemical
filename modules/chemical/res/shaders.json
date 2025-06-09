@@ -1,0 +1,9 @@
+{
+	"shaders": [
+		{
+			"id": "default",
+			"vsSourceResourcePath": "shaders/default_shader.vs",
+			"fsSourceResourcePath": "shaders/default_shader.fs",
+		}
+	]
+}

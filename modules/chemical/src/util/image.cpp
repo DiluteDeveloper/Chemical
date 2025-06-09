@@ -10,11 +10,11 @@ namespace Chemical {
 
   namespace Util {
 
-    std::optional<Image> LoadImage(const std::string_view &file_path, int req_comp) {
+    std::optional<Image> LoadImage(const std::string_view& file_path) {
 
       SPDLOG_INFO(R"(Loading image "{}")", file_path);
       Image id;
-      id.data = stbi_load(file_path.data(), &id.width, &id.height, &id.bit_depth, req_comp);
+      id.data = stbi_load(file_path.data(), &id.width, &id.height, nullptr, 4);
       if (id.data == nullptr) {
         SPDLOG_ERROR(R"(Failed to load image "{}" : possible invalid filepath? returning std::nullopt)",
                      file_path);

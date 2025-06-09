@@ -1,11 +1,15 @@
 #include "chemical/core.h"
 
-#include "chemical/io/json_scene.h"
+#include "chemical/resource_manager.h"
+#include "chemical/scene.h"
+#include "chemical/util/image.h"
 #include "chemical/window.h"
 
+#include <fstream>
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include <iostream>
+#include <stdexcept>
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 #include <spdlog/sinks/stdout_color_sinks-inl.h>
 #include <spdlog/spdlog.h>
@@ -16,7 +20,7 @@ namespace Chemical {
   void Core::ConfigureSpdlog() const {
     spdlog::set_pattern("%^[%s] [%!] [%#] %$%v");
   }
-  Core::Core(const char *window_title, glm::vec2 window_size) {
+  Core::Core(const char* window_title, glm::vec2 window_size) {
     std::cout << "================================= " << window_title
               << " ====================================================" << std::endl;
     ConfigureSpdlog();
@@ -45,16 +49,72 @@ namespace Chemical {
     input = std::make_unique<Input>(window);
 
     SPDLOG_INFO("Initialising Renderer");
-    renderer = std::make_unique<Graphics::Renderer>();
+    renderer = std::make_unique<GL_Renderer>();
+
+    ShaderTraits traits;
+    std::ifstream file("/mnt/storage/Chemical/Chemical/modules/chemical/res/shaders/default_shader.vs");
+
+    if (!file) {
+      SPDLOG_ERROR(R"(Failed to read file "" : returning 0)");
+    }
+
+    traits.vs_source = std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+    file.close();
+
+    std::ifstream file2("/mnt/storage/Chemical/Chemical/modules/chemical/res/shaders/default_shader.fs");
+
+    if (!file2) {
+      SPDLOG_ERROR(R"(Failed to read file "" : returning 0)");
+    }
+
+    traits.fs_source = std::string((std::istreambuf_iterator<char>(file2)), std::istreambuf_iterator<char>());
+
+    file2.close();
+    renderer->RegisterShader("default", traits);
+    //
+    // std::optional<Util::Image> img =
+    //     Util::LoadImage("/mnt/storage/Chemical/Chemical/modules/chemical/res/textures/arrow.png", 3);
+    //
+    // MaterialTraits m_traits(img.value());
+    // m_traits.tint = glm::ivec3(255, 10, 10);
+    // renderer->RegisterMaterial("default", m_traits);
+
+    SPDLOG_INFO("Initialising Resource Manager");
+    resource_manager =
+        std::make_unique<ResourceManager>("/mnt/storage/Chemical/Chemical/modules/chemical/res/");
 
     SPDLOG_INFO("Initialising Scene");
-
-    std::optional<Scene> scene =
-        LoadSceneFromJSONFile("/mnt/storage/Chemical/Chemical/modules/chemical/res/json/scene.json");
-
-    if (scene) {
-      active_scene = std::make_unique<Scene>(std::move(scene.value()));
+    auto opt_scene = resource_manager->LoadSceneJSONFile("scene.json");
+    if (!opt_scene) {
+      throw std::runtime_error("Failed to load scene");
     }
+
+    SPDLOG_INFO("Initialising Materials");
+    auto opt_mtls = resource_manager->LoadMaterialsJSONFile();
+    if (opt_mtls) {
+      StrValVec<MaterialTraits>& mtls = opt_mtls.value();
+
+      for (auto& [id, mtl] : mtls) {
+        renderer->RegisterMaterial(id, mtl);
+      }
+    }
+
+    active_scene = std::make_unique<Scene>(std::move(opt_scene.value()));
+
+    // active_scene->RegisterTransform("default", Transform());
+    // Sprite sprite;
+    // sprite.transform_id = "default";
+    // sprite.material_id = "default";
+    //
+    // active_scene->RegisterSprite("default", sprite);
+
+    // std::optional<Scene> scene =
+    //     LoadSceneFromJSONFile("/mnt/storage/Chemical/Chemical/modules/chemical/res/json/scene.json");
+    //
+    // if (scene) {
+    //   active_scene = std::make_unique<Scene>(std::move(scene.value()));
+    // }
 
     SPDLOG_INFO("Configuring stbi_image");
     stbi_set_flip_vertically_on_load(true);
@@ -75,9 +135,7 @@ namespace Chemical {
     while (!WindowShouldClose(window)) {
 
       glClear(GL_COLOR_BUFFER_BIT);
-      active_scene->UpdateScene();
-
-      renderer->RenderScene(*active_scene.get());
+      renderer->RenderScene(active_scene.get());
 
       glfwSwapBuffers(window);
 
@@ -85,7 +143,7 @@ namespace Chemical {
     }
   }
 
-  void Core::SetBackgroundColour(const glm::vec3 &colour) {
+  void Core::SetBackgroundColour(const glm::vec3& colour) {
     SPDLOG_INFO("Setting OpenGL clear colour to [{}, {}, {}]", colour.r, colour.g, colour.b);
     glClearColor(colour.r / 255.0f, colour.g / 255.0f, colour.b / 255.0f, 1.0f);
   }

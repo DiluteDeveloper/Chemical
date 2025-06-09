@@ -3,73 +3,39 @@
 #include <spdlog/spdlog.h>
 
 namespace Chemical {
-
-  Transform *Scene::GetTransform(const ObjectID &id) {
-    auto find = transforms.find(id);
+  bool Scene::RegisterSprite(const std::string_view& id, const Sprite& sprite) {
+    return sprites.try_emplace(id.data(), sprite).second;
+  }
+  void Scene::DeregisterSprite(const std::string_view& id) {
+    sprites.erase(id.data());
+  }
+  bool Scene::IsSprite(const std::string_view& id) {
+    return sprites.contains(id.data());
+  }
+  Sprite* Scene::GetSprite(const std::string_view& id) {
+    auto find = sprites.find(id.data());
+    if (find == sprites.end()) {
+      SPDLOG_WARN(R"(Tried to get sprite "{}" that does not exist)", id);
+      return nullptr;
+    }
+    return &find->second;
+  }
+  bool Scene::RegisterTransform(const std::string_view& id, const Transform& transform) {
+    return transforms.try_emplace(id.data(), transform).second;
+  }
+  void Scene::DeregisterTransform(const std::string_view& id) {
+    transforms.erase(id.data());
+  }
+  bool Scene::IsTransform(const std::string_view& id) {
+    return transforms.contains(id.data());
+  }
+  Transform* Scene::GetTransform(const std::string_view& id) {
+    auto find = transforms.find(id.data());
     if (find == transforms.end()) {
-      SPDLOG_ERROR(R"(Tried to get transform "{}" that does not exist!)", id);
+      SPDLOG_WARN(R"(Tried to get transform "{}" that does not exist)", id);
       return nullptr;
     }
     return &find->second;
-  }
-  void Scene::DestroyTransform(const ObjectID &id) {
-    transforms.erase(id);
-  }
-
-  Graphics::Material *Scene::GetMaterial(const ObjectID &id) {
-    auto find = materials.find(id);
-    if (find == materials.end()) {
-      SPDLOG_ERROR(R"(Tried to get material "{}" that does not exist!)", id);
-      return nullptr;
-    }
-    return &find->second;
-  }
-
-  Graphics::Texture *Scene::GetTexture(const ObjectID &id) {
-    auto find = textures.find(id);
-    if (find == textures.end()) {
-      SPDLOG_ERROR(R"(Tried to get texture "{}" that does not exist!)", id);
-      return nullptr;
-    }
-    return &find->second;
-  }
-  Camera *Scene::GetCamera(const ObjectID &id) {
-
-    auto find = cameras.find(id);
-    if (find == cameras.end()) {
-      SPDLOG_ERROR(R"(Tried to get camera "{}" that does not exist!)", id);
-      return nullptr;
-    }
-    return &find->second;
-  }
-  void Scene::SetPrimaryCamera(const ObjectID &id) {
-    primary_camera = id;
-  }
-
-  bool Scene::MoveConstructShader(const ObjectID &id, Graphics::Shader &&mv) {
-    if (mv.compile_status == -1) {
-      SPDLOG_ERROR(R"(Failed to move construct shader "{}" : shader doesnt compile!)", id);
-      return false;
-    }
-    shaders.try_emplace(id, std::move(mv));
-    return true;
-  }
-  void Scene::UpdateScene() {
-    for (auto &script : scripts) {
-      script->FrameUpdate();
-    }
-  }
-
-  Scene::Scene(const std::string_view &file_path) : file_path(file_path) {}
-
-  Scene::~Scene() {
-    for (auto &script : scripts) {
-      script->EndScript();
-    }
-  }
-
-  std::string Scene::GetResourcePath(const std::string_view &affix) {
-    return std::string(file_path + affix.data());
   }
 
 } // namespace Chemical
