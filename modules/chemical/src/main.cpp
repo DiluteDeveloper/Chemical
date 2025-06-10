@@ -5,7 +5,7 @@
 using namespace Chemical;
 
 int main() {
-  Core core("Chemical 1.2.6_int", glm::vec2(1280, 720));
+  Core core("Chemical 1.2.6_int2", glm::vec2(1280, 720));
 
   core.SetBackgroundColour(glm::vec3(50, 100, 50));
 

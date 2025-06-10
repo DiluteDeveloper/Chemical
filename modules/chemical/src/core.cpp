@@ -2,7 +2,6 @@
 
 #include "chemical/resource_manager.h"
 #include "chemical/scene.h"
-#include "chemical/util/image.h"
 #include "chemical/window.h"
 
 #include <fstream>
@@ -17,10 +16,12 @@
 
 namespace Chemical {
 
+  using namespace std::placeholders;
+
   void Core::ConfigureSpdlog() const {
     spdlog::set_pattern("%^[%s] [%!] [%#] %$%v");
   }
-  Core::Core(const char* window_title, glm::vec2 window_size) {
+  Core::Core(const std::string_view& window_title, const glm::vec2& window_size) {
     std::cout << "================================= " << window_title
               << " ====================================================" << std::endl;
     ConfigureSpdlog();
@@ -81,26 +82,15 @@ namespace Chemical {
     // renderer->RegisterMaterial("default", m_traits);
 
     SPDLOG_INFO("Initialising Resource Manager");
-    resource_manager =
-        std::make_unique<ResourceManager>("/mnt/storage/Chemical/Chemical/modules/chemical/res/");
+    ResourceManager::SetResourceMasterPath("/mnt/storage/Chemical/Chemical/modules/chemical/res/");
+
+    // resource_manager->LoadMaterialsJSONFile(
+    //     std::bind(&GL_Renderer::RegisterMaterial, renderer.get(), _1, _2));
 
     SPDLOG_INFO("Initialising Scene");
-    auto opt_scene = resource_manager->LoadSceneJSONFile("scene.json");
-    if (!opt_scene) {
-      throw std::runtime_error("Failed to load scene");
-    }
-
-    SPDLOG_INFO("Initialising Materials");
-    auto opt_mtls = resource_manager->LoadMaterialsJSONFile();
-    if (opt_mtls) {
-      StrValVec<MaterialTraits>& mtls = opt_mtls.value();
-
-      for (auto& [id, mtl] : mtls) {
-        renderer->RegisterMaterial(id, mtl);
-      }
-    }
-
-    active_scene = std::make_unique<Scene>(std::move(opt_scene.value()));
+    active_scene = std::make_unique<Scene>();
+    ResourceManager::LoadAndRegisterScene("scenes/scene.json", *active_scene);
+    ResourceManager::LoadAndRegisterProject(std::string(window_title.data(), ".json"), *renderer);
 
     // active_scene->RegisterTransform("default", Transform());
     // Sprite sprite;
@@ -135,7 +125,7 @@ namespace Chemical {
     while (!WindowShouldClose(window)) {
 
       glClear(GL_COLOR_BUFFER_BIT);
-      renderer->RenderScene(active_scene.get());
+      renderer->RenderScene(*active_scene);
 
       glfwSwapBuffers(window);
 

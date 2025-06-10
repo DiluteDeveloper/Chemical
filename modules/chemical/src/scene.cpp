@@ -37,5 +37,22 @@ namespace Chemical {
     }
     return &find->second;
   }
+  bool Scene::RegisterMaterial(const std::string_view& id, const Material& material) {
+    return materials.try_emplace(id.data(), material).second;
+  }
+  void Scene::DeregisterMaterial(const std::string_view& id) {
+    materials.erase(id.data());
+  }
+  bool Scene::IsMaterial(const std::string_view& id) {
+    return materials.contains(id.data());
+  }
+  Material* Scene::GetMaterial(const std::string_view& id) {
+    auto find = materials.find(id.data());
+    if (find == materials.end()) {
+      SPDLOG_WARN(R"(Tried to get material "{}" that does not exist)", id);
+      return nullptr;
+    }
+    return &find->second;
+  }
 
 } // namespace Chemical

@@ -1,3 +1,9 @@
+Chemical 1.2.6_int2
+
+Intermediary update amongst a rewrite of the
+entire rendering pipeline, scene class and JSON loading.
+Temporarily disabled user scripting.
+
 Chemical 1.2.6_int
 
 Intermediary update amongst a rewrite of the

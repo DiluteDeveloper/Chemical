@@ -1,0 +1,30 @@
+#pragma once
+
+#include "chemical/graphics/material.h"
+#include "chemical/graphics/shader_traits.h"
+#include "chemical/scene.h"
+
+namespace Chemical {
+
+  class Renderer {
+  public:
+    virtual void RenderScene(Scene& scene) = 0;
+
+    virtual bool RegisterMaterial(const std::string_view& id, const MaterialTraits& traits) = 0;
+    virtual void DeregisterMaterial(const std::string_view& id) = 0;
+    virtual bool IsMaterial(const std::string_view& id) = 0;
+    virtual Material* GetMaterial(const std::string_view& id) = 0;
+
+    virtual bool RegisterShader(const std::string_view& id, const ShaderTraits& traits) = 0;
+    virtual void DeregisterShader(const std::string_view& id) = 0;
+    virtual bool IsShader(const std::string_view& id) = 0;
+
+    Renderer() = default;
+    virtual ~Renderer() = 0;
+
+    Renderer& operator=(Renderer&&) = delete;
+    Renderer(Renderer&&) = delete;
+    Renderer(const Renderer&) = delete;
+    Renderer& operator=(const Renderer&) = delete;
+  };
+} // namespace Chemical

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "chemical/graphics/shader_traits.h"
+#include "chemical/graphics/shader.h"
 
 #include <cstdint>
 #include <unordered_map>
@@ -157,9 +157,6 @@ namespace Chemical {
     void SetUniformMatrix3x2DV(const std::string_view& name, int count, bool transpose,
                                double const* value) const;
 
-  protected:
-    friend class GL_Renderer;
-
     uint16_t id = 0;
 
     std::unordered_map<std::string, int> uniform_locations;
@@ -169,6 +166,6 @@ namespace Chemical {
     uint16_t CompileShader(const std::string_view& source, int type);
 
     void CreateGLShader(const ShaderTraits& traits);
-    void DeleteGLShader();
+    void DeleteGLShader() const;
   };
 } // namespace Chemical

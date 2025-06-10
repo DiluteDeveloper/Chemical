@@ -1,4 +1,4 @@
-#include "chemical/graphics/opengl/gl_shader.h"
+#include "chemical/graphics/opengl/shader.h"
 
 #include <cassert>
 #include <glad/glad.h>
@@ -121,7 +121,7 @@ namespace Chemical {
       }
     }
   }
-  void GL_Shader::DeleteGLShader() {
+  void GL_Shader::DeleteGLShader() const {
     glDeleteProgram(id);
   }
 

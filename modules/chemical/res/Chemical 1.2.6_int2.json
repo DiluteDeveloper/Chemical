@@ -1,9 +1,14 @@
 {
 	"shaders": [
 		{
-			"id": "default",
+			"shaderID": "default",
 			"vsSourceResourcePath": "shaders/default_shader.vs",
 			"fsSourceResourcePath": "shaders/default_shader.fs",
+		}
+	],
+	"textures": [
+		{
+			"texturePath": "textures/white.png"
 		}
 	]
 }

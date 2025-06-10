@@ -1,33 +1,28 @@
 #pragma once
 
-#include "chemical/graphics/material_traits.h"
-#include "chemical/graphics/shader_traits.h"
+#include "chemical/graphics/renderer.h"
 #include "scene.h"
 
-#include <vector>
+#include <nlohmann-json/json.hpp>
+
+using json = nlohmann::json;
 
 namespace Chemical {
-
-  template <typename T> using StrValVec = std::vector<std::pair<std::string, T>>;
 
   // - Loads resources from file into the application
   // - Responsible for all IO operations
   // - Does not store any resource data
   class ResourceManager {
   public:
-    template <typename T> using OptionalObjectList = std::optional<std::vector<std::pair<std::string, T>>>;
+    ResourceManager() = delete;
 
-    // resource_master_path is the suffix for all resource path parameters
-    ResourceManager(const std::string_view& resource_master_path)
-        : resource_master_path(resource_master_path) {}
+    static void SetResourceMasterPath(const std::string_view& in_res_master_path);
 
-    std::optional<Scene> LoadSceneJSONFile(const std::string_view& resource_path);
+    static bool LoadAndRegisterScene(const std::string_view& res_path, I_SORHandler& sor_handler);
 
-    std::optional<StrValVec<MaterialTraits>> LoadMaterialsJSONFile();
-
-    std::optional<StrValVec<ShaderTraits>> LoadShadersJSONFile();
+    static bool LoadAndRegisterProject(const std::string_view& res_path, I_RRHandler& rr_handler);
 
   protected:
-    const std::string resource_master_path;
+    static std::optional<json> LoadJSONFile(const std::string_view& path);
   };
 } // namespace Chemical
