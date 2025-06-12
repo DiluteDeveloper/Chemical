@@ -30,11 +30,15 @@ vec2 GetVertexTexCoord() {
 }
 
 uniform mat3 v_model;
+uniform mat3 v_view;
+uniform mat3 v_proj;
+
+uniform uint v_frame_idx;
 
 out vec2 f_texCoord;
 
 void main()
 {
-	gl_Position = mat4(v_model) * vec4(GetVertexPosition(), 1.0, 1.0);
+	gl_Position = mat4(v_proj) * mat4(v_view) * mat4(v_model) * vec4(GetVertexPosition(), 1.0 + v_frame_idx* 0.0001, 1.0);
 	f_texCoord = GetVertexTexCoord();
 }

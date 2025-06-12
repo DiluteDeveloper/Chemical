@@ -1,7 +1,27 @@
 {
+	"mainCamera": {
+		"zoomLevel": -1000.0,
+		"transformID": "camera"
+	},
 	"transforms": [
 		{
-			"transformID": "default"
+			"transformID": "default",
+			"position": [0, 0],
+			"rotation": 45
+		},
+		{
+			"transformID": "default2",
+			"position": [-6.0, 0],
+			"rotation": 45
+		},
+		{
+			"transformID": "default3",
+			"position": [2.0, 0],
+			"rotation": 45
+		},
+		{
+			"transformID": "camera",
+			"position": [-0.5, 0]
 		}
 	],
 	"sprites": [
@@ -10,14 +30,38 @@
 			"transformID": "default",
 			"materialID": "default",
 			"size": [0.5, 0.5]
+		},
+		{
+			"spriteID": "default2",
+			"transformID": "default2",
+			"materialID": "default2",
+			"size": [3.5, 3.5]
+		},
+		{
+			"spriteID": "default3",
+			"transformID": "default3",
+			"materialID": "default3",
+			"size": [0.5, 0.5]
 		}
 	],
 	"materials": [
 		{
 			"materialID": "default",
-			"shaderID": "default",
+			"shaderID": "sin_shader",
 			"texturePath": "textures/white.png",
-			"tint": [255, 200, 200]
+			"tint": [255, 200, 100]
+		},
+		{
+			"materialID": "default2",
+			"shaderID": "sin_shader",
+			"texturePath": "textures/arrow.png",
+			"tint": [100, 255, 200]
+		},
+		{
+			"materialID": "default3",
+			"shaderID": "sin_shader",
+			"texturePath": "textures/white.png",
+			"tint": [200, 100, 255]
 		}
 	]
 	

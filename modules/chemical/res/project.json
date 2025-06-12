@@ -1,0 +1,22 @@
+{
+	"shaders": [
+		{
+			"shaderID": "default",
+			"vsSourceResourcePath": "shaders/default_shader.vs",
+			"fsSourceResourcePath": "shaders/default_shader.fs"
+		},
+		{
+			"shaderID": "sin_shader",
+			"vsSourceResourcePath": "shaders/sin_shader.vs",
+			"fsSourceResourcePath": "shaders/default_shader.fs"
+		}
+	],
+	"textures": [
+		{
+			"texturePath": "textures/white.png"
+		},
+		{
+			"texturePath": "textures/arrow.png"
+		}
+	]
+}

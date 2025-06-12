@@ -1,3 +1,9 @@
+Chemical 1.2.6
+
+Final commit of the rewrite of the Rendering systems,
+Scene hierachy system, Resource Manager and json loading
+User scripting is disabled and planned to be changed
+
 Chemical 1.2.6_int2
 
 Intermediary update amongst a rewrite of the
