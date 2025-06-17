@@ -1,8 +1,9 @@
 #include "core/context.h"
 #include "glad/glad.h"
 #include "glfw/glfw3.h"
-#include "io/file.h"
+#include "io/read_file.h"
 #include "rendering/shader.h"
+#include "util/list.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,6 +55,16 @@ int main() {
 
   if (!SetupShaders()) {
     return -1;
+  }
+  CL_List_Alloc list = CL_CreateList(4, 5); // (element size, default allocation/capacity)
+
+  unsigned int x = 5;
+  CL_AddListElementBack(&list, (void*)&x);
+  unsigned int y = 10;
+  CL_AddListElementBack(&list, (void*)&y);
+
+  for (size_t i = 0; i < list.numElements; i++) {
+    printf("%d\n", *(unsigned int*)CL_GetListElement(&list, i)); // 5, 10
   }
 
   unsigned int vArray = 0;
