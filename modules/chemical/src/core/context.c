@@ -1,11 +1,22 @@
-#include "window.h"
+#include "context.h"
 
+#include "glad/glad.h"
+
+#include <assert.h>
+#include <stddef.h>
 #include <stdio.h>
 
-extern void APIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
-                                     GLchar const* message, void const* user_param);
+extern void APIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
+                                   GLchar const* message, void const* user_param);
 
-GLFWwindow* CMCL_CreateWindow(int width, int height, const char* title) {
+GLFWwindow* CL_CreateContext(const CL_ContextTraits* traits) {
+  assert(traits->glVersionMajor > 0);
+  assert(traits->glVersionMinor > 0);
+  assert(traits->windowWidth > 0);
+  assert(traits->windowHeight > 0);
+  assert(traits->clearColour.x >= 0 && traits->clearColour.x <= 1);
+  assert(traits->clearColour.y >= 0 && traits->clearColour.y <= 1);
+  assert(traits->clearColour.z >= 0 && traits->clearColour.z <= 1);
 
   // GLFW INITIALIZATION ----------------------------
 
@@ -18,8 +29,8 @@ GLFWwindow* CMCL_CreateWindow(int width, int height, const char* title) {
 
   // GLFW WINDOW HINTS ----------------------------------
 
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, traits->glVersionMajor);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, traits->glVersionMinor);
 
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
@@ -27,7 +38,8 @@ GLFWwindow* CMCL_CreateWindow(int width, int height, const char* title) {
 
   // GLFW WINDOW SETUP -------------------------------------------------
 
-  GLFWwindow* window = glfwCreateWindow(width, height, title, NULL, NULL);
+  GLFWwindow* window =
+      glfwCreateWindow(traits->windowWidth, traits->windowHeight, traits->windowTitle, NULL, NULL);
 
   if (!window) {
     printf("Creating GLFW window failed.\n");
@@ -36,14 +48,10 @@ GLFWwindow* CMCL_CreateWindow(int width, int height, const char* title) {
 
   // GLFW WINDOW SETUP -------------------------------------------------
 
-  glfwSwapInterval(1);
+  glfwSwapInterval(traits->swapInterval);
 
   glfwMakeContextCurrent(window);
 
-  return window;
-}
-
-void CMCL_InitializeGLAD() {
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
     printf("GLAD functions failed to load.\n");
   } else
@@ -52,18 +60,20 @@ void CMCL_InitializeGLAD() {
   glEnable(GL_DEBUG_OUTPUT);
   glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
-  glDebugMessageCallback(&MessageCallback, NULL);
+  glDebugMessageCallback(&DebugCallback, NULL);
   glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE);
 
-  glClearColor(0.5f, 0.2f, 0.3f, 1.0f);
+  glClearColor(traits->clearColour.x, traits->clearColour.y, traits->clearColour.z, 1.0f);
+
+  return window;
 }
 
 // prevents message duplication
-int64_t prevMessageID = -1;
+int prevMessageID = -1;
 
 // OpenGL debug callback
-void APIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
-                              GLchar const* message, void const* user_param) {
+void APIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
+                            GLchar const* message, void const* user_param) {
 
   if ((GLuint)prevMessageID == id)
     return;
