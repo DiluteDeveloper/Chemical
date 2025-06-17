@@ -4,7 +4,7 @@ configurations({ "Debug", "Release" })
 startproject("Chemical")
 architecture("x86_64")
 language("C")
-cdialect("C99")
+cdialect("gnu11")
 systemversion("latest")
 toolset("clang")
 
