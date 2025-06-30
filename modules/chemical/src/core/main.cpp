@@ -1,17 +1,29 @@
-#include "background.h"
-#include "core/core.h"
-#include "player.h"
+#include "glad/glad.h"
+#include "glfw/glfw3.h"
+
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
+#include "spdlog/spdlog.h"
+
+#include "window.hpp"
 
 using namespace Chemical;
 
 int main() {
-  Core core("Chemical 1.2.6_int2", glm::vec2(1280, 720));
+  spdlog::set_pattern("%^[%s] [%!] [%#] %$%v");
 
-  core.SetBackgroundColour(glm::vec3(50, 100, 50));
+  GLFWwindow *window = Window::InitialiseGLContextAndGLFWWindow(
+      "Game Development 0.1.0", 1080, 720);
 
-  // core.active_scene->MountSceneScript<Background>(&core);
-  // core.active_scene->MountSceneScript<Player>(&core);
+  glClearColor(1.0, 1.0, 0.5, 1.0);
 
-  core.StartGameLoop();
+  while (!glfwWindowShouldClose(window)) {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glfwPollEvents();
+
+    glfwSwapBuffers(window);
+  }
+
+  Window::DestroyGLFWWindow(window);
   return 0;
 }

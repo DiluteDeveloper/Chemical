@@ -7,7 +7,6 @@ language("C++")
 cppdialect("C++23")
 systemversion("latest")
 debugformat("c7")
-toolset("clang")
 
 filter("configurations:Debug")
 symbols("On")
@@ -24,13 +23,7 @@ MODULES_DIR = "%{wks.location}/modules"
 IMPORTED_MODULES_DIR = MODULES_DIR .. "/imported"
 
 CHEMICAL_DIR = MODULES_DIR .. "/chemical"
-CHEMICAL_INCLUDE_DIR = CHEMICAL_DIR .. "/include"
-CHEMICAL_DEV_INCLUDE_DIR = CHEMICAL_DIR .. "/include/chemical/"
 CHEMICAL_SOURCE_DIR = CHEMICAL_DIR .. "/src"
-
-SANDBOX_DIR = MODULES_DIR .. "/sandbox"
-SANDBOX_INCLUDE_DIR = SANDBOX_DIR .. "/include"
-SANDBOX_SOURCE_DIR = SANDBOX_DIR .. "/src"
 
 GLFW_LIB_DIR = IMPORTED_MODULES_DIR .. "/glfw"
 GLAD_LIB_DIR = IMPORTED_MODULES_DIR .. "/glad"
@@ -46,24 +39,11 @@ kind("ConsoleApp")
 defines("GLFW_INCLUDE_NONE")
 
 location(CHEMICAL_DIR)
-files({
-	CHEMICAL_SOURCE_DIR .. "/**",
-	SANDBOX_SOURCE_DIR .. "/**",
-	SANDBOX_INCLUDE_DIR .. "/**",
-	CHEMICAL_INCLUDE_DIR .. "/**",
-})
-includedirs({ IMPORTED_MODULES_DIR, CHEMICAL_DEV_INCLUDE_DIR, SANDBOX_INCLUDE_DIR })
+files(CHEMICAL_SOURCE_DIR .. "/**")
+includedirs({ IMPORTED_MODULES_DIR, CHEMICAL_SOURCE_DIR })
 
 libdirs({ GLFW_LIB_DIR, GLAD_LIB_DIR })
 links({ GLFW_LIB, GLAD_LIB })
 
 targetdir(BIN_DIR)
 objdir(INT_DIR)
-
-project("Sandbox")
-kind("Utility")
-
-location(SANDBOX_DIR)
-
--- Imported modules inclusion is a quick-fix for glm
-includedirs({ SANDBOX_INCLUDE_DIR, CHEMICAL_INCLUDE_DIR, IMPORTED_MODULES_DIR })

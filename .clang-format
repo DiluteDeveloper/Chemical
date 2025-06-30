@@ -1,0 +1,5 @@
+PointerAlignment: Right
+BasedOnStyle: LLVM
+AllowShortFunctionsOnASingleLine: Inline
+NamespaceIndentation: All
+BreakAfterReturnType: Automatic
