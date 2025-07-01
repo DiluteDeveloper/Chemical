@@ -19,6 +19,9 @@ namespace Chemical {
 
       glfwSetErrorCallback(GLFWErrorCallback);
 
+      glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+      glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+
       GLFWwindow *window =
           glfwCreateWindow(width, height, title.data(), nullptr, nullptr);
 
