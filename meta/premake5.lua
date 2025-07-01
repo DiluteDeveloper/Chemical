@@ -27,8 +27,12 @@ CHEMICAL_SOURCE_DIR = CHEMICAL_DIR .. "/src"
 
 GLFW_LIB_DIR = IMPORTED_MODULES_DIR .. "/glfw"
 GLAD_LIB_DIR = IMPORTED_MODULES_DIR .. "/glad"
+ASSIMP_LIB_DIR = IMPORTED_MODULES_DIR .. "/assimp"
+ZLIB_LIB_DIR = IMPORTED_MODULES_DIR .. "/assimp/contrib/zlib"
 GLFW_LIB = "glfw3"
 GLAD_LIB = "glad"
+ASSIMP_LIB = "assimp"
+ZLIB_LIB = "zlibstatic"
 
 project("Chemical")
 kind("ConsoleApp")
@@ -42,8 +46,8 @@ location(CHEMICAL_DIR)
 files(CHEMICAL_SOURCE_DIR .. "/**")
 includedirs({ IMPORTED_MODULES_DIR, CHEMICAL_SOURCE_DIR })
 
-libdirs({ GLFW_LIB_DIR, GLAD_LIB_DIR })
-links({ GLFW_LIB, GLAD_LIB })
+libdirs({ GLFW_LIB_DIR, GLAD_LIB_DIR, ASSIMP_LIB_DIR, ZLIB_LIB_DIR })
+links({ GLFW_LIB, GLAD_LIB, ASSIMP_LIB, ZLIB_LIB })
 
 targetdir(BIN_DIR)
 objdir(INT_DIR)
