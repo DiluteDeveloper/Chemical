@@ -20,15 +20,17 @@ int main() {
   spdlog::set_pattern("%^[%s] [%!] [%#] %$%v");
 
   GLFWwindow *window = Window::InitialiseGLContextAndGLFWWindow(
-      "Game Development 0.12.0", 1080, 720);
+      "Game Development 0.13.0", 1080, 720);
 
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
+  glEnable(GL_DEPTH_TEST);
   glClearColor(0.3, 0.3, 0.6, 1.0);
 
   ShaderTraits traits;
   std::ifstream file("/mnt/storage/Chemical/Chemical/modules/chemical/res/"
-                     "shaders/default_shader.vs");
+                     "shaders/LitShader.vs");
 
   if (!file) {
     SPDLOG_ERROR(R"(Failed to read file "" : returning 0)");
@@ -40,7 +42,7 @@ int main() {
   file.close();
 
   std::ifstream file2("/mnt/storage/Chemical/Chemical/modules/chemical/res/"
-                      "shaders/default_shader.fs");
+                      "shaders/LitShader.fs");
 
   if (!file2) {
     SPDLOG_ERROR(R"(Failed to read file "" : returning 0)");
@@ -71,14 +73,17 @@ int main() {
   glNamedBufferStorage(ibo, sizeof(unsigned int) * indices.size(), &indices[0],
                        GL_DYNAMIC_STORAGE_BIT);
 
-  glVertexArrayVertexBuffer(vao, 0, vbo, 0, 3 * sizeof(float));
+  glVertexArrayVertexBuffer(vao, 0, vbo, 0, 6 * sizeof(float));
   glVertexArrayElementBuffer(vao, ibo);
 
   glVertexArrayAttribBinding(vao, 0, 0);
+  glVertexArrayAttribBinding(vao, 1, 0);
 
   glEnableVertexArrayAttrib(vao, 0);
+  glEnableVertexArrayAttrib(vao, 1);
 
   glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, 0);
+  glVertexArrayAttribFormat(vao, 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float));
 
   glBindVertexArray(vao);
 
@@ -89,6 +94,7 @@ int main() {
     shader.SetUniformMatrix4FV(
         "v_view", 1, GL_FALSE,
         &glm::inverse(camera.transform.ToMatrix())[0][0]);
+    shader.SetUniform3FV("viewPos", 1, &camera.transform.position[0]);
 
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
 
