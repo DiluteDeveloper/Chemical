@@ -8,5 +8,5 @@ uniform mat4 v_proj;
 
 void main()
 {
-	gl_Position = vec4(v_pos, 1.0);
+	gl_Position = v_proj * v_view * vec4(v_pos, 1.0);
 }
