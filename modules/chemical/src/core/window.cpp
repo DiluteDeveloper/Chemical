@@ -1,6 +1,7 @@
 #include "window.hpp"
 
 #include "glad/glad.h"
+#include "glfw/glfw3.h"
 #include "spdlog/spdlog.h"
 
 namespace Chemical {
@@ -21,6 +22,7 @@ namespace Chemical {
 
       glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
       glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+      glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
       GLFWwindow *window =
           glfwCreateWindow(width, height, title.data(), nullptr, nullptr);

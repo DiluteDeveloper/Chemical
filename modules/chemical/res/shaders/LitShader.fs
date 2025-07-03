@@ -10,8 +10,9 @@ struct Material {
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
-    float shininess;
+    uint shininess;
 }; 
+uniform Material material;
 
 struct PointLight {
     vec3 position;
@@ -23,16 +24,11 @@ struct PointLight {
 
 vec3 calcPointLight(vec3 viewDir) {
 
-		Material material;
-		material.ambient = vec3(0.2, 0.2, 0.2);
-		material.diffuse = vec3(1.0,0.3,0.3);
-		material.specular = vec3(1.0,1.0,1.0);
-		material.shininess = 32;
 		PointLight light;
-		light.position = vec3(2,5,0);
-		light.diffuse = vec3(0.6, 0.6, 0.6);
-		light.specular= vec3(0.9, 0.9, 0.9);
-		light.ambient = vec3(0.9, 0.8, 0.7);
+		light.position = vec3(2,2,-10);
+		light.diffuse = vec3(0.7, 0.7, 0.7);
+		light.specular= vec3(1.0, 1.0, 1.0);
+		light.ambient = vec3(0.2, 0.2, 0.2);
 		
     vec3 ambientResult = material.ambient * light.ambient; 
     vec3 diffuse = material.diffuse * light.diffuse;

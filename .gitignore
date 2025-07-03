@@ -5,6 +5,7 @@
 
 Makefile
 compile_commands.json
+libassimp.a
 
 # User-specific files
 *.rsuser

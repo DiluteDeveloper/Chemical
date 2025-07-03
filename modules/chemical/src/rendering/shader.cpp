@@ -66,6 +66,7 @@ namespace Chemical {
 
         int location = glGetUniformLocation(id, uniform_name.get());
         uniform_locations[uniform_name.get()] = location;
+        SPDLOG_INFO("uniform location: {}", uniform_name.get());
       }
     }
     return true;

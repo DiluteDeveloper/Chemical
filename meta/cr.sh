@@ -2,5 +2,4 @@ cd "$(dirname "$0")"
 bear -- premake5 gmake  
 bear -- make -C ../ 
 mv compile_commands.json ../
-cd ../bin/Chemical/linux-Debug
-./Chemical
+ /mnt/storage/Chemical/Chemical/bin/Chemical/linux-Debug/Chemical

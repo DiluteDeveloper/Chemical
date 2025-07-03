@@ -1,4 +1,1 @@
-cd "$(dirname "$0")"
-cd ../
-cd bin/Chemical/linux-Debug
-./Chemical
+/mnt/storage/Chemical/Chemical/bin/Chemical/linux-Debug/Chemical

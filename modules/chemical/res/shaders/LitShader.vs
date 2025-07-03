@@ -13,7 +13,7 @@ out vec3 f_fragPos;
 void main()
 {
     
-    gl_Position = v_proj * v_view * vec4(v_pos, 1.0);
+    gl_Position = v_proj * v_view * v_model * vec4(v_pos, 1.0);
     //f_normal = normalize(mat3(transpose(inverse(v_model))) * v_normal);
     f_normal = v_normal;
     f_fragPos = vec3(v_pos);
