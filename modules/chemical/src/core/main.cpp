@@ -63,7 +63,7 @@ int main() {
   shader.SetUniformMatrix4FV("v_proj", 1, GL_FALSE, &proj[0][0]);
 
   glm::mat4 modelmat = glm::mat4(1.0f);
-  // modelmat = glm::rotate(modelmat, glm::radians(-90.0f), glm::vec3(1, 0, 0));
+  modelmat = glm::rotate(modelmat, glm::radians(-90.0f), glm::vec3(1, 0, 0));
   shader.SetUniformMatrix4FV("v_model", 1, GL_FALSE, &modelmat[0][0]);
   CameraController camera(window);
 
@@ -74,43 +74,48 @@ int main() {
   // material.shininess = 32;
 
   std::optional<Model> model_opt =
-      ModelLoader::LoadModel("res/models/store.fbx");
+      ModelLoader::LoadModel("res/models/test_scene.fbx");
   if (!model_opt)
     throw std::runtime_error("failed to load model");
 
   Model &model = model_opt.value();
 
-  shader.SetUniform3F("material.ambient", model.material.ambient.x,
-                      model.material.ambient.y, model.material.ambient.z);
   shader.SetUniform3F("material.diffuse", model.material.diffuse.x,
                       model.material.diffuse.y, model.material.diffuse.z);
-  shader.SetUniform3F("material.specular", model.material.specular.x,
-                      model.material.specular.y, model.material.specular.z);
   shader.SetUniform1UI("material.shininess", model.material.shininess);
 
-  unsigned int vao = 0, vbo = 0, ibo = 0;
-  glCreateVertexArrays(1, &vao);
-  glCreateBuffers(1, &vbo);
-  glCreateBuffers(1, &ibo);
+  // VAO then index count
+  std::vector<std::pair<unsigned int, unsigned int>> gl_mesh_data;
 
-  glNamedBufferStorage(vbo, sizeof(float) * model.mesh.vertices.size() * 6,
-                       &model.mesh.vertices[0], GL_DYNAMIC_STORAGE_BIT);
-  glNamedBufferStorage(ibo, sizeof(unsigned int) * model.mesh.indices.size(),
-                       &model.mesh.indices[0], GL_DYNAMIC_STORAGE_BIT);
+  for (const Mesh &mesh : model.meshes) {
 
-  glVertexArrayVertexBuffer(vao, 0, vbo, 0, 6 * sizeof(float));
-  glVertexArrayElementBuffer(vao, ibo);
+    unsigned int vao = 0, vbo = 0, ibo = 0;
+    glCreateVertexArrays(1, &vao);
+    glCreateBuffers(1, &vbo);
+    glCreateBuffers(1, &ibo);
 
-  glVertexArrayAttribBinding(vao, 0, 0);
-  glVertexArrayAttribBinding(vao, 1, 0);
+    glNamedBufferStorage(vbo, sizeof(float) * mesh.vertices.size() * 6,
+                         &mesh.vertices[0], GL_DYNAMIC_STORAGE_BIT);
+    glNamedBufferStorage(ibo, sizeof(unsigned int) * mesh.indices.size(),
+                         &mesh.indices[0], GL_DYNAMIC_STORAGE_BIT);
 
-  glEnableVertexArrayAttrib(vao, 0);
-  glEnableVertexArrayAttrib(vao, 1);
+    glVertexArrayVertexBuffer(vao, 0, vbo, 0, 6 * sizeof(float));
+    glVertexArrayElementBuffer(vao, ibo);
 
-  glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, 0);
-  glVertexArrayAttribFormat(vao, 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float));
+    glVertexArrayAttribBinding(vao, 0, 0);
+    glVertexArrayAttribBinding(vao, 1, 0);
 
-  glBindVertexArray(vao);
+    glEnableVertexArrayAttrib(vao, 0);
+    glEnableVertexArrayAttrib(vao, 1);
+
+    glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, 0);
+    glVertexArrayAttribFormat(vao, 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float));
+
+    glDeleteBuffers(1, &vbo);
+    glDeleteBuffers(1, &ibo);
+
+    gl_mesh_data.emplace_back(vao, mesh.indices.size());
+  }
 
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   bool cursor_disabled = true;
@@ -131,8 +136,10 @@ int main() {
       cursor_disabled = !cursor_disabled;
     }
 
-    glDrawElements(GL_TRIANGLES, model.mesh.indices.size(), GL_UNSIGNED_INT,
-                   nullptr);
+    for (const auto &mesh_data : gl_mesh_data) {
+      glBindVertexArray(mesh_data.first);
+      glDrawElements(GL_TRIANGLES, mesh_data.second, GL_UNSIGNED_INT, nullptr);
+    }
 
     glfwPollEvents();
 

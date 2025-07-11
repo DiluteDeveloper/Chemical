@@ -16,7 +16,7 @@ namespace Chemical {
     std::vector<unsigned int> indices;
   };
   struct Model {
-    Mesh mesh;
+    std::vector<Mesh> meshes;
     Material material;
   };
 

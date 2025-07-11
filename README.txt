@@ -1,3 +1,9 @@
+Game Development 0.16.0
+
+Added support for multiple meshes in a single model
+Modified shader to have assertions to protect against 
+invalid shader uniforms
+
 Game Development 0.15.0
 
 Simplified meta run scripts

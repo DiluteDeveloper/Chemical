@@ -11,7 +11,7 @@ namespace Chemical {
   Assimp::Importer ModelLoader::importer;
 
   Mesh ProcessMesh(aiMesh *mesh);
-  std::optional<Model> ProcessNode(aiNode *node, const aiScene *loaded_scene);
+  void ProcessNode(aiNode *node, const aiScene *loaded_scene, Model &model);
 
   std::optional<Model>
   ModelLoader::LoadModel(const std::string_view &file_path) {
@@ -27,36 +27,33 @@ namespace Chemical {
                    importer.GetErrorString());
       return std::nullopt;
     }
-    return ProcessNode(loaded_scene->mRootNode, loaded_scene);
+    Model model;
+    ProcessNode(loaded_scene->mRootNode, loaded_scene, model);
+    return model;
   }
-  std::optional<Model> ProcessNode(aiNode *node, const aiScene *loaded_scene) {
+  void ProcessNode(aiNode *node, const aiScene *loaded_scene, Model &model) {
 
     for (unsigned int i = 0; i < node->mNumMeshes; i++) {
       aiMesh *mesh = loaded_scene->mMeshes[node->mMeshes[i]];
       aiMaterial *material = loaded_scene->mMaterials[mesh->mMaterialIndex];
-      Model model;
-      model.mesh = ProcessMesh(mesh);
+      model.meshes.emplace_back(std::move(ProcessMesh(mesh)));
 
       aiColor3D color;
       material->Get(AI_MATKEY_COLOR_DIFFUSE, color);
       model.material.diffuse = glm::vec3(color.r, color.g, color.b);
-      material->Get(AI_MATKEY_COLOR_AMBIENT, color);
-      model.material.ambient = glm::vec3(color.r, color.g, color.b);
+      // material->Get(AI_MATKEY_COLOR_AMBIENT, color);
+      model.material.ambient = glm::vec3(0.2f, 0.2f, 0.2f);
       material->Get(AI_MATKEY_COLOR_SPECULAR, color);
       model.material.specular = glm::vec3(color.r, color.g, color.b);
       float shininess = 0.0f;
       material->Get(AI_MATKEY_SHININESS, shininess);
       model.material.shininess = shininess;
       SPDLOG_INFO("Material: {}", model.material.ToString());
-      return model;
     }
 
     for (unsigned int i = 0; i < node->mNumChildren; i++) {
-      auto opt_model = ProcessNode(node->mChildren[i], loaded_scene);
-      if (opt_model)
-        return opt_model.value();
+      ProcessNode(node->mChildren[i], loaded_scene, model);
     }
-    return std::nullopt;
 
     // need to process materials somewhere here
   }
