@@ -1,3 +1,8 @@
+Game Development 0.17.0
+
+Added some basic box collision detection
+and changed mesh workflow
+
 Game Development 0.16.0
 
 Added support for multiple meshes in a single model

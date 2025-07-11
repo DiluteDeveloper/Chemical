@@ -5,16 +5,10 @@
 #include <cassert>
 #include <vector>
 
+#include "mesh.hpp"
+
 namespace Chemical {
 
-  struct Vertex {
-    glm::vec3 position;
-    glm::vec3 normal;
-  };
-  struct Mesh {
-    std::vector<Vertex> vertices;
-    std::vector<unsigned int> indices;
-  };
   struct Model {
     std::vector<Mesh> meshes;
     Material material;
