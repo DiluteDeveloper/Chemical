@@ -1,3 +1,7 @@
+Game Development 0.17.1
+
+Added Separating Axis Theorem functionality
+
 Game Development 0.17.0
 
 Added some basic box collision detection
