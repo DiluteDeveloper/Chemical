@@ -1,3 +1,8 @@
+Game Development 0.17.2
+
+Added model matrix to mesh, SAT in action
+in new test scene by pressing X
+
 Game Development 0.17.1
 
 Added Separating Axis Theorem functionality

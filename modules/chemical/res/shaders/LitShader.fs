@@ -24,7 +24,7 @@ vec3 calcPointLight(vec3 viewDir) {
 
 		PointLight light;
 		light.position = vec3(2,40,-2);
-		light.diffuse = vec3(1.0, 1.0, 1.0);
+		light.diffuse = vec3(0.3, 0.3, 0.3);
 		light.specular= vec3(1.0, 1.0, 1.0);
 		light.ambient = vec3(0.5, 0.5, 0.5);
 		

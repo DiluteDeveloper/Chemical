@@ -17,6 +17,8 @@
 #include "rendering/cube.hpp"
 #include "window.hpp"
 
+#include "collision/mesh_collider.h"
+
 using namespace Chemical;
 
 int main() {
@@ -109,34 +111,34 @@ int main() {
   // material.shininess = 32;
 
   std::optional<Model> model_opt =
-      ModelLoader::LoadModel("res/models/test_scene.fbx");
+      ModelLoader::LoadModel("res/models/test2.fbx");
   if (!model_opt)
     throw std::runtime_error("failed to load model");
 
   Model &model = model_opt.value();
 
-  glm::mat4 modelmat = glm::mat4(1.0f);
-  modelmat = glm::rotate(modelmat, glm::radians(-90.0f), glm::vec3(1, 0, 0));
+  glm::vec3 collision_colour = glm::vec3(0.0f, 1.0f, 0.0f);
+  glm::vec3 not_collision_colour = glm::vec3(1.0f, 0.0f, 0.0f);
 
-  shader.SetUniform3F("material.diffuse", model.material.diffuse.x,
-                      model.material.diffuse.y, model.material.diffuse.z);
+  shader.SetUniform3F("material.diffuse", not_collision_colour.x,
+                      not_collision_colour.y, not_collision_colour.z);
   shader.SetUniform1UI("material.shininess", model.material.shininess);
 
   // VAO then index count
   std::vector<std::pair<unsigned int, unsigned int>> gl_mesh_data;
 
-  for (const Mesh &mesh : model.meshes) {
+  for (Mesh &mesh : model.meshes) {
+    mesh.model = glm::rotate(mesh.model, glm::radians(90.0f),
+                             glm::vec3(1.0f, 0.0f, 0.0f));
 
+    // SPDLOG_INFO("{}, {}, {}", mesh.vertices[0].position.x,
+    //             mesh.vertices[0].position.y, mesh.vertices[0].position.z);
+    // SPDLOG_INFO("{}, {}, {}", mesh.vertices[1].position.x,
+    //             mesh.vertices[1].position.y, mesh.vertices[1].position.z);
+    // SPDLOG_INFO("{}, {}, {}", mesh.vertices[2].position.x,
+    //             mesh.vertices[2].position.y, mesh.vertices[2].position.z);
     gl_mesh_data.emplace_back(mesh.AsVAO(), mesh.indices.size());
   }
-
-  glm::vec3 collision_colour = glm::vec3(0.0f, 1.0f, 0.0f);
-  BoxCollider3D collider_1(glm::vec3(2, 3, 5), glm::vec3(0, 15, 0));
-  BoxCollider3D collider_2(glm::vec3(5, 10, 12), glm::vec3(7, 15, 3));
-  Mesh mesh_1 = collider_1.AsMesh();
-  Mesh mesh_2 = collider_2.AsMesh();
-  unsigned int collider_vao_1 = mesh_1.AsVAO();
-  unsigned int collider_vao_2 = mesh_2.AsVAO();
 
   bool cursor_disabled = true;
 
@@ -149,7 +151,6 @@ int main() {
         "v_view", 1, GL_FALSE,
         &glm::inverse(camera.transform.ToMatrix())[0][0]);
     shader.SetUniform3FV("viewPos", 1, &camera.transform.position[0]);
-    shader.SetUniformMatrix4FV("v_model", 1, GL_FALSE, &modelmat[0][0]);
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE)) {
       if (cursor_disabled)
@@ -159,40 +160,59 @@ int main() {
       cursor_disabled = !cursor_disabled;
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT)) {
-      collider_1.position.x -= 0.05f;
+      model.meshes[0].model =
+          glm::translate(model.meshes[0].model, glm::vec3(-0.05f, 0.0f, 0.0f));
     } else if (glfwGetKey(window, GLFW_KEY_RIGHT))
-      collider_1.position.x += 0.05f;
+      model.meshes[0].model =
+          glm::translate(model.meshes[0].model, glm::vec3(0.05f, 0.0f, 0.0f));
     if (glfwGetKey(window, GLFW_KEY_UP)) {
-      collider_1.position.z -= 0.05f;
+      model.meshes[0].model =
+          glm::translate(model.meshes[0].model, glm::vec3(0.0f, 0.0f, -0.05f));
     } else if (glfwGetKey(window, GLFW_KEY_DOWN))
-      collider_1.position.z += 0.05f;
+      model.meshes[0].model =
+          glm::translate(model.meshes[0].model, glm::vec3(0.0f, 0.0f, 0.05f));
 
-    for (const auto &mesh_data : gl_mesh_data) {
-      glBindVertexArray(mesh_data.first);
-      glDrawElements(GL_TRIANGLES, mesh_data.second, GL_UNSIGNED_INT, nullptr);
+    for (size_t i = 0; i < model.meshes.size(); i++) {
+      shader.SetUniformMatrix4FV("v_model", 1, GL_FALSE,
+                                 &model.meshes[i].model[0][0]);
+      glBindVertexArray(gl_mesh_data[i].first);
+      glDrawElements(GL_TRIANGLES, gl_mesh_data[i].second, GL_UNSIGNED_INT,
+                     nullptr);
     }
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    collider_shader.Bind();
-    collider_shader.SetUniformMatrix4FV(
-        "v_view", 1, GL_FALSE,
-        &glm::inverse(camera.transform.ToMatrix())[0][0]);
-    collider_shader.SetUniform3FV("v_collider_position", 1,
-                                  &collider_1.position[0]);
-    collider_shader.SetUniform3FV("f_colour", 1, &collision_colour[0]);
-    glBindVertexArray(collider_vao_1);
-    glDrawElements(GL_TRIANGLES, mesh_1.indices.size(), GL_UNSIGNED_INT,
-                   nullptr);
-    collider_shader.SetUniform3FV("v_collider_position", 1,
-                                  &collider_2.position[0]);
-    glBindVertexArray(collider_vao_2);
-    glDrawElements(GL_TRIANGLES, mesh_2.indices.size(), GL_UNSIGNED_INT,
-                   nullptr);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    if (collider_1.IsCollidingWith(collider_2)) {
-      collision_colour = glm::vec3(1.0f, 0.0f, 0.0f);
-    } else
-      collision_colour = glm::vec3(0.0f, 1.0f, 0.0f);
+    if (glfwGetKey(window, GLFW_KEY_X)) {
+      if (IsColliding_SAT(model.meshes[0].vertices, model.meshes[0].model,
+                          model.meshes[1].vertices, model.meshes[1].model)) {
+        shader.SetUniform3F("material.diffuse", collision_colour.x,
+                            collision_colour.y, collision_colour.z);
+      } else {
+        shader.SetUniform3F("material.diffuse", not_collision_colour.x,
+                            not_collision_colour.y, not_collision_colour.z);
+      }
+    }
+
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // collider_shader.Bind();
+    // collider_shader.SetUniformMatrix4FV(
+    //     "v_view", 1, GL_FALSE,
+    //     &glm::inverse(camera.transform.ToMatrix())[0][0]);
+    // collider_shader.SetUniform3FV("v_collider_position", 1,
+    //                               &collider_1.position[0]);
+    // collider_shader.SetUniform3FV("f_colour", 1, &collision_colour[0]);
+    // glBindVertexArray(collider_vao_1);
+    // glDrawElements(GL_TRIANGLES, mesh_1.indices.size(), GL_UNSIGNED_INT,
+    //                nullptr);
+    // collider_shader.SetUniform3FV("v_collider_position", 1,
+    //                               &collider_2.position[0]);
+    // glBindVertexArray(collider_vao_2);
+    // glDrawElements(GL_TRIANGLES, mesh_2.indices.size(), GL_UNSIGNED_INT,
+    //                nullptr);
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    //
+    // if (collider_1.IsCollidingWith(collider_2)) {
+    //   collision_colour = glm::vec3(1.0f, 0.0f, 0.0f);
+    // } else
+    //   collision_colour = glm::vec3(0.0f, 1.0f, 0.0f);
 
     glfwPollEvents();
 
