@@ -1,3 +1,11 @@
+Game Development 0.17.3
+
+Changed meshes to have transform data instead of 4x4 matrix and changed all functions referencing it
+Added boilerplate IMGUI code to main function
+Created new GUI function that takes in a list of transform references and puts them in a GUI window to be modified via position, rotation, and scale
+Submitted all transforms currently in the application to the new GUI function
+Added name component to mesh to be used in GUI function and loaded name from assimp model loading
+
 Game Development 0.17.2
 
 Added model matrix to mesh, SAT in action

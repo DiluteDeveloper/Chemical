@@ -1,7 +1,7 @@
-#include "collision/box_collider.hpp"
 #include "glad/glad.h"
 #include "glfw/glfw3.h"
 #include "glm/ext/matrix_clip_space.hpp"
+#include "gui/transform.hpp"
 #include "rendering/material.hpp"
 #include "rendering/shader.hpp"
 #include "util/transform.hpp"
@@ -17,6 +17,8 @@
 #include "rendering/cube.hpp"
 #include "window.hpp"
 
+#include "gui/setup.hpp"
+
 #include "collision/mesh_collider.h"
 
 using namespace Chemical;
@@ -25,7 +27,9 @@ int main() {
   spdlog::set_pattern("%^[%s] [%!] [%#] %$%v");
 
   GLFWwindow *window = Window::InitialiseGLContextAndGLFWWindow(
-      "Game Development 0.17.0", 1080, 720);
+      "Game Development 0.17.3", 1080, 720);
+
+  GUI::SetupGUI(window);
 
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
@@ -127,16 +131,12 @@ int main() {
   // VAO then index count
   std::vector<std::pair<unsigned int, unsigned int>> gl_mesh_data;
 
-  for (Mesh &mesh : model.meshes) {
-    mesh.model = glm::rotate(mesh.model, glm::radians(90.0f),
-                             glm::vec3(1.0f, 0.0f, 0.0f));
+  std::vector<std::pair<Transform *, std::string *>> transforms;
 
-    // SPDLOG_INFO("{}, {}, {}", mesh.vertices[0].position.x,
-    //             mesh.vertices[0].position.y, mesh.vertices[0].position.z);
-    // SPDLOG_INFO("{}, {}, {}", mesh.vertices[1].position.x,
-    //             mesh.vertices[1].position.y, mesh.vertices[1].position.z);
-    // SPDLOG_INFO("{}, {}, {}", mesh.vertices[2].position.x,
-    //             mesh.vertices[2].position.y, mesh.vertices[2].position.z);
+  for (Mesh &mesh : model.meshes) {
+    mesh.transform.rotation.x += 90.0f;
+    transforms.emplace_back(std::make_pair(&mesh.transform, &mesh.name));
+
     gl_mesh_data.emplace_back(mesh.AsVAO(), mesh.indices.size());
   }
 
@@ -144,6 +144,10 @@ int main() {
 
   while (!glfwWindowShouldClose(window)) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    GUI::BeginFrame();
+
+    GUI::RenderTransformWindow(transforms);
 
     camera.Update(window);
     shader.Bind();
@@ -159,30 +163,35 @@ int main() {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
       cursor_disabled = !cursor_disabled;
     }
-    if (glfwGetKey(window, GLFW_KEY_LEFT)) {
-      model.meshes[0].model =
-          glm::translate(model.meshes[0].model, glm::vec3(-0.05f, 0.0f, 0.0f));
-    } else if (glfwGetKey(window, GLFW_KEY_RIGHT))
-      model.meshes[0].model =
-          glm::translate(model.meshes[0].model, glm::vec3(0.05f, 0.0f, 0.0f));
-    if (glfwGetKey(window, GLFW_KEY_UP)) {
-      model.meshes[0].model =
-          glm::translate(model.meshes[0].model, glm::vec3(0.0f, 0.0f, -0.05f));
-    } else if (glfwGetKey(window, GLFW_KEY_DOWN))
-      model.meshes[0].model =
-          glm::translate(model.meshes[0].model, glm::vec3(0.0f, 0.0f, 0.05f));
+    // if (glfwGetKey(window, GLFW_KEY_LEFT)) {
+    //   model.meshes[0].transform.pos=
+    //       glm::translate(model.meshes[0].model, glm::vec3(-0.05f, 0.0f,
+    //       0.0f));
+    // } else if (glfwGetKey(window, GLFW_KEY_RIGHT))
+    //   model.meshes[0].model =
+    //       glm::translate(model.meshes[0].model, glm::vec3(0.05f, 0.0f,
+    //       0.0f));
+    // if (glfwGetKey(window, GLFW_KEY_UP)) {
+    //   model.meshes[0].model =
+    //       glm::translate(model.meshes[0].model, glm::vec3(0.0f, 0.0f,
+    //       -0.05f));
+    // } else if (glfwGetKey(window, GLFW_KEY_DOWN))
+    //   model.meshes[0].model =
+    //       glm::translate(model.meshes[0].model, glm::vec3(0.0f, 0.0f,
+    //       0.05f));
 
     for (size_t i = 0; i < model.meshes.size(); i++) {
       shader.SetUniformMatrix4FV("v_model", 1, GL_FALSE,
-                                 &model.meshes[i].model[0][0]);
+                                 &model.meshes[i].transform.ToMatrix()[0][0]);
       glBindVertexArray(gl_mesh_data[i].first);
       glDrawElements(GL_TRIANGLES, gl_mesh_data[i].second, GL_UNSIGNED_INT,
                      nullptr);
     }
 
     if (glfwGetKey(window, GLFW_KEY_X)) {
-      if (IsColliding_SAT(model.meshes[0].vertices, model.meshes[0].model,
-                          model.meshes[1].vertices, model.meshes[1].model)) {
+      if (IsColliding_SAT(
+              model.meshes[0].vertices, model.meshes[0].transform.ToMatrix(),
+              model.meshes[1].vertices, model.meshes[1].transform.ToMatrix())) {
         shader.SetUniform3F("material.diffuse", collision_colour.x,
                             collision_colour.y, collision_colour.z);
       } else {
@@ -216,8 +225,12 @@ int main() {
 
     glfwPollEvents();
 
+    GUI::RenderFrame();
+
     glfwSwapBuffers(window);
   }
+
+  GUI::CleanupGUI();
 
   Window::DestroyGLFWWindow(window);
   return 0;

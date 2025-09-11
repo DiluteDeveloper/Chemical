@@ -43,7 +43,7 @@ kind("ConsoleApp")
 defines("GLFW_INCLUDE_NONE")
 
 location(CHEMICAL_DIR)
-files(CHEMICAL_SOURCE_DIR .. "/**")
+files({ CHEMICAL_SOURCE_DIR .. "/**", IMPORTED_MODULES_DIR .. "/imgui/**" })
 includedirs({ IMPORTED_MODULES_DIR, CHEMICAL_SOURCE_DIR })
 
 libdirs({ GLFW_LIB_DIR, GLAD_LIB_DIR, ASSIMP_LIB_DIR, ZLIB_LIB_DIR })

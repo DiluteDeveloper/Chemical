@@ -12,8 +12,6 @@ namespace Chemical {
 
     glm::mat4 ToMatrix() const;
 
-    void UpdateFreecamController();
-
   protected:
   };
 

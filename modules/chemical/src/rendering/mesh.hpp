@@ -1,7 +1,9 @@
 #pragma once
 
-#include "glm/glm.hpp"
+#include <string>
 #include <vector>
+
+#include "util/transform.hpp"
 
 namespace Chemical {
 
@@ -16,7 +18,8 @@ namespace Chemical {
   struct Mesh {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
-    glm::mat4 model = glm::mat4(1.0f);
+    Transform transform;
+    std::string name = "default";
 
     unsigned int AsVAO() const;
   };

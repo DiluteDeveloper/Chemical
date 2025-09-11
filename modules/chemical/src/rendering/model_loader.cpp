@@ -48,7 +48,6 @@ namespace Chemical {
       float shininess = 0.0f;
       material->Get(AI_MATKEY_SHININESS, shininess);
       model.material.shininess = shininess;
-      SPDLOG_INFO("Material: {}", model.material.ToString());
     }
 
     for (unsigned int i = 0; i < node->mNumChildren; i++) {
@@ -60,6 +59,7 @@ namespace Chemical {
 
   Mesh ProcessMesh(aiMesh *mesh) {
     Mesh real_mesh;
+    real_mesh.name = mesh->mName.C_Str();
 
     for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
       Vertex &v = real_mesh.vertices.emplace_back();
