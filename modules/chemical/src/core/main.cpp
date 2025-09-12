@@ -1,3 +1,4 @@
+#include "core/input/input.hpp"
 #include "glad/glad.h"
 #include "glfw/glfw3.h"
 #include "glm/ext/matrix_clip_space.hpp"
@@ -23,20 +24,43 @@
 
 using namespace Chemical;
 
+bool menu_state = true;
+GLFWwindow *window = nullptr;
+std::unique_ptr<CameraController> camera;
+
+void KeyCallback(int key, int scancode, int action, int mods) {
+
+  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+    menu_state = !menu_state;
+    if (menu_state)
+      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    else {
+      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+      camera->ResetMouse(window);
+    }
+  }
+}
 int main() {
   spdlog::set_pattern("%^[%s] [%!] [%#] %$%v");
 
-  GLFWwindow *window = Window::InitialiseGLContextAndGLFWWindow(
-      "Game Development 0.17.3", 1080, 720);
+  int window_width = 1080;
+  int window_height = 720;
+  const char *window_title = "Game Development 0.17.4";
+
+  window = Window::InitialiseGLContextAndGLFWWindow(window_title, window_width,
+                                                    window_height);
 
   GUI::SetupGUI(window);
 
+  glViewport(0, 0, window_width, window_height);
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
   glEnable(GL_DEPTH_TEST);
   glClearColor(0.3, 0.3, 0.6, 1.0);
 
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  glfwSetKeyCallback(window, Input::KeyEventSystem::KeyCallback);
+
+  Input::KeyEventSystem::SubscribeToKeyEvent(KeyCallback);
 
   ShaderTraits traits;
   std::ifstream file("/mnt/storage/Chemical/Chemical/modules/chemical/res/"
@@ -106,8 +130,6 @@ int main() {
 
   collider_shader.SetUniformMatrix4FV("v_proj", 1, GL_FALSE, &proj[0][0]);
 
-  CameraController camera(window);
-
   // Material material;
   // material.ambient = glm::vec3(0.2, 0.2, 0.2);
   // material.diffuse = glm::vec3(1.0, 0.3, 0.9);
@@ -140,7 +162,7 @@ int main() {
     gl_mesh_data.emplace_back(mesh.AsVAO(), mesh.indices.size());
   }
 
-  bool cursor_disabled = true;
+  camera = std::make_unique<CameraController>(window);
 
   while (!glfwWindowShouldClose(window)) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -149,20 +171,14 @@ int main() {
 
     GUI::RenderTransformWindow(transforms);
 
-    camera.Update(window);
+    if (!menu_state)
+      camera->Update(window);
     shader.Bind();
     shader.SetUniformMatrix4FV(
         "v_view", 1, GL_FALSE,
-        &glm::inverse(camera.transform.ToMatrix())[0][0]);
-    shader.SetUniform3FV("viewPos", 1, &camera.transform.position[0]);
+        &glm::inverse(camera->transform.ToMatrix())[0][0]);
+    shader.SetUniform3FV("viewPos", 1, &camera->transform.position[0]);
 
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE)) {
-      if (cursor_disabled)
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-      else
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-      cursor_disabled = !cursor_disabled;
-    }
     // if (glfwGetKey(window, GLFW_KEY_LEFT)) {
     //   model.meshes[0].transform.pos=
     //       glm::translate(model.meshes[0].model, glm::vec3(-0.05f, 0.0f,

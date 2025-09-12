@@ -45,4 +45,7 @@ namespace Chemical {
     old_x = x;
     old_y = y;
   }
+  void CameraController::ResetMouse(GLFWwindow *window) {
+    glfwGetCursorPos(window, &old_x, &old_y);
+  }
 } // namespace Chemical

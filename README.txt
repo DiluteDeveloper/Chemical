@@ -1,3 +1,10 @@
+Game Development 0.17.4
+
+Added event based input
+Made the escape key to exit and enter menu mode event based instead of hold key based
+Stopped the camera from moving when in menu mode
+Fixed camera position changing when leaving menu mode
+
 Game Development 0.17.3
 
 Changed meshes to have transform data instead of 4x4 matrix and changed all functions referencing it

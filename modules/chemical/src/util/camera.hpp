@@ -15,6 +15,7 @@ namespace Chemical {
     CameraController(GLFWwindow *window, float speed = 0.1f,
                      float sensitivity = 0.08f);
     void Update(GLFWwindow *window);
+    void ResetMouse(GLFWwindow *window);
 
     float speed = 0.1f;
     float sensitivity = 0.08f;
