@@ -10,7 +10,7 @@ namespace Chemical {
 
   Assimp::Importer ModelLoader::importer;
 
-  Mesh ProcessMesh(aiMesh *mesh);
+  Mesh ProcessMesh(aiMesh *mesh, aiMaterial *material);
   void ProcessNode(aiNode *node, const aiScene *loaded_scene, Model &model);
 
   std::optional<Model>
@@ -36,18 +36,7 @@ namespace Chemical {
     for (unsigned int i = 0; i < node->mNumMeshes; i++) {
       aiMesh *mesh = loaded_scene->mMeshes[node->mMeshes[i]];
       aiMaterial *material = loaded_scene->mMaterials[mesh->mMaterialIndex];
-      model.meshes.emplace_back(std::move(ProcessMesh(mesh)));
-
-      aiColor3D color;
-      material->Get(AI_MATKEY_COLOR_DIFFUSE, color);
-      model.material.diffuse = glm::vec3(color.r, color.g, color.b);
-      // material->Get(AI_MATKEY_COLOR_AMBIENT, color);
-      model.material.ambient = glm::vec3(0.2f, 0.2f, 0.2f);
-      material->Get(AI_MATKEY_COLOR_SPECULAR, color);
-      model.material.specular = glm::vec3(color.r, color.g, color.b);
-      float shininess = 0.0f;
-      material->Get(AI_MATKEY_SHININESS, shininess);
-      model.material.shininess = shininess;
+      model.meshes.emplace_back(std::move(ProcessMesh(mesh, material)));
     }
 
     for (unsigned int i = 0; i < node->mNumChildren; i++) {
@@ -57,9 +46,20 @@ namespace Chemical {
     // need to process materials somewhere here
   }
 
-  Mesh ProcessMesh(aiMesh *mesh) {
+  Mesh ProcessMesh(aiMesh *mesh, aiMaterial *material) {
     Mesh real_mesh;
     real_mesh.name = mesh->mName.C_Str();
+
+    aiColor3D color;
+    material->Get(AI_MATKEY_COLOR_DIFFUSE, color);
+    real_mesh.material.diffuse = glm::vec3(color.r, color.g, color.b);
+    // material->Get(AI_MATKEY_COLOR_AMBIENT, color);
+    real_mesh.material.ambient = glm::vec3(0.2f, 0.2f, 0.2f);
+    material->Get(AI_MATKEY_COLOR_SPECULAR, color);
+    real_mesh.material.specular = glm::vec3(color.r, color.g, color.b);
+    float shininess = 0.0f;
+    material->Get(AI_MATKEY_SHININESS, shininess);
+    real_mesh.material.shininess = shininess;
 
     for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
       Vertex &v = real_mesh.vertices.emplace_back();

@@ -10,14 +10,13 @@
 namespace Chemical {
 
   struct BoxCollider3D {
-    // low_x  | low_y  | low_z
-    // high_x | high_y | high_z
-    glm::mat3x2 extents = glm::mat3x2(1.0f);
+    // How far each axis goes in each direction from the center of the box
+    glm::vec3 extents = glm::vec3(1.0f);
 
     glm::vec3 position;
 
-    BoxCollider3D(float scale, const glm::vec3 &position = glm::vec3(1.0f));
-    BoxCollider3D(const glm::vec3 &scale,
+    BoxCollider3D(float extents, const glm::vec3 &position = glm::vec3(1.0f));
+    BoxCollider3D(const glm::vec3 &extents,
                   const glm::vec3 &position = glm::vec3(1.0f));
 
     Mesh AsMesh();

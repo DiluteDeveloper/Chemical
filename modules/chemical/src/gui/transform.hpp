@@ -6,8 +6,9 @@
 namespace Chemical {
   namespace GUI {
 
-    extern void RenderTransformWindow(
+    // returns a selection
+    extern int RenderTransformWindow(
         std::vector<std::pair<Transform *, std::string *>> &transforms);
 
-  }
+  } // namespace GUI
 } // namespace Chemical

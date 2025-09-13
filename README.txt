@@ -1,3 +1,11 @@
+Game Development 0.17.5
+
+No longer calculating redundant axes for separating axis theorem
+Slightly changed SAT boolean logic
+Slightly changed AABB variables
+Added collision testing selection to GUI
+Changes to main function and loaded model/s
+
 Game Development 0.17.4
 
 Added event based input

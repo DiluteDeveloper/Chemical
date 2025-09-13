@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "material.hpp"
 #include "util/transform.hpp"
 
 namespace Chemical {
@@ -20,6 +21,7 @@ namespace Chemical {
     std::vector<unsigned int> indices;
     Transform transform;
     std::string name = "default";
+    Material material;
 
     unsigned int AsVAO() const;
   };

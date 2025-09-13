@@ -11,7 +11,6 @@ namespace Chemical {
 
   struct Model {
     std::vector<Mesh> meshes;
-    Material material;
   };
 
   // Static utility class for loading models using assimp.

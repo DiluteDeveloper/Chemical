@@ -1,3 +1,4 @@
+#include "collision/box_collider.hpp"
 #include "core/input/input.hpp"
 #include "glad/glad.h"
 #include "glfw/glfw3.h"
@@ -45,7 +46,7 @@ int main() {
 
   int window_width = 1080;
   int window_height = 720;
-  const char *window_title = "Game Development 0.17.4";
+  const char *window_title = "Game Development 0.17.5";
 
   window = Window::InitialiseGLContextAndGLFWWindow(window_title, window_width,
                                                     window_height);
@@ -137,7 +138,7 @@ int main() {
   // material.shininess = 32;
 
   std::optional<Model> model_opt =
-      ModelLoader::LoadModel("res/models/test2.fbx");
+      ModelLoader::LoadModel("res/models/roads.fbx");
   if (!model_opt)
     throw std::runtime_error("failed to load model");
 
@@ -146,9 +147,10 @@ int main() {
   glm::vec3 collision_colour = glm::vec3(0.0f, 1.0f, 0.0f);
   glm::vec3 not_collision_colour = glm::vec3(1.0f, 0.0f, 0.0f);
 
+  // for collider shader
   shader.SetUniform3F("material.diffuse", not_collision_colour.x,
                       not_collision_colour.y, not_collision_colour.z);
-  shader.SetUniform1UI("material.shininess", model.material.shininess);
+  shader.SetUniform1UI("material.shininess", 16);
 
   // VAO then index count
   std::vector<std::pair<unsigned int, unsigned int>> gl_mesh_data;
@@ -156,20 +158,41 @@ int main() {
   std::vector<std::pair<Transform *, std::string *>> transforms;
 
   for (Mesh &mesh : model.meshes) {
-    mesh.transform.rotation.x += 90.0f;
+    mesh.transform.rotation.x += 270.0f;
     transforms.emplace_back(std::make_pair(&mesh.transform, &mesh.name));
 
     gl_mesh_data.emplace_back(mesh.AsVAO(), mesh.indices.size());
   }
 
-  camera = std::make_unique<CameraController>(window);
+  camera = std::make_unique<CameraController>(window, 0.03f);
+
+  // BoxCollider3D c1(0.5f);
+  // Mesh c1_mesh = c1.AsMesh();
+  // c1_mesh.name = "c1";
+  // transforms.emplace_back(std::make_pair(&c1_mesh.transform, &c1_mesh.name));
+  // BoxCollider3D c2(0.5f);
+  // Mesh c2_mesh = c2.AsMesh();
+  // c2_mesh.name = "c2";
+  // transforms.emplace_back(std::make_pair(&c2_mesh.transform, &c2_mesh.name));
+  //
+  bool selection_first_collider = true;
+  int collider1_idx = 0;
+  int collider2_idx = 1;
 
   while (!glfwWindowShouldClose(window)) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     GUI::BeginFrame();
 
-    GUI::RenderTransformWindow(transforms);
+    int idx = GUI::RenderTransformWindow(transforms);
+    if (idx != -1) {
+      SPDLOG_INFO("{}", idx);
+      if (selection_first_collider)
+        collider1_idx = idx;
+      else
+        collider2_idx = idx;
+      selection_first_collider = !selection_first_collider;
+    }
 
     if (!menu_state)
       camera->Update(window);
@@ -199,45 +222,56 @@ int main() {
     for (size_t i = 0; i < model.meshes.size(); i++) {
       shader.SetUniformMatrix4FV("v_model", 1, GL_FALSE,
                                  &model.meshes[i].transform.ToMatrix()[0][0]);
+      shader.SetUniform3F("material.diffuse",
+                          model.meshes[i].material.diffuse.r,
+                          model.meshes[i].material.diffuse.g,
+                          model.meshes[i].material.diffuse.b);
+      shader.SetUniform1F("material.shininess",
+                          model.meshes[i].material.shininess);
+
+      if (i == collider1_idx || i == collider2_idx)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+      else
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
       glBindVertexArray(gl_mesh_data[i].first);
       glDrawElements(GL_TRIANGLES, gl_mesh_data[i].second, GL_UNSIGNED_INT,
                      nullptr);
     }
 
     if (glfwGetKey(window, GLFW_KEY_X)) {
-      if (IsColliding_SAT(
-              model.meshes[0].vertices, model.meshes[0].transform.ToMatrix(),
-              model.meshes[1].vertices, model.meshes[1].transform.ToMatrix())) {
-        shader.SetUniform3F("material.diffuse", collision_colour.x,
-                            collision_colour.y, collision_colour.z);
-      } else {
-        shader.SetUniform3F("material.diffuse", not_collision_colour.x,
-                            not_collision_colour.y, not_collision_colour.z);
-      }
+      if (IsColliding_SAT(model.meshes[collider1_idx].vertices,
+                          model.meshes[collider1_idx].transform.ToMatrix(),
+                          model.meshes[collider2_idx].vertices,
+                          model.meshes[collider2_idx].transform.ToMatrix())) {
+        SPDLOG_INFO("Colliding!");
+      } else
+        SPDLOG_INFO("Not colliding!");
     }
 
+    // temporary solution
+    // c1.position = c1_mesh.transform.position;
+    // c2.position = c2_mesh.transform.position;
+    //
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     // collider_shader.Bind();
     // collider_shader.SetUniformMatrix4FV(
     //     "v_view", 1, GL_FALSE,
-    //     &glm::inverse(camera.transform.ToMatrix())[0][0]);
-    // collider_shader.SetUniform3FV("v_collider_position", 1,
-    //                               &collider_1.position[0]);
+    //     &glm::inverse(camera->transform.ToMatrix())[0][0]);
+    // collider_shader.SetUniform3FV("v_collider_position", 1, &c1.position[0]);
     // collider_shader.SetUniform3FV("f_colour", 1, &collision_colour[0]);
-    // glBindVertexArray(collider_vao_1);
-    // glDrawElements(GL_TRIANGLES, mesh_1.indices.size(), GL_UNSIGNED_INT,
+    // glBindVertexArray(c1_mesh.AsVAO());
+    // glDrawElements(GL_TRIANGLES, c1_mesh.indices.size(), GL_UNSIGNED_INT,
     //                nullptr);
-    // collider_shader.SetUniform3FV("v_collider_position", 1,
-    //                               &collider_2.position[0]);
-    // glBindVertexArray(collider_vao_2);
-    // glDrawElements(GL_TRIANGLES, mesh_2.indices.size(), GL_UNSIGNED_INT,
+    // collider_shader.SetUniform3FV("v_collider_position", 1, &c2.position[0]);
+    // glBindVertexArray(c2_mesh.AsVAO());
+    // glDrawElements(GL_TRIANGLES, c2_mesh.indices.size(), GL_UNSIGNED_INT,
     //                nullptr);
     // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    //
-    // if (collider_1.IsCollidingWith(collider_2)) {
-    //   collision_colour = glm::vec3(1.0f, 0.0f, 0.0f);
-    // } else
+
+    // if (c1.IsCollidingWith(c2)) {
     //   collision_colour = glm::vec3(0.0f, 1.0f, 0.0f);
+    // } else
+    //   collision_colour = glm::vec3(1.0f, 0.0f, 0.0f);
 
     glfwPollEvents();
 
