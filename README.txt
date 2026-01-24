@@ -1,3 +1,11 @@
+Game Development 0.18.0
+
+Came back after a long break.
+Removed alot of testing code for collisions,
+focusing on marching cube algorithm now;
+Understood and implemented a perlin noise algorithm adapted
+from a C# blog found online; created test scene with cubes to visualise
+
 Game Development 0.17.5
 
 No longer calculating redundant axes for separating axis theorem

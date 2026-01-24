@@ -13,6 +13,8 @@
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 #include "spdlog/spdlog.h"
 
+#include "maths/perlin_noise.hpp"
+
 #include "rendering/model_loader.hpp"
 #include "util/camera.hpp"
 
@@ -138,7 +140,7 @@ int main() {
   // material.shininess = 32;
 
   std::optional<Model> model_opt =
-      ModelLoader::LoadModel("res/models/roads.fbx");
+      ModelLoader::LoadModel("res/models/cube.dae");
   if (!model_opt)
     throw std::runtime_error("failed to load model");
 
@@ -155,26 +157,28 @@ int main() {
   // VAO then index count
   std::vector<std::pair<unsigned int, unsigned int>> gl_mesh_data;
 
-  std::vector<std::pair<Transform *, std::string *>> transforms;
+  std::vector<Transform> transforms;
 
   for (Mesh &mesh : model.meshes) {
-    mesh.transform.rotation.x += 270.0f;
-    transforms.emplace_back(std::make_pair(&mesh.transform, &mesh.name));
-
     gl_mesh_data.emplace_back(mesh.AsVAO(), mesh.indices.size());
   }
 
-  camera = std::make_unique<CameraController>(window, 0.03f);
+  for (int x = 0; x < 30; x++) {
 
-  // BoxCollider3D c1(0.5f);
-  // Mesh c1_mesh = c1.AsMesh();
-  // c1_mesh.name = "c1";
-  // transforms.emplace_back(std::make_pair(&c1_mesh.transform, &c1_mesh.name));
-  // BoxCollider3D c2(0.5f);
-  // Mesh c2_mesh = c2.AsMesh();
-  // c2_mesh.name = "c2";
-  // transforms.emplace_back(std::make_pair(&c2_mesh.transform, &c2_mesh.name));
-  //
+    for (int y = 0; y < 30; y++) {
+
+      for (int z = 0; z < 30; z++) {
+        if (Maths::PerlinNoise3D(glm::vec3(x / 20.0f, y / 20.0f, z / 20.0f)) >
+            0.5f) {
+          Transform t;
+          t.position = glm::vec3(x, y, z);
+          transforms.emplace_back(t);
+        }
+      }
+    }
+  }
+
+  camera = std::make_unique<CameraController>(window, 0.03f);
   bool selection_first_collider = true;
   int collider1_idx = 0;
   int collider2_idx = 1;
@@ -184,94 +188,27 @@ int main() {
 
     GUI::BeginFrame();
 
-    int idx = GUI::RenderTransformWindow(transforms);
-    if (idx != -1) {
-      SPDLOG_INFO("{}", idx);
-      if (selection_first_collider)
-        collider1_idx = idx;
-      else
-        collider2_idx = idx;
-      selection_first_collider = !selection_first_collider;
-    }
-
-    if (!menu_state)
-      camera->Update(window);
+    camera->Update(window);
     shader.Bind();
     shader.SetUniformMatrix4FV(
         "v_view", 1, GL_FALSE,
         &glm::inverse(camera->transform.ToMatrix())[0][0]);
     shader.SetUniform3FV("viewPos", 1, &camera->transform.position[0]);
 
-    // if (glfwGetKey(window, GLFW_KEY_LEFT)) {
-    //   model.meshes[0].transform.pos=
-    //       glm::translate(model.meshes[0].model, glm::vec3(-0.05f, 0.0f,
-    //       0.0f));
-    // } else if (glfwGetKey(window, GLFW_KEY_RIGHT))
-    //   model.meshes[0].model =
-    //       glm::translate(model.meshes[0].model, glm::vec3(0.05f, 0.0f,
-    //       0.0f));
-    // if (glfwGetKey(window, GLFW_KEY_UP)) {
-    //   model.meshes[0].model =
-    //       glm::translate(model.meshes[0].model, glm::vec3(0.0f, 0.0f,
-    //       -0.05f));
-    // } else if (glfwGetKey(window, GLFW_KEY_DOWN))
-    //   model.meshes[0].model =
-    //       glm::translate(model.meshes[0].model, glm::vec3(0.0f, 0.0f,
-    //       0.05f));
-
-    for (size_t i = 0; i < model.meshes.size(); i++) {
+    glBindVertexArray(gl_mesh_data[0].first);
+    for (size_t i = 0; i < transforms.size(); i++) {
       shader.SetUniformMatrix4FV("v_model", 1, GL_FALSE,
-                                 &model.meshes[i].transform.ToMatrix()[0][0]);
+                                 &transforms[i].ToMatrix()[0][0]);
       shader.SetUniform3F("material.diffuse",
-                          model.meshes[i].material.diffuse.r,
-                          model.meshes[i].material.diffuse.g,
-                          model.meshes[i].material.diffuse.b);
+                          model.meshes[0].material.diffuse.r,
+                          model.meshes[0].material.diffuse.g,
+                          model.meshes[0].material.diffuse.b);
       shader.SetUniform1F("material.shininess",
-                          model.meshes[i].material.shininess);
+                          model.meshes[0].material.shininess);
 
-      if (i == collider1_idx || i == collider2_idx)
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-      else
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-      glBindVertexArray(gl_mesh_data[i].first);
-      glDrawElements(GL_TRIANGLES, gl_mesh_data[i].second, GL_UNSIGNED_INT,
+      glDrawElements(GL_TRIANGLES, gl_mesh_data[0].second, GL_UNSIGNED_INT,
                      nullptr);
     }
-
-    if (glfwGetKey(window, GLFW_KEY_X)) {
-      if (IsColliding_SAT(model.meshes[collider1_idx].vertices,
-                          model.meshes[collider1_idx].transform.ToMatrix(),
-                          model.meshes[collider2_idx].vertices,
-                          model.meshes[collider2_idx].transform.ToMatrix())) {
-        SPDLOG_INFO("Colliding!");
-      } else
-        SPDLOG_INFO("Not colliding!");
-    }
-
-    // temporary solution
-    // c1.position = c1_mesh.transform.position;
-    // c2.position = c2_mesh.transform.position;
-    //
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    // collider_shader.Bind();
-    // collider_shader.SetUniformMatrix4FV(
-    //     "v_view", 1, GL_FALSE,
-    //     &glm::inverse(camera->transform.ToMatrix())[0][0]);
-    // collider_shader.SetUniform3FV("v_collider_position", 1, &c1.position[0]);
-    // collider_shader.SetUniform3FV("f_colour", 1, &collision_colour[0]);
-    // glBindVertexArray(c1_mesh.AsVAO());
-    // glDrawElements(GL_TRIANGLES, c1_mesh.indices.size(), GL_UNSIGNED_INT,
-    //                nullptr);
-    // collider_shader.SetUniform3FV("v_collider_position", 1, &c2.position[0]);
-    // glBindVertexArray(c2_mesh.AsVAO());
-    // glDrawElements(GL_TRIANGLES, c2_mesh.indices.size(), GL_UNSIGNED_INT,
-    //                nullptr);
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-    // if (c1.IsCollidingWith(c2)) {
-    //   collision_colour = glm::vec3(0.0f, 1.0f, 0.0f);
-    // } else
-    //   collision_colour = glm::vec3(1.0f, 0.0f, 0.0f);
 
     glfwPollEvents();
 
