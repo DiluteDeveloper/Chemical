@@ -46,10 +46,10 @@ void main()
     vec3 viewDir = normalize(viewPos - f_fragPos);
     vec3 result = calcPointLight(viewDir);
 
-    fragColor = vec4(result, 1.0);
+    vec4 x = vec4(result, 1.0);
 		//fragColor = vec4(f_normal, 1.0);
 
 
     // Normals debug
-    //fragColor = vec4(f_normal.xyz, 1.0);
+    fragColor = vec4(f_normal.xyz + (x.xyz * 0.01), 1.0);
 }

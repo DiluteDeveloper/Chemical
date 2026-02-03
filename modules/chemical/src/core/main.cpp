@@ -4,6 +4,7 @@
 #include "glfw/glfw3.h"
 #include "glm/ext/matrix_clip_space.hpp"
 #include "gui/transform.hpp"
+#include "marching_cubes.hpp"
 #include "rendering/material.hpp"
 #include "rendering/shader.hpp"
 #include "util/transform.hpp"
@@ -145,6 +146,7 @@ int main() {
     throw std::runtime_error("failed to load model");
 
   Model &model = model_opt.value();
+  // unsigned int modelvao = model.meshes[0].AsVAO();
 
   glm::vec3 collision_colour = glm::vec3(0.0f, 1.0f, 0.0f);
   glm::vec3 not_collision_colour = glm::vec3(1.0f, 0.0f, 0.0f);
@@ -155,38 +157,43 @@ int main() {
   shader.SetUniform1UI("material.shininess", 16);
 
   // VAO then index count
-  std::vector<std::pair<unsigned int, unsigned int>> gl_mesh_data;
+  // std::vector<std::pair<unsigned int, unsigned int>> gl_mesh_data;
+  //
+  // std::vector<Transform> transforms;
+  // std::vector<glm::vec3> colours;
+  //
+  // for (Mesh &mesh : model.meshes) {
+  //   gl_mesh_data.emplace_back(mesh.AsVAO(), mesh.indices.size());
+  // }
+  //
+  // for (int x = 0; x < 70; x++) {
+  //
+  //   for (int y = 0; y < 60; y++) {
+  //
+  //     for (int z = 0; z < 1; z++) {
+  //       double v =
+  //           Maths::PerlinNoise3D(glm::vec3(x / 10.0f, y / 10.0f, z / 10.0f));
+  //       colours.emplace_back(glm::vec3(v, v, v));
+  //
+  //       Transform t;
+  //       t.position = glm::vec3(x, y, z);
+  //       transforms.emplace_back(t);
+  //     }
+  //   }
+  // }
 
-  std::vector<Transform> transforms;
-
-  for (Mesh &mesh : model.meshes) {
-    gl_mesh_data.emplace_back(mesh.AsVAO(), mesh.indices.size());
-  }
-
-  for (int x = 0; x < 30; x++) {
-
-    for (int y = 0; y < 30; y++) {
-
-      for (int z = 0; z < 30; z++) {
-        if (Maths::PerlinNoise3D(glm::vec3(x / 20.0f, y / 20.0f, z / 20.0f)) >
-            0.5f) {
-          Transform t;
-          t.position = glm::vec3(x, y, z);
-          transforms.emplace_back(t);
-        }
-      }
-    }
-  }
-
-  camera = std::make_unique<CameraController>(window, 0.03f);
+  camera = std::make_unique<CameraController>(window, 0.3f);
   bool selection_first_collider = true;
   int collider1_idx = 0;
   int collider2_idx = 1;
 
+  Mesh m = GenerateMarchingCubes();
+  unsigned int m_vao = m.AsVAO();
+
   while (!glfwWindowShouldClose(window)) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    GUI::BeginFrame();
+    // GUI::BeginFrame();
 
     camera->Update(window);
     shader.Bind();
@@ -195,29 +202,21 @@ int main() {
         &glm::inverse(camera->transform.ToMatrix())[0][0]);
     shader.SetUniform3FV("viewPos", 1, &camera->transform.position[0]);
 
-    glBindVertexArray(gl_mesh_data[0].first);
-    for (size_t i = 0; i < transforms.size(); i++) {
-      shader.SetUniformMatrix4FV("v_model", 1, GL_FALSE,
-                                 &transforms[i].ToMatrix()[0][0]);
-      shader.SetUniform3F("material.diffuse",
-                          model.meshes[0].material.diffuse.r,
-                          model.meshes[0].material.diffuse.g,
-                          model.meshes[0].material.diffuse.b);
-      shader.SetUniform1F("material.shininess",
-                          model.meshes[0].material.shininess);
+    glBindVertexArray(m_vao);
+    shader.SetUniformMatrix4FV("v_model", 1, GL_FALSE,
+                               &Transform().ToMatrix()[0][0]);
+    shader.SetUniform3F("material.diffuse", 1, 1, 1);
+    shader.SetUniform1F("material.shininess", 16);
 
-      glDrawElements(GL_TRIANGLES, gl_mesh_data[0].second, GL_UNSIGNED_INT,
-                     nullptr);
-    }
-
+    glDrawElements(GL_TRIANGLES, m.indices.size(), GL_UNSIGNED_INT, nullptr);
     glfwPollEvents();
 
-    GUI::RenderFrame();
+    // GUI::RenderFrame();
 
     glfwSwapBuffers(window);
-  }
 
-  GUI::CleanupGUI();
+    // GUI::CleanupGUI();
+  }
 
   Window::DestroyGLFWWindow(window);
   return 0;

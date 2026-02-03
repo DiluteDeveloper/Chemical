@@ -1,12 +1,18 @@
 
 #include "mesh.hpp"
+#include <spdlog/spdlog.h>
 
 #include "glad/glad.h"
 
 namespace Chemical {
 
-  unsigned int Mesh::AsVAO() const {
+  unsigned int Mesh::AsVAO() {
     unsigned int vao = 0, vbo = 0, ibo = 0;
+    if (indices.size() == 0) {
+      for (unsigned int i = 0; i < vertices.size(); i++) {
+        indices.emplace_back(i);
+      }
+    }
     glCreateVertexArrays(1, &vao);
     glCreateBuffers(1, &vbo);
     glCreateBuffers(1, &ibo);
@@ -28,8 +34,8 @@ namespace Chemical {
     glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, 0);
     glVertexArrayAttribFormat(vao, 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float));
 
-    glDeleteBuffers(1, &vbo);
-    glDeleteBuffers(1, &ibo);
+    // glDeleteBuffers(1, &vbo);
+    // glDeleteBuffers(1, &ibo);
     return vao;
   }
 } // namespace Chemical
