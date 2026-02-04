@@ -1,1 +1,2 @@
-/mnt/storage/Chemical/Chemical/bin/Chemical/linux-Debug/Chemical
+cd "$(dirname "$0")"
+../bin/Chemical/linux-Debug/Chemical

@@ -23,10 +23,10 @@ struct PointLight {
 vec3 calcPointLight(vec3 viewDir) {
 
 		PointLight light;
-		light.position = vec3(20,240,-20);
+		light.position = vec3(2,40,-2);
 		light.diffuse = vec3(0.3, 0.3, 0.3);
 		light.specular= vec3(1.0, 1.0, 1.0);
-		light.ambient = vec3(1.0, 1.0, 1.0);
+		light.ambient = vec3(0.5, 0.5, 0.5);
 		
     vec3 lightDir = normalize(light.position - f_fragPos);
 
@@ -35,7 +35,7 @@ vec3 calcPointLight(vec3 viewDir) {
 
     vec3 reflectDir = reflect(-lightDir, f_normal); // the reflected direction vector of where the light hits
 
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess );
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess - 15);
     vec3 specularResult = light.specular * spec;
 
     return vec3(diffuseResult + specularResult + light.ambient) * material.diffuse;
@@ -46,10 +46,10 @@ void main()
     vec3 viewDir = normalize(viewPos - f_fragPos);
     vec3 result = calcPointLight(viewDir);
 
-    vec4 x = vec4(result, 1.0);
+    fragColor = vec4(result, 1.0);
 		//fragColor = vec4(f_normal, 1.0);
 
 
     // Normals debug
-    fragColor = vec4(f_normal.xyz + (x.xyz * 0.01), 1.0);
+    //fragColor = vec4(f_normal.xyz, 1.0);
 }

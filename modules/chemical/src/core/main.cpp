@@ -3,6 +3,7 @@
 #include "glad/glad.h"
 #include "glfw/glfw3.h"
 #include "glm/ext/matrix_clip_space.hpp"
+#include "gui/perlin.hpp"
 #include "gui/transform.hpp"
 #include "marching_cubes.hpp"
 #include "rendering/material.hpp"
@@ -31,6 +32,9 @@ using namespace Chemical;
 bool menu_state = true;
 GLFWwindow *window = nullptr;
 std::unique_ptr<CameraController> camera;
+
+std::string abs_res_dir =
+    "/home/dilute/Documents/Dev/Chemical/modules/chemical/res";
 
 void KeyCallback(int key, int scancode, int action, int mods) {
 
@@ -67,11 +71,10 @@ int main() {
   Input::KeyEventSystem::SubscribeToKeyEvent(KeyCallback);
 
   ShaderTraits traits;
-  std::ifstream file("/mnt/storage/Chemical/Chemical/modules/chemical/res/"
-                     "shaders/LitShader.vs");
+  std::ifstream file(std::format("{}/shaders/LitShader.vs", abs_res_dir));
 
   if (!file) {
-    SPDLOG_ERROR(R"(Failed to read file "" : returning 0)");
+    SPDLOG_ERROR("Failed to read file \"no name\" : returning 0");
   }
 
   traits.vs_source = std::string((std::istreambuf_iterator<char>(file)),
@@ -79,8 +82,7 @@ int main() {
 
   file.close();
 
-  std::ifstream file2("/mnt/storage/Chemical/Chemical/modules/chemical/res/"
-                      "shaders/LitShader.fs");
+  std::ifstream file2(std::format("{}/shaders/LitShader.fs", abs_res_dir));
 
   if (!file2) {
     SPDLOG_ERROR(R"(Failed to read file "" : returning 0)");
@@ -100,8 +102,7 @@ int main() {
   shader.SetUniformMatrix4FV("v_proj", 1, GL_FALSE, &proj[0][0]);
 
   std::ifstream collider_vs_file(
-      "/mnt/storage/Chemical/Chemical/modules/chemical/res/"
-      "shaders/ColliderShader.vs");
+      std::format("{}/shaders/ColliderShader.vs", abs_res_dir));
 
   if (!collider_vs_file) {
     SPDLOG_ERROR(R"(Failed to read file "" : returning 0)");
@@ -114,8 +115,7 @@ int main() {
   collider_vs_file.close();
 
   std::ifstream collider_fs_file(
-      "/mnt/storage/Chemical/Chemical/modules/chemical/res/"
-      "shaders/ColliderShader.fs");
+      std::format("{}/shaders/ColliderShader.fs", abs_res_dir));
 
   if (!collider_fs_file) {
     SPDLOG_ERROR(R"(Failed to read file "" : returning 0)");
@@ -134,12 +134,6 @@ int main() {
 
   collider_shader.SetUniformMatrix4FV("v_proj", 1, GL_FALSE, &proj[0][0]);
 
-  // Material material;
-  // material.ambient = glm::vec3(0.2, 0.2, 0.2);
-  // material.diffuse = glm::vec3(1.0, 0.3, 0.9);
-  // material.specular = glm::vec3(1.0, 1.0, 1.0);
-  // material.shininess = 32;
-
   std::optional<Model> model_opt =
       ModelLoader::LoadModel("res/models/cube.dae");
   if (!model_opt)
@@ -156,32 +150,6 @@ int main() {
                       not_collision_colour.y, not_collision_colour.z);
   shader.SetUniform1UI("material.shininess", 16);
 
-  // VAO then index count
-  // std::vector<std::pair<unsigned int, unsigned int>> gl_mesh_data;
-  //
-  // std::vector<Transform> transforms;
-  // std::vector<glm::vec3> colours;
-  //
-  // for (Mesh &mesh : model.meshes) {
-  //   gl_mesh_data.emplace_back(mesh.AsVAO(), mesh.indices.size());
-  // }
-  //
-  // for (int x = 0; x < 70; x++) {
-  //
-  //   for (int y = 0; y < 60; y++) {
-  //
-  //     for (int z = 0; z < 1; z++) {
-  //       double v =
-  //           Maths::PerlinNoise3D(glm::vec3(x / 10.0f, y / 10.0f, z / 10.0f));
-  //       colours.emplace_back(glm::vec3(v, v, v));
-  //
-  //       Transform t;
-  //       t.position = glm::vec3(x, y, z);
-  //       transforms.emplace_back(t);
-  //     }
-  //   }
-  // }
-
   camera = std::make_unique<CameraController>(window, 0.3f);
   bool selection_first_collider = true;
   int collider1_idx = 0;
@@ -193,7 +161,9 @@ int main() {
   while (!glfwWindowShouldClose(window)) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // GUI::BeginFrame();
+    GUI::BeginFrame();
+
+    GUI::RenderPerlinWindow();
 
     camera->Update(window);
     shader.Bind();
@@ -211,12 +181,11 @@ int main() {
     glDrawElements(GL_TRIANGLES, m.indices.size(), GL_UNSIGNED_INT, nullptr);
     glfwPollEvents();
 
-    // GUI::RenderFrame();
+    GUI::RenderFrame();
 
     glfwSwapBuffers(window);
-
-    // GUI::CleanupGUI();
   }
+  GUI::CleanupGUI();
 
   Window::DestroyGLFWWindow(window);
   return 0;

@@ -1,3 +1,9 @@
+Game Development 0.18.2
+
+Fixed lighting
+Readded GUI, made a start on adding perlin noise (and marching cubes)
+GUI configuration to game
+
 Game Development 0.18.1
 
 Rendering marching cubes with normals

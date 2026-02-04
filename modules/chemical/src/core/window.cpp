@@ -24,22 +24,6 @@ namespace Chemical {
       glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
       glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-      int count;
-      GLFWmonitor **monitors = glfwGetMonitors(&count);
-
-      int xpos, ypos, mwidth, mheight;
-      glfwGetMonitorWorkarea(monitors[0], &xpos, &ypos, &mwidth, &mheight);
-      SPDLOG_INFO("M0: {}, {}, {}, {}", xpos, ypos, mwidth, mheight);
-      glfwGetMonitorWorkarea(monitors[1], &xpos, &ypos, &mwidth, &mheight);
-
-      SPDLOG_INFO("M0: {}, {}, {}, {}", xpos, ypos, mwidth, mheight);
-
-      float xscale, yscale;
-
-      glfwGetMonitorContentScale(monitors[0], &xscale, &yscale);
-      SPDLOG_INFO("M0 contentscale: {}, {} ", xscale, yscale);
-      glfwGetMonitorContentScale(monitors[1], &xscale, &yscale);
-      SPDLOG_INFO("M0 contentscale: {}, {} ", xscale, yscale);
       GLFWwindow *window =
           glfwCreateWindow(width, height, title.data(), nullptr, nullptr);
 
