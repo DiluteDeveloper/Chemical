@@ -1,3 +1,13 @@
+Game Development 0.18.3
+
+Created TerrainState class for managing state of perlin noise
+frequency and amplitude as well as terrain size.
+Added new GUI menu to control values in TerrainState
+Renamed Perlin.hpp gui class to terrain_state_menu
+added back deletion of vertex buffers
+GenerateMarchingCubes doesnt do noise anymore, takes in an IsoGrid
+where the noise has already been generated
+
 Game Development 0.18.2
 
 Fixed lighting

@@ -1,7 +1,5 @@
 #include "marching_cubes.hpp"
-#include "glm/glm.hpp"
-#include "maths/perlin_noise.hpp"
-#include "spdlog/spdlog.h"
+#include "terrain_state.hpp"
 
 namespace Chemical {
 
@@ -290,30 +288,15 @@ namespace Chemical {
       {0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
       {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}};
 
-  constexpr double iso_value = 0.6f;
-
-  Mesh GenerateMarchingCubes() {
+  Mesh GenerateMarchingCubes(const Util::IsoGrid& noise_data, float iso_value) {
     Mesh mesh;
 
-    double noise_data[100][100][100];
-
-    for (size_t x = 0; x < 100; x++) {
-
-      for (size_t y = 0; y < 100; y++) {
-
-        for (size_t z = 0; z < 100; z++) {
-          noise_data[x][y][z] =
-              Maths::PerlinNoise3D(glm::vec3(x / 10.0f, y / 10.0f, z / 10.0f));
-        }
-      }
-    }
-
     Vertex lerp_vertices[12];
-    for (size_t x = 0; x < 99; x++) {
+    for (size_t x = 0; x < noise_data.size() - 1; x++) {
 
-      for (size_t y = 0; y < 99; y++) {
+      for (size_t y = 0; y < noise_data[0].size() - 1; y++) {
 
-        for (size_t z = 0; z < 99; z++) {
+        for (size_t z = 0; z < noise_data[0][0].size() - 1; z++) {
 
           double x0y0z0 = noise_data[x][y][z];
           double x1y0z0 = noise_data[x + 1][y][z];

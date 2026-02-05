@@ -3,11 +3,12 @@
 #include "glad/glad.h"
 #include "glfw/glfw3.h"
 #include "glm/ext/matrix_clip_space.hpp"
-#include "gui/perlin.hpp"
+#include "gui/terrain_state_menu.hpp"
 #include "gui/transform.hpp"
 #include "marching_cubes.hpp"
 #include "rendering/material.hpp"
 #include "rendering/shader.hpp"
+#include "terrain_state.hpp"
 #include "util/transform.hpp"
 #include <fstream>
 #include <glm/gtc/matrix_transform.hpp>
@@ -49,6 +50,7 @@ void KeyCallback(int key, int scancode, int action, int mods) {
   }
 }
 int main() {
+
   spdlog::set_pattern("%^[%s] [%!] [%#] %$%v");
 
   int window_width = 1080;
@@ -155,30 +157,32 @@ int main() {
   int collider1_idx = 0;
   int collider2_idx = 1;
 
-  Mesh m = GenerateMarchingCubes();
-  unsigned int m_vao = m.AsVAO();
+  Util::TerrainState terrain;
+  terrain.Generate();
 
   while (!glfwWindowShouldClose(window)) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     GUI::BeginFrame();
 
-    GUI::RenderPerlinWindow();
+    GUI::RenderTerrainStateMenu(terrain);
 
-    camera->Update(window);
+    if (!menu_state)
+      camera->Update(window);
     shader.Bind();
     shader.SetUniformMatrix4FV(
         "v_view", 1, GL_FALSE,
         &glm::inverse(camera->transform.ToMatrix())[0][0]);
     shader.SetUniform3FV("viewPos", 1, &camera->transform.position[0]);
 
-    glBindVertexArray(m_vao);
+    glBindVertexArray(terrain.GetVAO());
     shader.SetUniformMatrix4FV("v_model", 1, GL_FALSE,
                                &Transform().ToMatrix()[0][0]);
     shader.SetUniform3F("material.diffuse", 1, 1, 1);
     shader.SetUniform1F("material.shininess", 16);
 
-    glDrawElements(GL_TRIANGLES, m.indices.size(), GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, terrain.GetIndiceCount(), GL_UNSIGNED_INT,
+                   nullptr);
     glfwPollEvents();
 
     GUI::RenderFrame();
