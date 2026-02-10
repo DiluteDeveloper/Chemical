@@ -1,12 +1,8 @@
-#include "collision/box_collider.hpp"
 #include "core/input/input.hpp"
 #include "glad/glad.h"
 #include "glfw/glfw3.h"
 #include "glm/ext/matrix_clip_space.hpp"
 #include "gui/terrain_state_menu.hpp"
-#include "gui/transform.hpp"
-#include "marching_cubes.hpp"
-#include "rendering/material.hpp"
 #include "rendering/shader.hpp"
 #include "terrain_state.hpp"
 #include "util/transform.hpp"
@@ -16,23 +12,20 @@
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 #include "spdlog/spdlog.h"
 
-#include "maths/perlin_noise.hpp"
-
 #include "rendering/model_loader.hpp"
 #include "util/camera.hpp"
 
 #include "rendering/cube.hpp"
-#include "window.hpp"
+#include "window_handler.hpp"
 
 #include "gui/setup.hpp"
-
-#include "collision/mesh_collider.h"
 
 using namespace Chemical;
 
 bool menu_state = true;
-GLFWwindow *window = nullptr;
 std::unique_ptr<CameraController> camera;
+
+GLFWwindow *window_ptr = nullptr;
 
 std::string abs_res_dir =
     "/home/dilute/Documents/Dev/Chemical/modules/chemical/res";
@@ -42,13 +35,14 @@ void KeyCallback(int key, int scancode, int action, int mods) {
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
     menu_state = !menu_state;
     if (menu_state)
-      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+      glfwSetInputMode(window_ptr, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     else {
-      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-      camera->ResetMouse(window);
+      glfwSetInputMode(window_ptr, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+      camera->ResetMouse(window_ptr);
     }
   }
 }
+
 int main() {
 
   spdlog::set_pattern("%^[%s] [%!] [%#] %$%v");
@@ -57,10 +51,12 @@ int main() {
   int window_height = 720;
   const char *window_title = "Game Development 0.17.5";
 
-  window = Window::InitialiseGLContextAndGLFWWindow(window_title, window_width,
-                                                    window_height);
+  WindowHandler window("Game Development", 1280, 720);
+  window_ptr = window.window;
 
-  GUI::SetupGUI(window);
+  window.SubscribeToKeyEvent(KeyCallback);
+
+  GUI::SetupGUI(window.window);
 
   glViewport(0, 0, window_width, window_height);
   glEnable(GL_CULL_FACE);
@@ -68,9 +64,7 @@ int main() {
   glEnable(GL_DEPTH_TEST);
   glClearColor(0.3, 0.3, 0.6, 1.0);
 
-  glfwSetKeyCallback(window, Input::KeyEventSystem::KeyCallback);
-
-  Input::KeyEventSystem::SubscribeToKeyEvent(KeyCallback);
+  // Input::KeyEventSystem::SubscribeToKeyEvent(KeyCallback);
 
   ShaderTraits traits;
   std::ifstream file(std::format("{}/shaders/LitShader.vs", abs_res_dir));
@@ -152,7 +146,9 @@ int main() {
                       not_collision_colour.y, not_collision_colour.z);
   shader.SetUniform1UI("material.shininess", 16);
 
-  camera = std::make_unique<CameraController>(window, 0.3f);
+  camera = std::make_unique<CameraController>(window.window, 0.3f);
+  window.SubscribeToCursorPosEvent(
+      [&](double x, double y) { camera->CursorPosCallback(x, y); });
   bool selection_first_collider = true;
   int collider1_idx = 0;
   int collider2_idx = 1;
@@ -160,7 +156,7 @@ int main() {
   Util::TerrainState terrain;
   terrain.Generate();
 
-  while (!glfwWindowShouldClose(window)) {
+  while (!glfwWindowShouldClose(window.window)) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     GUI::BeginFrame();
@@ -168,7 +164,7 @@ int main() {
     GUI::RenderTerrainStateMenu(terrain);
 
     if (!menu_state)
-      camera->Update(window);
+      camera->Update(window.window);
     shader.Bind();
     shader.SetUniformMatrix4FV(
         "v_view", 1, GL_FALSE,
@@ -187,10 +183,9 @@ int main() {
 
     GUI::RenderFrame();
 
-    glfwSwapBuffers(window);
+    glfwSwapBuffers(window.window);
   }
   GUI::CleanupGUI();
 
-  Window::DestroyGLFWWindow(window);
   return 0;
 }

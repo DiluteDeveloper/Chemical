@@ -1,3 +1,7 @@
+Game Development 0.18.4
+
+Changed window stuff
+
 Game Development 0.18.3
 
 Created TerrainState class for managing state of perlin noise

@@ -34,8 +34,19 @@ namespace Chemical {
       transform.position.y -= speed;
     }
 
-    double x, y;
-    glfwGetCursorPos(window, &x, &y);
+    // double x, y;
+    // glfwGetCursorPos(window, &x, &y);
+    //
+    // transform.rotation.y -= static_cast<float>(x - old_x) * sensitivity;
+    // transform.rotation.x -= static_cast<float>(y - old_y) * sensitivity;
+    //
+    // transform.rotation.x = glm::clamp(transform.rotation.x, -85.0f, 85.0f);
+    //
+    // old_x = x;
+    // old_y = y;
+  }
+
+  void CameraController::CursorPosCallback(double x, double y) {
 
     transform.rotation.y -= static_cast<float>(x - old_x) * sensitivity;
     transform.rotation.x -= static_cast<float>(y - old_y) * sensitivity;

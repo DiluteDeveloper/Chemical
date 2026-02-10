@@ -20,6 +20,8 @@ namespace Chemical {
     float speed = 0.1f;
     float sensitivity = 0.08f;
 
+    void CursorPosCallback(double x, double y);
+
   protected:
     double old_x, old_y;
   };
