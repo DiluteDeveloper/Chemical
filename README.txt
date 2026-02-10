@@ -1,3 +1,10 @@
+Game Development 0.18.5
+
+Removed key input and mouse input logging
+added Perlin Noise seeding, activated with random seed
+via Regenerate terrain button
+Fixed camera moving when in menu mode
+
 Game Development 0.18.4
 
 Changed window stuff

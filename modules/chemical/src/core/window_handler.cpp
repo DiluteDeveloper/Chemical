@@ -20,7 +20,6 @@ namespace Chemical {
 
   void WindowHandler::GLFWKeyCallback(int key, int scancode, int action,
                                       int mods) {
-    SPDLOG_INFO("Key event :D");
     for (auto key_event_subscriber : key_event_subscribers) {
       key_event_subscriber(key, scancode, action, mods);
     }
@@ -34,7 +33,6 @@ namespace Chemical {
   }
   void WindowHandler::GLFWCursorPosCallback(double x, double y) {
 
-    SPDLOG_INFO("Cursor pos event :D");
     for (auto cursor_pos_event_subscriber : cursor_pos_event_subscribers) {
       cursor_pos_event_subscriber(x, y);
     }

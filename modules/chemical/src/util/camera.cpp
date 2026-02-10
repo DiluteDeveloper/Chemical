@@ -47,6 +47,8 @@ namespace Chemical {
   }
 
   void CameraController::CursorPosCallback(double x, double y) {
+    if (!enabled)
+      return;
 
     transform.rotation.y -= static_cast<float>(x - old_x) * sensitivity;
     transform.rotation.x -= static_cast<float>(y - old_y) * sensitivity;

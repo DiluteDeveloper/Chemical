@@ -34,11 +34,13 @@ void KeyCallback(int key, int scancode, int action, int mods) {
 
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
     menu_state = !menu_state;
-    if (menu_state)
+    if (menu_state) {
       glfwSetInputMode(window_ptr, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    else {
+      camera->enabled = false;
+    } else {
       glfwSetInputMode(window_ptr, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
       camera->ResetMouse(window_ptr);
+      camera->enabled = true;
     }
   }
 }
@@ -163,8 +165,7 @@ int main() {
 
     GUI::RenderTerrainStateMenu(terrain);
 
-    if (!menu_state)
-      camera->Update(window.window);
+    camera->Update(window.window);
     shader.Bind();
     shader.SetUniformMatrix4FV(
         "v_view", 1, GL_FALSE,

@@ -21,6 +21,7 @@ namespace Chemical {
     float sensitivity = 0.08f;
 
     void CursorPosCallback(double x, double y);
+    bool enabled = true;
 
   protected:
     double old_x, old_y;
