@@ -1,3 +1,8 @@
+Game Development 0.18.6
+
+Added noise octaves and fixed bug that made perlin noise 
+segfault sometimes (out of bounds)
+
 Game Development 0.18.5
 
 Removed key input and mouse input logging

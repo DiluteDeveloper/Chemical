@@ -9,7 +9,7 @@ namespace Chemical {
     class TerrainState {
 
     public:
-      TerrainState() = default;
+      TerrainState();
       TerrainState(const TerrainState &) = delete;
       TerrainState &operator=(const TerrainState &) = delete;
 
@@ -32,15 +32,24 @@ namespace Chemical {
 
       ~TerrainState();
 
-      float noise_frequency = .1f;
-      float noise_amplitude = 1.0f;
       float iso_value = 0.6f;
 
       glm::uvec3 size = glm::uvec3(50);
 
+      using NoiseFrequency = float;
+      using NoiseAmplitude = float;
+      using NoiseOctave = std::pair<NoiseFrequency, NoiseAmplitude>;
+
+      unsigned int GetNoiseOctaveCount();
+      NoiseOctave &GetNoiseOctave(unsigned int idx);
+      void AddNoiseOctave(const NoiseOctave &octave);
+      void RemoveLastNoiseOctave();
+
     private:
       Mesh mesh;
       unsigned int vao;
+
+      std::vector<NoiseOctave> noise_octaves;
     };
   } // namespace Util
 

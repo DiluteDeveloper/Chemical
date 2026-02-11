@@ -52,20 +52,20 @@ namespace Chemical {
         128, 195, 78,  66,  215, 61,  156, 180};
 
     unsigned int cur_seed = 0;
-    std::unordered_map<unsigned int, std::array<int, 255>>
+    std::unordered_map<unsigned int, std::array<int, 512>>
         seed_permutation_cache;
     void SetPerlinNoiseSeed(unsigned int seed) {
 
       cur_seed = seed;
       if (!seed_permutation_cache.contains(seed)) {
-        std::array<int, 255> &perm = seed_permutation_cache[seed];
+        std::array<int, 512> &perm = seed_permutation_cache[seed];
         srand(seed);
-        for (int i = 0; i < 255; i++) {
-          perm[i] = static_perm[rand() % 256];
+        for (int i = 0; i < 512; i++) {
+          perm[i] = static_perm[rand() % 512];
         }
       }
     }
-    const std::array<int, 255> &GetPermutationTable() {
+    const std::array<int, 512> &GetPermutationTable() {
 
       if (!seed_permutation_cache.contains(cur_seed))
         SetPerlinNoiseSeed(cur_seed);

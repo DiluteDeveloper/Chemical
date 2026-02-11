@@ -8,13 +8,13 @@ namespace Chemical {
 
   namespace Util {
 
-    int i = 1;
+    TerrainState::TerrainState() {
+      AddNoiseOctave(std::make_pair(0.1f, 1.0f));
+    }
+    int noise_seed = 1;
     void TerrainState::Generate() {
       IsoGrid grid;
       grid.reserve(size.x);
-
-      Maths::SetPerlinNoiseSeed(i);
-      i++;
 
       for (size_t x = 0; x < size.x; x++) {
         grid.emplace_back();
@@ -25,19 +25,39 @@ namespace Chemical {
           grid[x][y].reserve(size.z);
 
           for (size_t z = 0; z < size.z; z++) {
-            double noise_val = Maths::PerlinNoise3D(glm::vec3(
-                                   x * noise_frequency, y * noise_frequency,
-                                   z * noise_frequency)) *
-                               noise_amplitude;
+            double noise_val = 0;
+            int i = 0;
+            for (const NoiseOctave &octave : noise_octaves) {
+
+              Maths::SetPerlinNoiseSeed(noise_seed + i);
+              noise_val +=
+                  Maths::PerlinNoise3D(glm::vec3(
+                      x * octave.first, y * octave.first, z * octave.first)) *
+                  octave.second;
+              i++;
+            }
             grid[x][y].emplace_back(noise_val);
           }
         }
       }
+      noise_seed += GetNoiseOctaveCount();
 
       mesh = GenerateMarchingCubes(grid, iso_value);
       vao = mesh.AsVAO();
     }
+    unsigned int TerrainState::GetNoiseOctaveCount() {
+      return noise_octaves.size();
+    }
+    TerrainState::NoiseOctave &TerrainState::GetNoiseOctave(unsigned int idx) {
+      return noise_octaves.at(idx);
+    }
+    void TerrainState::AddNoiseOctave(const NoiseOctave &octave) {
+      noise_octaves.emplace_back(octave);
+    }
 
+    void TerrainState::RemoveLastNoiseOctave() {
+      noise_octaves.pop_back();
+    }
     unsigned int TerrainState::GetVAO() {
       return vao;
     }
