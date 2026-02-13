@@ -1,6 +1,9 @@
 #include "marching_cubes.hpp"
 #include "terrain_state.hpp"
 
+#include "spdlog/spdlog.h"
+#include <ctime>
+
 namespace Chemical {
 
   const int edge_table[256] = {
@@ -288,8 +291,16 @@ namespace Chemical {
       {0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
       {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}};
 
+
+	float cum_edge_mask_time = 0.0f;
+	float cum_cube_index_time= 0.0f;
+	float cum_vertices_time = 0.0f;
   Mesh GenerateMarchingCubes(const Util::IsoGrid& noise_data, float iso_value) {
     Mesh mesh;
+		mesh.vertices.reserve(1500000);
+		mesh.indices.reserve(1500000);
+
+		clock_t time_before_march = clock();
 
     Vertex lerp_vertices[12];
     for (size_t x = 0; x < noise_data.size() - 1; x++) {
@@ -297,6 +308,7 @@ namespace Chemical {
       for (size_t y = 0; y < noise_data[0].size() - 1; y++) {
 
         for (size_t z = 0; z < noise_data[0][0].size() - 1; z++) {
+					// SPDLOG_INFO("noise data size x y and z: {}, {}, {}", noise_data.size(), noise_data[0].size(), noise_data[0][0].size());
 
           double x0y0z0 = noise_data[x][y][z];
           double x1y0z0 = noise_data[x + 1][y][z];
@@ -306,6 +318,8 @@ namespace Chemical {
           double x1y0z1 = noise_data[x + 1][y][z + 1];
           double x1y1z1 = noise_data[x + 1][y + 1][z + 1];
           double x0y1z1 = noise_data[x][y + 1][z + 1];
+
+					// clock_t time_before_cube_index = clock();
 
           unsigned char cubeIndex = 0;
           cubeIndex |= x0y0z0 > iso_value ? 1 : 0;
@@ -325,6 +339,8 @@ namespace Chemical {
           // SPDLOG_INFO("noise data 6: {}", noise_data[x + 1][y + 1][z + 1]);
           // SPDLOG_INFO("noise data 7: {}", noise_data[x][y + 1][z + 1]);
           // SPDLOG_INFO("cubeIndex: {}", (unsigned int)cubeIndex);
+
+					// clock_t time_after_cube_idx_before_edge_mask = clock();
 
           int edge_mask = edge_table[cubeIndex];
 
@@ -380,6 +396,7 @@ namespace Chemical {
             lerp_vertices[11].position = glm::vec3(x, y + 1, z + t);
           }
 
+					// clock_t time_after_edge_mask_before_vertices = clock();
           int i = 0;
           while (triangle_table[cubeIndex][i] != -1 && i <= 15) {
             mesh.vertices.emplace_back(
@@ -400,9 +417,20 @@ namespace Chemical {
             }
             i++;
           }
+					// clock_t time_after = clock();
+					//
+					// cum_edge_mask_time += float(time_after_edge_mask_before_vertices - time_after_cube_idx_before_edge_mask) / CLOCKS_PER_SEC;
+					// cum_cube_index_time+= float(time_after_cube_idx_before_edge_mask - time_before_cube_index) / CLOCKS_PER_SEC;
+					// cum_vertices_time += float(time_after - time_after_edge_mask_before_vertices ) / CLOCKS_PER_SEC;
         }
       }
     }
+
+		clock_t time_after_march = clock();
+		SPDLOG_INFO("march time: {}", float(time_after_march - time_before_march) / CLOCKS_PER_SEC);
+		// SPDLOG_INFO("cum_edge_mask_time: {}", cum_edge_mask_time);
+		// SPDLOG_INFO("cum_cube_index_time: {}", cum_cube_index_time);
+		// SPDLOG_INFO("cum_vertices_time: {}", cum_vertices_time);
     return mesh;
   }
 

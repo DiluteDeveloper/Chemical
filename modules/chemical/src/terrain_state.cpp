@@ -1,7 +1,9 @@
 #include "terrain_state.hpp"
 #include "marching_cubes.hpp"
 #include "maths/perlin_noise.hpp"
+#include "spdlog/spdlog.h"
 
+#include <ctime>
 #include <glad/glad.h>
 
 namespace Chemical {
@@ -13,6 +15,10 @@ namespace Chemical {
     }
     int noise_seed = 1;
     void TerrainState::Generate() {
+
+      glDeleteVertexArrays(1, &vao);
+
+      clock_t time_before = clock();
       IsoGrid grid;
       grid.reserve(size.x);
 
@@ -29,7 +35,8 @@ namespace Chemical {
             int i = 0;
             for (const NoiseOctave &octave : noise_octaves) {
 
-              Maths::SetPerlinNoiseSeed(noise_seed + i);
+              // Maths::SetPerlinNoiseSeed(noise_seed + i); commented out to
+              // debug performance leak in Marching Cubes
               noise_val +=
                   Maths::PerlinNoise3D(glm::vec3(
                       x * octave.first, y * octave.first, z * octave.first)) *
@@ -42,6 +49,9 @@ namespace Chemical {
       }
       noise_seed += GetNoiseOctaveCount();
 
+      clock_t time_after = clock();
+      SPDLOG_INFO("grid and perlin noise time: {}",
+                  float(time_after - time_before) / CLOCKS_PER_SEC);
       mesh = GenerateMarchingCubes(grid, iso_value);
       vao = mesh.AsVAO();
     }

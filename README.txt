@@ -1,3 +1,8 @@
+Game Development 0.18.7
+
+In the middle of optimizing Marching Cubes,
+pivoting to universe sim and icosphere mesh gen
+
 Game Development 0.18.6
 
 Added noise octaves and fixed bug that made perlin noise 
