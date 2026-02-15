@@ -1,3 +1,10 @@
+Game Development 0.18.8_i
+
+Intermediate commit; Created
+flat-shaded Icosphere generation code
+and working on smooth shaded Icosphere generation code;
+Doing a rewrite of smooth shaded
+
 Game Development 0.18.7
 
 In the middle of optimizing Marching Cubes,

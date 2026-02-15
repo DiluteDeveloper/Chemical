@@ -3,6 +3,7 @@
 #include "glfw/glfw3.h"
 #include "glm/ext/matrix_clip_space.hpp"
 #include "gui/terrain_state_menu.hpp"
+#include "rendering/icosphere.hpp"
 #include "rendering/shader.hpp"
 #include "terrain_state.hpp"
 #include "util/transform.hpp"
@@ -61,7 +62,7 @@ int main() {
   GUI::SetupGUI(window.window);
 
   glViewport(0, 0, window_width, window_height);
-  glEnable(GL_CULL_FACE);
+  // glEnable(GL_CULL_FACE); disabled backface culling for testing
   glCullFace(GL_BACK);
   glEnable(GL_DEPTH_TEST);
   glClearColor(0.3, 0.3, 0.6, 1.0);
@@ -148,22 +149,26 @@ int main() {
                       not_collision_colour.y, not_collision_colour.z);
   shader.SetUniform1UI("material.shininess", 16);
 
-  camera = std::make_unique<CameraController>(window.window, 0.3f);
+  camera = std::make_unique<CameraController>(window.window, 0.03f);
   window.SubscribeToCursorPosEvent(
       [&](double x, double y) { camera->CursorPosCallback(x, y); });
   bool selection_first_collider = true;
   int collider1_idx = 0;
-  int collider2_idx = 1;
+  int collider2_idx = 0;
 
   Util::TerrainState terrain;
   terrain.Generate();
+
+  Mesh icosphere = GenerateIcosphereSmoothNormals(5);
+  // GenerateIcosphereSmoothNormals(5);
+  unsigned int icosphere_vao = icosphere.AsVAO();
 
   while (!glfwWindowShouldClose(window.window)) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     GUI::BeginFrame();
 
-    GUI::RenderTerrainStateMenu(terrain);
+    // GUI::RenderTerrainStateMenu(terrain);
 
     camera->Update(window.window);
     shader.Bind();
@@ -172,13 +177,14 @@ int main() {
         &glm::inverse(camera->transform.ToMatrix())[0][0]);
     shader.SetUniform3FV("viewPos", 1, &camera->transform.position[0]);
 
-    glBindVertexArray(terrain.GetVAO());
+    // glBindVertexArray(terrain.GetVAO());
+    glBindVertexArray(icosphere_vao);
     shader.SetUniformMatrix4FV("v_model", 1, GL_FALSE,
                                &Transform().ToMatrix()[0][0]);
     shader.SetUniform3F("material.diffuse", 1, 1, 1);
     shader.SetUniform1F("material.shininess", 16);
 
-    glDrawElements(GL_TRIANGLES, terrain.GetIndiceCount(), GL_UNSIGNED_INT,
+    glDrawElements(GL_TRIANGLES, icosphere.indices.size(), GL_UNSIGNED_INT,
                    nullptr);
     glfwPollEvents();
 

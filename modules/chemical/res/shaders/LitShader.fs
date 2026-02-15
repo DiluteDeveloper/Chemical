@@ -51,5 +51,5 @@ void main()
 
 
     // Normals debug
-    //fragColor = vec4(f_normal.xyz, 1.0);
+    //fragColor = (c * 0.01) + vec4(f_normal.xyz, 1.0);
 }
