@@ -1,7 +1,7 @@
 #include "icosphere.hpp"
 #include "glm/geometric.hpp"
 #include "spdlog/spdlog.h"
-
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 namespace Chemical {
 
   // Resolution represents how many triangles per horizontal loop
@@ -17,7 +17,7 @@ namespace Chemical {
       for (int h = 0; h < resolution; h++) {
         // Iterate through each vertex on the current Y plane of the sphere
 
-        float h_offset = v % 2 ? (res_radians / 2.0f) : 0;
+        float h_offset = v * (res_radians / 2.0f);
 
         float prev_angle = ((h - 1) * res_radians) + h_offset;
         float cur_angle = (h * res_radians) + h_offset;
@@ -87,12 +87,12 @@ namespace Chemical {
     mesh.vertices.emplace_back(glm::vec3(0, 1, 0), glm::vec3(0, 1, 0));
 
     // Iterate through vertices
-    for (int v = 1; v < resolution - 1; v++) {
+    for (int v = 1; v < resolution; v++) {
       // Iterate through the vertical levels of the icosphere
       for (int h = 0; h < resolution; h++) {
         // Iterate through each vertex on the current Y plane of the sphere
 
-        float h_offset = v % 2 ? (res_radians / 2.0f) : 0;
+        float h_offset = v * (res_radians / 2.0f);
 
         // float prev_angle = ((h - 1) * res_radians) + h_offset;
         float cur_angle = (h * res_radians) + h_offset;
@@ -101,117 +101,180 @@ namespace Chemical {
         // resolution in radians is half because vertical is only half of a
         // circle
         float cur_angle_vert = v * (res_radians / 2.0f);
-        float next_angle_vert = (v + 1) * (res_radians / 2.0f);
 
         glm::vec3 v0_pos =
             glm::vec3(cos(cur_angle) * sin(cur_angle_vert), cos(cur_angle_vert),
                       sin(cur_angle) * sin(cur_angle_vert));
 
+        // SPDLOG_INFO("element: {} : {}, {}, {}", mesh.vertices.size(),
+        // v0_pos.x,
+        //             v0_pos.y, v0_pos.z);
+        // if (v == 1 & h == 0)
+        //   mesh.vertices.emplace_back(v0_pos, glm::vec3(1, 0, 0));
+        // else
         mesh.vertices.emplace_back(v0_pos);
       }
     }
     mesh.vertices.emplace_back(glm::vec3(0, -1, 0), glm::vec3(0, -1, 0));
 
-    std::vector<std::pair<glm::vec3, glm::vec3>>
-        tri_normals; // each index in this array represents a vertex (excluding
-                     // v=0 vertex and v=resolution-1 vertex);
-                     // Upside down triangle | Right-side up triangle
-    // Iterate through indices
-    for (int v = 0; v < resolution; v++) {
-      // Iterate through the vertical levels of the icosphere
+    // has resolution*2 elements
+    // first triangle is the right side up second is upside down
+    // Top and bottom have redundant 0,0,0 normals for the non-applicable
+    // triangles
+    std::vector<glm::fvec3> tri_normals;
+    tri_normals.resize(glm::pow(resolution, 2) * 2);
+
+    // first horizontal index of the 2nd to last layer of the triangle (actual
+    // last layer is just 1 vert)
+    int last_layer_idx = ((glm::pow(resolution, 2) - (resolution * 2)) + 1);
+
+    // Generate face normals and indices
+    for (int h = 0; h < resolution; h++) {
+
+      // Generate first layer and last layer
+      {
+        // Positive vertical and positive horizontal index into vertices array
+        int v1_h0_idx = h + 1;
+        int v1_h1_idx = (v1_h0_idx % resolution) + 1;
+        int v0_idx = 0;
+
+        mesh.indices.emplace_back(v1_h1_idx);
+        mesh.indices.emplace_back(v1_h0_idx);
+        mesh.indices.emplace_back(v0_idx);
+
+        tri_normals[h * 2] = glm::normalize(
+            glm::cross(glm::vec3(mesh.vertices[v1_h0_idx].position -
+                                 mesh.vertices[v1_h1_idx].position),
+                       glm::vec3(mesh.vertices[v0_idx].position -
+                                 mesh.vertices[v1_h1_idx].position)));
+
+        // v2= last layer
+        int v2_h0_idx = h + last_layer_idx;
+        int v2_h1_idx = ((h + 1) % resolution) + last_layer_idx;
+
+        // v3 = actual last vertex
+        int v3_idx = mesh.vertices.size() - 1;
+
+        mesh.indices.emplace_back(v3_idx);
+        mesh.indices.emplace_back(v2_h0_idx);
+        mesh.indices.emplace_back(v2_h1_idx);
+
+        tri_normals[((tri_normals.size() - (resolution * 2)) + (h * 2)) + 1] =
+            glm::normalize(
+                glm::cross(glm::vec3(mesh.vertices[v2_h0_idx].position -
+                                     mesh.vertices[v3_idx].position),
+                           glm::vec3(mesh.vertices[v2_h1_idx].position -
+                                     mesh.vertices[v3_idx].position)));
+      }
+    }
+    // generate the middle layers
+    for (int v = 0; v < resolution - 2; v++) {
       for (int h = 0; h < resolution; h++) {
-        // Iterate through each vertex on the current Y plane of the sphere
 
-        // on v=0, current_vertex is always 0; only 1 vertex on top and bottomjj
-        int current_vertex =
-            ((h + (v * resolution)) - (resolution - 1)) * glm::sign(v);
+        int v0_h0_idx = h + (v * resolution) + 1;
+        int v0_h1_idx = ((h + 1) % resolution) + (v * resolution) + 1;
+        int v1_h0_idx = h + ((v + 1) * resolution) + 1;
+        int v1_hneg1_idx =
+            (((h - 1) + resolution) % resolution) + ((v + 1) * resolution) + 1;
 
-        // Not used for v=0
-        int next_hori_vertex =
-            (((h + 1) % (resolution)) + (v * resolution)) - (resolution - 1);
+        // SPDLOG_INFO("v: {}, h: {}, v0_h0_idx: {}, v0_h1_idx: {}, v1_h0_idx: "
+        //             "{}, v1_hneg1_idx: {}",
+        //             v, h, v0_h0_idx, v0_h1_idx, v1_h0_idx, v1_hneg1_idx);
+        //
+        // SPDLOG_INFO("idx: {}", ((h + (v * resolution)) * 2) + resolution);
+        // SPDLOG_INFO("idx 2: {}", ((h + (v * resolution)) * 2) + resolution +
+        // 1);
 
-        // always equals the last vertex when v=last y plane
-        int next_vert_vertex =
-            std::min((((h - 1) + (!glm::sign(h) * resolution)) +
-                      ((v + 1) * resolution)) -
-                         (resolution - 1),
-                     (int)pow(resolution, 2) - (resolution - 1));
+        { // right side up triangle
+          mesh.indices.emplace_back(v1_h0_idx);
+          mesh.indices.emplace_back(v0_h0_idx);
+          mesh.indices.emplace_back(v0_h1_idx);
 
-        // not used for v=resolution-1
-        int next_hori_next_vert_vertex =
-            (h + ((v + 1) * resolution)) - (resolution - 1);
-
-        // Only used for normals -------
-
-        int prev_vert_vertex =
-            std::max((int)((h + ((v - 1) * resolution)) - (resolution - 1)), 0);
-
-        int prev_vert_next_hori_vertex =
-            std::max((int)((((h + 1) % (resolution)) + ((v - 1) * resolution)) -
-                           (resolution - 1)),
-                     0);
-
-        int prev_hori_vertex =
-            std::max((int)((((h - 1) + (!glm::sign(h) * resolution)) +
-                            (v * resolution)) -
-                           (resolution - 1)),
-                     0);
-        // Only used for normals -------
-
-        SPDLOG_INFO("v: {}", v);
-        SPDLOG_INFO("h: {}", h);
-        SPDLOG_INFO("current: {}", current_vertex);
-        SPDLOG_INFO("prev vert: {}", prev_vert_vertex);
-        SPDLOG_INFO("prev vert next hori: {}", prev_vert_next_hori_vertex);
-        SPDLOG_INFO("prev hori: {}", prev_hori_vertex);
-        if (v != 0 && v != resolution - 1) {
-
-          tri_normals.emplace_back(std::make_pair(
-              (glm::vec3(glm::normalize(glm::cross(
-                  mesh.vertices[current_vertex].position -
-                      mesh.vertices[next_vert_vertex].position,
-                  mesh.vertices[next_hori_next_vert_vertex].position -
-                      mesh.vertices[next_vert_vertex].position)))),
-
-              glm::vec3(glm::normalize(glm::cross(
-                  mesh.vertices[next_hori_vertex].position -
-                      mesh.vertices[current_vertex].position,
-                  mesh.vertices[current_vertex].position -
-                      mesh.vertices[next_hori_next_vert_vertex].position)))));
+          tri_normals[((h + (v * resolution)) * 2) + (resolution * 2)] =
+              glm::normalize(
+                  glm::cross(glm::vec3(mesh.vertices[v0_h0_idx].position -
+                                       mesh.vertices[v1_h0_idx].position),
+                             glm::vec3(mesh.vertices[v0_h1_idx].position -
+                                       mesh.vertices[v1_h0_idx].position)));
         }
-        if (v != 0) { // Dont do upside down triangles for top section
 
-          mesh.indices.emplace_back(next_vert_vertex);
-          mesh.indices.emplace_back(current_vertex);
-          mesh.indices.emplace_back(next_hori_next_vert_vertex);
-        }
-        if (v != resolution -
-                     1) { // Dont do right-side up triangles for bottom section
-          mesh.indices.emplace_back(current_vertex);
-          mesh.indices.emplace_back(next_hori_vertex);
-          mesh.indices.emplace_back(next_hori_next_vert_vertex);
+        { // upside down triangle
+          mesh.indices.emplace_back(v1_h0_idx);
+          mesh.indices.emplace_back(v1_hneg1_idx);
+          mesh.indices.emplace_back(v0_h0_idx);
+
+          tri_normals[((h + (v * resolution)) * 2) + (resolution * 2) + 1] =
+              glm::normalize(
+                  glm::cross(glm::vec3(mesh.vertices[v1_hneg1_idx].position -
+                                       mesh.vertices[v1_h0_idx].position),
+                             glm::vec3(mesh.vertices[v0_h0_idx].position -
+                                       mesh.vertices[v1_h0_idx].position)));
         }
       }
     }
 
-    // Iterate through vertices again to setup smooth normals
-    for (int v = 1; v < resolution - 1; v++) {
+    // Iterate through vertices make averaged normals
+    for (int v = 0; v < resolution - 1; v++) {
       // Iterate through the vertical levels of the icosphere
       for (int h = 0; h < resolution; h++) {
         // Iterate through each vertex on the current Y plane of the sphere
 
-        glm::vec3 tri_normal_1 = glm::vec3(0, 1, 0);
-        glm::vec3 tri_normal_2 = glm::vec3;
-        glm::vec3 tri_normal_3;
-        if (v == 1) {
+        // Vertices are on the NEXT layer from the triangles
+        int cur_vtx_idx = h + (v * resolution) + 1;
 
-          glm::vec3 tri_normal_1 =
-              tri_normals[(h + ((v - 1) * resolution)) * 2].second;
-          glm::vec3 tri_normal_2 =
-              tri_normals[(h + ((v - 1) * resolution)) * 2].first;
-        }
+        int v0_tri1_idx = ((h + (v * resolution)) * 2);
+        int v0_tri2_idx = v0_tri1_idx + 1;
+        int v1_tri3_idx = ((((h + 1) % resolution) + (v * resolution)) * 2);
+
+        int v2_tri4_idx =
+            (((((h - 1) + resolution) % resolution) + ((v + 1) * resolution)) *
+             2) +
+            1;
+
+        int v3_tri5_idx = (h + ((v + 1) * resolution)) * 2;
+        int v3_tri6_idx = ((h + ((v + 1) * resolution)) * 2) + 1;
+
+        glm::fvec3 sum = glm::fvec3(0, 0, 0);
+
+        sum += tri_normals[v0_tri1_idx];
+        sum += tri_normals[v0_tri2_idx];
+        sum += tri_normals[v1_tri3_idx];
+        sum += tri_normals[v2_tri4_idx];
+        sum += tri_normals[v3_tri5_idx];
+        sum += tri_normals[v3_tri6_idx];
+
+        // if (v0_tri1_idx > tri_normals.size() - 1)
+        //   SPDLOG_ERROR("ERROR: {}", v0_tri1_idx);
+        // if (v0_tri2_idx > tri_normals.size() - 1)
+        //   SPDLOG_ERROR("ERROR: {}", v0_tri2_idx);
+        // if (v1_tri3_idx > tri_normals.size() - 1)
+        //   SPDLOG_ERROR("ERROR: {}", v1_tri3_idx);
+        // if (v2_tri4_idx > tri_normals.size() - 1)
+        //   SPDLOG_ERROR("ERROR: {}", v2_tri4_idx);
+        // if (v3_tri5_idx > tri_normals.size() - 1)
+        //   SPDLOG_ERROR("ERROR: {}", v3_tri5_idx);
+        // if (v3_tri6_idx > tri_normals.size() - 1)
+        //   SPDLOG_ERROR("ERROR: {}", v3_tri6_idx);
+
+        // SPDLOG_INFO("sum: {}, {}, {}, vtx: {}", sum.x, sum.y, sum.z,
+        //             cur_vtx_idx);
+        // SPDLOG_INFO("sum: {}, {}, {}, vtx: {}", glm::normalize(sum).x,
+        //             glm::normalize(sum).y, glm::normalize(sum).z,
+        //             cur_vtx_idx);
+        mesh.vertices[cur_vtx_idx].normal = glm::normalize(sum);
+
+        // SPDLOG_INFO("cur vtx: {}", cur_vtx_idx);
+        // SPDLOG_INFO("v3_tri5_idx: {}", v3_tri5_idx);
+        // SPDLOG_INFO("tri1: ", v0_tri1_idx);
+        // SPDLOG_INFO("tri2: ", v0_tri2_idx);
+        // SPDLOG_INFO("tri3: ", v1_tri3_idx);
       }
     }
+    // int i = 0;
+    // for (auto &n : tri_normals) {
+    //   SPDLOG_INFO("tri normal {} : {}, {}, {}", i, n.x, n.y, n.z);
+    //   i++;
+    // }
     return mesh;
   }
 } // namespace Chemical

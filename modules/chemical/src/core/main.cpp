@@ -62,7 +62,7 @@ int main() {
   GUI::SetupGUI(window.window);
 
   glViewport(0, 0, window_width, window_height);
-  // glEnable(GL_CULL_FACE); disabled backface culling for testing
+  glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
   glEnable(GL_DEPTH_TEST);
   glClearColor(0.3, 0.3, 0.6, 1.0);
@@ -99,55 +99,55 @@ int main() {
 
   glm::mat4 proj = glm::perspective(90.0f, 1280.0f / 720.0f, 0.1f, 1000.0f);
   shader.SetUniformMatrix4FV("v_proj", 1, GL_FALSE, &proj[0][0]);
+  //
+  // std::ifstream collider_vs_file(
+  //     std::format("{}/shaders/ColliderShader.vs", abs_res_dir));
+  //
+  // if (!collider_vs_file) {
+  //   SPDLOG_ERROR(R"(Failed to read file "" : returning 0)");
+  // }
+  //
+  // traits.vs_source =
+  //     std::string((std::istreambuf_iterator<char>(collider_vs_file)),
+  //                 std::istreambuf_iterator<char>());
+  //
+  // collider_vs_file.close();
+  //
+  // std::ifstream collider_fs_file(
+  //     std::format("{}/shaders/ColliderShader.fs", abs_res_dir));
+  //
+  // if (!collider_fs_file) {
+  //   SPDLOG_ERROR(R"(Failed to read file "" : returning 0)");
+  // }
+  //
+  // traits.fs_source =
+  //     std::string((std::istreambuf_iterator<char>(collider_fs_file)),
+  //                 std::istreambuf_iterator<char>());
+  //
+  // collider_fs_file.close();
+  // Shader collider_shader(traits);
+  // if (collider_shader.compile_status == -1)
+  //   throw std::runtime_error("collider Shader failed to compile");
+  //
+  // collider_shader.Bind();
+  //
+  // collider_shader.SetUniformMatrix4FV("v_proj", 1, GL_FALSE, &proj[0][0]);
 
-  std::ifstream collider_vs_file(
-      std::format("{}/shaders/ColliderShader.vs", abs_res_dir));
-
-  if (!collider_vs_file) {
-    SPDLOG_ERROR(R"(Failed to read file "" : returning 0)");
-  }
-
-  traits.vs_source =
-      std::string((std::istreambuf_iterator<char>(collider_vs_file)),
-                  std::istreambuf_iterator<char>());
-
-  collider_vs_file.close();
-
-  std::ifstream collider_fs_file(
-      std::format("{}/shaders/ColliderShader.fs", abs_res_dir));
-
-  if (!collider_fs_file) {
-    SPDLOG_ERROR(R"(Failed to read file "" : returning 0)");
-  }
-
-  traits.fs_source =
-      std::string((std::istreambuf_iterator<char>(collider_fs_file)),
-                  std::istreambuf_iterator<char>());
-
-  collider_fs_file.close();
-  Shader collider_shader(traits);
-  if (collider_shader.compile_status == -1)
-    throw std::runtime_error("collider Shader failed to compile");
-
-  collider_shader.Bind();
-
-  collider_shader.SetUniformMatrix4FV("v_proj", 1, GL_FALSE, &proj[0][0]);
-
-  std::optional<Model> model_opt =
-      ModelLoader::LoadModel("res/models/cube.dae");
-  if (!model_opt)
-    throw std::runtime_error("failed to load model");
-
-  Model &model = model_opt.value();
-  // unsigned int modelvao = model.meshes[0].AsVAO();
-
-  glm::vec3 collision_colour = glm::vec3(0.0f, 1.0f, 0.0f);
-  glm::vec3 not_collision_colour = glm::vec3(1.0f, 0.0f, 0.0f);
+  // std::optional<Model> model_opt =
+  //     ModelLoader::LoadModel("res/models/cube.dae");
+  // if (!model_opt)
+  //   throw std::runtime_error("failed to load model");
+  //
+  // Model &model = model_opt.value();
+  // // unsigned int modelvao = model.meshes[0].AsVAO();
+  //
+  // glm::vec3 collision_colour = glm::vec3(0.0f, 1.0f, 0.0f);
+  // glm::vec3 not_collision_colour = glm::vec3(1.0f, 0.0f, 0.0f);
 
   // for collider shader
-  shader.SetUniform3F("material.diffuse", not_collision_colour.x,
-                      not_collision_colour.y, not_collision_colour.z);
-  shader.SetUniform1UI("material.shininess", 16);
+  // shader.SetUniform3F("material.diffuse", not_collision_colour.x,
+  //                     not_collision_colour.y, not_collision_colour.z);
+  // shader.SetUniform1UI("material.shininess", 16);
 
   camera = std::make_unique<CameraController>(window.window, 0.03f);
   window.SubscribeToCursorPosEvent(
@@ -156,10 +156,11 @@ int main() {
   int collider1_idx = 0;
   int collider2_idx = 0;
 
-  Util::TerrainState terrain;
-  terrain.Generate();
-
-  Mesh icosphere = GenerateIcosphereSmoothNormals(5);
+  // Util::TerrainState terrain;
+  // terrain.Generate();
+  // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  Mesh icosphere = GenerateIcosphereSmoothNormals(30);
+  // Mesh icosphere = GenerateIcosphereFlatNormals(5);
   // GenerateIcosphereSmoothNormals(5);
   unsigned int icosphere_vao = icosphere.AsVAO();
 
@@ -170,6 +171,7 @@ int main() {
 
     // GUI::RenderTerrainStateMenu(terrain);
 
+    // glBindVertexArray(icosphere_vao);
     camera->Update(window.window);
     shader.Bind();
     shader.SetUniformMatrix4FV(
@@ -177,12 +179,14 @@ int main() {
         &glm::inverse(camera->transform.ToMatrix())[0][0]);
     shader.SetUniform3FV("viewPos", 1, &camera->transform.position[0]);
 
+    // glDrawElements(GL_TRIANGLES, icosphere.indices.size(), GL_UNSIGNED_INT,
+    //                nullptr);
     // glBindVertexArray(terrain.GetVAO());
     glBindVertexArray(icosphere_vao);
-    shader.SetUniformMatrix4FV("v_model", 1, GL_FALSE,
-                               &Transform().ToMatrix()[0][0]);
+    shader.SetUniformMatrix4FV("v_model", 1, GL_FALSE, &glm::mat4(1.0f)[0][0]);
     shader.SetUniform3F("material.diffuse", 1, 1, 1);
-    shader.SetUniform1F("material.shininess", 16);
+    shader.SetUniform1UI("material.shininess", 16);
+    glBindVertexArray(icosphere_vao);
 
     glDrawElements(GL_TRIANGLES, icosphere.indices.size(), GL_UNSIGNED_INT,
                    nullptr);

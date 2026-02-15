@@ -9,11 +9,11 @@
 namespace Chemical {
 
   struct Vertex {
-    glm::vec3 position;
-    glm::vec3 normal;
+    glm::fvec3 position;
+    glm::fvec3 normal;
 
-    constexpr Vertex(glm::vec3 position = glm::vec3(1.0f),
-                     glm::vec3 normal = glm::vec3(0.0f))
+    constexpr Vertex(glm::fvec3 position = glm::fvec3(1.0f),
+                     glm::fvec3 normal = glm::fvec3(0.0f))
         : position(position), normal(normal) {}
   };
   struct Mesh {

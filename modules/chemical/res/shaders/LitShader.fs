@@ -23,10 +23,10 @@ struct PointLight {
 vec3 calcPointLight(vec3 viewDir) {
 
 		PointLight light;
-		light.position = vec3(2,40,-2);
-		light.diffuse = vec3(0.3, 0.3, 0.3);
-		light.specular= vec3(1.0, 1.0, 1.0);
-		light.ambient = vec3(0.5, 0.5, 0.5);
+		light.position = vec3(5,5,-5);
+		light.diffuse = vec3(0.8, 0.3, 0.5);
+		light.specular= vec3(1.0, 0.6, 1.0);
+		light.ambient = vec3(0.3, 0.1, 0.2);
 		
     vec3 lightDir = normalize(light.position - f_fragPos);
 
@@ -35,7 +35,7 @@ vec3 calcPointLight(vec3 viewDir) {
 
     vec3 reflectDir = reflect(-lightDir, f_normal); // the reflected direction vector of where the light hits
 
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess - 15);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess );
     vec3 specularResult = light.specular * spec;
 
     return vec3(diffuseResult + specularResult + light.ambient) * material.diffuse;

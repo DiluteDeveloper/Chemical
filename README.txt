@@ -1,3 +1,10 @@
+Game Development 0.18.8
+
+I spent all weekend trying to procedurally generate
+a smooth shaded isosphere mesh (without any help other than
+looking into basic math functions like sin) and I've finally done it!
+I'm gonna go enjoy the little bit of my weekend I have left.
+
 Game Development 0.18.8_i
 
 Intermediate commit; Created
