@@ -1,3 +1,10 @@
+Game Development 0.19.0
+
+Implemented kepler orbit physics.
+todo: add physics manipulation gui,
+add orbit trails,
+add more than 2 celestial bodies (if possible)
+
 Game Development 0.18.8
 
 I spent all weekend trying to procedurally generate

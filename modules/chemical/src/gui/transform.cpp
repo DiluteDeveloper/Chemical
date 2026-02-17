@@ -22,7 +22,7 @@ namespace Chemical {
         ImGui::Text("Position:");
         ImGui::Indent();
         ImGui::DragFloat3(std::format("##{}_position", name->c_str()).c_str(),
-                          &transform->position[0], .05f, -5000, 5000, "%.2f");
+                          &transform->position[0], 5.0f, -50000, 50000, "%.2f");
         ImGui::Unindent();
         ImGui::Text("Rotation:");
         ImGui::Indent();

@@ -1,19 +1,20 @@
-#include "core/input/input.hpp"
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 #include "glad/glad.h"
 #include "glfw/glfw3.h"
 #include "glm/ext/matrix_clip_space.hpp"
-#include "gui/terrain_state_menu.hpp"
+#include "gui/transform.hpp"
+
+#include "physics/kepler_orbit.hpp"
+#include "physics/physics_body.hpp"
 #include "rendering/icosphere.hpp"
 #include "rendering/shader.hpp"
-#include "terrain_state.hpp"
 #include "util/transform.hpp"
 #include <fstream>
 #include <glm/gtc/matrix_transform.hpp>
 
-#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
+#include "physics/kepler_orbit.hpp"
 #include "spdlog/spdlog.h"
 
-#include "rendering/model_loader.hpp"
 #include "util/camera.hpp"
 
 #include "rendering/cube.hpp"
@@ -97,7 +98,7 @@ int main() {
 
   shader.Bind();
 
-  glm::mat4 proj = glm::perspective(90.0f, 1280.0f / 720.0f, 0.1f, 1000.0f);
+  glm::mat4 proj = glm::perspective(90.0f, 1280.0f / 720.0f, 0.1f, 100000.0f);
   shader.SetUniformMatrix4FV("v_proj", 1, GL_FALSE, &proj[0][0]);
   //
   // std::ifstream collider_vs_file(
@@ -149,27 +150,56 @@ int main() {
   //                     not_collision_colour.y, not_collision_colour.z);
   // shader.SetUniform1UI("material.shininess", 16);
 
-  camera = std::make_unique<CameraController>(window.window, 0.03f);
+  camera = std::make_unique<CameraController>(window.window, 0.6f);
   window.SubscribeToCursorPosEvent(
       [&](double x, double y) { camera->CursorPosCallback(x, y); });
   bool selection_first_collider = true;
   int collider1_idx = 0;
   int collider2_idx = 0;
 
+  std::vector<std::pair<Transform *, std::string *>> meshes;
+
   // Util::TerrainState terrain;
   // terrain.Generate();
-  // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-  Mesh icosphere = GenerateIcosphereSmoothNormals(30);
-  // Mesh icosphere = GenerateIcosphereFlatNormals(5);
-  // GenerateIcosphereSmoothNormals(5);
-  unsigned int icosphere_vao = icosphere.AsVAO();
+  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  Mesh small_body = GenerateIcosphereSmoothNormals(15);
+  std::string i1 = "i1";
+  meshes.emplace_back(&small_body.transform, &i1);
+  Mesh large_body = GenerateIcosphereSmoothNormals(15);
+  std::string i2 = "i2";
+  meshes.emplace_back(&large_body.transform, &i2);
 
+  small_body.transform.position.x = 2550; // 149 million kilometers
+  large_body.transform.scale = glm::vec3(1000);
+  small_body.transform.scale = glm::vec3(70);
+
+  Physics::PhysicsBody p_small_body(small_body.transform.position, 100,
+                                    glm::dvec3(0, -0.28f, -0.18f));
+  Physics::PhysicsBody p_large_body(large_body.transform.position, 10000);
+
+  unsigned int icosphere_vao = small_body.AsVAO();
+
+  int i = 0;
   while (!glfwWindowShouldClose(window.window)) {
+
+    i++;
+    if (i % 1 == 0) {
+      for (int it = 0; it < 5; it++) {
+        Physics::ApplyKeplerOrbit(p_small_body, p_large_body);
+
+        p_small_body.position += p_small_body.velocity;
+        p_large_body.position += p_large_body.velocity;
+      }
+    }
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     GUI::BeginFrame();
 
+    // auto b = Physics::CalculateGravitationalForce(icosphere2.transform, 100,
+    //                                               icosphere.transform, 100);
+
     // GUI::RenderTerrainStateMenu(terrain);
+    GUI::RenderTransformWindow(meshes);
 
     // glBindVertexArray(icosphere_vao);
     camera->Update(window.window);
@@ -183,12 +213,16 @@ int main() {
     //                nullptr);
     // glBindVertexArray(terrain.GetVAO());
     glBindVertexArray(icosphere_vao);
-    shader.SetUniformMatrix4FV("v_model", 1, GL_FALSE, &glm::mat4(1.0f)[0][0]);
     shader.SetUniform3F("material.diffuse", 1, 1, 1);
     shader.SetUniform1UI("material.shininess", 16);
-    glBindVertexArray(icosphere_vao);
 
-    glDrawElements(GL_TRIANGLES, icosphere.indices.size(), GL_UNSIGNED_INT,
+    shader.SetUniformMatrix4FV("v_model", 1, GL_FALSE,
+                               &small_body.transform.ToMatrix()[0][0]);
+    glDrawElements(GL_TRIANGLES, small_body.indices.size(), GL_UNSIGNED_INT,
+                   nullptr);
+    shader.SetUniformMatrix4FV("v_model", 1, GL_FALSE,
+                               &large_body.transform.ToMatrix()[0][0]);
+    glDrawElements(GL_TRIANGLES, large_body.indices.size(), GL_UNSIGNED_INT,
                    nullptr);
     glfwPollEvents();
 
