@@ -1,18 +1,16 @@
+#include "physics/simulation_controller.hpp"
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 #include "glad/glad.h"
 #include "glfw/glfw3.h"
 #include "glm/ext/matrix_clip_space.hpp"
 #include "gui/transform.hpp"
 
-#include "physics/kepler_orbit.hpp"
-#include "physics/physics_body.hpp"
 #include "rendering/icosphere.hpp"
 #include "rendering/shader.hpp"
 #include "util/transform.hpp"
 #include <fstream>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "physics/kepler_orbit.hpp"
 #include "spdlog/spdlog.h"
 
 #include "util/camera.hpp"
@@ -29,8 +27,7 @@ std::unique_ptr<CameraController> camera;
 
 GLFWwindow *window_ptr = nullptr;
 
-std::string abs_res_dir =
-    "/home/dilute/Documents/Dev/Chemical/modules/chemical/res";
+std::string abs_res_dir = "/mnt/storage/Chemical/Chemical/modules/chemical/res";
 
 void KeyCallback(int key, int scancode, int action, int mods) {
 
@@ -173,27 +170,18 @@ int main() {
   large_body.transform.scale = glm::vec3(1000);
   small_body.transform.scale = glm::vec3(70);
 
-  Physics::PhysicsBody p_small_body(small_body.transform.position, 100,
-                                    glm::dvec3(0, -0.28f, -0.18f));
-  Physics::PhysicsBody p_large_body(large_body.transform.position, 10000);
+  Physics::SimulationController physics(small_body.transform,
+                                        large_body.transform);
 
   unsigned int icosphere_vao = small_body.AsVAO();
 
-  int i = 0;
   while (!glfwWindowShouldClose(window.window)) {
 
-    i++;
-    if (i % 1 == 0) {
-      for (int it = 0; it < 5; it++) {
-        Physics::ApplyKeplerOrbit(p_small_body, p_large_body);
-
-        p_small_body.position += p_small_body.velocity;
-        p_large_body.position += p_large_body.velocity;
-      }
-    }
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     GUI::BeginFrame();
+
+    physics.Update();
 
     // auto b = Physics::CalculateGravitationalForce(icosphere2.transform, 100,
     //                                               icosphere.transform, 100);

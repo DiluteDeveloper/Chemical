@@ -1,3 +1,10 @@
+Game Development 0.19.1_i
+
+Intermediate commit, working on a physics simulation
+controller for timescale control, restoring initial state,
+setting initial state (eventually through file saves),
+modifying state in realtime and before start of simulation, etc
+
 Game Development 0.19.0
 
 Implemented kepler orbit physics.

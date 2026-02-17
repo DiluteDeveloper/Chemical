@@ -36,9 +36,9 @@ namespace Chemical {
 
       glm::dvec3 acceleration_b = force_b / glm::dvec3(b.mass);
 
-      SPDLOG_INFO("acceleration: {} {} {} | {} {} {}", acceleration_a.x,
-                  acceleration_a.y, acceleration_a.z, acceleration_b.x,
-                  acceleration_b.y, acceleration_b.z);
+      // SPDLOG_INFO("acceleration: {} {} {} | {} {} {}", acceleration_a.x,
+      //             acceleration_a.y, acceleration_a.z, acceleration_b.x,
+      //             acceleration_b.y, acceleration_b.z);
 
       // glm::dvec3 velocity_a = acceleration_a - acceleration_b;
       // glm::dvec3 velocity_b = acceleration_b - acceleration_a;
