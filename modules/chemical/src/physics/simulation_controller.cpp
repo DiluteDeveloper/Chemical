@@ -1,28 +1,148 @@
 #include "simulation_controller.hpp"
 #include "gui/physics.hpp"
 #include "physics/kepler_orbit.hpp"
+#include "spdlog/spdlog.h"
+#include <chrono>
 
 namespace Chemical {
 
   namespace Physics {
-    SimulationController::SimulationController(Transform &body_a,
-                                               Transform &body_b)
-        : rt_body_a(body_a.position, 100, glm::dvec3(0, -0.28f, -0.18f)),
-          rt_body_b(body_b.position, 10000) {}
+    using namespace std::chrono;
+    using clock = high_resolution_clock;
+
+    double delta_time = 0;
+    clock::time_point old_time;
+    double time_accumulator = 0;
+
+    SimulationController::SimulationController() {
+
+      initial_body_a.mass = 100;
+      initial_transform_a.position.x = 2550;
+      initial_body_a.velocity = glm::dvec3(0, 0.0f, -5.58f);
+      initial_body_b.mass = 10000;
+
+      initial_transform_b.scale =
+          glm::vec3(std::sqrt(std::abs(initial_body_b.mass)) + 10);
+      initial_transform_a.scale =
+          glm::vec3(std::sqrt(std::abs(initial_body_a.mass)) + 10);
+
+      old_time = clock::now();
+
+      Reset();
+    }
+    void SimulationController::Play() {
+      Reset();
+      running = true;
+    }
+    void SimulationController::Reset() {
+      rt_body_a = initial_body_a;
+      rt_body_b = initial_body_b;
+
+      rt_transform_a = initial_transform_a;
+      rt_transform_b = initial_transform_b;
+
+      running = false;
+    }
+    void SimulationController::Pause() {
+      running = false;
+    }
+
+    constexpr double target_frame_time = 1 / 60.0f;
 
     void SimulationController::Update() {
+      clock::time_point new_time = clock::now();
+      delta_time = std::chrono::duration<float>(new_time - old_time).count();
+      old_time = new_time;
+
       GUI::RenderPhysicsMenu(*this);
       if (running) {
-        PhysicsUpdate();
+        time_accumulator += delta_time;
+        if (time_accumulator >= target_frame_time) {
+          PhysicsUpdate();
+          time_accumulator -= target_frame_time;
+        }
       }
     }
     void SimulationController::PhysicsUpdate() {
       for (unsigned int i = 0; i < speed_multiplier; i++) {
-        Physics::ApplyKeplerOrbit(rt_body_a, rt_body_b);
 
-        rt_body_a.position += rt_body_a.velocity;
-        rt_body_b.position += rt_body_b.velocity;
+        Physics::ApplyKeplerOrbit(rt_transform_a.position,
+                                  rt_transform_b.position, rt_body_a,
+                                  rt_body_b);
+
+        rt_transform_a.position += rt_body_a.velocity;
+
+        rt_transform_b.position += rt_body_b.velocity;
       }
+    }
+    Transform &SimulationController::GetActiveTransformA() {
+      if (running)
+        return rt_transform_a;
+      else
+        return initial_transform_a;
+    }
+    Transform &SimulationController::GetActiveTransformB() {
+      if (running)
+        return rt_transform_b;
+      else
+        return initial_transform_b;
+    }
+    float SimulationController::GetActiveMassA() {
+      if (running)
+        return rt_body_a.mass;
+      else
+        return initial_body_a.mass;
+    }
+    float SimulationController::GetActiveMassB() {
+      if (running)
+        return rt_body_b.mass;
+      else
+        return initial_body_b.mass;
+    }
+    void SimulationController::SetActiveMassA(float mass) {
+      if (running) {
+
+        rt_body_a.mass = mass;
+        rt_transform_a.scale = glm::vec3(std::sqrt(std::abs(mass)) + 10);
+      } else {
+        initial_body_a.mass = mass;
+        initial_transform_a.scale = glm::vec3(std::sqrt(std::abs(mass)) + 10);
+      }
+    }
+    void SimulationController::SetActiveMassB(float mass) {
+      if (running) {
+
+        rt_body_b.mass = mass;
+        rt_transform_b.scale = glm::vec3(std::sqrt(std::abs(mass)) + 10);
+      } else {
+        initial_body_b.mass = mass;
+        initial_transform_b.scale = glm::vec3(std::sqrt(std::abs(mass)) + 10);
+      }
+    }
+
+    glm::vec3 SimulationController::GetActiveVelocityA() {
+      if (running)
+        return rt_body_a.velocity;
+      else
+        return initial_body_a.velocity;
+    }
+    glm::vec3 SimulationController::GetActiveVelocityB() {
+      if (running)
+        return rt_body_b.velocity;
+      else
+        return initial_body_b.velocity;
+    }
+    void SimulationController::SetActiveVelocityA(const glm::vec3 &velocity) {
+      if (running)
+        rt_body_a.velocity = velocity;
+      else
+        initial_body_a.velocity = velocity;
+    }
+    void SimulationController::SetActiveVelocityB(const glm::vec3 &velocity) {
+      if (running)
+        rt_body_b.velocity = velocity;
+      else
+        initial_body_b.velocity = velocity;
     }
 
   } // namespace Physics

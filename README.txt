@@ -1,3 +1,10 @@
+Game Development 0.19.1
+
+Added physics control settings and simulation controller,
+simulation now runs at 60fps regardless of game framerate;
+need to add delta time to camera so speed of camera works like this too
+and also maybe add a camera control that orbits around a celestial body
+
 Game Development 0.19.1_i
 
 Intermediate commit, working on a physics simulation

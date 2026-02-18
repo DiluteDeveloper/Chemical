@@ -2,7 +2,6 @@
 
 #include "glm/geometric.hpp"
 #include "physics/physics_body.hpp"
-#include "spdlog/spdlog.h"
 
 namespace Chemical {
 
@@ -12,10 +11,12 @@ namespace Chemical {
     constexpr double GRAVITY = 9.81f;
 
     // Force from B gravitating towards A
-    inline void ApplyKeplerOrbit(PhysicsBody &a, PhysicsBody &b) {
+    inline void ApplyKeplerOrbit(const glm::vec3 &position_a,
+                                 const glm::vec3 &position_b, PhysicsBody &a,
+                                 PhysicsBody &b) {
 
       // relative position vector A <- B
-      glm::dvec3 rel = a.position - b.position;
+      glm::dvec3 rel = position_a - position_b;
 
       // Unit vector A <- B
       glm::dvec3 unit_vector = glm::normalize(rel);
@@ -47,9 +48,9 @@ namespace Chemical {
       // velocity_a.y,
       //             velocity_a.z, velocity_b.x, velocity_b.y, velocity_b.z);
 
-      a.velocity += acceleration_a / glm::dvec3(200.0f);
+      a.velocity += acceleration_a;
 
-      b.velocity += acceleration_b / glm::dvec3(200.0f);
+      b.velocity += acceleration_b;
     }
   } // namespace Physics
 } // namespace Chemical

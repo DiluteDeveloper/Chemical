@@ -73,7 +73,7 @@ namespace Chemical {
     }
 
     SPDLOG_INFO(R"(Turning on VSync for window "{}")", title);
-    glfwSwapInterval(0);
+    glfwSwapInterval(1);
 
     glfwSetWindowUserPointer(window, this);
 

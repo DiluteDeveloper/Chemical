@@ -27,7 +27,10 @@ std::unique_ptr<CameraController> camera;
 
 GLFWwindow *window_ptr = nullptr;
 
-std::string abs_res_dir = "/mnt/storage/Chemical/Chemical/modules/chemical/res";
+// std::string abs_res_dir =
+// "/mnt/storage/Chemical/Chemical/modules/chemical/res"; std::string
+std::string abs_res_dir =
+    "/home/dilute/Documents/Dev/Chemical/modules/chemical/res/";
 
 void KeyCallback(int key, int scancode, int action, int mods) {
 
@@ -147,7 +150,7 @@ int main() {
   //                     not_collision_colour.y, not_collision_colour.z);
   // shader.SetUniform1UI("material.shininess", 16);
 
-  camera = std::make_unique<CameraController>(window.window, 0.6f);
+  camera = std::make_unique<CameraController>(window.window, 10.06f);
   window.SubscribeToCursorPosEvent(
       [&](double x, double y) { camera->CursorPosCallback(x, y); });
   bool selection_first_collider = true;
@@ -161,17 +164,16 @@ int main() {
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   Mesh small_body = GenerateIcosphereSmoothNormals(15);
   std::string i1 = "i1";
-  meshes.emplace_back(&small_body.transform, &i1);
+  // meshes.emplace_back(&small_body.transform, &i1);
   Mesh large_body = GenerateIcosphereSmoothNormals(15);
   std::string i2 = "i2";
-  meshes.emplace_back(&large_body.transform, &i2);
+  // meshes.emplace_back(&large_body.transform, &i2);
 
-  small_body.transform.position.x = 2550; // 149 million kilometers
-  large_body.transform.scale = glm::vec3(1000);
-  small_body.transform.scale = glm::vec3(70);
+  // small_body.transform.position.x = 2550; // 149 million kilometers
+  // large_body.transform.scale = glm::vec3(1000);
+  // small_body.transform.scale = glm::vec3(70);
 
-  Physics::SimulationController physics(small_body.transform,
-                                        large_body.transform);
+  Physics::SimulationController physics;
 
   unsigned int icosphere_vao = small_body.AsVAO();
 
@@ -187,7 +189,7 @@ int main() {
     //                                               icosphere.transform, 100);
 
     // GUI::RenderTerrainStateMenu(terrain);
-    GUI::RenderTransformWindow(meshes);
+    // GUI::RenderTransformWindow(meshes);
 
     // glBindVertexArray(icosphere_vao);
     camera->Update(window.window);
@@ -205,11 +207,11 @@ int main() {
     shader.SetUniform1UI("material.shininess", 16);
 
     shader.SetUniformMatrix4FV("v_model", 1, GL_FALSE,
-                               &small_body.transform.ToMatrix()[0][0]);
+                               &physics.GetActiveTransformA().ToMatrix()[0][0]);
     glDrawElements(GL_TRIANGLES, small_body.indices.size(), GL_UNSIGNED_INT,
                    nullptr);
     shader.SetUniformMatrix4FV("v_model", 1, GL_FALSE,
-                               &large_body.transform.ToMatrix()[0][0]);
+                               &physics.GetActiveTransformB().ToMatrix()[0][0]);
     glDrawElements(GL_TRIANGLES, large_body.indices.size(), GL_UNSIGNED_INT,
                    nullptr);
     glfwPollEvents();

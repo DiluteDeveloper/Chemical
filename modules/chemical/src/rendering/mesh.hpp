@@ -19,7 +19,6 @@ namespace Chemical {
   struct Mesh {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
-    Transform transform;
     std::string name = "default";
     Material material;
 
