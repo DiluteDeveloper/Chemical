@@ -14,6 +14,14 @@ namespace Chemical {
         if (ImGui::Button("Reset")) {
           c.Reset();
         }
+        if (c.IsLogging())
+          ImGui::Text("Currently logging...");
+        else
+          ImGui::Text("Not logging");
+
+        if (ImGui::Button("Toggle Logging"))
+          c.ToggleLogging();
+
       } else {
         if (ImGui::Button("Play")) {
           c.Play();

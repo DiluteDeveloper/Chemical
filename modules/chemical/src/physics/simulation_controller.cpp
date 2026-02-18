@@ -11,10 +11,12 @@ namespace Chemical {
 
     const std::vector<std::string> csv_header = {"distance", "total_force"};
     void SimulationDataLogger::AddDistance(double distance) {
-      distance_data.emplace_back(distance);
+      if (is_logging)
+        distance_data.emplace_back(distance);
     }
     void SimulationDataLogger::AddTotalForce(double total_force) {
-      total_force_data.emplace_back(total_force);
+      if (is_logging)
+        total_force_data.emplace_back(total_force);
     }
     void SimulationDataLogger::Export() {
       if (distance_data.size() == 0 || total_force_data.size() == 0 ||
@@ -86,6 +88,12 @@ namespace Chemical {
     }
     void SimulationController::Pause() {
       running = false;
+    }
+    void SimulationController::ToggleLogging() {
+      logger.is_logging = !logger.is_logging;
+    }
+    bool SimulationController::IsLogging() {
+      return logger.is_logging;
     }
 
     constexpr double target_frame_time = 1 / 60.0f;

@@ -15,6 +15,7 @@ namespace Chemical {
       std::vector<double> total_force_data;
 
     public:
+      bool is_logging = false;
       void AddDistance(double distance);
       void AddTotalForce(double total_force);
       void Export();
@@ -40,6 +41,8 @@ namespace Chemical {
       void Play();
       void Reset();
       void Pause();
+      void ToggleLogging();
+      bool IsLogging();
 
       Transform &GetActiveTransformA();
       Transform &GetActiveTransformB();

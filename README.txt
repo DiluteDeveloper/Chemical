@@ -1,3 +1,10 @@
+Game Development 0.19.3
+
+Need to fix output data just appending to the file
+and create dedicated external directory for output data,
+just fixed some bugs related to absolute value for output data
+and toggle for data logging
+
 Game Development 0.19.2
 
 Added primitive data logger to output CSV for

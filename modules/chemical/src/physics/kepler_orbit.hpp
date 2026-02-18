@@ -54,8 +54,9 @@ namespace Chemical {
 
       b.velocity += acceleration_b;
 
-      logger.AddDistance(length);
-      logger.AddTotalForce(force_a.x + force_a.y + force_a.z);
+      logger.AddDistance(std::abs(length));
+      logger.AddTotalForce(std::abs(force_a.x) + std::abs(force_a.y) +
+                           std::abs(force_a.z));
     }
   } // namespace Physics
 } // namespace Chemical
