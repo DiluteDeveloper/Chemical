@@ -3,10 +3,50 @@
 #include "physics/kepler_orbit.hpp"
 #include "spdlog/spdlog.h"
 #include <chrono>
+#include <fstream>
 
 namespace Chemical {
 
   namespace Physics {
+
+    const std::vector<std::string> csv_header = {"distance", "total_force"};
+    void SimulationDataLogger::AddDistance(double distance) {
+      distance_data.emplace_back(distance);
+    }
+    void SimulationDataLogger::AddTotalForce(double total_force) {
+      total_force_data.emplace_back(total_force);
+    }
+    void SimulationDataLogger::Export() {
+      if (distance_data.size() == 0 || total_force_data.size() == 0 ||
+          distance_data.size() != total_force_data.size())
+        return;
+
+      std::ofstream output("data.csv"); // Create and open file
+
+      if (output.is_open()) {
+
+        int i = 0;
+        for (const std::string &s : csv_header) {
+          output << s;
+          if (i < csv_header.size() - 1)
+            output << ",";
+          i++;
+        }
+        output << std::endl;
+        for (i = 0; i < distance_data.size(); i++) {
+          output << distance_data[i] << ",";
+          output << total_force_data[i] << std::endl;
+        }
+
+        output.close();
+      } else {
+        SPDLOG_ERROR("Unable to export CSV.");
+      }
+
+      total_force_data.clear();
+      distance_data.clear();
+    }
+
     using namespace std::chrono;
     using clock = high_resolution_clock;
 
@@ -35,6 +75,7 @@ namespace Chemical {
       running = true;
     }
     void SimulationController::Reset() {
+      logger.Export();
       rt_body_a = initial_body_a;
       rt_body_b = initial_body_b;
 
@@ -66,7 +107,7 @@ namespace Chemical {
     void SimulationController::PhysicsUpdate() {
       for (unsigned int i = 0; i < speed_multiplier; i++) {
 
-        Physics::ApplyKeplerOrbit(rt_transform_a.position,
+        Physics::ApplyKeplerOrbit(logger, rt_transform_a.position,
                                   rt_transform_b.position, rt_body_a,
                                   rt_body_b);
 

@@ -1,9 +1,9 @@
 #include "physics/simulation_controller.hpp"
+#include <filesystem>
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 #include "glad/glad.h"
 #include "glfw/glfw3.h"
 #include "glm/ext/matrix_clip_space.hpp"
-#include "gui/transform.hpp"
 
 #include "rendering/icosphere.hpp"
 #include "rendering/shader.hpp"
@@ -27,10 +27,8 @@ std::unique_ptr<CameraController> camera;
 
 GLFWwindow *window_ptr = nullptr;
 
-// std::string abs_res_dir =
-// "/mnt/storage/Chemical/Chemical/modules/chemical/res"; std::string
-std::string abs_res_dir =
-    "/home/dilute/Documents/Dev/Chemical/modules/chemical/res/";
+std::string abs_res_dir = "/mnt/storage/Chemical/Chemical/modules/chemical/res";
+// "/home/dilute/Documents/Dev/Chemical/modules/chemical/res/";
 
 void KeyCallback(int key, int scancode, int action, int mods) {
 
@@ -48,8 +46,10 @@ void KeyCallback(int key, int scancode, int action, int mods) {
 }
 
 int main() {
-
   spdlog::set_pattern("%^[%s] [%!] [%#] %$%v");
+
+  SPDLOG_INFO("Application running in working directory \"{}\"",
+              std::filesystem::current_path().c_str());
 
   int window_width = 1080;
   int window_height = 720;

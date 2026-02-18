@@ -2,14 +2,25 @@
 
 #include "physics/physics_body.hpp"
 #include "util/transform.hpp"
-#include <chrono>
+#include <vector>
 
 namespace Chemical {
 
   namespace Physics {
 
-    class SimulationController {
+    class SimulationDataLogger {
 
+      // Distance and total force
+      std::vector<double> distance_data;
+      std::vector<double> total_force_data;
+
+    public:
+      void AddDistance(double distance);
+      void AddTotalForce(double total_force);
+      void Export();
+    };
+
+    class SimulationController {
       void PhysicsUpdate();
       bool running = false;
 
@@ -18,6 +29,8 @@ namespace Chemical {
 
       Transform initial_transform_a;
       Transform initial_transform_b;
+
+      SimulationDataLogger logger;
 
     public:
       SimulationController();

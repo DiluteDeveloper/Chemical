@@ -2,6 +2,7 @@
 
 #include "glm/geometric.hpp"
 #include "physics/physics_body.hpp"
+#include "physics/simulation_controller.hpp"
 
 namespace Chemical {
 
@@ -11,7 +12,8 @@ namespace Chemical {
     constexpr double GRAVITY = 9.81f;
 
     // Force from B gravitating towards A
-    inline void ApplyKeplerOrbit(const glm::vec3 &position_a,
+    inline void ApplyKeplerOrbit(SimulationDataLogger &logger,
+                                 const glm::vec3 &position_a,
                                  const glm::vec3 &position_b, PhysicsBody &a,
                                  PhysicsBody &b) {
 
@@ -51,6 +53,9 @@ namespace Chemical {
       a.velocity += acceleration_a;
 
       b.velocity += acceleration_b;
+
+      logger.AddDistance(length);
+      logger.AddTotalForce(force_a.x + force_a.y + force_a.z);
     }
   } // namespace Physics
 } // namespace Chemical

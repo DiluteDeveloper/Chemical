@@ -1,3 +1,8 @@
+Game Development 0.19.2
+
+Added primitive data logger to output CSV for
+distance relationship to total force
+
 Game Development 0.19.1
 
 Added physics control settings and simulation controller,
