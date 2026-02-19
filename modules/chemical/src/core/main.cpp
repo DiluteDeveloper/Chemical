@@ -27,9 +27,6 @@ std::unique_ptr<CameraController> camera;
 
 GLFWwindow *window_ptr = nullptr;
 
-std::string abs_res_dir = "/mnt/storage/Chemical/Chemical/modules/chemical/res";
-// "/home/dilute/Documents/Dev/Chemical/modules/chemical/res/";
-
 void KeyCallback(int key, int scancode, int action, int mods) {
 
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
@@ -71,7 +68,7 @@ int main() {
   // Input::KeyEventSystem::SubscribeToKeyEvent(KeyCallback);
 
   ShaderTraits traits;
-  std::ifstream file(std::format("{}/shaders/LitShader.vs", abs_res_dir));
+  std::ifstream file("res/shaders/LitShader.vs");
 
   if (!file) {
     SPDLOG_ERROR("Failed to read file \"no name\" : returning 0");
@@ -82,7 +79,7 @@ int main() {
 
   file.close();
 
-  std::ifstream file2(std::format("{}/shaders/LitShader.fs", abs_res_dir));
+  std::ifstream file2("res/shaders/LitShader.fs");
 
   if (!file2) {
     SPDLOG_ERROR(R"(Failed to read file "" : returning 0)");

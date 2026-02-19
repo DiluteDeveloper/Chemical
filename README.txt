@@ -1,3 +1,11 @@
+Game Development 0.19.4
+
+Improved resource directory qol,
+execution directory now modules/chemical
+modules/chemical/sim_data now hosts R scripts
+and simulation data, and simulation data is
+now output with the filename as date and time
+
 Game Development 0.19.3
 
 Need to fix output data just appending to the file

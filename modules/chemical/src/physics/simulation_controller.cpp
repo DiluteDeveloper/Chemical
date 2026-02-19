@@ -9,7 +9,11 @@ namespace Chemical {
 
   namespace Physics {
 
+    using namespace std::chrono;
+    using clock = high_resolution_clock;
+
     const std::vector<std::string> csv_header = {"distance", "total_force"};
+
     void SimulationDataLogger::AddDistance(double distance) {
       if (is_logging)
         distance_data.emplace_back(distance);
@@ -22,8 +26,10 @@ namespace Chemical {
       if (distance_data.size() == 0 || total_force_data.size() == 0 ||
           distance_data.size() != total_force_data.size())
         return;
+      std::string file_path =
+          std::format("sim_data/{:%Y-%m-%d %H:%M:%S}.csv", system_clock::now());
 
-      std::ofstream output("data.csv"); // Create and open file
+      std::ofstream output(file_path); // Create and open file
 
       if (output.is_open()) {
 
@@ -48,9 +54,6 @@ namespace Chemical {
       total_force_data.clear();
       distance_data.clear();
     }
-
-    using namespace std::chrono;
-    using clock = high_resolution_clock;
 
     double delta_time = 0;
     clock::time_point old_time;
