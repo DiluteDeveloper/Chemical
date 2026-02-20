@@ -12,20 +12,44 @@ namespace Chemical {
     using namespace std::chrono;
     using clock = high_resolution_clock;
 
-    const std::vector<std::string> csv_header = {"distance", "total_force"};
+    const std::vector<std::string> csv_header = {
+        "distance",   "acceleration_a", "acceleration_b", "tick_index",
+        "velocity_x", "velocity_y",     "velocity_z"};
 
-    void SimulationDataLogger::AddDistance(double distance) {
+    void SimulationDataLogger::LogDistance(double distance) {
       if (is_logging)
         distance_data.emplace_back(distance);
     }
-    void SimulationDataLogger::AddTotalForce(double total_force) {
-      if (is_logging)
-        total_force_data.emplace_back(total_force);
+    void SimulationDataLogger::LogAccelerationA(const glm::vec3 &a) {
+      if (is_logging) {
+        acceleration_a_data.emplace_back(
+            std::sqrt(std::pow(a.x, 2) + std::pow(a.y, 2) + std::pow(a.z, 2)));
+      }
+    }
+    void SimulationDataLogger::LogAccelerationB(const glm::vec3 &b) {
+      if (is_logging) {
+        acceleration_b_data.emplace_back(
+            std::sqrt(std::pow(b.x, 2) + std::pow(b.y, 2) + std::pow(b.z, 2)));
+      }
+    }
+    void SimulationDataLogger::LogTickIndex(unsigned int idx) {
+      if (is_logging) {
+        tick_index_data.emplace_back(idx);
+      }
+    }
+    void SimulationDataLogger::LogVelocity(const glm::vec3 &velocity) {
+      if (is_logging) {
+        velocity_data.emplace_back(velocity);
+      }
     }
     void SimulationDataLogger::Export() {
-      if (distance_data.size() == 0 || total_force_data.size() == 0 ||
-          distance_data.size() != total_force_data.size())
+      if (distance_data.size() == 0 || acceleration_a_data.size() == 0 ||
+          acceleration_b_data.size() == 0 || tick_index_data.size() == 0 ||
+          velocity_data.size() == 0 ||
+          distance_data.size() != acceleration_a_data.size() ||
+          acceleration_a_data.size() != acceleration_b_data.size())
         return;
+
       std::string file_path =
           std::format("sim_data/{:%Y-%m-%d %H:%M:%S}.csv", system_clock::now());
 
@@ -43,7 +67,12 @@ namespace Chemical {
         output << std::endl;
         for (i = 0; i < distance_data.size(); i++) {
           output << distance_data[i] << ",";
-          output << total_force_data[i] << std::endl;
+          output << acceleration_a_data[i] << ",";
+          output << acceleration_b_data[i] << ",";
+          output << tick_index_data[i] << ",";
+          output << velocity_data[i].x << ",";
+          output << velocity_data[i].y << ",";
+          output << velocity_data[i].z << std::endl;
         }
 
         output.close();
@@ -51,7 +80,8 @@ namespace Chemical {
         SPDLOG_ERROR("Unable to export CSV.");
       }
 
-      total_force_data.clear();
+      acceleration_a_data.clear();
+      acceleration_b_data.clear();
       distance_data.clear();
     }
 
@@ -88,6 +118,7 @@ namespace Chemical {
       rt_transform_b = initial_transform_b;
 
       running = false;
+      tick_idx = 0;
     }
     void SimulationController::Pause() {
       running = false;
@@ -125,6 +156,10 @@ namespace Chemical {
         rt_transform_a.position += rt_body_a.velocity;
 
         rt_transform_b.position += rt_body_b.velocity;
+
+        logger.LogTickIndex(tick_idx);
+
+        tick_idx++;
       }
     }
     Transform &SimulationController::GetActiveTransformA() {

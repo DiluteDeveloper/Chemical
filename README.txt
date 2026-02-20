@@ -1,3 +1,8 @@
+Game Development 0.19.5
+
+Simplified kepler orbit formulas
+and added more data exports 
+
 Game Development 0.19.4
 
 Improved resource directory qol,

@@ -12,18 +12,26 @@ namespace Chemical {
 
       // Distance and total force
       std::vector<double> distance_data;
-      std::vector<double> total_force_data;
+      std::vector<double> acceleration_a_data;
+      std::vector<double> acceleration_b_data;
+      std::vector<unsigned int> tick_index_data;
+      std::vector<glm::vec3> velocity_data;
 
     public:
       bool is_logging = false;
-      void AddDistance(double distance);
-      void AddTotalForce(double total_force);
+      void LogDistance(double distance);
+      void LogAccelerationA(const glm::vec3 &a);
+      void LogAccelerationB(const glm::vec3 &b);
+      void LogTickIndex(unsigned int idx);
+      void LogVelocity(const glm::vec3 &velocity);
       void Export();
     };
 
     class SimulationController {
       void PhysicsUpdate();
       bool running = false;
+
+      unsigned int tick_idx = 0;
 
       Transform rt_transform_a;
       Transform rt_transform_b;

@@ -28,35 +28,31 @@ namespace Chemical {
                                 std::pow(rel.z, 2));
 
       // Force to apply to A
-      glm::dvec3 force_a =
-          ((-GRAVITY * a.mass * b.mass) / std::pow(length, 2)) * unit_vector;
+      // glm::dvec3 force_a =
+      //     ((-GRAVITY * a.mass * b.mass) / std::pow(length, 2)) * unit_vector;
+
+      // the mass of an object can be removed from the force equation as ma=f,
+      // as in, the product of mass and acceleration is force, mass is on the
+      // left side (m) and its in the formula for force
+
+      glm::dvec3 acceleration_a =
+          ((-GRAVITY * b.mass) / std::pow(length, 2)) * unit_vector;
 
       // Force to apply to B
-      glm::dvec3 force_b =
-          ((GRAVITY * a.mass * b.mass) / std::pow(length, 2)) * unit_vector;
+      glm::dvec3 acceleration_b =
+          ((GRAVITY * a.mass) / std::pow(length, 2)) * unit_vector;
 
-      glm::dvec3 acceleration_a = force_a / glm::dvec3(a.mass);
-
-      glm::dvec3 acceleration_b = force_b / glm::dvec3(b.mass);
-
-      // SPDLOG_INFO("acceleration: {} {} {} | {} {} {}", acceleration_a.x,
-      //             acceleration_a.y, acceleration_a.z, acceleration_b.x,
-      //             acceleration_b.y, acceleration_b.z);
-
-      // glm::dvec3 velocity_a = acceleration_a - acceleration_b;
-      // glm::dvec3 velocity_b = acceleration_b - acceleration_a;
-
-      // SPDLOG_INFO("velocity: {} {} {} | {} {} {}", velocity_a.x,
-      // velocity_a.y,
-      //             velocity_a.z, velocity_b.x, velocity_b.y, velocity_b.z);
-
+      // glm::dvec3 acceleration_a = force_a / glm::dvec3(a.mass);
+      //
+      // glm::dvec3 acceleration_b = force_b / glm::dvec3(b.mass);
       a.velocity += acceleration_a;
 
       b.velocity += acceleration_b;
 
-      logger.AddDistance(std::abs(length));
-      logger.AddTotalForce(std::abs(force_a.x) + std::abs(force_a.y) +
-                           std::abs(force_a.z));
+      logger.LogDistance(std::abs(length));
+      logger.LogAccelerationA(acceleration_a);
+      logger.LogAccelerationB(acceleration_b);
+      logger.LogVelocity(a.velocity);
     }
   } // namespace Physics
 } // namespace Chemical
