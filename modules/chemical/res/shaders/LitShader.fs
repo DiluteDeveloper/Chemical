@@ -24,9 +24,9 @@ vec3 calcPointLight(vec3 viewDir) {
 
 		PointLight light;
 		light.position = vec3(5,5,-5);
-		light.diffuse = vec3(0.8, 0.3, 0.5);
-		light.specular= vec3(1.0, 0.6, 1.0);
-		light.ambient = vec3(0.3, 0.1, 0.2);
+		light.diffuse = vec3(0.8, 0.8, 0.8);
+		light.specular= vec3(1.0, 1.0, 1.0);
+		light.ambient = vec3(0.1, 0.1, 0.1);
 		
     vec3 lightDir = normalize(light.position - f_fragPos);
 

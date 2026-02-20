@@ -34,8 +34,8 @@ namespace Chemical {
     glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, 0);
     glVertexArrayAttribFormat(vao, 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float));
 
-    // glDeleteBuffers(1, &vbo);
-    // glDeleteBuffers(1, &ibo);
+    glDeleteBuffers(1, &vbo);
+    glDeleteBuffers(1, &ibo);
     return vao;
   }
 } // namespace Chemical

@@ -1,6 +1,6 @@
 #include "physics.hpp"
-#include "physics/physics_body.hpp"
 #include <imgui/imgui.h>
+
 namespace Chemical {
   namespace GUI {
     void RenderPhysicsMenu(Physics::SimulationController &c) {

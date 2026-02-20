@@ -1,6 +1,7 @@
 #pragma once
 
 #include "physics/physics_body.hpp"
+#include "rendering/orbit_line_mesh.hpp"
 #include "util/transform.hpp"
 #include <vector>
 
@@ -30,6 +31,7 @@ namespace Chemical {
     class SimulationController {
       void PhysicsUpdate();
       bool running = false;
+      bool paused = false;
 
       unsigned int tick_idx = 0;
 
@@ -42,6 +44,12 @@ namespace Chemical {
       SimulationDataLogger logger;
 
     public:
+      std::vector<glm::vec3> positions_a;
+      std::vector<glm::vec3> positions_b;
+
+      OrbitLineMesh orbit_line_a;
+      OrbitLineMesh orbit_line_b;
+
       SimulationController();
 
       void Update();

@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "material.hpp"
-#include "util/transform.hpp"
 
 namespace Chemical {
 

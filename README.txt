@@ -1,3 +1,18 @@
+Game Development 0.20.0
+
+Added orbit trails to simulation
+Added graphical controls in GUI
+Changed light colour to white
+Added Line shader
+Slightly changed shader exception handling
+Removed old commented code from main
+Now rendering bodies normally instead of wireframe
+Added new paused bool to simulation controller
+Simulation controller now logs position A and
+position B values to its own vectors of those values,
+but only every 5th physics tick
+Now actually deleting unused vertex buffers
+
 Game Development 0.19.5
 
 Simplified kepler orbit formulas

@@ -108,6 +108,7 @@ namespace Chemical {
     void SimulationController::Play() {
       Reset();
       running = true;
+      paused = false;
     }
     void SimulationController::Reset() {
       logger.Export();
@@ -118,10 +119,17 @@ namespace Chemical {
       rt_transform_b = initial_transform_b;
 
       running = false;
+      paused = false;
       tick_idx = 0;
+
+      positions_a.clear();
+      positions_b.clear();
+
+      orbit_line_a.Reset();
+      orbit_line_b.Reset();
     }
     void SimulationController::Pause() {
-      running = false;
+      paused = !paused;
     }
     void SimulationController::ToggleLogging() {
       logger.is_logging = !logger.is_logging;
@@ -138,7 +146,7 @@ namespace Chemical {
       old_time = new_time;
 
       GUI::RenderPhysicsMenu(*this);
-      if (running) {
+      if (running && !paused) {
         time_accumulator += delta_time;
         if (time_accumulator >= target_frame_time) {
           PhysicsUpdate();
@@ -156,6 +164,12 @@ namespace Chemical {
         rt_transform_a.position += rt_body_a.velocity;
 
         rt_transform_b.position += rt_body_b.velocity;
+
+        if (tick_idx % 5 == 0) {
+
+          positions_a.emplace_back(rt_transform_a.position);
+          positions_b.emplace_back(rt_transform_b.position);
+        }
 
         logger.LogTickIndex(tick_idx);
 
