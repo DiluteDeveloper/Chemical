@@ -1,0 +1,40 @@
+[package]
+name = "chemical_rs"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0"
+winit = { version = "0.30", features = ["android-native-activity"] }
+env_logger = "0.10"
+log = "0.4"
+wgpu = "28.0"
+pollster = "0.3"
+
+# [patch.crates-io]
+# js-sys = { version = "0.3.87" }
+
+# This first line means to only include these dependencies
+# if we are compiling for web assembly (WASM)
+# [target.'cfg(target_arch = "wasm32")'.dependencies]
+# # Send errors to the javascript console
+# console_error_panic_hook = "0.1.6"
+# # Implements the log api, sends all logs to the javascript console
+# console_log = "1.0"
+# # Adds webgl feature to wgpu package
+# wgpu = { version = "28.0", features = ["webgl"]}
+# # Allows use of Rust functions in javascript and adds boilerplate code
+# # to tell the web how to use our rust crate
+# wasm-bindgen = "0.2.96"
+# wasm-bindgen-futures = "0.4.30"
+# web-sys = { version = "0.3", features = [
+#     "Document",
+#     "Window",
+#     "Element",
+# ]}
+
+# [lib]
+# crate-type = ["cdylib", "rlib"]
+
+[profile.release]
+strip = true
