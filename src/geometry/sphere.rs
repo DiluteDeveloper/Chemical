@@ -5,6 +5,7 @@ use log::info;
 const PI: f32 = 3.141592;
 
 // Resolution represents how many triangles per horizontal loop and vertical half loop
+#[allow(unused)]
 pub fn generate_vertex_sphere(resolution: u8) -> anyhow::Result<Vec<vertex::Vertex>, String> {
     let sized_res = resolution as u32;
     if sized_res <= 2 {

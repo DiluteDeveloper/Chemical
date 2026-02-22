@@ -1,3 +1,7 @@
+### chemical_rs 0.5.1
+
+Added flags to ignore unused code
+
 ### chemical_rs 0.5.0
 
 Added sphere mesh generation,

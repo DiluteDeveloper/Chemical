@@ -32,6 +32,7 @@ pub struct IndexMesh {
     indices_len: u32,
 }
 
+#[allow(dead_code)]
 pub struct VertexMesh {
     vertex_buffer: wgpu::Buffer,
     vertices_len: u32,
@@ -58,6 +59,7 @@ impl IndexMesh {
     }
 }
 impl VertexMesh {
+    #[allow(unused)]
     pub fn new(vertices: &[Vertex], device: &wgpu::Device) -> Self {
         Self {
             vertex_buffer: device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
