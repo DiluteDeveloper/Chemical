@@ -1,4 +1,10 @@
 // Vertex shader
+struct CameraUniform {
+    view_proj: mat4x4<f32>,
+};
+// Group is the order specified in the render pipeline layout descriptor
+@group(1) @binding(0) 
+var<uniform> camera: CameraUniform;
 
 struct VertexInput {
 	@location(0) position: vec3<f32>,
@@ -15,7 +21,7 @@ fn vs_main(
 	in: VertexInput
 ) -> VertexOutput {
     var out: VertexOutput;
-    out.position = vec4<f32>(in.position, 1.0);
+    out.position = camera.view_proj * vec4<f32>(in.position, 1.0);
 		out.tex_coords = in.tex_coords;
     return out;
 }

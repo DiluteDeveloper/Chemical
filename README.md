@@ -1,3 +1,7 @@
+### chemical_rs 0.4.0
+
+Jumping off the diving board
+
 ### chemical_rs 0.3.0
 
 Working through more boilerplate and guides

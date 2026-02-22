@@ -3,6 +3,7 @@ use log::LevelFilter;
 use winit::event_loop::EventLoop;
 
 pub mod app;
+mod camera;
 mod mesh;
 mod state;
 mod texture;
