@@ -1,3 +1,9 @@
+### chemical_rs 0.5.0
+
+Added sphere mesh generation,
+removed texture support and
+moved around some stuff
+
 ### chemical_rs 0.4.0
 
 Jumping off the diving board

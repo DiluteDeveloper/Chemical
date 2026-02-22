@@ -4,9 +4,16 @@ use winit::event_loop::EventLoop;
 
 pub mod app;
 mod camera;
-mod mesh;
+mod geometry {
+    pub mod sphere;
+    pub mod vertex;
+}
+mod rendering {
+    pub mod mesh;
+    pub mod vertex;
+}
 mod state;
-mod texture;
+//mod texture;
 use app::App;
 
 pub fn run() -> anyhow::Result<()> {
