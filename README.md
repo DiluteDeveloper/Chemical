@@ -1,3 +1,8 @@
+### chemical_rs 0.5.2_i
+
+Working on camera controller;
+linear algebra is hard
+
 ### chemical_rs 0.5.1
 
 Added flags to ignore unused code

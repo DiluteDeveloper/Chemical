@@ -1,22 +1,28 @@
 pub struct Camera {
-    pub eye: cgmath::Point3<f32>,
-    pub target: cgmath::Point3<f32>,
-    pub up: cgmath::Vector3<f32>,
-    pub aspect: f32,
-    pub fovy: f32,
-    pub znear: f32,
-    pub zfar: f32,
+    pub position: cgmath::Point3<f32>,
+    pub rotation: cgmath::Euler<cgmath::Rad<f32>>,
+
+    proj: cgmath::Matrix4<f32>,
 }
 
-impl Camera {
-    fn build_view_projection_matrix(&self) -> cgmath::Matrix4<f32> {
-        // 1.
-        let view = cgmath::Matrix4::look_at_rh(self.eye, self.target, self.up);
-        // 2.
-        let proj = cgmath::perspective(cgmath::Deg(self.fovy), self.aspect, self.znear, self.zfar);
+use cgmath::EuclideanSpace;
 
-        // 3.
-        return OPENGL_TO_WGPU_MATRIX * proj * view;
+impl Camera {
+    fn to_matrix(&self) -> Option<cgmath::Matrix4<f32>> {
+        let translation: cgmath::Matrix4<f32> =
+            cgmath::Matrix4::from_translation(self.position.to_vec());
+
+        let view = (translation * cgmath::Matrix4::from(self.rotation)).invert()?;
+
+        return Some(OPENGL_TO_WGPU_MATRIX * self.proj * view);
+    }
+
+    pub fn new(aspect: f32, fov: f32, znear: f32, zfar: f32) -> Self {
+        Self {
+            position: (0.0, 0.0, 0.0).into(),
+            rotation: cgmath::Euler::new(cgmath::Rad(0.0), cgmath::Rad(0.0), cgmath::Rad(0.0)),
+            proj: cgmath::perspective(cgmath::Deg(fov), aspect, znear, zfar),
+        }
     }
 }
 
@@ -47,7 +53,7 @@ impl CameraUniform {
     }
 
     pub fn update_view_proj(&mut self, camera: &Camera) {
-        self.view_proj = camera.build_view_projection_matrix().into();
+        self.view_proj = camera.to_matrix().unwrap().into();
     }
 }
 pub struct CameraController {
@@ -58,6 +64,7 @@ pub struct CameraController {
     is_right_pressed: bool,
 }
 
+use cgmath::{InnerSpace, SquareMatrix};
 use winit::keyboard::KeyCode;
 
 impl CameraController {
@@ -94,34 +101,35 @@ impl CameraController {
     }
 
     pub fn update_camera(&self, camera: &mut Camera) {
-        use cgmath::InnerSpace;
-        let forward = camera.target - camera.eye;
-        let forward_norm = forward.normalize();
+        // Convert Euler to 3x3 rotation matrix
+        let rot_matrix: cgmath::Matrix3<f32> = cgmath::Matrix3::from(camera.rotation);
+
+        // Apply rotation to local forward vector
+        let forward = rot_matrix * cgmath::Vector3::new(0.0, 0.0, -1.0);
+        let forward_norm = forward.normalize_to(1.0);
         let forward_mag = forward.magnitude();
+        let up = rot_matrix * cgmath::Vector3::new(0.0, 1.0, 0.0);
+        let up_norm = up.normalize_to(1.0);
 
         // Prevents glitching when the camera gets too close to the
         // center of the scene.
         if self.is_forward_pressed && forward_mag > self.speed {
-            camera.eye += forward_norm * self.speed;
+            camera.position += forward_norm * self.speed;
         }
         if self.is_backward_pressed {
-            camera.eye -= forward_norm * self.speed;
+            camera.position -= forward_norm * self.speed;
         }
 
-        let right = forward_norm.cross(camera.up);
-
-        // Redo radius calc in case the forward/backward is pressed.
-        let forward = camera.target - camera.eye;
-        let forward_mag = forward.magnitude();
+        let right = forward_norm.cross(up_norm);
 
         if self.is_right_pressed {
             // Rescale the distance between the target and the eye so
             // that it doesn't change. The eye, therefore, still
             // lies on the circle made by the target and eye.
-            camera.eye = camera.target - (forward + right * self.speed).normalize() * forward_mag;
+            camera.position += (right * self.speed).normalize() * 0.01;
         }
         if self.is_left_pressed {
-            camera.eye = camera.target - (forward - right * self.speed).normalize() * forward_mag;
+            camera.position -= (right * self.speed).normalize() * 0.01;
         }
     }
 }
