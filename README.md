@@ -1,3 +1,8 @@
+### chemical_rs 0.6.0
+
+Finished camera controller and
+a bunch of other changes
+
 ### chemical_rs 0.5.2_i
 
 Working on camera controller;

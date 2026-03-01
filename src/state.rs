@@ -2,29 +2,29 @@ use log::info;
 use std::sync::Arc;
 use winit::{event_loop::ActiveEventLoop, keyboard::KeyCode, window::Window};
 
+use crate::utility::fps_counter::FPSCounter;
+
 use crate::camera;
 use crate::geometry::{sphere, vertex};
 use crate::rendering::mesh::{self, Renderable};
-//use crate::texture;
 use wgpu::util::DeviceExt;
 
-// This will store the state of our game
 pub struct State {
-    surface: wgpu::Surface<'static>,
+    pub surface: wgpu::Surface<'static>,
     device: wgpu::Device,
     queue: wgpu::Queue,
     config: wgpu::SurfaceConfiguration,
     is_surface_configured: bool,
     render_pipeline: [wgpu::RenderPipeline; 2],
     is_alternate_pipeline_active: bool,
-    pub window: Arc<Window>,
+    window: Arc<Window>,
     mesh: mesh::IndexMesh,
-    //diffuse_bind_group: wgpu::BindGroup,
     camera: camera::Camera,
-    camera_uniform: camera::CameraUniform,
     camera_buffer: wgpu::Buffer,
     camera_bind_group: wgpu::BindGroup,
-    camera_controller: camera::CameraController,
+    pub camera_controller: camera::CameraController,
+    camera_uniform: [[f32; 4]; 4],
+    fps_counter: FPSCounter,
 }
 
 impl State {
@@ -66,6 +66,13 @@ impl State {
             .await?;
 
         let surface_caps = surface.get_capabilities(&adapter);
+        let mut present_mode_idx = 0;
+
+        for (i, present_mode) in surface_caps.present_modes.iter().enumerate() {
+            if (*present_mode) == wgpu::PresentMode::AutoVsync {
+                present_mode_idx = i;
+            }
+        }
         // Shader code in this tutorial assumes an sRGB surface texture. Using a different
         // one will result in all the colors coming out darker. If you want to support non
         // sRGB surfaces, you'll need to account for that when drawing to the frame.
@@ -80,64 +87,18 @@ impl State {
             format: surface_format,
             width: size.width,
             height: size.height,
-            present_mode: surface_caps.present_modes[0],
+            present_mode: surface_caps.present_modes[present_mode_idx],
             alpha_mode: surface_caps.alpha_modes[0],
             view_formats: vec![],
             desired_maximum_frame_latency: 2,
         };
-        //let diffuse_bytes = include_bytes!("happy-tree.png");
-        //let diffuse_texture =
-        //    texture::Texture::from_bytes(&device, &queue, diffuse_bytes, "happy_tree").unwrap();
-
-        //let texture_bind_group_layout =
-        //    device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-        //        entries: &[
-        //            wgpu::BindGroupLayoutEntry {
-        //                binding: 0,
-        //                visibility: wgpu::ShaderStages::FRAGMENT,
-        //                ty: wgpu::BindingType::Texture {
-        //                    multisampled: false,
-        //                    view_dimension: wgpu::TextureViewDimension::D2,
-        //                    sample_type: wgpu::TextureSampleType::Float { filterable: true },
-        //                },
-        //                count: None,
-        //            },
-        //            wgpu::BindGroupLayoutEntry {
-        //                binding: 1,
-        //                visibility: wgpu::ShaderStages::FRAGMENT,
-        //                // This should match the filterable field of the
-        //                // corresponding Texture entry above.
-        //                ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
-        //                count: None,
-        //            },
-        //        ],
-        //        label: Some("texture_bind_group_layout"),
-        //    });
-        //let diffuse_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
-        //    layout: &texture_bind_group_layout,
-        //    entries: &[
-        //        wgpu::BindGroupEntry {
-        //            binding: 0,
-        //            resource: wgpu::BindingResource::TextureView(&diffuse_texture.view),
-        //        },
-        //        wgpu::BindGroupEntry {
-        //            binding: 1,
-        //            resource: wgpu::BindingResource::Sampler(&diffuse_texture.sampler),
-        //        },
-        //    ],
-        //    label: Some("diffuse_bind_group"),
-        //});
-        //let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
-        //    label: Some("Shader"),
-        //    source: wgpu::ShaderSource::Wgsl(include_str!("shader.wgsl").into()),
-        //});
         let shader = device.create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
         let shader2 = device.create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
 
-        let camera =
+        let mut camera =
             camera::Camera::new(config.width as f32 / config.height as f32, 45.0, 0.1, 100.0);
-        let mut camera_uniform = camera::CameraUniform::new();
-        camera_uniform.update_view_proj(&camera);
+        camera.position = (0.0, 0.0, 10.0).into();
+        let camera_uniform = camera.to_matrix().unwrap().into();
 
         let camera_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Camera Buffer"),
@@ -224,7 +185,7 @@ impl State {
         }
         let shader2_render_pipeline = device.create_render_pipeline(&render_pipeline_descriptor);
 
-        let camera_controller = camera::CameraController::new(0.02);
+        let camera_controller = camera::CameraController::new(0.02, 0.002, 0.2);
 
         let (vertices, indices) = sphere::generate_index_sphere(255)
             .map_err(|e| anyhow::anyhow!("Failed to generate vertex sphere: {}", e))?;
@@ -242,10 +203,11 @@ impl State {
             render_pipeline: [shader_render_pipeline, shader2_render_pipeline],
             window,
             camera,
-            camera_uniform,
             camera_buffer,
             camera_bind_group,
             camera_controller,
+            camera_uniform,
+            fps_counter: FPSCounter::new(),
         })
     }
 
@@ -316,28 +278,26 @@ impl State {
     }
     pub fn update(&mut self) {
         self.camera_controller.update_camera(&mut self.camera);
-        self.camera_uniform.update_view_proj(&self.camera);
+        self.camera_uniform = self.camera.to_matrix().unwrap().into();
         self.queue.write_buffer(
             &self.camera_buffer,
             0,
             bytemuck::cast_slice(&[self.camera_uniform]),
         );
+        self.fps_counter.update();
     }
     pub fn handle_key(&mut self, event_loop: &ActiveEventLoop, code: KeyCode, is_pressed: bool) {
         match (code, is_pressed) {
             (KeyCode::Escape, true) => event_loop.exit(),
-            (KeyCode::Space, true) => {
-                self.is_alternate_pipeline_active = !self.is_alternate_pipeline_active
-            }
             _ => {}
         }
-        self.camera_controller.handle_key(code, is_pressed);
+        if self.camera_controller.is_enabled {
+            self.camera_controller.handle_key(code, is_pressed);
+        }
     }
-    pub fn handle_mouse_moved(
-        &self,
-        _event_loop: &ActiveEventLoop,
-        _pos: &winit::dpi::PhysicalPosition<f64>,
-    ) {
-        //info!("Mouse position: {}, {}", pos.x, pos.y);
+    pub fn handle_mouse_moved(&mut self, _event_loop: &ActiveEventLoop, pos: &(f64, f64)) {
+        if self.camera_controller.is_enabled {
+            self.camera_controller.handle_mouse_moved(pos.into());
+        }
     }
 }
