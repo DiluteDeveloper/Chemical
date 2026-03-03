@@ -2,8 +2,8 @@ use log::LevelFilter;
 
 use winit::event_loop::EventLoop;
 
-pub mod app;
 mod camera;
+pub mod core;
 mod geometry {
     pub mod sphere;
     pub mod vertex;
@@ -15,9 +15,7 @@ mod rendering {
 mod utility {
     pub mod fps_counter;
 }
-mod state;
 //mod texture;
-use app::App;
 
 pub fn run() -> anyhow::Result<()> {
     env_logger::Builder::new()

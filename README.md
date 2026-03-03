@@ -1,3 +1,7 @@
+### chemical_rs 0.6.0_i2
+
+changes to structure
+
 ### chemical_rs 0.6.0
 
 Finished camera controller and
