@@ -2,6 +2,10 @@
 
 changes to structure
 
+### chemical_rs 0.7.0_i
+
+Started rewriting main architecture
+
 ### chemical_rs 0.6.0
 
 Finished camera controller and

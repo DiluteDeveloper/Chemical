@@ -16,6 +16,8 @@ pub enum ChemicalEvent {
     MouseUnlockAndShow,
 }
 
+use crate::state::State;
+
 pub struct App {
     engine: Option<engine::ChemicalEngine>,
 
@@ -23,18 +25,9 @@ pub struct App {
     event_loop_proxy: Option<EventLoopProxy<ChemicalEvent>>,
 }
 
-impl App {
-    pub fn new(event_loop_proxy: EventLoopProxy<ChemicalEvent>) -> Self {
-        Self {
-            engine: None,
-            event_loop_proxy: Some(event_loop_proxy),
-        }
-    }
-}
-
 use log::info;
 
-impl ApplicationHandler<ChemicalEvent> for App {
+impl ApplicationHandler<MyEvent> for App {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         let all_monitors = event_loop.available_monitors().collect::<Vec<_>>();
         let target_monitor = all_monitors.get(0).unwrap();
