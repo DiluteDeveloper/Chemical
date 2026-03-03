@@ -17,9 +17,8 @@ pub enum MyEvent {
 }
 
 pub struct App {
-    state: Option<State>,
     proxy: EventLoopProxy<MyEvent>,
-    window: Option<Arc<Window>>,
+    pub(super) window: Option<Arc<Window>>,
     is_mouse_locked: bool,
 }
 
