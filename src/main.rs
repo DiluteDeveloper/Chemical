@@ -1,9 +1,9 @@
 use log::LevelFilter;
 
-use winit::event_loop::EventLoop;
-
 mod camera;
-pub mod core;
+
+mod core;
+
 mod geometry {
     pub mod sphere;
     pub mod vertex;
@@ -15,20 +15,13 @@ mod rendering {
 mod utility {
     pub mod fps_counter;
 }
-//mod texture;
 
-pub fn run() -> anyhow::Result<()> {
+use crate::core::app;
+
+fn main() {
     env_logger::Builder::new()
         .filter_level(LevelFilter::Info) // or Debug, Trace
         .init();
 
-    let event_loop = EventLoop::<app::MyEvent>::with_user_event().build()?;
-    let mut app = App::new(event_loop.create_proxy());
-    event_loop.run_app(&mut app)?;
-
-    Ok(())
-}
-
-fn main() {
-    run().unwrap();
+    app::run().expect("App failed to run");
 }

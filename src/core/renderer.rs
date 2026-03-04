@@ -9,7 +9,7 @@ use crate::geometry::{sphere, vertex};
 use crate::rendering::mesh::{self, Renderable};
 use wgpu::util::DeviceExt;
 
-pub struct State {
+pub struct Renderer {
     pub surface: wgpu::Surface<'static>,
     device: wgpu::Device,
     queue: wgpu::Queue,
@@ -27,8 +27,8 @@ pub struct State {
     fps_counter: FPSCounter,
 }
 
-impl State {
-    pub async fn new(window: Arc<Window>) -> anyhow::Result<State> {
+impl Renderer {
+    pub async fn new(window: Arc<Window>) -> anyhow::Result<Renderer> {
         let size = window.inner_size();
 
         // The instance is a handle to our GPU
@@ -92,8 +92,8 @@ impl State {
             view_formats: vec![],
             desired_maximum_frame_latency: 2,
         };
-        let shader = device.create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
-        let shader2 = device.create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
+        let shader = device.create_shader_module(wgpu::include_wgsl!("../shader.wgsl"));
+        let shader2 = device.create_shader_module(wgpu::include_wgsl!("../shader.wgsl"));
 
         let mut camera =
             camera::Camera::new(config.width as f32 / config.height as f32, 45.0, 0.1, 100.0);

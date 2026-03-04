@@ -1,3 +1,10 @@
+### chemical_rs 0.6.0
+
+Back to being able to compile;
+architecture changed up just
+need to finish migrating some parts in renderer
+to engine; renamed State to Renderer
+
 ### chemical_rs 0.6.0_i2
 
 changes to structure
