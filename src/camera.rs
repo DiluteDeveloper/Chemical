@@ -5,32 +5,34 @@ pub struct Camera {
     proj: cgmath::Matrix4<f32>,
 }
 
+use crate::core::renderer::Renderer;
 use cgmath::{EuclideanSpace, InnerSpace, Rad, Rotation, Rotation3, SquareMatrix};
 
+use log::error;
+
 impl Camera {
-    pub fn to_matrix(&self) -> Option<cgmath::Matrix4<f32>> {
+    pub fn upload_to_renderer(&mut self, renderer: &mut Renderer) {
         let translation_matrix: cgmath::Matrix4<f32> =
             cgmath::Matrix4::from_translation(self.position.to_vec());
-        // let rotation_matrix = cgmath::Matrix4::look_to_rh(
-        //     self.position,
-        //     self.orientation.rotate_vector(-Vector3::unit_z()),
-        //     self.orientation.rotate_vector(Vector3::unit_y()),
-        // );
         let rotation_matrix = cgmath::Matrix4::from(self.orientation);
         let transformation_matrix = translation_matrix * rotation_matrix;
-        // info!(
-        //     "trans: {:?}, rot: {:?}, final: {:?}",
-        //     translation_matrix, rotation_matrix, transformation_matrix
-        // );
-        // let transformation_matrix = cgmath::Matrix4::look_to_rh(
-        //     self.position,
-        //     self.orientation.rotate_vector(-Vector3::unit_z()),
-        //     self.orientation.rotate_vector(Vector3::unit_y()),
-        // );
-        // info!("q: {:?}", self.orientation);
-        // info!("t: {:?}", transformation_matrix);
 
-        return Some(OPENGL_TO_WGPU_MATRIX * self.proj * transformation_matrix.invert()?);
+        let final_matrix = OPENGL_TO_WGPU_MATRIX
+            * self.proj
+            * match transformation_matrix.invert() {
+                Some(m) => m,
+                None => {
+                    error!(
+                        "Transformation matrix failed to invert, resetting camera position and orientation"
+                    );
+                    self.position = (0.0, 0.0, 0.0).into();
+                    self.orientation = (0.0, 0.0, 0.0, -1.0).into();
+                    return;
+                }
+            };
+
+        let renderer_matrix: [[f32; 4]; 4] = final_matrix.into();
+        renderer.upload_camera_transformation_matrix(&renderer_matrix);
     }
 
     pub fn new(aspect: f32, fov: f32, znear: f32, zfar: f32) -> Self {

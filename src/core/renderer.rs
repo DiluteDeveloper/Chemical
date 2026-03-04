@@ -1,10 +1,7 @@
 use log::info;
 use std::sync::Arc;
-use winit::{event_loop::ActiveEventLoop, keyboard::KeyCode, window::Window};
+use winit::window::Window;
 
-use crate::utility::fps_counter::FPSCounter;
-
-use crate::camera;
 use crate::geometry::{sphere, vertex};
 use crate::rendering::mesh::{self, Renderable};
 use wgpu::util::DeviceExt;
@@ -19,16 +16,12 @@ pub struct Renderer {
     is_alternate_pipeline_active: bool,
     window: Arc<Window>,
     mesh: mesh::IndexMesh,
-    camera: camera::Camera,
     camera_buffer: wgpu::Buffer,
     camera_bind_group: wgpu::BindGroup,
-    pub camera_controller: camera::CameraController,
-    camera_uniform: [[f32; 4]; 4],
-    fps_counter: FPSCounter,
 }
 
 impl Renderer {
-    pub async fn new(window: Arc<Window>) -> anyhow::Result<Renderer> {
+    pub(super) async fn new(window: Arc<Window>) -> anyhow::Result<Renderer> {
         let size = window.inner_size();
 
         // The instance is a handle to our GPU
@@ -38,7 +31,7 @@ impl Renderer {
             ..Default::default()
         });
 
-        let surface = instance.create_surface(window.clone()).unwrap();
+        let surface = instance.create_surface(window.clone())?;
 
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
@@ -95,14 +88,11 @@ impl Renderer {
         let shader = device.create_shader_module(wgpu::include_wgsl!("../shader.wgsl"));
         let shader2 = device.create_shader_module(wgpu::include_wgsl!("../shader.wgsl"));
 
-        let mut camera =
-            camera::Camera::new(config.width as f32 / config.height as f32, 45.0, 0.1, 100.0);
-        camera.position = (0.0, 0.0, 10.0).into();
-        let camera_uniform = camera.to_matrix().unwrap().into();
+        let matrix_0: [[f32; 4]; 4] = [[0.0; 4]; 4];
 
         let camera_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Camera Buffer"),
-            contents: bytemuck::cast_slice(&[camera_uniform]),
+            contents: bytemuck::cast_slice(&[matrix_0]),
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
         });
         let camera_bind_group_layout =
@@ -185,8 +175,6 @@ impl Renderer {
         }
         let shader2_render_pipeline = device.create_render_pipeline(&render_pipeline_descriptor);
 
-        let camera_controller = camera::CameraController::new(0.02, 0.002, 0.2);
-
         let (vertices, indices) = sphere::generate_index_sphere(255)
             .map_err(|e| anyhow::anyhow!("Failed to generate vertex sphere: {}", e))?;
 
@@ -202,16 +190,12 @@ impl Renderer {
             is_alternate_pipeline_active: false,
             render_pipeline: [shader_render_pipeline, shader2_render_pipeline],
             window,
-            camera,
             camera_buffer,
             camera_bind_group,
-            camera_controller,
-            camera_uniform,
-            fps_counter: FPSCounter::new(),
         })
     }
 
-    pub fn resize(&mut self, width: u32, height: u32) {
+    pub(super) fn resize(&mut self, width: u32, height: u32) {
         if width > 0 && height > 0 {
             self.config.width = width;
             self.config.height = height;
@@ -220,7 +204,7 @@ impl Renderer {
         }
     }
 
-    pub fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
+    pub(super) fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
         self.window.request_redraw();
 
         if !self.is_surface_configured {
@@ -276,28 +260,8 @@ impl Renderer {
 
         Ok(())
     }
-    pub fn update(&mut self) {
-        self.camera_controller.update_camera(&mut self.camera);
-        self.camera_uniform = self.camera.to_matrix().unwrap().into();
-        self.queue.write_buffer(
-            &self.camera_buffer,
-            0,
-            bytemuck::cast_slice(&[self.camera_uniform]),
-        );
-        self.fps_counter.update();
-    }
-    pub fn handle_key(&mut self, event_loop: &ActiveEventLoop, code: KeyCode, is_pressed: bool) {
-        match (code, is_pressed) {
-            (KeyCode::Escape, true) => event_loop.exit(),
-            _ => {}
-        }
-        if self.camera_controller.is_enabled {
-            self.camera_controller.handle_key(code, is_pressed);
-        }
-    }
-    pub fn handle_mouse_moved(&mut self, _event_loop: &ActiveEventLoop, pos: &(f64, f64)) {
-        if self.camera_controller.is_enabled {
-            self.camera_controller.handle_mouse_moved(pos.into());
-        }
+    pub fn upload_camera_transformation_matrix(&mut self, matrix: &[[f32; 4]; 4]) {
+        self.queue
+            .write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(matrix));
     }
 }

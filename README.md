@@ -1,3 +1,7 @@
+### chemical_rs 0.6.1
+
+Moved all non-rendering logic out of renderer
+
 ### chemical_rs 0.6.0
 
 Back to being able to compile;

@@ -2,7 +2,7 @@ use log::LevelFilter;
 
 mod camera;
 
-mod core;
+pub mod core;
 
 mod geometry {
     pub mod sphere;
