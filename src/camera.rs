@@ -1,56 +1,41 @@
+use crate::core::renderer::{OPENGL_TO_WGPU_MATRIX, Renderer};
+use crate::utility::transform::TransformNoScale;
+use anyhow::anyhow;
+use cgmath::{InnerSpace, Matrix4, Quaternion, Rad, Rotation, Rotation3, SquareMatrix, Vector3};
+
 pub struct Camera {
-    pub position: cgmath::Point3<f32>,
-    pub orientation: cgmath::Quaternion<f32>,
+    transform: TransformNoScale,
 
     proj: cgmath::Matrix4<f32>,
 }
 
-use crate::core::renderer::Renderer;
-use cgmath::{EuclideanSpace, InnerSpace, Rad, Rotation, Rotation3, SquareMatrix};
-
-use log::error;
-
 impl Camera {
-    pub fn upload_to_renderer(&mut self, renderer: &mut Renderer) {
-        let translation_matrix: cgmath::Matrix4<f32> =
-            cgmath::Matrix4::from_translation(self.position.to_vec());
-        let rotation_matrix = cgmath::Matrix4::from(self.orientation);
-        let transformation_matrix = translation_matrix * rotation_matrix;
-
+    pub fn upload_to_renderer(
+        &self,
+        renderer: &mut Renderer,
+        temp_mat: &Matrix4<f32>,
+    ) -> anyhow::Result<()> {
+        let transform_matrix: Matrix4<f32> = (&self.transform).into();
         let final_matrix = OPENGL_TO_WGPU_MATRIX
             * self.proj
-            * match transformation_matrix.invert() {
-                Some(m) => m,
-                None => {
-                    error!(
-                        "Transformation matrix failed to invert, resetting camera position and orientation"
-                    );
-                    self.position = (0.0, 0.0, 0.0).into();
-                    self.orientation = (0.0, 0.0, 0.0, -1.0).into();
-                    return;
-                }
-            };
+            * transform_matrix
+                .invert()
+                .ok_or_else(|| anyhow!("Failed to invert transformation matrix"))?
+            * temp_mat;
 
         let renderer_matrix: [[f32; 4]; 4] = final_matrix.into();
         renderer.upload_camera_transformation_matrix(&renderer_matrix);
+
+        Ok(())
     }
 
     pub fn new(aspect: f32, fov: f32, znear: f32, zfar: f32) -> Self {
         Self {
-            position: (0.0, 0.0, 0.0).into(),
-            orientation: (0.0, 0.0, 0.0, -1.0).into(),
+            transform: TransformNoScale::new_default(),
             proj: cgmath::perspective(cgmath::Deg(fov), aspect, znear, zfar),
         }
     }
 }
-
-#[rustfmt::skip]
-pub const OPENGL_TO_WGPU_MATRIX: cgmath::Matrix4<f32> = cgmath::Matrix4::from_cols(
-    cgmath::Vector4::new(1.0, 0.0, 0.0, 0.0),
-    cgmath::Vector4::new(0.0, 1.0, 0.0, 0.0),
-    cgmath::Vector4::new(0.0, 0.0, 0.5, 0.0),
-    cgmath::Vector4::new(0.0, 0.0, 0.5, 1.0),
-);
 
 pub struct CameraController {
     acceleration: f32,
@@ -127,34 +112,21 @@ impl CameraController {
     }
 
     pub fn update_camera(&mut self, camera: &mut Camera) {
-        let fwd = camera.orientation.rotate_vector(-cgmath::Vector3::unit_z());
-        let right = camera.orientation.rotate_vector(cgmath::Vector3::unit_x());
-        let up = cgmath::Vector3::unit_y();
+        let transform = &mut camera.transform;
+        let fwd = transform.orientation.rotate_vector(-Vector3::unit_z());
+        let right = transform.orientation.rotate_vector(Vector3::unit_x());
+        let up = Vector3::unit_y();
 
-        let yaw_delta = cgmath::Quaternion::from_axis_angle(
+        let yaw_delta = Quaternion::from_axis_angle(
             cgmath::Vector3::unit_y(),
             Rad(-self.yaw_delta * self.look_sensitivity),
         );
 
-        let pitch_delta = cgmath::Quaternion::from_axis_angle(
-            right,
-            Rad(-self.pitch_delta * self.look_sensitivity),
-        );
+        let pitch_delta =
+            Quaternion::from_axis_angle(right, Rad(-self.pitch_delta * self.look_sensitivity));
         self.pitch_delta = 0.0;
         self.yaw_delta = 0.0;
-        // let right = cgmath::Vector3::new(right.x, 0.0, right.z).normalize();
-        // let fwd = cgmath::Vector3::new(fwd.x, 0.0, fwd.z).normalize();
-        // info!("pitch: {:?}", self.pitch_delta);
-        //
-        // info!(
-        //     "pitch: {:?}, yaw: {:?}, or: {:?}",
-        //     pitch_delta, yaw_delta, camera.orientation
-        // );
-        camera.orientation = (yaw_delta * pitch_delta * camera.orientation).normalize();
-        // info!("Should be normalized fwd: {:?}", fwd);
-        // info!("Should be normalized q: {:?}", camera.orientation);
-        // info!("Should be normalized up : {:?}", up);
-        // info!("Should be normalized right: {:?}", right);
+        transform.orientation = (yaw_delta * pitch_delta * transform.orientation).normalize();
 
         if self.is_forward_pressed {
             self.velocity += fwd * self.acceleration;
@@ -190,6 +162,6 @@ impl CameraController {
             .min(self.max_velocity)
             .max(-self.max_velocity);
         self.velocity += -self.velocity * 0.1;
-        camera.position += self.velocity;
+        transform.position += self.velocity;
     }
 }

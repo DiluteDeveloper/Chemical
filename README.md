@@ -1,3 +1,11 @@
+### chemical_rs 0.7.0
+
+Added basic kepler orbit physics
+Added transform structs
+Camera now uses transform structs and
+is temporarily receiving the model
+matrix just for testing
+
 ### chemical_rs 0.6.1
 
 Moved all non-rendering logic out of renderer

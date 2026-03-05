@@ -17,6 +17,7 @@ pub(super) enum ChemicalEvent {
 }
 
 use crate::camera::{Camera, CameraController};
+use crate::physics::simulation::Simulation as PhysicsSimulation;
 use crate::utility::fps_counter::FPSCounter;
 
 pub(super) struct ChemicalEngine {
@@ -28,6 +29,8 @@ pub(super) struct ChemicalEngine {
     camera_controller: CameraController,
     is_in_gui_mode: bool,
     fps_counter: FPSCounter,
+
+    physics_simulation: PhysicsSimulation,
 }
 
 use log::info;
@@ -48,17 +51,24 @@ impl ChemicalEngine {
                 window_size.width as f32 / window_size.height as f32,
                 45.0,
                 0.1,
-                100.00,
+                10000.00,
             ),
             camera_controller: CameraController::new(0.02, 0.006, 0.2),
             fps_counter: FPSCounter::new(),
+            physics_simulation: PhysicsSimulation::new(),
         })
     }
 
     pub(super) fn update(&mut self) {
         self.camera_controller.update_camera(&mut self.camera);
-        self.camera.upload_to_renderer(&mut self.renderer);
+        self.camera
+            .upload_to_renderer(
+                &mut self.renderer,
+                &self.physics_simulation.temp_get_model(),
+            )
+            .expect("Failed to upload camera matrix to renderer");
         self.fps_counter.update();
+        self.physics_simulation.update();
     }
     pub(super) fn window_event(&mut self, event: &WindowEvent, event_loop: &ActiveEventLoop) {
         match event {

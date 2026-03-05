@@ -2,19 +2,11 @@ use log::LevelFilter;
 
 mod camera;
 
-pub mod core;
-
-mod geometry {
-    pub mod sphere;
-    pub mod vertex;
-}
-mod rendering {
-    pub mod mesh;
-    pub mod vertex;
-}
-mod utility {
-    pub mod fps_counter;
-}
+mod core;
+pub mod geometry;
+pub mod physics;
+pub mod rendering;
+pub mod utility;
 
 use crate::core::app;
 
