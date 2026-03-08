@@ -11,24 +11,24 @@ pub struct Simulation {
 impl Simulation {
     pub fn new() -> Self {
         Self {
-            body_a: PhysicsBody::new(
-                &Transform::new(
-                    (2550.0, 0.0, 0.0),
-                    (20.0, 20.0, 20.0),
-                    (0.0, 0.0, 0.0, -1.0),
-                ),
-                100.0,
-                (0.0, 0.0, -5.58),
-            ),
-            body_b: PhysicsBody::new(
-                &Transform::new(
-                    (0.0, 0.0, 0.0),
-                    (2000.0, 2000.0, 2000.0),
-                    (0.0, 0.0, 0.0, -1.0),
-                ),
-                10000.0,
-                (0.0, 0.0, 0.0),
-            ),
+            body_a: PhysicsBody {
+                transform: Transform {
+                    position: (2550.0, 0.0, 0.0).into(),
+                    scale: (20.0, 20.0, 20.0).into(),
+                    orientation: (0.0, 0.0, 0.0, -1.0).into(),
+                },
+                mass: 100.0,
+                velocity: (0.0, 0.0, -5.58).into(),
+            },
+            body_b: PhysicsBody {
+                transform: Transform {
+                    position: (0.0, 0.0, 0.0).into(),
+                    scale: (200.0, 200.0, 200.0).into(),
+                    orientation: (0.0, 0.0, 0.0, -1.0).into(),
+                },
+                mass: 10000.0,
+                velocity: (0.0, 0.0, 0.0).into(),
+            },
         }
     }
 
@@ -41,7 +41,10 @@ impl Simulation {
         self.body_b.transform.position += self.body_b.velocity;
     }
 
-    pub fn temp_get_model(&self) -> Matrix4<f32> {
+    pub fn get_body_a_transformation_matrix(&self) -> Matrix4<f32> {
         (&self.body_a.transform).into()
+    }
+    pub fn get_body_b_transformation_matrix(&self) -> Matrix4<f32> {
+        (&self.body_b.transform).into()
     }
 }

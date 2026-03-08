@@ -7,19 +7,8 @@ pub struct Transform {
     pub orientation: Quaternion<f32>,
 }
 
-impl Transform {
-    pub fn new(
-        position: (f32, f32, f32),
-        scale: (f32, f32, f32),
-        orientation: (f32, f32, f32, f32),
-    ) -> Self {
-        Self {
-            position: position.into(),
-            scale: scale.into(),
-            orientation: orientation.into(),
-        }
-    }
-    pub fn new_default() -> Self {
+impl Default for Transform {
+    fn default() -> Self {
         Self {
             position: (0.0, 0.0, 0.0).into(),
             scale: (1.0, 1.0, 1.0).into(),
@@ -37,19 +26,15 @@ impl From<&Transform> for Matrix4<f32> {
         translation_matrix * rotation_matrix * scale_matrix
     }
 }
+
+#[derive(Copy, Clone, Debug)]
 pub struct TransformNoScale {
     pub position: Point3<f32>,
     pub orientation: Quaternion<f32>,
 }
 
-impl TransformNoScale {
-    pub fn new(position: (f32, f32, f32), orientation: (f32, f32, f32, f32)) -> Self {
-        Self {
-            position: position.into(),
-            orientation: orientation.into(),
-        }
-    }
-    pub fn new_default() -> Self {
+impl Default for TransformNoScale {
+    fn default() -> Self {
         Self {
             position: (0.0, 0.0, 0.0).into(),
             orientation: (0.0, 0.0, 0.0, -1.0).into(),
@@ -64,18 +49,14 @@ impl From<&TransformNoScale> for Matrix4<f32> {
         translation_matrix * rotation_matrix
     }
 }
+
+#[derive(Copy, Clone, Debug)]
 pub struct TransformNoOrientation {
     pub position: Point3<f32>,
     pub scale: (f32, f32, f32),
 }
-impl TransformNoOrientation {
-    pub fn new(position: (f32, f32, f32), scale: (f32, f32, f32)) -> Self {
-        Self {
-            position: position.into(),
-            scale: scale.into(),
-        }
-    }
-    pub fn new_default() -> Self {
+impl Default for TransformNoOrientation {
+    fn default() -> Self {
         Self {
             position: (0.0, 0.0, 0.0).into(),
             scale: (1.0, 1.0, 1.0).into(),

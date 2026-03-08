@@ -1,3 +1,10 @@
+### chemical_rs 0.8.0
+
+Fixed bad fps camera
+Now rendering both kepler orbit
+meshes with array of mat4 uniforms
+as model matrix
+
 ### chemical_rs 0.7.0
 
 Added basic kepler orbit physics

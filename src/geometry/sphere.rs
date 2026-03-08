@@ -301,14 +301,5 @@ pub fn generate_index_sphere(
             vertices[cur_vtx_idx as usize].normal = sum.normalize().into();
         }
     }
-    // info!(
-    //     "vertices: {:?}, vertex_capacity: {:?},indices: {:?}, index_capacity: {:?},tri_normals: {:?}, tri_normal_capacity: {:?}",
-    //     vertices.len(),
-    //     vertex_capacity,
-    //     indices.len(),
-    //     index_capacity,
-    //     tri_normals.len(),
-    //     tri_normals_capacity,
-    // );
     Ok((vertices, indices))
 }

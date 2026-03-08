@@ -2,22 +2,23 @@ use log::info;
 use std::sync::Arc;
 use winit::window::Window;
 
-use crate::geometry::{sphere, vertex};
-use crate::rendering::mesh::{self, Renderable};
+use crate::geometry::vertex::Vertex;
+use crate::rendering::mesh::Renderable;
+use cgmath::{Matrix4, SquareMatrix};
 use wgpu::util::DeviceExt;
 
 pub struct Renderer {
-    pub surface: wgpu::Surface<'static>,
-    device: wgpu::Device,
+    surface: wgpu::Surface<'static>,
+    pub device: wgpu::Device,
     queue: wgpu::Queue,
     config: wgpu::SurfaceConfiguration,
     is_surface_configured: bool,
     render_pipeline: [wgpu::RenderPipeline; 2],
     is_alternate_pipeline_active: bool,
     window: Arc<Window>,
-    mesh: mesh::IndexMesh,
     camera_buffer: wgpu::Buffer,
-    camera_bind_group: wgpu::BindGroup,
+    bind_group: wgpu::BindGroup,
+    model_buffer: wgpu::Buffer,
 }
 
 impl Renderer {
@@ -85,19 +86,27 @@ impl Renderer {
             view_formats: vec![],
             desired_maximum_frame_latency: 2,
         };
-        let shader = device.create_shader_module(wgpu::include_wgsl!("../shader.wgsl"));
-        let shader2 = device.create_shader_module(wgpu::include_wgsl!("../shader.wgsl"));
+        let shader =
+            device.create_shader_module(wgpu::include_wgsl!("../kepler_orbit_shader.wgsl"));
+        let shader2 =
+            device.create_shader_module(wgpu::include_wgsl!("../kepler_orbit_shader.wgsl"));
 
-        let matrix_0: [[f32; 4]; 4] = [[0.0; 4]; 4];
+        let identity: [[f32; 4]; 4] = Matrix4::identity().into();
 
         let camera_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Camera Buffer"),
-            contents: bytemuck::cast_slice(&[matrix_0]),
+            contents: bytemuck::cast_slice(&[identity]),
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
         });
-        let camera_bind_group_layout =
-            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-                entries: &[wgpu::BindGroupLayoutEntry {
+        let model_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Model Buffer"),
+            contents: bytemuck::cast_slice(&[identity, identity]),
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+        });
+
+        let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            entries: &[
+                wgpu::BindGroupLayoutEntry {
                     binding: 0,
                     visibility: wgpu::ShaderStages::VERTEX,
                     ty: wgpu::BindingType::Buffer {
@@ -106,21 +115,38 @@ impl Renderer {
                         min_binding_size: None,
                     },
                     count: None,
-                }],
-                label: Some("camera_bind_group_layout"),
-            });
-        let camera_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &camera_bind_group_layout,
-            entries: &[wgpu::BindGroupEntry {
-                binding: 0,
-                resource: camera_buffer.as_entire_binding(),
-            }],
-            label: Some("camera_bind_group"),
+                },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 1,
+                    visibility: wgpu::ShaderStages::VERTEX,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                },
+            ],
+            label: Some("bind_group_layout"),
+        });
+        let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+            layout: &bind_group_layout,
+            entries: &[
+                wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: camera_buffer.as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 1,
+                    resource: model_buffer.as_entire_binding(),
+                },
+            ],
+            label: Some("bind_group"),
         });
         let render_pipeline_layout =
             device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 label: Some("Render Pipeline Layout"),
-                bind_group_layouts: &[&camera_bind_group_layout],
+                bind_group_layouts: &[&bind_group_layout],
                 immediate_size: 0,
             });
         //let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
@@ -129,8 +155,8 @@ impl Renderer {
             layout: Some(&render_pipeline_layout),
             vertex: wgpu::VertexState {
                 module: &shader,
-                entry_point: Some("vs_main"),         // 1.
-                buffers: &[vertex::Vertex::layout()], // 2.
+                entry_point: Some("vs_main"), // 1.
+                buffers: &[Vertex::layout()], // 2.
                 compilation_options: wgpu::PipelineCompilationOptions::default(),
             },
             fragment: Some(wgpu::FragmentState {
@@ -175,13 +201,7 @@ impl Renderer {
         }
         let shader2_render_pipeline = device.create_render_pipeline(&render_pipeline_descriptor);
 
-        let (vertices, indices) = sphere::generate_index_sphere(255)
-            .map_err(|e| anyhow::anyhow!("Failed to generate vertex sphere: {}", e))?;
-
-        let mesh = mesh::IndexMesh::new(&vertices, &indices, &device);
-
         Ok(Self {
-            mesh,
             surface,
             device,
             queue,
@@ -191,7 +211,8 @@ impl Renderer {
             render_pipeline: [shader_render_pipeline, shader2_render_pipeline],
             window,
             camera_buffer,
-            camera_bind_group,
+            bind_group,
+            model_buffer,
         })
     }
 
@@ -204,7 +225,10 @@ impl Renderer {
         }
     }
 
-    pub(super) fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
+    pub(super) fn render<T: Renderable>(
+        &mut self,
+        renderable: &T,
+    ) -> Result<(), wgpu::SurfaceError> {
         self.window.request_redraw();
 
         if !self.is_surface_configured {
@@ -250,8 +274,11 @@ impl Renderer {
             }
             //render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
             // index must match the order of the bind group in the render pipeline descriptor
-            render_pass.set_bind_group(0, &self.camera_bind_group, &[]);
-            self.mesh.render(&mut render_pass);
+            render_pass.set_bind_group(0, &self.bind_group, &[]);
+
+            // Render here
+            renderable.bind(&mut render_pass);
+            renderable.draw(&mut render_pass, 2);
         }
 
         // submit will accept anything that implements IntoIter
@@ -260,14 +287,24 @@ impl Renderer {
 
         Ok(())
     }
-    pub fn upload_camera_transformation_matrix(&mut self, matrix: &[[f32; 4]; 4]) {
+    pub(super) fn upload_camera_transformation_matrix(&mut self, matrix: &[[f32; 4]; 4]) {
         self.queue
             .write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(matrix));
     }
+    pub(super) fn upload_body_transformation_matrices(
+        &mut self,
+        body_transformation_matrices: [[[f32; 4]; 4]; 2], // Plain old data
+    ) {
+        self.queue.write_buffer(
+            &self.model_buffer,
+            0,
+            bytemuck::cast_slice(&[body_transformation_matrices]),
+        );
+    }
 }
-pub const OPENGL_TO_WGPU_MATRIX: cgmath::Matrix4<f32> = cgmath::Matrix4::from_cols(
-    cgmath::Vector4::new(1.0, 0.0, 0.0, 0.0),
-    cgmath::Vector4::new(0.0, 1.0, 0.0, 0.0),
-    cgmath::Vector4::new(0.0, 0.0, 0.5, 0.0),
-    cgmath::Vector4::new(0.0, 0.0, 0.5, 1.0),
-);
+// pub const OPENGL_TO_WGPU_MATRIX: cgmath::Matrix4<f32> = cgmath::Matrix4::from_cols(
+//     cgmath::Vector4::new(1.0, 0.0, 0.0, 0.0),
+//     cgmath::Vector4::new(0.0, 1.0, 0.0, 0.0),
+//     cgmath::Vector4::new(0.0, 0.0, 0.5, 0.0),
+//     cgmath::Vector4::new(0.0, 0.0, 0.5, 1.0),
+// );
