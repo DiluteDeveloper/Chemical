@@ -1,28 +1,24 @@
+use crate::geometry::vertex::Vertex;
 use log::info;
 use std::sync::Arc;
 use winit::window::Window;
 
-use crate::geometry::vertex::Vertex;
-use crate::rendering::mesh::Renderable;
-use cgmath::{Matrix4, SquareMatrix};
-use wgpu::util::DeviceExt;
+pub trait Renderable {
+    fn bind(&self, render_pass: &mut wgpu::RenderPass);
+    fn draw(&self, render_pass: &mut wgpu::RenderPass);
+}
 
 pub struct Renderer {
     surface: wgpu::Surface<'static>,
-    pub device: wgpu::Device,
-    queue: wgpu::Queue,
+    pub(super) device: wgpu::Device,
+    pub(super) queue: wgpu::Queue,
     config: wgpu::SurfaceConfiguration,
     is_surface_configured: bool,
-    render_pipeline: [wgpu::RenderPipeline; 2],
-    is_alternate_pipeline_active: bool,
     window: Arc<Window>,
-    camera_buffer: wgpu::Buffer,
-    bind_group: wgpu::BindGroup,
-    model_buffer: wgpu::Buffer,
 }
 
 impl Renderer {
-    pub(super) async fn new(window: Arc<Window>) -> anyhow::Result<Renderer> {
+    pub async fn new(window: Arc<Window>) -> anyhow::Result<Renderer> {
         let size = window.inner_size();
 
         // The instance is a handle to our GPU
@@ -86,71 +82,41 @@ impl Renderer {
             view_formats: vec![],
             desired_maximum_frame_latency: 2,
         };
-        let shader =
-            device.create_shader_module(wgpu::include_wgsl!("../kepler_orbit_shader.wgsl"));
-        let shader2 =
-            device.create_shader_module(wgpu::include_wgsl!("../kepler_orbit_shader.wgsl"));
 
-        let identity: [[f32; 4]; 4] = Matrix4::identity().into();
+        Ok(Self {
+            surface,
+            device,
+            queue,
+            config,
+            is_surface_configured: false,
+            window,
+        })
+    }
 
-        let camera_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Camera Buffer"),
-            contents: bytemuck::cast_slice(&[identity]),
-            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
-        });
-        let model_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Model Buffer"),
-            contents: bytemuck::cast_slice(&[identity, identity]),
-            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
-        });
-
-        let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-            entries: &[
-                wgpu::BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: wgpu::ShaderStages::VERTEX,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None,
-                },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 1,
-                    visibility: wgpu::ShaderStages::VERTEX,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None,
-                },
-            ],
-            label: Some("bind_group_layout"),
-        });
-        let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &bind_group_layout,
-            entries: &[
-                wgpu::BindGroupEntry {
-                    binding: 0,
-                    resource: camera_buffer.as_entire_binding(),
-                },
-                wgpu::BindGroupEntry {
-                    binding: 1,
-                    resource: model_buffer.as_entire_binding(),
-                },
-            ],
-            label: Some("bind_group"),
-        });
-        let render_pipeline_layout =
-            device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                label: Some("Render Pipeline Layout"),
-                bind_group_layouts: &[&bind_group_layout],
-                immediate_size: 0,
+    pub fn create_default_render_pipeline(
+        &self,
+        shader_path: &str,
+        bind_group_layout_descriptor: &wgpu::BindGroupLayoutDescriptor,
+    ) -> anyhow::Result<wgpu::RenderPipeline> {
+        let shader_source = std::fs::read_to_string(shader_path)?;
+        let shader = self
+            .device
+            .create_shader_module(wgpu::ShaderModuleDescriptor {
+                label: Some(shader_path),
+                source: wgpu::ShaderSource::Wgsl(shader_source.into()),
             });
-        //let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-        let mut render_pipeline_descriptor = wgpu::RenderPipelineDescriptor {
+        let bind_group_layout = self
+            .device
+            .create_bind_group_layout(&bind_group_layout_descriptor);
+
+        let render_pipeline_layout =
+            self.device
+                .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+                    label: Some("Render Pipeline Layout"),
+                    bind_group_layouts: &[&bind_group_layout],
+                    immediate_size: 0,
+                });
+        let render_pipeline_descriptor = wgpu::RenderPipelineDescriptor {
             label: Some("Render Pipeline"),
             layout: Some(&render_pipeline_layout),
             vertex: wgpu::VertexState {
@@ -165,7 +131,7 @@ impl Renderer {
                 entry_point: Some("fs_main"),
                 targets: &[Some(wgpu::ColorTargetState {
                     // 4.
-                    format: config.format,
+                    format: self.config.format,
                     blend: Some(wgpu::BlendState::REPLACE),
                     write_mask: wgpu::ColorWrites::ALL,
                 })],
@@ -192,31 +158,13 @@ impl Renderer {
             multiview_mask: None, // 5.
             cache: None,          // 6.
         };
-        let shader_render_pipeline = device.create_render_pipeline(&render_pipeline_descriptor);
-
-        render_pipeline_descriptor.vertex.module = &shader2;
-        match render_pipeline_descriptor.fragment.as_mut() {
-            Some(fragment) => fragment.module = &shader2,
-            None => panic!("No fragment shader!"),
-        }
-        let shader2_render_pipeline = device.create_render_pipeline(&render_pipeline_descriptor);
-
-        Ok(Self {
-            surface,
-            device,
-            queue,
-            config,
-            is_surface_configured: false,
-            is_alternate_pipeline_active: false,
-            render_pipeline: [shader_render_pipeline, shader2_render_pipeline],
-            window,
-            camera_buffer,
-            bind_group,
-            model_buffer,
-        })
+        Result::Ok(
+            self.device
+                .create_render_pipeline(&render_pipeline_descriptor),
+        )
     }
 
-    pub(super) fn resize(&mut self, width: u32, height: u32) {
+    pub fn resize(&mut self, width: u32, height: u32) {
         if width > 0 && height > 0 {
             self.config.width = width;
             self.config.height = height;
@@ -225,9 +173,11 @@ impl Renderer {
         }
     }
 
-    pub(super) fn render<T: Renderable>(
+    pub fn render(
         &mut self,
-        renderable: &T,
+        renderables: &[&dyn Renderable],
+        render_pipeline: &wgpu::RenderPipeline,
+        bind_group: &wgpu::BindGroup,
     ) -> Result<(), wgpu::SurfaceError> {
         self.window.request_redraw();
 
@@ -267,18 +217,17 @@ impl Renderer {
                 timestamp_writes: None,
                 multiview_mask: None,
             });
-            if self.is_alternate_pipeline_active {
-                render_pass.set_pipeline(&self.render_pipeline[1]);
-            } else {
-                render_pass.set_pipeline(&self.render_pipeline[0]);
-            }
+            render_pass.set_pipeline(render_pipeline);
+
             //render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
             // index must match the order of the bind group in the render pipeline descriptor
-            render_pass.set_bind_group(0, &self.bind_group, &[]);
 
-            // Render here
-            renderable.bind(&mut render_pass);
-            renderable.draw(&mut render_pass, 2);
+            render_pass.set_bind_group(0, bind_group, &[]);
+
+            for renderable in renderables {
+                renderable.bind(&mut render_pass);
+                renderable.draw(&mut render_pass);
+            }
         }
 
         // submit will accept anything that implements IntoIter
@@ -287,24 +236,4 @@ impl Renderer {
 
         Ok(())
     }
-    pub(super) fn upload_camera_transformation_matrix(&mut self, matrix: &[[f32; 4]; 4]) {
-        self.queue
-            .write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(matrix));
-    }
-    pub(super) fn upload_body_transformation_matrices(
-        &mut self,
-        body_transformation_matrices: [[[f32; 4]; 4]; 2], // Plain old data
-    ) {
-        self.queue.write_buffer(
-            &self.model_buffer,
-            0,
-            bytemuck::cast_slice(&[body_transformation_matrices]),
-        );
-    }
 }
-// pub const OPENGL_TO_WGPU_MATRIX: cgmath::Matrix4<f32> = cgmath::Matrix4::from_cols(
-//     cgmath::Vector4::new(1.0, 0.0, 0.0, 0.0),
-//     cgmath::Vector4::new(0.0, 1.0, 0.0, 0.0),
-//     cgmath::Vector4::new(0.0, 0.0, 0.5, 0.0),
-//     cgmath::Vector4::new(0.0, 0.0, 0.5, 1.0),
-// );

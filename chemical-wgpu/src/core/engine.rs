@@ -1,5 +1,5 @@
-use crate::core::renderer::Renderer;
-use log::info;
+use crate::rendering::{renderer::Renderer, universe::UniverseRenderer};
+use chemical_engine::physics::universe_simulation::UniverseSimulation;
 use std::sync::Arc;
 use winit::{
     dpi::PhysicalPosition,
@@ -8,7 +8,7 @@ use winit::{
     event_loop::ActiveEventLoop,
     event_loop::EventLoopProxy,
     keyboard::{KeyCode, PhysicalKey},
-    window::{CursorGrabMode, Window},
+    window::Window,
 };
 
 #[derive(Debug, PartialEq)]
@@ -23,24 +23,21 @@ pub(super) enum ChemicalEvent {
 }
 
 use crate::camera::{Camera, CameraController};
-use crate::geometry::sphere;
-use crate::physics::simulation::Simulation as PhysicsSimulation;
-use crate::rendering::mesh::IndexMesh;
 use crate::utility::fps_counter::FPSCounter;
 
 pub(super) struct ChemicalEngine {
     renderer: Renderer,
-    mesh: IndexMesh,
     event_loop_proxy: EventLoopProxy<ChemicalEvent>,
     window: Arc<Window>,
+
+    universe_simulation: UniverseSimulation,
+    universe_renderer: UniverseRenderer,
 
     camera: Camera,
     camera_controller: CameraController,
     camera_mode: CameraMode,
     fps_counter: FPSCounter,
     window_center: PhysicalPosition<f32>,
-
-    physics_simulation: PhysicsSimulation,
 }
 
 use anyhow::anyhow;
@@ -52,17 +49,14 @@ impl ChemicalEngine {
         let window_size = window.inner_size();
         let renderer = pollster::block_on(Renderer::new(Arc::clone(&window)))
             .map_err(|e| anyhow!("Failed to initialise renderer: {}", e))?;
-        let (vertices, indices) = sphere::generate_index_sphere(30)
-            .map_err(|e| anyhow!("Failed to generate index sphere: {}", e))?;
 
-        let mesh = IndexMesh::new(&vertices, &indices, &renderer.device);
         let mut camera = Camera::new(
             window_size.width as f32 / window_size.height as f32,
             45.0,
-            100.0,
+            0.1,
             100000.00,
         );
-        camera.transform.position.z = 500.0;
+        camera.transform.position.z = 5.0;
 
         let window_center = (
             window_size.width as f32 / 2.0,
@@ -76,6 +70,7 @@ impl ChemicalEngine {
             .send_event(ChemicalEvent::ChangeCameraMode(CameraMode::NoCameraControl))
             .unwrap();
         Ok(ChemicalEngine {
+            universe_renderer: UniverseRenderer::new(&renderer),
             renderer: renderer,
             event_loop_proxy: event_loop_proxy.expect("Event loop proxy was invalid"),
             window: window,
@@ -83,39 +78,40 @@ impl ChemicalEngine {
             camera: camera,
             camera_controller: CameraController::new(30.0, 0.0002, 0.07),
             fps_counter: FPSCounter::new(),
-            physics_simulation: PhysicsSimulation::new(),
-            mesh: mesh,
             window_center: window_center,
+            universe_simulation: UniverseSimulation::new(),
         })
     }
 
     pub(super) fn update(&mut self) {
-        info!(
-            "FPS: {}, Delta: {}",
-            self.fps_counter.fps.unwrap_or(-1),
-            self.fps_counter.delta
-        );
+        // info!(
+        //     "FPS: {}, Delta: {}",
+        //     self.fps_counter.fps.unwrap_or(-1),
+        //     self.fps_counter.delta
+        // );
 
         if self.camera_mode == CameraMode::FPSCameraControl {
             self.camera_controller
                 .update_camera(&mut self.camera, self.fps_counter.delta as f32);
         }
 
+        self.universe_simulation.tick();
+
+        self.universe_renderer.update_celestial_body_meshes(
+            &self.renderer,
+            &self.universe_simulation.body_a,
+            &self.universe_simulation.body_b,
+        );
         let camera_matrix = self
             .camera
             .get_transformation_matrix()
             .expect("Failed to get camera transformation matrix");
 
-        let matrix_a = self.physics_simulation.get_body_a_transformation_matrix();
-        let matrix_b = self.physics_simulation.get_body_b_transformation_matrix();
-
-        self.renderer
-            .upload_camera_transformation_matrix(&camera_matrix.into());
-        self.renderer
-            .upload_body_transformation_matrices([matrix_a.into(), matrix_b.into()]);
+        self.universe_renderer
+            .upload_camera_matrix(&self.renderer, &camera_matrix.into());
 
         self.fps_counter.update();
-        self.physics_simulation.update();
+        //self.universe_simulation.tick();
     }
     pub(super) fn window_event(&mut self, event: &WindowEvent, event_loop: &ActiveEventLoop) {
         match event {
@@ -123,7 +119,7 @@ impl ChemicalEngine {
             WindowEvent::Resized(size) => self.renderer.resize(size.width, size.height),
             WindowEvent::RedrawRequested => {
                 self.update();
-                match self.renderer.render(&self.mesh) {
+                match self.universe_renderer.render(&mut self.renderer) {
                     Ok(_) => {}
                     // Reconfigure the surface if it's lost or outdated
                     Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => {

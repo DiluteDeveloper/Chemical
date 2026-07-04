@@ -1,15 +1,15 @@
-use crate::physics::body::Body as PhysicsBody;
+use crate::physics::universe_simulation::celestial_body::CelestialBody;
 use cgmath::{InnerSpace, Vector3};
 
 const GRAVITY: f32 = 9.81;
 
-pub(super) struct KeplerOrbitResult {
-    pub(super) acceleration_a: Vector3<f32>,
-    pub(super) acceleration_b: Vector3<f32>,
+pub struct KeplerOrbitResult {
+    pub acceleration_a: Vector3<f32>,
+    pub acceleration_b: Vector3<f32>,
 }
 
-pub fn simulate_kepler_orbit(body_a: &PhysicsBody, body_b: &PhysicsBody) -> KeplerOrbitResult {
-    let rel = body_a.transform.position - body_b.transform.position;
+pub fn simulate_kepler_orbit(body_a: &CelestialBody, body_b: &CelestialBody) -> KeplerOrbitResult {
+    let rel = body_a.position - body_b.position;
 
     let unit_vector = rel.normalize();
 
@@ -23,4 +23,3 @@ pub fn simulate_kepler_orbit(body_a: &PhysicsBody, body_b: &PhysicsBody) -> Kepl
         acceleration_b,
     }
 }
-

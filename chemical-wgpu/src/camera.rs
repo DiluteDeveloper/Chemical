@@ -27,7 +27,7 @@ impl Camera {
 
 pub struct CameraController {
     acceleration: f32,
-    look_sensitivity: f64,
+    look_sensitivity: f32,
     velocity: cgmath::Vector3<f32>,
     velocity_damping_factor: f32,
 
@@ -38,14 +38,14 @@ pub struct CameraController {
     is_up_pressed: bool,
     is_down_pressed: bool,
 
-    pitch_delta: f64,
-    yaw_delta: f64,
+    pitch_delta: f32,
+    yaw_delta: f32,
 }
 
 use winit::keyboard::KeyCode;
 
 impl CameraController {
-    pub fn new(acceleration: f32, look_sensitivity: f64, velocity_damping_factor: f32) -> Self {
+    pub fn new(acceleration: f32, look_sensitivity: f32, velocity_damping_factor: f32) -> Self {
         Self {
             acceleration: acceleration,
             look_sensitivity: look_sensitivity,
@@ -91,16 +91,16 @@ impl CameraController {
             _ => return,
         }
     }
-    pub fn handle_mouse_moved(&mut self, pos: &(f64, f64)) {
-        self.pitch_delta = pos.1;
-        self.yaw_delta = pos.0;
+    pub fn handle_mouse_moved(&mut self, pos: &(f32, f32)) {
+        self.pitch_delta += pos.1;
+        self.yaw_delta += pos.0;
     }
 
-    pub fn update_camera(&mut self, camera: &mut Camera) {
+    pub fn update_camera(&mut self, camera: &mut Camera, delta: f32) {
         let transform = &mut camera.transform;
         let fwd = transform.orientation.rotate_vector(-Vector3::unit_z());
         let right = transform.orientation.rotate_vector(Vector3::unit_x());
-        let up = Vector3::unit_y();
+        let up = transform.orientation.rotate_vector(Vector3::unit_y());
 
         let yaw_delta = Quaternion::from_axis_angle(
             cgmath::Vector3::unit_y(),
@@ -114,22 +114,22 @@ impl CameraController {
         transform.orientation = (yaw_delta * pitch_delta * transform.orientation).normalize();
 
         if self.is_forward_pressed {
-            self.velocity += fwd * self.acceleration;
+            self.velocity += fwd * self.acceleration * delta;
         }
         if self.is_backward_pressed {
-            self.velocity -= fwd * self.acceleration;
+            self.velocity -= fwd * self.acceleration * delta;
         }
         if self.is_right_pressed {
-            self.velocity += right * self.acceleration;
+            self.velocity += right * self.acceleration * delta;
         }
         if self.is_left_pressed {
-            self.velocity -= right * self.acceleration;
+            self.velocity -= right * self.acceleration * delta;
         }
         if self.is_up_pressed {
-            self.velocity += up * self.acceleration;
+            self.velocity += up * self.acceleration * delta;
         }
         if self.is_down_pressed {
-            self.velocity -= up * self.acceleration;
+            self.velocity -= up * self.acceleration * delta;
         }
         self.velocity += -self.velocity * self.velocity_damping_factor;
         transform.position += self.velocity;

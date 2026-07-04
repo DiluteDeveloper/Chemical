@@ -3,10 +3,9 @@ use log::LevelFilter;
 mod camera;
 
 mod core;
-pub mod geometry;
-pub mod physics;
-pub mod rendering;
-pub mod utility;
+mod geometry;
+mod rendering;
+mod utility;
 
 use crate::core::app;
 
