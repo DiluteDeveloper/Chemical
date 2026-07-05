@@ -52,7 +52,7 @@ impl ChemicalEngine {
 
         let mut camera = Camera::new(
             window_size.width as f32 / window_size.height as f32,
-            45.0,
+            90.0,
             0.1,
             100000.00,
         );
@@ -101,6 +101,7 @@ impl ChemicalEngine {
             &self.renderer,
             &self.universe_simulation.body_a,
             &self.universe_simulation.body_b,
+            &self.universe_simulation.body_c,
         );
         let camera_matrix = self
             .camera

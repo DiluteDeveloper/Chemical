@@ -5,6 +5,7 @@ mod camera;
 mod core;
 mod geometry;
 mod rendering;
+mod texture;
 mod utility;
 
 use crate::core::app;

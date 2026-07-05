@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::geometry::vertex::Vertex;
 use crate::rendering::renderer::{self, Renderer};
 

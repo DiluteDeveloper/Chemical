@@ -10,7 +10,7 @@ const OPENGL_TO_WGPU_MATRIX: mat4x4<f32> = mat4x4<f32>(
 @group(0) @binding(0) 
 var<uniform> camera_matrix: mat4x4<f32>;
 @group(0) @binding(1) 
-var<uniform> model_matrices: array<mat4x4<f32>, 2>;
+var<uniform> model_matrices: array<mat4x4<f32>, 3>;
 
 struct VertexInput {
 	@location(0) position: vec3<f32>,

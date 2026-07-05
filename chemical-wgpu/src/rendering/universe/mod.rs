@@ -12,7 +12,7 @@ pub struct UniverseRenderer {
     sphere: IndexMesh,
 }
 
-const SHADER_PATH: &str = "chemical-wgpu/res/shaders/universe_shader.wgsl";
+const SHADER_PATH: &str = "res/shaders/universe_shader.wgsl";
 
 impl UniverseRenderer {
     pub fn new(renderer: &Renderer) -> UniverseRenderer {
@@ -52,8 +52,8 @@ impl UniverseRenderer {
             mapped_at_creation: false,
         });
         let model_buffer = renderer.device.create_buffer(&wgpu::BufferDescriptor {
-            label: Some("Camera Buffer"),
-            size: size_of::<[[[f32; 4]; 4]; 2]>() as u64,
+            label: Some("Model Buffer"),
+            size: size_of::<[[[f32; 4]; 4]; 3]>() as u64,
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
@@ -111,7 +111,7 @@ impl UniverseRenderer {
                 }),
             camera_buffer: camera_buffer,
             model_buffer: model_buffer,
-            sphere: IndexMesh::new_instanced(&vertices, &indices, 2, renderer),
+            sphere: IndexMesh::new_instanced(&vertices, &indices, 3, renderer),
         }
     }
     pub fn upload_camera_matrix(&mut self, renderer: &Renderer, matrix: &[[f32; 4]; 4]) {
@@ -124,10 +124,12 @@ impl UniverseRenderer {
         renderer: &Renderer,
         body_a: &CelestialBody,
         body_b: &CelestialBody,
+        body_c: &CelestialBody,
     ) {
-        let matrices: [[[f32; 4]; 4]; 2] = [
+        let matrices: [[[f32; 4]; 4]; 3] = [
             Self::celestial_body_to_matrix(body_a).into(),
             Self::celestial_body_to_matrix(body_b).into(),
+            Self::celestial_body_to_matrix(body_c).into(),
         ];
         renderer
             .queue

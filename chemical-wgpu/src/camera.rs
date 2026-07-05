@@ -98,9 +98,9 @@ impl CameraController {
 
     pub fn update_camera(&mut self, camera: &mut Camera, delta: f32) {
         let transform = &mut camera.transform;
-        let fwd = transform.orientation.rotate_vector(-Vector3::unit_z());
+        let mut fwd = transform.orientation.rotate_vector(-Vector3::unit_z());
+        fwd.y = 0.0;
         let right = transform.orientation.rotate_vector(Vector3::unit_x());
-        let up = transform.orientation.rotate_vector(Vector3::unit_y());
 
         let yaw_delta = Quaternion::from_axis_angle(
             cgmath::Vector3::unit_y(),
@@ -126,10 +126,10 @@ impl CameraController {
             self.velocity -= right * self.acceleration * delta;
         }
         if self.is_up_pressed {
-            self.velocity += up * self.acceleration * delta;
+            self.velocity += Vector3::unit_y() * self.acceleration * delta;
         }
         if self.is_down_pressed {
-            self.velocity -= up * self.acceleration * delta;
+            self.velocity -= Vector3::unit_y() * self.acceleration * delta;
         }
         self.velocity += -self.velocity * self.velocity_damping_factor;
         transform.position += self.velocity;

@@ -1,4 +1,4 @@
-use crate::geometry::vertex::Vertex;
+use crate::{geometry::vertex::Vertex, texture::Texture};
 use log::info;
 use std::sync::Arc;
 use winit::window::Window;
@@ -15,6 +15,8 @@ pub struct Renderer {
     config: wgpu::SurfaceConfiguration,
     is_surface_configured: bool,
     window: Arc<Window>,
+
+    depth_texture: Texture,
 }
 
 impl Renderer {
@@ -82,6 +84,7 @@ impl Renderer {
             view_formats: vec![],
             desired_maximum_frame_latency: 2,
         };
+        let depth_texture = Texture::create_depth_texture(&device, &config, "Depth Texture");
 
         Ok(Self {
             surface,
@@ -90,6 +93,7 @@ impl Renderer {
             config,
             is_surface_configured: false,
             window,
+            depth_texture,
         })
     }
 
@@ -149,7 +153,13 @@ impl Renderer {
                 // Requires Features::CONSERVATIVE_RASTERIZATION
                 conservative: false,
             },
-            depth_stencil: None, // 1.
+            depth_stencil: Some(wgpu::DepthStencilState {
+                format: Texture::DEPTH_FORMAT,
+                depth_write_enabled: true,
+                depth_compare: wgpu::CompareFunction::Less,
+                stencil: wgpu::StencilState::default(),
+                bias: wgpu::DepthBiasState::default(),
+            }), // 1.
             multisample: wgpu::MultisampleState {
                 count: 1,                         // 2.
                 mask: !0,                         // 3.
@@ -170,6 +180,8 @@ impl Renderer {
             self.config.height = height;
             self.surface.configure(&self.device, &self.config);
             self.is_surface_configured = true;
+            self.depth_texture =
+                Texture::create_depth_texture(&self.device, &self.config, "Depth Texture");
         }
     }
 
@@ -205,14 +217,21 @@ impl Renderer {
                     ops: wgpu::Operations {
                         load: wgpu::LoadOp::Clear(wgpu::Color {
                             r: 0.1,
-                            g: 0.2,
-                            b: 0.3,
+                            g: 0.1,
+                            b: 0.1,
                             a: 1.0,
                         }),
                         store: wgpu::StoreOp::Store,
                     },
                 })],
-                depth_stencil_attachment: None,
+                depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+                    view: &self.depth_texture.view,
+                    depth_ops: Some(wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(1.0),
+                        store: wgpu::StoreOp::Store,
+                    }),
+                    stencil_ops: None,
+                }),
                 occlusion_query_set: None,
                 timestamp_writes: None,
                 multiview_mask: None,
