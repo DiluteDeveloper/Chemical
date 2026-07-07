@@ -36,7 +36,7 @@ pub struct MeshRenderer {
 pub type TransformID = usize;
 
 const SHADER_PATH: &str = "res/shaders/mesh_shader.wgsl";
-const MAX_TRANSFORMS: u64 = 100;
+const MAX_TRANSFORMS: u64 = 1000;
 
 impl MeshRenderer {
     pub(super) fn new(device: &wgpu::Device, config: &wgpu::SurfaceConfiguration) -> MeshRenderer {
