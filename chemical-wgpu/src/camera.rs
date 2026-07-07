@@ -1,4 +1,4 @@
-use crate::utility::transform::TransformNoScale;
+use crate::utility::TransformNoScale;
 use anyhow::anyhow;
 use cgmath::{InnerSpace, Matrix4, Quaternion, Rad, Rotation, Rotation3, SquareMatrix, Vector3};
 
@@ -9,12 +9,13 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn get_transformation_matrix(&self) -> anyhow::Result<Matrix4<f32>> {
+    pub fn get_transformation_matrix(&self) -> anyhow::Result<[[f32; 4]; 4]> {
         let transform_matrix: Matrix4<f32> = (&self.transform).into();
-        Ok(self.proj
+        Ok((self.proj
             * transform_matrix
                 .invert()
                 .ok_or_else(|| anyhow!("Failed to invert transformation matrix"))?)
+        .into())
     }
 
     pub fn new(aspect: f32, fov: f32, znear: f32, zfar: f32) -> Self {

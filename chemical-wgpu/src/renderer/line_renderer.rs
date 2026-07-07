@@ -1,24 +1,52 @@
-use crate::{
-    geometry::{sphere, vertex::Vertex},
-    rendering::mesh::IndexMesh,
-};
+mod line;
+use self::line::Line;
 
-use super::renderer::Renderer;
-use anyhow::anyhow;
-use cgmath::{EuclideanSpace, Matrix4};
-use chemical_engine::physics::universe::celestial_body::CelestialBody;
-pub struct UniverseRenderer {
+//render_pass.set_vertex_buffer(0, self.buffer.slice(..));
+//render_pass.draw(0..6, 0..self.length);
+
+pub struct LineRenderer {
     pub render_pipeline: wgpu::RenderPipeline,
     pub bind_group: wgpu::BindGroup,
     camera_buffer: wgpu::Buffer,
-    model_buffer: wgpu::Buffer,
-    sphere: IndexMesh,
+    camera_pos_buffer: wgpu::Buffer,
+
+    lines: Vec<Line>,
 }
 
-const SHADER_PATH: &str = "res/shaders/universe_shader.wgsl";
+const SHADER_PATH: &str = "res/shaders/line_shader.wgsl";
 
-impl UniverseRenderer {
-    pub fn new(renderer: &Renderer) -> UniverseRenderer {
+impl LineRenderer {
+    pub fn layout() -> wgpu::VertexBufferLayout<'static> {
+        wgpu::VertexBufferLayout {
+            array_stride: std::mem::size_of::<[f32; 12]>() as wgpu::BufferAddress, // 1.
+            step_mode: wgpu::VertexStepMode::Instance,                             // 2.
+            attributes: &[
+                // 3.
+                wgpu::VertexAttribute {
+                    offset: 0,                             // 4.
+                    shader_location: 0,                    // 5.
+                    format: wgpu::VertexFormat::Float32x3, // 6.
+                },
+                wgpu::VertexAttribute {
+                    offset: std::mem::size_of::<[f32; 3]>() as wgpu::BufferAddress,
+                    shader_location: 1,
+                    format: wgpu::VertexFormat::Float32x3,
+                },
+                wgpu::VertexAttribute {
+                    offset: std::mem::size_of::<[f32; 6]>() as wgpu::BufferAddress,
+                    shader_location: 2,
+                    format: wgpu::VertexFormat::Float32x3,
+                },
+                wgpu::VertexAttribute {
+                    offset: std::mem::size_of::<[f32; 9]>() as wgpu::BufferAddress,
+                    shader_location: 3,
+                    format: wgpu::VertexFormat::Float32x3,
+                },
+            ],
+        }
+    }
+
+    pub fn new(renderer: &Renderer, ln: &Vec<Point3<f32>>) -> LineRenderer {
         let bind_group_layout =
             renderer
                 .device
@@ -45,7 +73,7 @@ impl UniverseRenderer {
                             count: None,
                         },
                     ],
-                    label: Some("bind_group_layout"),
+                    label: Some("line_renderer_bind_group_layout"),
                 });
 
         let camera_buffer = renderer.device.create_buffer(&wgpu::BufferDescriptor {
@@ -54,20 +82,16 @@ impl UniverseRenderer {
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
-        let model_buffer = renderer.device.create_buffer(&wgpu::BufferDescriptor {
-            label: Some("Model Buffer"),
-            size: size_of::<[[[f32; 4]; 4]; 5]>() as u64,
+        let camera_pos_buffer = renderer.device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("Camera Position Buffer"),
+            size: size_of::<[f32; 4]>() as u64,
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
 
-        let (vertices, indices) = sphere::generate_index_sphere(30)
-            .map_err(|e| anyhow!("Failed to generate index sphere: {}", e))
-            .expect("Tried to create invalid index sphere for celestial body mesh!");
-
-        UniverseRenderer {
+        LineRenderer {
             render_pipeline: renderer
-                .create_default_render_pipeline(SHADER_PATH, &bind_group_layout, Vertex::layout())
+                .create_default_render_pipeline(SHADER_PATH, &bind_group_layout, Self::layout())
                 .expect("Failed to create universe simulation render pipeline!"),
             bind_group: renderer
                 .device
@@ -80,46 +104,31 @@ impl UniverseRenderer {
                         },
                         wgpu::BindGroupEntry {
                             binding: 1,
-                            resource: model_buffer.as_entire_binding(),
+                            resource: camera_pos_buffer.as_entire_binding(),
                         },
                     ],
-                    label: Some("universe_bind_group"),
+                    label: Some("line_renderer_bind_group"),
                 }),
             camera_buffer: camera_buffer,
-            model_buffer: model_buffer,
-            sphere: IndexMesh::new_instanced(&vertices, &indices, 5, renderer),
+            camera_pos_buffer: camera_pos_buffer,
         }
     }
+
     pub fn upload_camera_matrix(&mut self, renderer: &Renderer, matrix: &[[f32; 4]; 4]) {
         renderer
             .queue
             .write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(matrix));
     }
-    pub fn update_celestial_body_meshes(
-        &mut self,
-        renderer: &Renderer,
-        body_a: &CelestialBody,
-        body_b: &CelestialBody,
-        body_c: &CelestialBody,
-        body_d: &CelestialBody,
-        body_e: &CelestialBody,
-    ) {
-        let matrices: [[[f32; 4]; 4]; 5] = [
-            Self::celestial_body_to_matrix(body_a).into(),
-            Self::celestial_body_to_matrix(body_b).into(),
-            Self::celestial_body_to_matrix(body_c).into(),
-            Self::celestial_body_to_matrix(body_d).into(),
-            Self::celestial_body_to_matrix(body_e).into(),
-        ];
+    pub fn upload_camera_position(&mut self, renderer: &Renderer, position: &[f32; 3]) {
+        renderer.queue.write_buffer(
+            &self.camera_pos_buffer,
+            0,
+            bytemuck::bytes_of(&[position[0], position[1], position[2], 0.0]),
+        );
+    }
+    pub fn render(&self, renderer: &mut Renderer, line: &[&dyn renderer::Renderable; 5]) {
         renderer
-            .queue
-            .write_buffer(&self.model_buffer, 0, bytemuck::cast_slice(&matrices));
-    }
-    pub fn render(&mut self, renderer: &mut Renderer) -> Result<(), wgpu::SurfaceError> {
-        renderer.render(&[&self.sphere], &self.render_pipeline, &self.bind_group)
-    }
-    fn celestial_body_to_matrix(celestial_body: &CelestialBody) -> cgmath::Matrix4<f32> {
-        let v = Matrix4::from_translation(celestial_body.position.to_vec());
-        v * Matrix4::from_scale(celestial_body.mass.sqrt() * 2.0)
+            .render(line, &self.render_pipeline, &self.bind_group)
+            .unwrap();
     }
 }

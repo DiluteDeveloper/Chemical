@@ -1,22 +1,27 @@
-use crate::{geometry::vertex::Vertex, texture::Texture};
+pub mod mesh_renderer;
+mod texture;
+
+pub use mesh_renderer::MeshRenderer;
+pub use texture::Texture;
+
 use log::info;
 use std::sync::Arc;
 use winit::window::Window;
 
-pub trait Renderable {
-    fn bind(&self, render_pass: &mut wgpu::RenderPass);
-    fn draw(&self, render_pass: &mut wgpu::RenderPass);
-}
+use crate::Camera;
 
 pub struct Renderer {
     surface: wgpu::Surface<'static>,
-    pub(super) device: wgpu::Device,
-    pub(super) queue: wgpu::Queue,
-    config: wgpu::SurfaceConfiguration,
     is_surface_configured: bool,
     window: Arc<Window>,
 
     depth_texture: Texture,
+
+    pub device: wgpu::Device,
+    pub queue: wgpu::Queue,
+    pub config: wgpu::SurfaceConfiguration,
+
+    pub mesh_renderer: MeshRenderer,
 }
 
 impl Renderer {
@@ -87,6 +92,7 @@ impl Renderer {
         let depth_texture = Texture::create_depth_texture(&device, &config, "Depth Texture");
 
         Ok(Self {
+            mesh_renderer: MeshRenderer::new(&device, &config),
             surface,
             device,
             queue,
@@ -95,81 +101,6 @@ impl Renderer {
             window,
             depth_texture,
         })
-    }
-
-    pub fn create_default_render_pipeline(
-        &self,
-        shader_path: &str,
-        bind_group_layout: &wgpu::BindGroupLayout,
-        vertex_buffer_layout: wgpu::VertexBufferLayout,
-    ) -> anyhow::Result<wgpu::RenderPipeline> {
-        let shader_source = std::fs::read_to_string(shader_path)?;
-        let shader = self
-            .device
-            .create_shader_module(wgpu::ShaderModuleDescriptor {
-                label: Some(shader_path),
-                source: wgpu::ShaderSource::Wgsl(shader_source.into()),
-            });
-
-        let render_pipeline_layout =
-            self.device
-                .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                    label: Some("Render Pipeline Layout"),
-                    bind_group_layouts: &[&bind_group_layout],
-                    immediate_size: 0,
-                });
-        let render_pipeline_descriptor = wgpu::RenderPipelineDescriptor {
-            label: Some("Render Pipeline"),
-            layout: Some(&render_pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &shader,
-                entry_point: Some("vs_main"),     // 1.
-                buffers: &[vertex_buffer_layout], // 2.
-                compilation_options: wgpu::PipelineCompilationOptions::default(),
-            },
-            fragment: Some(wgpu::FragmentState {
-                // 3.
-                module: &shader,
-                entry_point: Some("fs_main"),
-                targets: &[Some(wgpu::ColorTargetState {
-                    // 4.
-                    format: self.config.format,
-                    blend: Some(wgpu::BlendState::REPLACE),
-                    write_mask: wgpu::ColorWrites::ALL,
-                })],
-                compilation_options: wgpu::PipelineCompilationOptions::default(),
-            }),
-            primitive: wgpu::PrimitiveState {
-                topology: wgpu::PrimitiveTopology::TriangleList, // 1.
-                strip_index_format: None,
-                front_face: wgpu::FrontFace::Ccw, // 2.
-                cull_mode: None,
-                // Setting this to anything other than Fill requires Features::NON_FILL_POLYGON_MODE
-                polygon_mode: wgpu::PolygonMode::Fill,
-                // Requires Features::DEPTH_CLIP_CONTROL
-                unclipped_depth: false,
-                // Requires Features::CONSERVATIVE_RASTERIZATION
-                conservative: false,
-            },
-            depth_stencil: Some(wgpu::DepthStencilState {
-                format: Texture::DEPTH_FORMAT,
-                depth_write_enabled: true,
-                depth_compare: wgpu::CompareFunction::Less,
-                stencil: wgpu::StencilState::default(),
-                bias: wgpu::DepthBiasState::default(),
-            }), // 1.
-            multisample: wgpu::MultisampleState {
-                count: 1,                         // 2.
-                mask: !0,                         // 3.
-                alpha_to_coverage_enabled: false, // 4.
-            },
-            multiview_mask: None, // 5.
-            cache: None,          // 6.
-        };
-        Result::Ok(
-            self.device
-                .create_render_pipeline(&render_pipeline_descriptor),
-        )
     }
 
     pub fn resize(&mut self, width: u32, height: u32) {
@@ -183,12 +114,7 @@ impl Renderer {
         }
     }
 
-    pub fn render(
-        &mut self,
-        renderables: &[&dyn Renderable],
-        render_pipeline: &wgpu::RenderPipeline,
-        bind_group: &wgpu::BindGroup,
-    ) -> Result<(), wgpu::SurfaceError> {
+    pub fn render(&mut self, camera: &Camera) -> Result<(), wgpu::SurfaceError> {
         self.window.request_redraw();
 
         if !self.is_surface_configured {
@@ -235,17 +161,9 @@ impl Renderer {
                 timestamp_writes: None,
                 multiview_mask: None,
             });
-            render_pass.set_pipeline(render_pipeline);
 
-            //render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
-            // index must match the order of the bind group in the render pipeline descriptor
-
-            render_pass.set_bind_group(0, bind_group, &[]);
-
-            for renderable in renderables {
-                renderable.bind(&mut render_pass);
-                renderable.draw(&mut render_pass);
-            }
+            self.mesh_renderer
+                .render(&camera, &self.queue, &mut render_pass);
         }
 
         // submit will accept anything that implements IntoIter

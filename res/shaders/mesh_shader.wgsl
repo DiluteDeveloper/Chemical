@@ -10,7 +10,7 @@ const OPENGL_TO_WGPU_MATRIX: mat4x4<f32> = mat4x4<f32>(
 @group(0) @binding(0) 
 var<uniform> camera_matrix: mat4x4<f32>;
 @group(0) @binding(1) 
-var<uniform> model_matrices: array<mat4x4<f32>, 5>;
+var<uniform> model_matrix: mat4x4<f32>;
 
 struct VertexInput {
 	@location(0) position: vec3<f32>,
@@ -28,7 +28,7 @@ fn vs_main(
 	@builtin(instance_index) idx: u32
 ) -> VertexOutput {
     var out: VertexOutput;
-    out.position = OPENGL_TO_WGPU_MATRIX * camera_matrix * model_matrices[idx] * vec4<f32>(vtx.position, 1.0);
+    out.position = OPENGL_TO_WGPU_MATRIX * camera_matrix * model_matrix * vec4<f32>(vtx.position, 1.0);
 		out.normal = vtx.normal;
     return out;
 }

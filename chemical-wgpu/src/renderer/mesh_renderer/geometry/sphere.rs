@@ -1,11 +1,11 @@
-use crate::geometry::vertex;
+use super::{Index, Vertex};
 use cgmath::{InnerSpace, Vector3, num_traits::pow};
 
 const PI: f32 = 3.141592;
 
 // Resolution represents how many triangles per horizontal loop and vertical half loop
 #[allow(unused)]
-pub fn generate_vertex_sphere(resolution: u8) -> anyhow::Result<Vec<vertex::Vertex>, String> {
+pub fn generate_vertex_sphere(resolution: u8) -> anyhow::Result<Vec<Vertex>, String> {
     let sized_res = resolution as u32;
     if sized_res <= 2 {
         return Err("Resolution is less than or equal to 2!".to_string());
@@ -13,7 +13,7 @@ pub fn generate_vertex_sphere(resolution: u8) -> anyhow::Result<Vec<vertex::Vert
     // Recording this to check if it is the right size for the job at the end of the function let vertex_capacity = ((resolution as usize - 1) * resolution as usize) + 2;
     let vertex_capacity = (sized_res * (sized_res - 2) * 6) + sized_res * 6;
 
-    let mut vertices: Vec<vertex::Vertex> = Vec::with_capacity(vertex_capacity as usize);
+    let mut vertices: Vec<Vertex> = Vec::with_capacity(vertex_capacity as usize);
 
     // Recording this to check if it is the right size for the job at the end
     // of the function
@@ -71,15 +71,15 @@ pub fn generate_vertex_sphere(resolution: u8) -> anyhow::Result<Vec<vertex::Vert
 
             if v_int != 0 {
                 let tri_pos_normal = (v1_pos - v0_pos).cross(v2_pos - v0_pos).normalize();
-                vertices.push(vertex::Vertex {
+                vertices.push(Vertex {
                     position: v0_pos.into(),
                     normal: tri_pos_normal.into(),
                 });
-                vertices.push(vertex::Vertex {
+                vertices.push(Vertex {
                     position: v1_pos.into(),
                     normal: tri_pos_normal.into(),
                 });
-                vertices.push(vertex::Vertex {
+                vertices.push(Vertex {
                     position: v2_pos.into(),
                     normal: tri_pos_normal.into(),
                 });
@@ -91,15 +91,15 @@ pub fn generate_vertex_sphere(resolution: u8) -> anyhow::Result<Vec<vertex::Vert
 
             if v_int != sized_res - 1 {
                 let tri_neg_normal = (v_neg_pos - v0_pos).cross(v1_pos - v0_pos).normalize();
-                vertices.push(vertex::Vertex {
+                vertices.push(Vertex {
                     position: v0_pos.into(),
                     normal: tri_neg_normal.into(),
                 });
-                vertices.push(vertex::Vertex {
+                vertices.push(Vertex {
                     position: v_neg_pos.into(),
                     normal: tri_neg_normal.into(),
                 });
-                vertices.push(vertex::Vertex {
+                vertices.push(Vertex {
                     position: v1_pos.into(),
                     normal: tri_neg_normal.into(),
                 });
@@ -117,9 +117,7 @@ pub fn generate_vertex_sphere(resolution: u8) -> anyhow::Result<Vec<vertex::Vert
     Ok(vertices)
 }
 
-pub fn generate_index_sphere(
-    resolution: u8,
-) -> anyhow::Result<(Vec<vertex::Vertex>, Vec<vertex::Index>), String> {
+pub fn generate_index_sphere(resolution: u8) -> anyhow::Result<(Vec<Vertex>, Vec<Index>), String> {
     let sized_res = resolution as u32;
 
     if sized_res <= 2 {
@@ -128,17 +126,17 @@ pub fn generate_index_sphere(
 
     let vertex_capacity = (sized_res * (sized_res - 1)) + 2;
 
-    let mut vertices: Vec<vertex::Vertex> = Vec::with_capacity(vertex_capacity as usize);
+    let mut vertices: Vec<Vertex> = Vec::with_capacity(vertex_capacity as usize);
 
     let index_capacity = (sized_res * (sized_res - 2) * 6) + sized_res * 6;
 
-    let mut indices: Vec<vertex::Index> = Vec::with_capacity(index_capacity as usize);
+    let mut indices: Vec<Index> = Vec::with_capacity(index_capacity as usize);
 
     // angle of a triangle section of the circle in radians (divide by 2 for
     // half of a circle for vertical)
     let res_radians = 1.0 / (sized_res as f32 / (PI * 2.0));
 
-    vertices.push(vertex::Vertex {
+    vertices.push(Vertex {
         position: [0.0, 1.0, 0.0],
         normal: [0.0, 1.0, 0.0],
     });
@@ -168,13 +166,13 @@ pub fn generate_index_sphere(
                 (cur_angle).sin() * (cur_angle_vert).sin(),
             );
 
-            vertices.push(vertex::Vertex {
+            vertices.push(Vertex {
                 position: v0_pos.into(),
                 normal: [0.0, 0.0, 0.0],
             });
         }
     }
-    vertices.push(vertex::Vertex {
+    vertices.push(Vertex {
         position: [0.0, -1.0, 0.0],
         normal: [0.0, -1.0, 0.0],
     });
@@ -205,8 +203,8 @@ pub fn generate_index_sphere(
 
             let v0: Vector3<f32> = vertices[0].position.into();
 
-            indices.push(v1_h1_idx as u16);
-            indices.push(v1_h0_idx as u16);
+            indices.push(v1_h1_idx);
+            indices.push(v1_h0_idx);
             indices.push(0);
 
             tri_normals[(h_int * 2) as usize] = (v1_h0 - v1_h1).cross(v0 - v1_h1).normalize();
@@ -222,9 +220,9 @@ pub fn generate_index_sphere(
             let v3_idx = vertex_capacity - 1;
             let v3: Vector3<f32> = vertices[v3_idx as usize].position.into();
 
-            indices.push(v3_idx as u16);
-            indices.push(v2_h0_idx as u16);
-            indices.push(v2_h1_idx as u16);
+            indices.push(v3_idx);
+            indices.push(v2_h0_idx);
+            indices.push(v2_h1_idx);
 
             tri_normals[(((tri_normals_capacity - (sized_res * 2)) + (h_int * 2)) + 1) as usize] =
                 (v2_h0 - v3).cross(v2_h1 - v3).normalize();
@@ -249,9 +247,9 @@ pub fn generate_index_sphere(
 
             {
                 // right side up triangle
-                indices.push(v1_h0_idx as u16);
-                indices.push(v0_h0_idx as u16);
-                indices.push(v0_h1_idx as u16);
+                indices.push(v1_h0_idx);
+                indices.push(v0_h0_idx);
+                indices.push(v0_h1_idx);
 
                 tri_normals[(((h_int + (v_int * sized_res)) * 2) + (sized_res * 2)) as usize] =
                     (v0_h0 - v1_h0).cross(v0_h1 - v1_h0).normalize();
@@ -259,9 +257,9 @@ pub fn generate_index_sphere(
 
             {
                 // upside down triangle
-                indices.push(v1_h0_idx as u16);
-                indices.push(v1_hneg1_idx as u16);
-                indices.push(v0_h0_idx as u16);
+                indices.push(v1_h0_idx);
+                indices.push(v1_hneg1_idx);
+                indices.push(v0_h0_idx);
 
                 tri_normals[(((h_int + (v_int * sized_res)) * 2) + (sized_res * 2) + 1) as usize] =
                     (v1_hneg1 - v1_h0).cross(v0_h0 - v1_h0).normalize();

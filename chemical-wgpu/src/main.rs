@@ -1,14 +1,13 @@
 use log::LevelFilter;
 
 mod camera;
-
 mod core;
-mod geometry;
-mod rendering;
-mod texture;
+mod renderer;
 mod utility;
 
 use crate::core::app;
+pub use camera::{Camera, CameraController};
+pub use renderer::Renderer;
 
 fn main() {
     env_logger::Builder::new()

@@ -1,9 +1,8 @@
-use crate::rendering::{
-    line_renderer::{self, LineRenderer},
-    renderer::Renderer,
-    universe_renderer::UniverseRenderer,
-};
-use chemical_engine::physics::universe::simulation::UniverseSimulation;
+use crate::Renderer;
+use crate::renderer::mesh_renderer::{IndexMeshDescriptor, TransformID, sphere};
+use crate::utility::Transform;
+
+use chemical_engine::physics::universe::{self, simulation::UniverseSimulation};
 use std::sync::Arc;
 use winit::{
     dpi::PhysicalPosition,
@@ -26,8 +25,8 @@ pub(super) enum ChemicalEvent {
     ChangeCameraMode(CameraMode),
 }
 
-use crate::camera::{Camera, CameraController};
-use crate::utility::fps_counter::FPSCounter;
+use crate::utility::FPSCounter;
+use crate::{Camera, CameraController};
 
 pub(super) struct ChemicalEngine {
     renderer: Renderer,
@@ -35,20 +34,18 @@ pub(super) struct ChemicalEngine {
     window: Arc<Window>,
 
     universe_simulation: UniverseSimulation,
-    universe_renderer: UniverseRenderer,
-
-    line_renderer: LineRenderer,
-    line: line_renderer::Line,
-    line2: line_renderer::Line,
-    line3: line_renderer::Line,
-    line4: line_renderer::Line,
-    line5: line_renderer::Line,
 
     camera: Camera,
     camera_controller: CameraController,
     camera_mode: CameraMode,
     fps_counter: FPSCounter,
     window_center: PhysicalPosition<f32>,
+
+    transform_id_a: TransformID,
+    transform_id_b: TransformID,
+    transform_id_c: TransformID,
+    transform_id_d: TransformID,
+    transform_id_e: TransformID,
 }
 
 use anyhow::anyhow;
@@ -58,7 +55,7 @@ impl ChemicalEngine {
         event_loop_proxy: Option<EventLoopProxy<ChemicalEvent>>,
     ) -> anyhow::Result<Self> {
         let window_size = window.inner_size();
-        let renderer = pollster::block_on(Renderer::new(Arc::clone(&window)))
+        let mut renderer = pollster::block_on(Renderer::new(Arc::clone(&window)))
             .map_err(|e| anyhow!("Failed to initialise renderer: {}", e))?;
 
         let mut camera = Camera::new(
@@ -75,20 +72,79 @@ impl ChemicalEngine {
         )
             .into();
 
-        let mut sim = UniverseSimulation::new();
-        for i in 0..1000000 {
-            sim.tick();
-        }
-        let mut line = line_renderer::Line::new((sim.body_a.trail.len() - 1) as u32, &renderer);
-        line.fill(&renderer, &sim.body_a.trail);
-        let mut line2 = line_renderer::Line::new((sim.body_b.trail.len() - 1) as u32, &renderer);
-        line2.fill(&renderer, &sim.body_b.trail);
-        let mut line3 = line_renderer::Line::new((sim.body_c.trail.len() - 1) as u32, &renderer);
-        line3.fill(&renderer, &sim.body_c.trail);
-        let mut line4 = line_renderer::Line::new((sim.body_d.trail.len() - 1) as u32, &renderer);
-        line4.fill(&renderer, &sim.body_d.trail);
-        let mut line5 = line_renderer::Line::new((sim.body_e.trail.len() - 1) as u32, &renderer);
-        line5.fill(&renderer, &sim.body_e.trail);
+        // let mut sim = UniverseSimulation::new();
+        // for i in 0..1000000 {
+        //     sim.tick();
+        // }
+        // let mut line = line_renderer::Line::new((sim.body_a.trail.len() - 1) as u32, &renderer);
+        // line.fill(&renderer, &sim.body_a.trail);
+        // let mut line2 = line_renderer::Line::new((sim.body_b.trail.len() - 1) as u32, &renderer);
+        // line2.fill(&renderer, &sim.body_b.trail);
+        // let mut line3 = line_renderer::Line::new((sim.body_c.trail.len() - 1) as u32, &renderer);
+        // line3.fill(&renderer, &sim.body_c.trail);
+        // let mut line4 = line_renderer::Line::new((sim.body_d.trail.len() - 1) as u32, &renderer);
+        // line4.fill(&renderer, &sim.body_d.trail);
+        // let mut line5 = line_renderer::Line::new((sim.body_e.trail.len() - 1) as u32, &renderer);
+        // line5.fill(&renderer, &sim.body_e.trail);
+
+        let universe_simulation = UniverseSimulation::new();
+        let (vertices, indices) = sphere::generate_index_sphere(30)
+            .map_err(|e| anyhow!("Failed to generate index sphere: {}", e))
+            .expect("Tried to create invalid index sphere for celestial body mesh!");
+
+        let mut scale = universe_simulation.body_a.mass.sqrt();
+        let mut transform = Transform {
+            position: universe_simulation.body_a.position,
+            scale: (scale, scale, scale).into(),
+            orientation: (0.0, 0.0, 0.0, -1.0).into(),
+        };
+        let transform_id_a = renderer.mesh_renderer.create_transform(&transform);
+        let mut mesh_descriptor = IndexMeshDescriptor {
+            vertices: vertices,
+            indices: indices,
+            num_instances: 1,
+            transform_id: transform_id_a,
+        };
+
+        renderer
+            .mesh_renderer
+            .create_index_mesh(&mesh_descriptor, &renderer.device);
+
+        scale = universe_simulation.body_b.mass.sqrt();
+        transform.position = universe_simulation.body_b.position;
+        transform.scale = (scale, scale, scale).into();
+        let transform_id_b = renderer.mesh_renderer.create_transform(&transform);
+        mesh_descriptor.transform_id = transform_id_b;
+        renderer
+            .mesh_renderer
+            .create_index_mesh(&mesh_descriptor, &renderer.device);
+
+        scale = universe_simulation.body_c.mass.sqrt();
+        transform.position = universe_simulation.body_c.position;
+        transform.scale = (scale, scale, scale).into();
+        let transform_id_c = renderer.mesh_renderer.create_transform(&transform);
+        mesh_descriptor.transform_id = transform_id_c;
+        renderer
+            .mesh_renderer
+            .create_index_mesh(&mesh_descriptor, &renderer.device);
+
+        scale = universe_simulation.body_d.mass.sqrt();
+        transform.position = universe_simulation.body_d.position;
+        transform.scale = (scale, scale, scale).into();
+        let transform_id_d = renderer.mesh_renderer.create_transform(&transform);
+        mesh_descriptor.transform_id = transform_id_d;
+        renderer
+            .mesh_renderer
+            .create_index_mesh(&mesh_descriptor, &renderer.device);
+
+        scale = universe_simulation.body_e.mass.sqrt();
+        transform.position = universe_simulation.body_e.position;
+        transform.scale = (scale, scale, scale).into();
+        let transform_id_e = renderer.mesh_renderer.create_transform(&transform);
+        mesh_descriptor.transform_id = transform_id_e;
+        renderer
+            .mesh_renderer
+            .create_index_mesh(&mesh_descriptor, &renderer.device);
 
         event_loop_proxy
             .as_ref()
@@ -96,13 +152,6 @@ impl ChemicalEngine {
             .send_event(ChemicalEvent::ChangeCameraMode(CameraMode::NoCameraControl))
             .unwrap();
         Ok(ChemicalEngine {
-            line_renderer: LineRenderer::new(&renderer, &sim.body_a.trail),
-            line: line,
-            line2: line2,
-            line3: line3,
-            line4: line4,
-            line5: line5,
-            universe_renderer: UniverseRenderer::new(&renderer),
             renderer: renderer,
             event_loop_proxy: event_loop_proxy.expect("Event loop proxy was invalid"),
             window: window,
@@ -112,6 +161,11 @@ impl ChemicalEngine {
             fps_counter: FPSCounter::new(),
             window_center: window_center,
             universe_simulation: UniverseSimulation::new(),
+            transform_id_a: transform_id_a,
+            transform_id_b: transform_id_b,
+            transform_id_c: transform_id_c,
+            transform_id_d: transform_id_d,
+            transform_id_e: transform_id_e,
         })
     }
 
@@ -129,27 +183,26 @@ impl ChemicalEngine {
 
         self.universe_simulation.tick();
 
-        self.universe_renderer.update_celestial_body_meshes(
-            &self.renderer,
-            &self.universe_simulation.body_a,
-            &self.universe_simulation.body_b,
-            &self.universe_simulation.body_c,
-            &self.universe_simulation.body_d,
-            &self.universe_simulation.body_e,
-        );
-        let camera_matrix = self
-            .camera
-            .get_transformation_matrix()
-            .expect("Failed to get camera transformation matrix");
-
-        self.universe_renderer
-            .upload_camera_matrix(&self.renderer, &camera_matrix.into());
-
-        self.line_renderer
-            .upload_camera_matrix(&self.renderer, &camera_matrix.into());
-
-        self.line_renderer
-            .upload_camera_position(&self.renderer, &self.camera.transform.position.into());
+        self.renderer
+            .mesh_renderer
+            .get_transform(self.transform_id_a)
+            .position = self.universe_simulation.body_a.position;
+        self.renderer
+            .mesh_renderer
+            .get_transform(self.transform_id_b)
+            .position = self.universe_simulation.body_b.position;
+        self.renderer
+            .mesh_renderer
+            .get_transform(self.transform_id_c)
+            .position = self.universe_simulation.body_c.position;
+        self.renderer
+            .mesh_renderer
+            .get_transform(self.transform_id_d)
+            .position = self.universe_simulation.body_d.position;
+        self.renderer
+            .mesh_renderer
+            .get_transform(self.transform_id_e)
+            .position = self.universe_simulation.body_e.position;
 
         self.fps_counter.update();
     }
@@ -160,16 +213,7 @@ impl ChemicalEngine {
             WindowEvent::RedrawRequested => {
                 self.update();
 
-                self.line_renderer.render(
-                    &mut self.renderer,
-                    &[
-                        &self.line,
-                        &self.line2,
-                        &self.line3,
-                        &self.line4,
-                        &self.line5,
-                    ],
-                );
+                self.renderer.render(&self.camera).unwrap();
                 /*match self.universe_renderer.render(&mut self.renderer) {
                     Ok(_) => {}
                     // Reconfigure the surface if it's lost or outdated
