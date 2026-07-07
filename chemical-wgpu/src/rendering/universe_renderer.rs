@@ -1,9 +1,12 @@
-use crate::{geometry::sphere, rendering::mesh::IndexMesh};
+use crate::{
+    geometry::{sphere, vertex::Vertex},
+    rendering::mesh::IndexMesh,
+};
 
 use super::renderer::Renderer;
 use anyhow::anyhow;
 use cgmath::{EuclideanSpace, Matrix4};
-use chemical_engine::physics::universe_simulation::celestial_body::CelestialBody;
+use chemical_engine::physics::universe::celestial_body::CelestialBody;
 pub struct UniverseRenderer {
     pub render_pipeline: wgpu::RenderPipeline,
     pub bind_group: wgpu::BindGroup,
@@ -53,7 +56,7 @@ impl UniverseRenderer {
         });
         let model_buffer = renderer.device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("Model Buffer"),
-            size: size_of::<[[[f32; 4]; 4]; 3]>() as u64,
+            size: size_of::<[[[f32; 4]; 4]; 5]>() as u64,
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
@@ -64,34 +67,7 @@ impl UniverseRenderer {
 
         UniverseRenderer {
             render_pipeline: renderer
-                .create_default_render_pipeline(
-                    SHADER_PATH,
-                    &wgpu::BindGroupLayoutDescriptor {
-                        entries: &[
-                            wgpu::BindGroupLayoutEntry {
-                                binding: 0,
-                                visibility: wgpu::ShaderStages::VERTEX,
-                                ty: wgpu::BindingType::Buffer {
-                                    ty: wgpu::BufferBindingType::Uniform,
-                                    has_dynamic_offset: false,
-                                    min_binding_size: None,
-                                },
-                                count: None,
-                            },
-                            wgpu::BindGroupLayoutEntry {
-                                binding: 1,
-                                visibility: wgpu::ShaderStages::VERTEX,
-                                ty: wgpu::BindingType::Buffer {
-                                    ty: wgpu::BufferBindingType::Uniform,
-                                    has_dynamic_offset: false,
-                                    min_binding_size: None,
-                                },
-                                count: None,
-                            },
-                        ],
-                        label: Some("bind_group_layout"),
-                    },
-                )
+                .create_default_render_pipeline(SHADER_PATH, &bind_group_layout, Vertex::layout())
                 .expect("Failed to create universe simulation render pipeline!"),
             bind_group: renderer
                 .device
@@ -111,7 +87,7 @@ impl UniverseRenderer {
                 }),
             camera_buffer: camera_buffer,
             model_buffer: model_buffer,
-            sphere: IndexMesh::new_instanced(&vertices, &indices, 3, renderer),
+            sphere: IndexMesh::new_instanced(&vertices, &indices, 5, renderer),
         }
     }
     pub fn upload_camera_matrix(&mut self, renderer: &Renderer, matrix: &[[f32; 4]; 4]) {
@@ -125,11 +101,15 @@ impl UniverseRenderer {
         body_a: &CelestialBody,
         body_b: &CelestialBody,
         body_c: &CelestialBody,
+        body_d: &CelestialBody,
+        body_e: &CelestialBody,
     ) {
-        let matrices: [[[f32; 4]; 4]; 3] = [
+        let matrices: [[[f32; 4]; 4]; 5] = [
             Self::celestial_body_to_matrix(body_a).into(),
             Self::celestial_body_to_matrix(body_b).into(),
             Self::celestial_body_to_matrix(body_c).into(),
+            Self::celestial_body_to_matrix(body_d).into(),
+            Self::celestial_body_to_matrix(body_e).into(),
         ];
         renderer
             .queue
@@ -140,6 +120,6 @@ impl UniverseRenderer {
     }
     fn celestial_body_to_matrix(celestial_body: &CelestialBody) -> cgmath::Matrix4<f32> {
         let v = Matrix4::from_translation(celestial_body.position.to_vec());
-        v * Matrix4::from_scale(celestial_body.mass.sqrt())
+        v * Matrix4::from_scale(celestial_body.mass.sqrt() * 2.0)
     }
 }

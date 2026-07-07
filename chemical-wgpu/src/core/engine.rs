@@ -1,5 +1,9 @@
-use crate::rendering::{renderer::Renderer, universe::UniverseRenderer};
-use chemical_engine::physics::universe_simulation::UniverseSimulation;
+use crate::rendering::{
+    line_renderer::{self, LineRenderer},
+    renderer::Renderer,
+    universe_renderer::UniverseRenderer,
+};
+use chemical_engine::physics::universe::simulation::UniverseSimulation;
 use std::sync::Arc;
 use winit::{
     dpi::PhysicalPosition,
@@ -33,6 +37,13 @@ pub(super) struct ChemicalEngine {
     universe_simulation: UniverseSimulation,
     universe_renderer: UniverseRenderer,
 
+    line_renderer: LineRenderer,
+    line: line_renderer::Line,
+    line2: line_renderer::Line,
+    line3: line_renderer::Line,
+    line4: line_renderer::Line,
+    line5: line_renderer::Line,
+
     camera: Camera,
     camera_controller: CameraController,
     camera_mode: CameraMode,
@@ -64,19 +75,40 @@ impl ChemicalEngine {
         )
             .into();
 
+        let mut sim = UniverseSimulation::new();
+        for i in 0..1000000 {
+            sim.tick();
+        }
+        let mut line = line_renderer::Line::new((sim.body_a.trail.len() - 1) as u32, &renderer);
+        line.fill(&renderer, &sim.body_a.trail);
+        let mut line2 = line_renderer::Line::new((sim.body_b.trail.len() - 1) as u32, &renderer);
+        line2.fill(&renderer, &sim.body_b.trail);
+        let mut line3 = line_renderer::Line::new((sim.body_c.trail.len() - 1) as u32, &renderer);
+        line3.fill(&renderer, &sim.body_c.trail);
+        let mut line4 = line_renderer::Line::new((sim.body_d.trail.len() - 1) as u32, &renderer);
+        line4.fill(&renderer, &sim.body_d.trail);
+        let mut line5 = line_renderer::Line::new((sim.body_e.trail.len() - 1) as u32, &renderer);
+        line5.fill(&renderer, &sim.body_e.trail);
+
         event_loop_proxy
             .as_ref()
             .unwrap()
             .send_event(ChemicalEvent::ChangeCameraMode(CameraMode::NoCameraControl))
             .unwrap();
         Ok(ChemicalEngine {
+            line_renderer: LineRenderer::new(&renderer, &sim.body_a.trail),
+            line: line,
+            line2: line2,
+            line3: line3,
+            line4: line4,
+            line5: line5,
             universe_renderer: UniverseRenderer::new(&renderer),
             renderer: renderer,
             event_loop_proxy: event_loop_proxy.expect("Event loop proxy was invalid"),
             window: window,
             camera_mode: CameraMode::NoCameraControl,
             camera: camera,
-            camera_controller: CameraController::new(30.0, 0.0002, 0.07),
+            camera_controller: CameraController::new(60.0, 0.0002, 0.07),
             fps_counter: FPSCounter::new(),
             window_center: window_center,
             universe_simulation: UniverseSimulation::new(),
@@ -102,6 +134,8 @@ impl ChemicalEngine {
             &self.universe_simulation.body_a,
             &self.universe_simulation.body_b,
             &self.universe_simulation.body_c,
+            &self.universe_simulation.body_d,
+            &self.universe_simulation.body_e,
         );
         let camera_matrix = self
             .camera
@@ -111,8 +145,13 @@ impl ChemicalEngine {
         self.universe_renderer
             .upload_camera_matrix(&self.renderer, &camera_matrix.into());
 
+        self.line_renderer
+            .upload_camera_matrix(&self.renderer, &camera_matrix.into());
+
+        self.line_renderer
+            .upload_camera_position(&self.renderer, &self.camera.transform.position.into());
+
         self.fps_counter.update();
-        //self.universe_simulation.tick();
     }
     pub(super) fn window_event(&mut self, event: &WindowEvent, event_loop: &ActiveEventLoop) {
         match event {
@@ -120,7 +159,18 @@ impl ChemicalEngine {
             WindowEvent::Resized(size) => self.renderer.resize(size.width, size.height),
             WindowEvent::RedrawRequested => {
                 self.update();
-                match self.universe_renderer.render(&mut self.renderer) {
+
+                self.line_renderer.render(
+                    &mut self.renderer,
+                    &[
+                        &self.line,
+                        &self.line2,
+                        &self.line3,
+                        &self.line4,
+                        &self.line5,
+                    ],
+                );
+                /*match self.universe_renderer.render(&mut self.renderer) {
                     Ok(_) => {}
                     // Reconfigure the surface if it's lost or outdated
                     Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => {
@@ -131,7 +181,7 @@ impl ChemicalEngine {
                     Err(e) => {
                         log::error!("Render loop failed: {}", e);
                     }
-                }
+                }*/
             }
             WindowEvent::KeyboardInput {
                 event:

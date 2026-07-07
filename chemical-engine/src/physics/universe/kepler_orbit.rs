@@ -1,4 +1,4 @@
-use crate::physics::universe_simulation::celestial_body::CelestialBody;
+use crate::physics::universe::celestial_body::CelestialBody;
 use cgmath::{InnerSpace, Vector3};
 
 const GRAVITY: f32 = 9.81;

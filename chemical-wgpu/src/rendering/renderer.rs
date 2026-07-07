@@ -100,7 +100,8 @@ impl Renderer {
     pub fn create_default_render_pipeline(
         &self,
         shader_path: &str,
-        bind_group_layout_descriptor: &wgpu::BindGroupLayoutDescriptor,
+        bind_group_layout: &wgpu::BindGroupLayout,
+        vertex_buffer_layout: wgpu::VertexBufferLayout,
     ) -> anyhow::Result<wgpu::RenderPipeline> {
         let shader_source = std::fs::read_to_string(shader_path)?;
         let shader = self
@@ -109,9 +110,6 @@ impl Renderer {
                 label: Some(shader_path),
                 source: wgpu::ShaderSource::Wgsl(shader_source.into()),
             });
-        let bind_group_layout = self
-            .device
-            .create_bind_group_layout(&bind_group_layout_descriptor);
 
         let render_pipeline_layout =
             self.device
@@ -125,8 +123,8 @@ impl Renderer {
             layout: Some(&render_pipeline_layout),
             vertex: wgpu::VertexState {
                 module: &shader,
-                entry_point: Some("vs_main"), // 1.
-                buffers: &[Vertex::layout()], // 2.
+                entry_point: Some("vs_main"),     // 1.
+                buffers: &[vertex_buffer_layout], // 2.
                 compilation_options: wgpu::PipelineCompilationOptions::default(),
             },
             fragment: Some(wgpu::FragmentState {
@@ -145,7 +143,7 @@ impl Renderer {
                 topology: wgpu::PrimitiveTopology::TriangleList, // 1.
                 strip_index_format: None,
                 front_face: wgpu::FrontFace::Ccw, // 2.
-                cull_mode: Some(wgpu::Face::Back),
+                cull_mode: None,
                 // Setting this to anything other than Fill requires Features::NON_FILL_POLYGON_MODE
                 polygon_mode: wgpu::PolygonMode::Fill,
                 // Requires Features::DEPTH_CLIP_CONTROL
@@ -208,6 +206,7 @@ impl Renderer {
                 label: Some("Render Encoder"),
             });
         {
+            // Needs to be for the entire render pass all shaders
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("Render Pass"),
                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {

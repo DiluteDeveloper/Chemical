@@ -1,1 +1,1 @@
-pub mod universe_simulation;
+pub mod universe;
