@@ -1,4 +1,5 @@
 use crate::Renderer;
+use crate::renderer::line_renderer::LineDescriptor;
 use crate::renderer::mesh_renderer::{IndexMeshDescriptor, TransformID, sphere};
 use crate::utility::Transform;
 
@@ -27,6 +28,7 @@ pub(super) enum ChemicalEvent {
 
 use crate::utility::FPSCounter;
 use crate::{Camera, CameraController};
+use anyhow::anyhow;
 
 pub(super) struct ChemicalEngine {
     renderer: Renderer,
@@ -40,15 +42,10 @@ pub(super) struct ChemicalEngine {
     camera_mode: CameraMode,
     fps_counter: FPSCounter,
     window_center: PhysicalPosition<f32>,
-
-    transform_id_a: TransformID,
-    transform_id_b: TransformID,
-    transform_id_c: TransformID,
-    transform_id_d: TransformID,
-    transform_id_e: TransformID,
 }
 
-use anyhow::anyhow;
+const UNIVERSE_SIMULATION_ORBIT_TRAIL_RESOLUTION: u64 = 3000;
+
 impl ChemicalEngine {
     pub(super) fn new(
         window: Arc<Window>,
@@ -61,8 +58,8 @@ impl ChemicalEngine {
         let mut camera = Camera::new(
             window_size.width as f32 / window_size.height as f32,
             90.0,
-            0.1,
-            100000.00,
+            100.0,
+            1000000.00,
         );
         camera.transform.position.z = 5.0;
 
@@ -72,79 +69,75 @@ impl ChemicalEngine {
         )
             .into();
 
-        // let mut sim = UniverseSimulation::new();
-        // for i in 0..1000000 {
-        //     sim.tick();
-        // }
-        // let mut line = line_renderer::Line::new((sim.body_a.trail.len() - 1) as u32, &renderer);
-        // line.fill(&renderer, &sim.body_a.trail);
-        // let mut line2 = line_renderer::Line::new((sim.body_b.trail.len() - 1) as u32, &renderer);
-        // line2.fill(&renderer, &sim.body_b.trail);
-        // let mut line3 = line_renderer::Line::new((sim.body_c.trail.len() - 1) as u32, &renderer);
-        // line3.fill(&renderer, &sim.body_c.trail);
-        // let mut line4 = line_renderer::Line::new((sim.body_d.trail.len() - 1) as u32, &renderer);
-        // line4.fill(&renderer, &sim.body_d.trail);
-        // let mut line5 = line_renderer::Line::new((sim.body_e.trail.len() - 1) as u32, &renderer);
-        // line5.fill(&renderer, &sim.body_e.trail);
-
         let universe_simulation = UniverseSimulation::new();
         let (vertices, indices) = sphere::generate_index_sphere(30)
             .map_err(|e| anyhow!("Failed to generate index sphere: {}", e))
             .expect("Tried to create invalid index sphere for celestial body mesh!");
 
-        let mut scale = universe_simulation.body_a.mass.sqrt();
-        let mut transform = Transform {
-            position: universe_simulation.body_a.position,
-            scale: (scale, scale, scale).into(),
-            orientation: (0.0, 0.0, 0.0, -1.0).into(),
-        };
-        let transform_id_a = renderer.mesh_renderer.create_transform(&transform);
         let mut mesh_descriptor = IndexMeshDescriptor {
             vertices: vertices,
             indices: indices,
             num_instances: 1,
-            transform_id: transform_id_a,
+            transform_id: 0,
         };
 
-        renderer
-            .mesh_renderer
-            .create_index_mesh(&mesh_descriptor, &renderer.device);
+        for (i, body) in universe_simulation.celestial_bodies.iter().enumerate() {
+            let scale = body.mass.sqrt();
+            let transform = Transform {
+                position: body.position,
+                scale: (scale, scale, scale).into(),
+                orientation: (0.0, 0.0, 0.0, -1.0).into(),
+            };
+            mesh_descriptor.transform_id = renderer.mesh_renderer.create_transform(&transform);
+            renderer
+                .mesh_renderer
+                .create_index_mesh(&mesh_descriptor, &renderer.device);
 
-        scale = universe_simulation.body_b.mass.sqrt();
-        transform.position = universe_simulation.body_b.position;
-        transform.scale = (scale, scale, scale).into();
-        let transform_id_b = renderer.mesh_renderer.create_transform(&transform);
-        mesh_descriptor.transform_id = transform_id_b;
-        renderer
-            .mesh_renderer
-            .create_index_mesh(&mesh_descriptor, &renderer.device);
-
-        scale = universe_simulation.body_c.mass.sqrt();
-        transform.position = universe_simulation.body_c.position;
-        transform.scale = (scale, scale, scale).into();
-        let transform_id_c = renderer.mesh_renderer.create_transform(&transform);
-        mesh_descriptor.transform_id = transform_id_c;
-        renderer
-            .mesh_renderer
-            .create_index_mesh(&mesh_descriptor, &renderer.device);
-
-        scale = universe_simulation.body_d.mass.sqrt();
-        transform.position = universe_simulation.body_d.position;
-        transform.scale = (scale, scale, scale).into();
-        let transform_id_d = renderer.mesh_renderer.create_transform(&transform);
-        mesh_descriptor.transform_id = transform_id_d;
-        renderer
-            .mesh_renderer
-            .create_index_mesh(&mesh_descriptor, &renderer.device);
-
-        scale = universe_simulation.body_e.mass.sqrt();
-        transform.position = universe_simulation.body_e.position;
-        transform.scale = (scale, scale, scale).into();
-        let transform_id_e = renderer.mesh_renderer.create_transform(&transform);
-        mesh_descriptor.transform_id = transform_id_e;
-        renderer
-            .mesh_renderer
-            .create_index_mesh(&mesh_descriptor, &renderer.device);
+            let line_descriptor = LineDescriptor {
+                data: Some(vec![body.position]),
+                width: 40.0, //body.position.z.sqrt(),
+                colour: match i {
+                    0 => wgpu::Color {
+                        r: 0.204,
+                        g: 0.741,
+                        b: 0.216,
+                        a: 1.0,
+                    },
+                    1 => wgpu::Color {
+                        r: 0.741,
+                        g: 0.557,
+                        b: 0.204,
+                        a: 1.0,
+                    },
+                    2 => wgpu::Color {
+                        r: 0.741,
+                        g: 0.204,
+                        b: 0.204,
+                        a: 1.0,
+                    },
+                    3 => wgpu::Color {
+                        r: 1.0,
+                        g: 1.0,
+                        b: 1.0,
+                        a: 1.0,
+                    },
+                    4 => wgpu::Color {
+                        r: 0.384,
+                        g: 0.204,
+                        b: 0.741,
+                        a: 1.0,
+                    },
+                    5 => wgpu::Color {
+                        r: 0.741,
+                        g: 0.204,
+                        b: 0.518,
+                        a: 1.0,
+                    },
+                    _ => wgpu::Color::WHITE,
+                },
+            };
+            renderer.line_renderer.create_line(&line_descriptor);
+        }
 
         event_loop_proxy
             .as_ref()
@@ -157,53 +150,41 @@ impl ChemicalEngine {
             window: window,
             camera_mode: CameraMode::NoCameraControl,
             camera: camera,
-            camera_controller: CameraController::new(60.0, 0.0002, 0.07),
+            camera_controller: CameraController::new(1600.0, 0.0002, 0.07),
             fps_counter: FPSCounter::new(),
             window_center: window_center,
             universe_simulation: UniverseSimulation::new(),
-            transform_id_a: transform_id_a,
-            transform_id_b: transform_id_b,
-            transform_id_c: transform_id_c,
-            transform_id_d: transform_id_d,
-            transform_id_e: transform_id_e,
         })
     }
 
     pub(super) fn update(&mut self) {
-        // info!(
-        //     "FPS: {}, Delta: {}",
-        //     self.fps_counter.fps.unwrap_or(-1),
-        //     self.fps_counter.delta
-        // );
-
         if self.camera_mode == CameraMode::FPSCameraControl {
             self.camera_controller
                 .update_camera(&mut self.camera, self.fps_counter.delta as f32);
         }
 
-        self.universe_simulation.tick();
+        // self.simulation_timer += self.fps_counter.delta as f32;
+        // if self.simulation_timer > 0.0 {
+        //     self.simulation_timer = 0.0;
+        for _i in 0..UNIVERSE_SIMULATION_ORBIT_TRAIL_RESOLUTION {
+            self.universe_simulation.tick(self.fps_counter.delta);
+        }
+        // }
 
-        self.renderer
-            .mesh_renderer
-            .get_transform(self.transform_id_a)
-            .position = self.universe_simulation.body_a.position;
-        self.renderer
-            .mesh_renderer
-            .get_transform(self.transform_id_b)
-            .position = self.universe_simulation.body_b.position;
-        self.renderer
-            .mesh_renderer
-            .get_transform(self.transform_id_c)
-            .position = self.universe_simulation.body_c.position;
-        self.renderer
-            .mesh_renderer
-            .get_transform(self.transform_id_d)
-            .position = self.universe_simulation.body_d.position;
-        self.renderer
-            .mesh_renderer
-            .get_transform(self.transform_id_e)
-            .position = self.universe_simulation.body_e.position;
-
+        for (i, body) in self.universe_simulation.celestial_bodies.iter().enumerate() {
+            if self.universe_simulation.get_tick_count()
+                % UNIVERSE_SIMULATION_ORBIT_TRAIL_RESOLUTION
+                == 0
+            {
+                let line = self.renderer.line_renderer.get_line(i).unwrap();
+                line.push(&[body.position]);
+            }
+            self.renderer
+                .mesh_renderer
+                .get_transform(i)
+                .unwrap()
+                .position = body.position;
+        }
         self.fps_counter.update();
     }
     pub(super) fn window_event(&mut self, event: &WindowEvent, event_loop: &ActiveEventLoop) {

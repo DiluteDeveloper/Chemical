@@ -198,8 +198,8 @@ impl MeshRenderer {
         self.transforms.push(*transform);
         self.transforms.len() - 1
     }
-    pub fn get_transform(&mut self, transform_id: TransformID) -> &mut Transform {
-        self.transforms.get_mut(transform_id).unwrap()
+    pub fn get_transform(&mut self, transform_id: TransformID) -> Option<&mut Transform> {
+        self.transforms.get_mut(transform_id)
     }
     pub(super) fn render(
         &self,

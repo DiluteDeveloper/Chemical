@@ -1,6 +1,8 @@
+pub mod line_renderer;
 pub mod mesh_renderer;
 mod texture;
 
+pub use line_renderer::LineRenderer;
 pub use mesh_renderer::MeshRenderer;
 pub use texture::Texture;
 
@@ -22,6 +24,7 @@ pub struct Renderer {
     pub config: wgpu::SurfaceConfiguration,
 
     pub mesh_renderer: MeshRenderer,
+    pub line_renderer: LineRenderer,
 }
 
 impl Renderer {
@@ -93,6 +96,7 @@ impl Renderer {
 
         Ok(Self {
             mesh_renderer: MeshRenderer::new(&device, &config),
+            line_renderer: LineRenderer::new(&device, &config),
             surface,
             device,
             queue,
@@ -163,6 +167,8 @@ impl Renderer {
             });
 
             self.mesh_renderer
+                .render(&camera, &self.queue, &mut render_pass);
+            self.line_renderer
                 .render(&camera, &self.queue, &mut render_pass);
         }
 
