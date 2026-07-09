@@ -3,7 +3,7 @@ use anyhow::bail;
 
 pub struct LightStorage {
     buffer: wgpu::Buffer,
-    point_lights: Vec<PointLight>,
+    pub point_lights: Vec<PointLight>,
 }
 
 const MAX_POINT_LIGHTS: usize = 100;

@@ -152,7 +152,7 @@ impl ChemicalEngine {
 
         let mut transform = Transform {
             position: (0.0, 0.0, 0.0).into(),
-            scale: (5.0, 5.0, 5.0).into(),
+            scale: (3.0, 3.0, 3.0).into(),
             orientation: (0.0, 0.0, 0.0, -1.0).into(),
         };
         /*mesh_descriptor.transform_id = renderer.mesh_renderer.create_transform(&transform);
@@ -160,6 +160,14 @@ impl ChemicalEngine {
             .mesh_renderer
             .create_index_mesh(&mesh_descriptor, &renderer.device);*/
         transform.position.x = 5.0;
+        mesh_descriptor.transform_id = renderer.mesh_renderer.create_transform(&transform);
+        mesh_descriptor.is_lit = true;
+        renderer
+            .mesh_renderer
+            .create_index_mesh(&mesh_descriptor, &renderer.device);
+        transform.position.x = 0.0;
+        transform.position.z = 7.0;
+        transform.position.y = 3.0;
         mesh_descriptor.transform_id = renderer.mesh_renderer.create_transform(&transform);
         mesh_descriptor.is_lit = true;
         renderer
@@ -175,25 +183,33 @@ impl ChemicalEngine {
             is_lit: true,
         };
         transform.position.x = -5.0;
+        transform.position.z = 0.0;
+        transform.position.y = 5.0;
         cube_mesh_descriptor.transform_id = renderer.mesh_renderer.create_transform(&transform);
         renderer
             .mesh_renderer
             .create_vertex_mesh(&cube_mesh_descriptor, &renderer.device);
 
+        vertices = geometry::plane::generate_vertex_plane((30.0, 30.0).into()).to_vec();
+
+        let mut plane_mesh_descriptor = VertexMeshDescriptor {
+            vertices: vertices,
+            num_instances: 1,
+            transform_id: 0,
+            is_lit: true,
+        };
+        transform.scale = (1.0, 1.0, 1.0).into();
+        transform.position.x = 0.0;
+        transform.position.y = -2.5;
+        plane_mesh_descriptor.transform_id = renderer.mesh_renderer.create_transform(&transform);
+        renderer
+            .mesh_renderer
+            .create_vertex_mesh(&plane_mesh_descriptor, &renderer.device);
+
         renderer
             .mesh_renderer
             .light_storage
-            .add_point_light(&PointLight::new([0.0, 0.0, 10.0], [1.0, 1.0, 1.0], 2.0))
-            .unwrap();
-        renderer
-            .mesh_renderer
-            .light_storage
-            .add_point_light(&PointLight::new([13.0, 5.0, -10.0], [1.0, 1.0, 1.0], 3.0))
-            .unwrap();
-        renderer
-            .mesh_renderer
-            .light_storage
-            .add_point_light(&PointLight::new([15.0, 5.0, 0.0], [1.0, 0.8, 0.3], 10.0))
+            .add_point_light(&PointLight::new([20.0, 20.0, 20.0], [0.5, 1.0, 0.8], 50.0))
             .unwrap();
         event_loop_proxy
             .as_ref()

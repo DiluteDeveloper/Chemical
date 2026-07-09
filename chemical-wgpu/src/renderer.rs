@@ -95,10 +95,11 @@ impl Renderer {
             view_formats: vec![],
             desired_maximum_frame_latency: 2,
         };
-        let depth_texture = Texture::create_depth_texture(&device, &config, "Depth Texture");
+        let depth_texture =
+            Texture::create_depth_texture(&device, config.width, config.height, "Depth Texture");
 
         Ok(Self {
-            mesh_renderer: MeshRenderer::new(&device, &config),
+            mesh_renderer: MeshRenderer::new(&device, &config, &surface_caps),
             line_renderer: LineRenderer::new(&device, &config),
             surface,
             device,
@@ -116,8 +117,12 @@ impl Renderer {
             self.config.height = height;
             self.surface.configure(&self.device, &self.config);
             self.is_surface_configured = true;
-            self.depth_texture =
-                Texture::create_depth_texture(&self.device, &self.config, "Depth Texture");
+            self.depth_texture = Texture::create_depth_texture(
+                &self.device,
+                self.config.width,
+                self.config.height,
+                "Depth Texture",
+            );
         }
     }
 
@@ -138,6 +143,10 @@ impl Renderer {
             .create_command_encoder(&wgpu::CommandEncoderDescriptor {
                 label: Some("Render Encoder"),
             });
+        self.mesh_renderer
+            .prepare(&camera, &self.queue, &mut encoder);
+
+        // render lights buffer after encoder before real render pass
         {
             // Needs to be for the entire render pass all shaders
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
@@ -169,8 +178,7 @@ impl Renderer {
                 multiview_mask: None,
             });
 
-            self.mesh_renderer
-                .render(&camera, &self.queue, &mut render_pass);
+            self.mesh_renderer.render(&mut render_pass);
             self.line_renderer
                 .render(&camera, &self.queue, &mut render_pass);
         }

@@ -1,6 +1,7 @@
 use crate::utility::TransformNoScale;
 use anyhow::anyhow;
 use cgmath::{InnerSpace, Matrix4, Quaternion, Rad, Rotation, Rotation3, SquareMatrix, Vector3};
+use log::info;
 
 pub struct Camera {
     pub transform: TransformNoScale,
@@ -98,6 +99,7 @@ impl CameraController {
     }
 
     pub fn update_camera(&mut self, camera: &mut Camera, delta: f32) {
+        info!("{:?}", camera.transform.orientation);
         let transform = &mut camera.transform;
         let mut fwd = transform.orientation.rotate_vector(-Vector3::unit_z());
         fwd.y = 0.0;

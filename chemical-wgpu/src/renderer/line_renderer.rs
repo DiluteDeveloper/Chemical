@@ -1,8 +1,7 @@
 mod line;
 
+use super::Texture;
 use crate::Camera;
-use crate::renderer::Texture;
-use anyhow;
 use line::LineSegment;
 pub use line::{Line, LineDescriptor};
 
