@@ -1,47 +1,155 @@
-// use crate::geometry::vertex;
-// pub fn generate_cube(width: f32) -> ([vertex::Vertex; 8], [vertex::Index; 36]) {
-//     let vertices: [vertex::Vertex; 8] = [
-//         vertex::Vertex {
-//             position: (-width, -width, -width).into(),
-//             normal: (-1.0, -1.0, -1.0).into(),
-//         },
-//         vertex::Vertex {
-//             position: (width, -width, -width).into(),
-//             normal: (1.0, -1.0, -1.0).into(),
-//         },
-//         vertex::Vertex {
-//             position: (-width, -width, width).into(),
-//             normal: (-1.0, -1.0, 1.0).into(),
-//         },
-//         vertex::Vertex {
-//             position: (width, -width, width).into(),
-//             normal: (1.0, -1.0, 1.0).into(),
-//         },
-//         vertex::Vertex {
-//             position: (-width, width, -width).into(),
-//             normal: (-1.0, 1.0, -1.0).into(),
-//         },
-//         vertex::Vertex {
-//             position: (width, width, -width).into(),
-//             normal: (1.0, 1.0, -1.0).into(),
-//         },
-//         vertex::Vertex {
-//             position: (-width, width, width).into(),
-//             normal: (-1.0, 1.0, 1.0).into(),
-//         },
-//         vertex::Vertex {
-//             position: (width, width, width).into(),
-//             normal: (1.0, 1.0, 1.0).into(),
-//         },
-//     ];
-//     let indices: [vertex::Index; 36] = [
-//         2, 0, 1, 3, 2, 1, // Bottom face
-//         4, 6, 7, 5, 4, 7, // Top face
-//         0, 4, 5, 1, 0, 5, // Front face
-//         2, 3, 7, 2, 7, 6, // Back face
-//         2, 6, 4, 2, 4, 0, // Left face
-//         1, 5, 7, 1, 7, 3, // Right face
-//     ];
-//
-//     (vertices, indices)
-// }
+use super::Vertex;
+pub fn generate_vertex_cube(extents: cgmath::Vector3<f32>) -> [Vertex; 36] {
+    [
+        // Front face (+Z)
+        Vertex {
+            position: (-extents.x, -extents.y, extents.z).into(),
+            normal: (0.0, 0.0, 1.0).into(),
+        },
+        Vertex {
+            position: (extents.x, -extents.y, extents.z).into(),
+            normal: (0.0, 0.0, 1.0).into(),
+        },
+        Vertex {
+            position: (extents.x, extents.y, extents.z).into(),
+            normal: (0.0, 0.0, 1.0).into(),
+        },
+        Vertex {
+            position: (-extents.x, -extents.y, extents.z).into(),
+            normal: (0.0, 0.0, 1.0).into(),
+        },
+        Vertex {
+            position: (extents.x, extents.y, extents.z).into(),
+            normal: (0.0, 0.0, 1.0).into(),
+        },
+        Vertex {
+            position: (-extents.x, extents.y, extents.z).into(),
+            normal: (0.0, 0.0, 1.0).into(),
+        },
+        // Back face (-Z)
+        Vertex {
+            position: (extents.x, -extents.y, -extents.z).into(),
+            normal: (0.0, 0.0, -1.0).into(),
+        },
+        Vertex {
+            position: (-extents.x, -extents.y, -extents.z).into(),
+            normal: (0.0, 0.0, -1.0).into(),
+        },
+        Vertex {
+            position: (-extents.x, extents.y, -extents.z).into(),
+            normal: (0.0, 0.0, -1.0).into(),
+        },
+        Vertex {
+            position: (extents.x, -extents.y, -extents.z).into(),
+            normal: (0.0, 0.0, -1.0).into(),
+        },
+        Vertex {
+            position: (-extents.x, extents.y, -extents.z).into(),
+            normal: (0.0, 0.0, -1.0).into(),
+        },
+        Vertex {
+            position: (extents.x, extents.y, -extents.z).into(),
+            normal: (0.0, 0.0, -1.0).into(),
+        },
+        // Right face (+X)
+        Vertex {
+            position: (extents.x, -extents.y, extents.z).into(),
+            normal: (1.0, 0.0, 0.0).into(),
+        },
+        Vertex {
+            position: (extents.x, -extents.y, -extents.z).into(),
+            normal: (1.0, 0.0, 0.0).into(),
+        },
+        Vertex {
+            position: (extents.x, extents.y, -extents.z).into(),
+            normal: (1.0, 0.0, 0.0).into(),
+        },
+        Vertex {
+            position: (extents.x, -extents.y, extents.z).into(),
+            normal: (1.0, 0.0, 0.0).into(),
+        },
+        Vertex {
+            position: (extents.x, extents.y, -extents.z).into(),
+            normal: (1.0, 0.0, 0.0).into(),
+        },
+        Vertex {
+            position: (extents.x, extents.y, extents.z).into(),
+            normal: (1.0, 0.0, 0.0).into(),
+        },
+        // Left face (-X)
+        Vertex {
+            position: (-extents.x, -extents.y, -extents.z).into(),
+            normal: (-1.0, 0.0, 0.0).into(),
+        },
+        Vertex {
+            position: (-extents.x, -extents.y, extents.z).into(),
+            normal: (-1.0, 0.0, 0.0).into(),
+        },
+        Vertex {
+            position: (-extents.x, extents.y, extents.z).into(),
+            normal: (-1.0, 0.0, 0.0).into(),
+        },
+        Vertex {
+            position: (-extents.x, -extents.y, -extents.z).into(),
+            normal: (-1.0, 0.0, 0.0).into(),
+        },
+        Vertex {
+            position: (-extents.x, extents.y, extents.z).into(),
+            normal: (-1.0, 0.0, 0.0).into(),
+        },
+        Vertex {
+            position: (-extents.x, extents.y, -extents.z).into(),
+            normal: (-1.0, 0.0, 0.0).into(),
+        },
+        // Top face (+Y)
+        Vertex {
+            position: (-extents.x, extents.y, extents.z).into(),
+            normal: (0.0, 1.0, 0.0).into(),
+        },
+        Vertex {
+            position: (extents.x, extents.y, extents.z).into(),
+            normal: (0.0, 1.0, 0.0).into(),
+        },
+        Vertex {
+            position: (extents.x, extents.y, -extents.z).into(),
+            normal: (0.0, 1.0, 0.0).into(),
+        },
+        Vertex {
+            position: (-extents.x, extents.y, extents.z).into(),
+            normal: (0.0, 1.0, 0.0).into(),
+        },
+        Vertex {
+            position: (extents.x, extents.y, -extents.z).into(),
+            normal: (0.0, 1.0, 0.0).into(),
+        },
+        Vertex {
+            position: (-extents.x, extents.y, -extents.z).into(),
+            normal: (0.0, 1.0, 0.0).into(),
+        },
+        // Bottom face (-Y)
+        Vertex {
+            position: (-extents.x, -extents.y, -extents.z).into(),
+            normal: (0.0, -1.0, 0.0).into(),
+        },
+        Vertex {
+            position: (extents.x, -extents.y, -extents.z).into(),
+            normal: (0.0, -1.0, 0.0).into(),
+        },
+        Vertex {
+            position: (extents.x, -extents.y, extents.z).into(),
+            normal: (0.0, -1.0, 0.0).into(),
+        },
+        Vertex {
+            position: (-extents.x, -extents.y, -extents.z).into(),
+            normal: (0.0, -1.0, 0.0).into(),
+        },
+        Vertex {
+            position: (extents.x, -extents.y, extents.z).into(),
+            normal: (0.0, -1.0, 0.0).into(),
+        },
+        Vertex {
+            position: (-extents.x, extents.y, extents.z).into(),
+            normal: (0.0, -1.0, 0.0).into(),
+        },
+    ]
+}

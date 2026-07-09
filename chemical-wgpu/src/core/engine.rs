@@ -1,6 +1,6 @@
 use crate::Renderer;
 use crate::renderer::mesh_renderer::lighting::PointLight;
-use crate::renderer::mesh_renderer::{IndexMeshDescriptor, geometry};
+use crate::renderer::mesh_renderer::{IndexMeshDescriptor, VertexMeshDescriptor, geometry};
 use crate::utility::Transform;
 
 use std::sync::Arc;
@@ -138,7 +138,7 @@ impl ChemicalEngine {
             renderer.line_renderer.create_line(&line_descriptor);
         }*/
 
-        let (vertices, indices) = geometry::sphere::generate_index_sphere(200)
+        let (mut vertices, indices) = geometry::sphere::generate_index_sphere(200)
             .map_err(|e| anyhow!("Failed to generate index sphere: {}", e))
             .expect("Tried to create invalid index sphere for celestial body mesh!");
 
@@ -165,6 +165,20 @@ impl ChemicalEngine {
         renderer
             .mesh_renderer
             .create_index_mesh(&mesh_descriptor, &renderer.device);
+
+        vertices = geometry::cube::generate_vertex_cube((1.0, 1.0, 1.0).into()).to_vec();
+
+        let mut cube_mesh_descriptor = VertexMeshDescriptor {
+            vertices: vertices,
+            num_instances: 1,
+            transform_id: 0,
+            is_lit: true,
+        };
+        transform.position.x = -5.0;
+        cube_mesh_descriptor.transform_id = renderer.mesh_renderer.create_transform(&transform);
+        renderer
+            .mesh_renderer
+            .create_vertex_mesh(&cube_mesh_descriptor, &renderer.device);
 
         renderer
             .mesh_renderer

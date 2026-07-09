@@ -1,3 +1,4 @@
+pub mod cube;
 pub mod sphere;
 mod vertex;
 
