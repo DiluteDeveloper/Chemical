@@ -152,13 +152,13 @@ impl ChemicalEngine {
 
         let mut transform = Transform {
             position: (0.0, 0.0, 0.0).into(),
-            scale: (1.0, 1.0, 1.0).into(),
+            scale: (5.0, 5.0, 5.0).into(),
             orientation: (0.0, 0.0, 0.0, -1.0).into(),
         };
-        mesh_descriptor.transform_id = renderer.mesh_renderer.create_transform(&transform);
+        /*mesh_descriptor.transform_id = renderer.mesh_renderer.create_transform(&transform);
         renderer
             .mesh_renderer
-            .create_index_mesh(&mesh_descriptor, &renderer.device);
+            .create_index_mesh(&mesh_descriptor, &renderer.device);*/
         transform.position.x = 5.0;
         mesh_descriptor.transform_id = renderer.mesh_renderer.create_transform(&transform);
         mesh_descriptor.is_lit = true;
@@ -169,12 +169,17 @@ impl ChemicalEngine {
         renderer
             .mesh_renderer
             .light_storage
-            .add_point_light(&PointLight::new([0.0, 0.0, 5.0], [1.0, 0.5, 0.5]))
+            .add_point_light(&PointLight::new([0.0, 0.0, 10.0], [1.0, 1.0, 1.0], 2.0))
             .unwrap();
         renderer
             .mesh_renderer
             .light_storage
-            .add_point_light(&PointLight::new([7.0, 2.0, -5.0], [0.5, 0.5, 1.0]))
+            .add_point_light(&PointLight::new([13.0, 5.0, -10.0], [1.0, 1.0, 1.0], 3.0))
+            .unwrap();
+        renderer
+            .mesh_renderer
+            .light_storage
+            .add_point_light(&PointLight::new([15.0, 5.0, 0.0], [1.0, 0.8, 0.3], 10.0))
             .unwrap();
         event_loop_proxy
             .as_ref()

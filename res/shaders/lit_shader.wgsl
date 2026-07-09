@@ -39,8 +39,8 @@ fn vs_main(
 
 struct PointLight {
     position: vec3<f32>,
-    // 4 bytes of padding
-    diffuse: vec3<f32>} 
+    strength: f32,
+    colour: vec3<f32>}
     // 4 bytes of padding
 
 struct LightStorage {
@@ -55,6 +55,8 @@ var t_diffuse: texture_2d<f32>;
 var s_diffuse: sampler;*/
 @group(0) @binding(2)
 var<storage> lights: LightStorage;
+@group(0) @binding(3) 
+var<uniform> camera_position: vec4<f32>;
 
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
@@ -62,17 +64,29 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     //return vec4<f32>(in.colour, 1.0);
 }
 
+const DIFFUSE_STRENGTH: f32 = 1.0;
+const SPECULAR_STRENGTH: f32 = 0.1;
+
 fn process_point_lights(normal: vec3<f32>, world_position: vec3<f32>) -> vec3<f32> {
     var surface_colour = vec3f(0);
+    let view_dir = normalize(camera_position.xyz - world_position);
     for (var i = 0u; i < lights.pointCount; i++) {
+
         let fragment_to_light_vector = lights.point_lights[i].position - world_position;
         let dist = length(fragment_to_light_vector);
         let dir = normalize(fragment_to_light_vector);
 
-        let radiance = lights.point_lights[i].diffuse * (1 / pow(dist, 2));
+        let radiance = lights.point_lights[i].colour * (1 / pow(dist, 2));
         let nDotL = max(dot(normal, dir), 0);
+        let diff = radiance * nDotL;
 
-        surface_colour += radiance * nDotL;
+        let reflect_dir = reflect(-(dir.xyz), normal.xyz);
+
+        let spec = lights.point_lights[i].colour * pow(max(dot(view_dir, reflect_dir), 0.0), 32.0);
+
+        let amb = lights.point_lights[i].colour;
+
+        surface_colour += ((spec * SPECULAR_STRENGTH) + (diff * DIFFUSE_STRENGTH)) * lights.point_lights[i].strength;
     }
     return surface_colour;
 }

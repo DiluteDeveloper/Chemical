@@ -28,6 +28,7 @@ pub struct MeshRenderer {
     unlit_render_pipeline: wgpu::RenderPipeline,
     bind_group: wgpu::BindGroup,
     camera_buffer: wgpu::Buffer,
+    camera_pos_buffer: wgpu::Buffer,
     model_buffer: wgpu::Buffer,
 
     lit_vertex_meshes: Vec<(VertexMesh, TransformID)>,
@@ -83,6 +84,16 @@ impl MeshRenderer {
                     },
                     count: None,
                 },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 3,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                },
             ],
             label: Some("mesh_renderer_bind_group_layout"),
         });
@@ -90,6 +101,12 @@ impl MeshRenderer {
         let camera_buffer = device.create_buffer(&wgpu::BufferDescriptor {
             label: None,
             size: size_of::<[[f32; 4]; 4]>() as u64,
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+            mapped_at_creation: false,
+        });
+        let camera_pos_buffer = device.create_buffer(&wgpu::BufferDescriptor {
+            label: None,
+            size: size_of::<[f32; 4]>() as u64,
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
@@ -125,6 +142,10 @@ impl MeshRenderer {
                 wgpu::BindGroupEntry {
                     binding: 2,
                     resource: light_storage.get_buffer().as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 3,
+                    resource: camera_pos_buffer.as_entire_binding(),
                 },
             ],
             label: Some("mesh_renderer_bind_group"),
@@ -216,6 +237,7 @@ impl MeshRenderer {
             lit_render_pipeline: lit_render_pipeline,
             bind_group: bind_group,
             camera_buffer: camera_buffer,
+            camera_pos_buffer: camera_pos_buffer,
             model_buffer: model_buffer,
             lit_vertex_meshes: Vec::new(),
             lit_index_meshes: Vec::new(),
@@ -287,6 +309,12 @@ impl MeshRenderer {
             &self.camera_buffer,
             0,
             bytemuck::bytes_of(&camera.get_transformation_matrix().unwrap()),
+        );
+        let pos = camera.transform.position;
+        queue.write_buffer(
+            &self.camera_pos_buffer,
+            0,
+            bytemuck::bytes_of(&[pos[0], pos[1], pos[2], 0.0]),
         );
 
         self.light_storage.update_buffer(&queue);
