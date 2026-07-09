@@ -1,9 +1,8 @@
 use crate::Renderer;
-use crate::renderer::line_renderer::LineDescriptor;
-use crate::renderer::mesh_renderer::{IndexMeshDescriptor, TransformID, sphere};
+use crate::renderer::mesh_renderer::lighting::PointLight;
+use crate::renderer::mesh_renderer::{IndexMeshDescriptor, geometry};
 use crate::utility::Transform;
 
-use chemical_engine::physics::universe::{self, simulation::UniverseSimulation};
 use std::sync::Arc;
 use winit::{
     dpi::PhysicalPosition,
@@ -35,8 +34,7 @@ pub(super) struct ChemicalEngine {
     event_loop_proxy: EventLoopProxy<ChemicalEvent>,
     window: Arc<Window>,
 
-    universe_simulation: UniverseSimulation,
-
+    //universe_simulation: UniverseSimulation,
     camera: Camera,
     camera_controller: CameraController,
     camera_mode: CameraMode,
@@ -58,8 +56,8 @@ impl ChemicalEngine {
         let mut camera = Camera::new(
             window_size.width as f32 / window_size.height as f32,
             90.0,
-            100.0,
-            1000000.00,
+            0.01,
+            10000.00,
         );
         camera.transform.position.z = 5.0;
 
@@ -69,7 +67,7 @@ impl ChemicalEngine {
         )
             .into();
 
-        let universe_simulation = UniverseSimulation::new();
+        /*let universe_simulation = UniverseSimulation::new();
         let (vertices, indices) = sphere::generate_index_sphere(30)
             .map_err(|e| anyhow!("Failed to generate index sphere: {}", e))
             .expect("Tried to create invalid index sphere for celestial body mesh!");
@@ -79,6 +77,7 @@ impl ChemicalEngine {
             indices: indices,
             num_instances: 1,
             transform_id: 0,
+            is_lit: false,
         };
 
         for (i, body) in universe_simulation.celestial_bodies.iter().enumerate() {
@@ -95,7 +94,7 @@ impl ChemicalEngine {
 
             let line_descriptor = LineDescriptor {
                 data: Some(vec![body.position]),
-                width: 40.0, //body.position.z.sqrt(),
+                width: 20.0, //body.position.z.sqrt(),
                 colour: match i {
                     0 => wgpu::Color {
                         r: 0.204,
@@ -137,8 +136,46 @@ impl ChemicalEngine {
                 },
             };
             renderer.line_renderer.create_line(&line_descriptor);
-        }
+        }*/
 
+        let (vertices, indices) = geometry::sphere::generate_index_sphere(200)
+            .map_err(|e| anyhow!("Failed to generate index sphere: {}", e))
+            .expect("Tried to create invalid index sphere for celestial body mesh!");
+
+        let mut mesh_descriptor = IndexMeshDescriptor {
+            vertices: vertices,
+            indices: indices,
+            num_instances: 1,
+            transform_id: 0,
+            is_lit: false,
+        };
+
+        let mut transform = Transform {
+            position: (0.0, 0.0, 0.0).into(),
+            scale: (1.0, 1.0, 1.0).into(),
+            orientation: (0.0, 0.0, 0.0, -1.0).into(),
+        };
+        mesh_descriptor.transform_id = renderer.mesh_renderer.create_transform(&transform);
+        renderer
+            .mesh_renderer
+            .create_index_mesh(&mesh_descriptor, &renderer.device);
+        transform.position.x = 5.0;
+        mesh_descriptor.transform_id = renderer.mesh_renderer.create_transform(&transform);
+        mesh_descriptor.is_lit = true;
+        renderer
+            .mesh_renderer
+            .create_index_mesh(&mesh_descriptor, &renderer.device);
+
+        renderer
+            .mesh_renderer
+            .light_storage
+            .add_point_light(&PointLight::new([0.0, 0.0, 5.0], [1.0, 0.5, 0.5]))
+            .unwrap();
+        renderer
+            .mesh_renderer
+            .light_storage
+            .add_point_light(&PointLight::new([7.0, 2.0, -5.0], [0.5, 0.5, 1.0]))
+            .unwrap();
         event_loop_proxy
             .as_ref()
             .unwrap()
@@ -150,10 +187,10 @@ impl ChemicalEngine {
             window: window,
             camera_mode: CameraMode::NoCameraControl,
             camera: camera,
-            camera_controller: CameraController::new(1600.0, 0.0002, 0.07),
+            camera_controller: CameraController::new(1.0, 0.0002, 0.07),
             fps_counter: FPSCounter::new(),
             window_center: window_center,
-            universe_simulation: UniverseSimulation::new(),
+            //universe_simulation: UniverseSimulation::new(),
         })
     }
 
@@ -166,12 +203,12 @@ impl ChemicalEngine {
         // self.simulation_timer += self.fps_counter.delta as f32;
         // if self.simulation_timer > 0.0 {
         //     self.simulation_timer = 0.0;
-        for _i in 0..UNIVERSE_SIMULATION_ORBIT_TRAIL_RESOLUTION {
-            self.universe_simulation.tick(self.fps_counter.delta);
-        }
+        //for _i in 0..UNIVERSE_SIMULATION_ORBIT_TRAIL_RESOLUTION {
+        //self.universe_simulation.tick(self.fps_counter.delta);
+        //}
         // }
 
-        for (i, body) in self.universe_simulation.celestial_bodies.iter().enumerate() {
+        /*for (i, body) in self.universe_simulation.celestial_bodies.iter().enumerate() {
             if self.universe_simulation.get_tick_count()
                 % UNIVERSE_SIMULATION_ORBIT_TRAIL_RESOLUTION
                 == 0
@@ -184,7 +221,7 @@ impl ChemicalEngine {
                 .get_transform(i)
                 .unwrap()
                 .position = body.position;
-        }
+        }*/
         self.fps_counter.update();
     }
     pub(super) fn window_event(&mut self, event: &WindowEvent, event_loop: &ActiveEventLoop) {
@@ -194,8 +231,7 @@ impl ChemicalEngine {
             WindowEvent::RedrawRequested => {
                 self.update();
 
-                self.renderer.render(&self.camera).unwrap();
-                /*match self.universe_renderer.render(&mut self.renderer) {
+                match self.renderer.render(&self.camera) {
                     Ok(_) => {}
                     // Reconfigure the surface if it's lost or outdated
                     Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => {
@@ -206,7 +242,7 @@ impl ChemicalEngine {
                     Err(e) => {
                         log::error!("Render loop failed: {}", e);
                     }
-                }*/
+                }
             }
             WindowEvent::KeyboardInput {
                 event:

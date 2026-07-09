@@ -57,7 +57,10 @@ impl Renderer {
         let (device, queue) = adapter
             .request_device(&wgpu::DeviceDescriptor {
                 label: None,
-                required_features: wgpu::Features::empty(),
+                required_features: wgpu::Features {
+                    features_wgpu: wgpu::FeaturesWGPU::POLYGON_MODE_LINE,
+                    features_webgpu: wgpu::FeaturesWebGPU::default(),
+                },
                 experimental_features: wgpu::ExperimentalFeatures::disabled(),
                 required_limits: wgpu::Limits::default(),
                 memory_hints: Default::default(),

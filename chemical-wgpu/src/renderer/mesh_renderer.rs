@@ -1,11 +1,12 @@
-mod geometry;
+pub mod geometry;
+pub mod lighting;
 mod mesh;
 
 use super::Texture;
 use crate::Camera;
 use crate::utility::Transform;
-pub use geometry::sphere;
 use geometry::{Index, Vertex};
+use lighting::LightStorage;
 use mesh::{IndexMesh, VertexMesh};
 
 pub struct IndexMeshDescriptor {
@@ -13,29 +14,39 @@ pub struct IndexMeshDescriptor {
     pub indices: Vec<Index>,
     pub num_instances: u32,
     pub transform_id: TransformID,
+    pub is_lit: bool,
 }
 pub struct VertexMeshDescriptor {
     pub vertices: Vec<Vertex>,
     pub num_instances: u32,
     pub transform_id: TransformID,
+    pub is_lit: bool,
 }
 
 pub struct MeshRenderer {
-    render_pipeline: wgpu::RenderPipeline,
+    lit_render_pipeline: wgpu::RenderPipeline,
+    unlit_render_pipeline: wgpu::RenderPipeline,
     bind_group: wgpu::BindGroup,
     camera_buffer: wgpu::Buffer,
     model_buffer: wgpu::Buffer,
 
-    vertex_meshes: Vec<(VertexMesh, TransformID)>,
-    index_meshes: Vec<(IndexMesh, TransformID)>,
+    lit_vertex_meshes: Vec<(VertexMesh, TransformID)>,
+    lit_index_meshes: Vec<(IndexMesh, TransformID)>,
+
+    unlit_vertex_meshes: Vec<(VertexMesh, TransformID)>,
+    unlit_index_meshes: Vec<(IndexMesh, TransformID)>,
+
     transforms: Vec<Transform>,
 
     aligned_model_matrix_size_offset: u64,
+
+    pub light_storage: LightStorage,
 }
 
 pub type TransformID = usize;
 
-const SHADER_PATH: &str = "res/shaders/mesh_shader.wgsl";
+const UNLIT_SHADER_PATH: &str = "res/shaders/unlit_shader.wgsl";
+const LIT_SHADER_PATH: &str = "res/shaders/lit_shader.wgsl";
 const MAX_TRANSFORMS: u64 = 1000;
 
 impl MeshRenderer {
@@ -62,6 +73,16 @@ impl MeshRenderer {
                     },
                     count: None,
                 },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 2,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Storage { read_only: true },
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                },
             ],
             label: Some("mesh_renderer_bind_group_layout"),
         });
@@ -84,6 +105,8 @@ impl MeshRenderer {
             mapped_at_creation: false,
         });
 
+        let light_storage = LightStorage::new(&device);
+
         let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &bind_group_layout,
             entries: &[
@@ -99,16 +122,28 @@ impl MeshRenderer {
                         size: wgpu::BufferSize::new(aligned_model_matrix_size_offset),
                     }),
                 },
+                wgpu::BindGroupEntry {
+                    binding: 2,
+                    resource: light_storage.get_buffer().as_entire_binding(),
+                },
             ],
             label: Some("mesh_renderer_bind_group"),
         });
 
-        let shader_source = std::fs::read_to_string(SHADER_PATH)
-            .expect(&format!("Shader path '{}' was invalid!", SHADER_PATH));
+        let unlit_shader_source = std::fs::read_to_string(UNLIT_SHADER_PATH)
+            .expect(&format!("Shader path '{}' was invalid!", UNLIT_SHADER_PATH));
 
-        let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
-            label: Some(SHADER_PATH),
-            source: wgpu::ShaderSource::Wgsl(shader_source.into()),
+        let unlit_shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
+            label: Some(UNLIT_SHADER_PATH),
+            source: wgpu::ShaderSource::Wgsl(unlit_shader_source.into()),
+        });
+
+        let lit_shader_source = std::fs::read_to_string(LIT_SHADER_PATH)
+            .expect(&format!("Shader path '{}' was invalid!", LIT_SHADER_PATH));
+
+        let lit_shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
+            label: Some(LIT_SHADER_PATH),
+            source: wgpu::ShaderSource::Wgsl(lit_shader_source.into()),
         });
 
         let render_pipeline_layout =
@@ -117,18 +152,18 @@ impl MeshRenderer {
                 bind_group_layouts: &[&bind_group_layout],
                 immediate_size: 0,
             });
-        let render_pipeline_descriptor = wgpu::RenderPipelineDescriptor {
+        let unlit_render_pipeline_descriptor = wgpu::RenderPipelineDescriptor {
             label: Some("mesh_renderer_render_pipeline"),
             layout: Some(&render_pipeline_layout),
             vertex: wgpu::VertexState {
-                module: &shader,
+                module: &unlit_shader,
                 entry_point: Some("vs_main"), // 1.
                 buffers: &[Vertex::layout()], // 2.
                 compilation_options: wgpu::PipelineCompilationOptions::default(),
             },
             fragment: Some(wgpu::FragmentState {
                 // 3.
-                module: &shader,
+                module: &unlit_shader,
                 entry_point: Some("fs_main"),
                 targets: &[Some(wgpu::ColorTargetState {
                     // 4.
@@ -142,7 +177,7 @@ impl MeshRenderer {
                 topology: wgpu::PrimitiveTopology::TriangleList, // 1.
                 strip_index_format: None,
                 front_face: wgpu::FrontFace::Ccw, // 2.
-                cull_mode: None,
+                cull_mode: Some(wgpu::Face::Back),
                 // Setting this to anything other than Fill requires Features::NON_FILL_POLYGON_MODE
                 polygon_mode: wgpu::PolygonMode::Fill,
                 // Requires Features::DEPTH_CLIP_CONTROL
@@ -165,34 +200,73 @@ impl MeshRenderer {
             multiview_mask: None, // 5.
             cache: None,          // 6.
         };
-        let render_pipeline = device.create_render_pipeline(&render_pipeline_descriptor);
+        let mut lit_render_pipeline_descriptor = unlit_render_pipeline_descriptor.clone();
+        lit_render_pipeline_descriptor.vertex.module = &lit_shader;
+        lit_render_pipeline_descriptor
+            .fragment
+            .as_mut()
+            .unwrap()
+            .module = &lit_shader;
+
+        let unlit_render_pipeline =
+            device.create_render_pipeline(&unlit_render_pipeline_descriptor);
+        let lit_render_pipeline = device.create_render_pipeline(&lit_render_pipeline_descriptor);
         MeshRenderer {
-            render_pipeline: render_pipeline,
+            unlit_render_pipeline: unlit_render_pipeline,
+            lit_render_pipeline: lit_render_pipeline,
             bind_group: bind_group,
             camera_buffer: camera_buffer,
             model_buffer: model_buffer,
-            vertex_meshes: Vec::new(),
-            index_meshes: Vec::new(),
+            lit_vertex_meshes: Vec::new(),
+            lit_index_meshes: Vec::new(),
+            unlit_vertex_meshes: Vec::new(),
+            unlit_index_meshes: Vec::new(),
             transforms: Vec::new(),
             aligned_model_matrix_size_offset: aligned_model_matrix_size_offset,
+            light_storage: light_storage,
         }
     }
     pub fn create_vertex_mesh(&mut self, descriptor: &VertexMeshDescriptor, device: &wgpu::Device) {
-        self.vertex_meshes.push((
-            VertexMesh::new(&descriptor.vertices, descriptor.num_instances, &device),
-            descriptor.transform_id,
-        ));
+        match descriptor.is_lit {
+            true => {
+                self.lit_vertex_meshes.push((
+                    VertexMesh::new(&descriptor.vertices, descriptor.num_instances, &device),
+                    descriptor.transform_id,
+                ));
+            }
+            false => {
+                self.unlit_vertex_meshes.push((
+                    VertexMesh::new(&descriptor.vertices, descriptor.num_instances, &device),
+                    descriptor.transform_id,
+                ));
+            }
+        }
     }
     pub fn create_index_mesh(&mut self, descriptor: &IndexMeshDescriptor, device: &wgpu::Device) {
-        self.index_meshes.push((
-            IndexMesh::new(
-                &descriptor.vertices,
-                &descriptor.indices,
-                descriptor.num_instances,
-                &device,
-            ),
-            descriptor.transform_id,
-        ));
+        match descriptor.is_lit {
+            true => {
+                self.lit_index_meshes.push((
+                    IndexMesh::new(
+                        &descriptor.vertices,
+                        &descriptor.indices,
+                        descriptor.num_instances,
+                        &device,
+                    ),
+                    descriptor.transform_id,
+                ));
+            }
+            false => {
+                self.unlit_index_meshes.push((
+                    IndexMesh::new(
+                        &descriptor.vertices,
+                        &descriptor.indices,
+                        descriptor.num_instances,
+                        &device,
+                    ),
+                    descriptor.transform_id,
+                ));
+            }
+        }
     }
     pub fn create_transform(&mut self, transform: &Transform) -> TransformID {
         self.transforms.push(*transform);
@@ -202,18 +276,20 @@ impl MeshRenderer {
         self.transforms.get_mut(transform_id)
     }
     pub(super) fn render(
-        &self,
+        &mut self,
         camera: &Camera,
         queue: &wgpu::Queue,
         render_pass: &mut wgpu::RenderPass,
     ) {
-        render_pass.set_pipeline(&self.render_pipeline);
+        render_pass.set_pipeline(&self.unlit_render_pipeline);
 
         queue.write_buffer(
             &self.camera_buffer,
             0,
             bytemuck::bytes_of(&camera.get_transformation_matrix().unwrap()),
         );
+
+        self.light_storage.update_buffer(&queue);
 
         for (i, transform) in self.transforms.iter().enumerate() {
             let t: [[f32; 4]; 4] = transform.into();
@@ -224,7 +300,7 @@ impl MeshRenderer {
             );
         }
 
-        for (mesh, transform_id) in self.vertex_meshes.iter() {
+        for (mesh, transform_id) in self.unlit_vertex_meshes.iter() {
             render_pass.set_bind_group(
                 0,
                 &self.bind_group,
@@ -234,7 +310,28 @@ impl MeshRenderer {
             mesh.bind(&mut *render_pass);
             mesh.draw(&mut *render_pass);
         }
-        for (mesh, transform_id) in self.index_meshes.iter() {
+        for (mesh, transform_id) in self.unlit_index_meshes.iter() {
+            render_pass.set_bind_group(
+                0,
+                &self.bind_group,
+                &[(*transform_id as u64 * self.aligned_model_matrix_size_offset) as u32],
+            );
+            mesh.bind(&mut *render_pass);
+            mesh.draw(&mut *render_pass);
+        }
+
+        render_pass.set_pipeline(&self.lit_render_pipeline);
+
+        for (mesh, transform_id) in self.lit_vertex_meshes.iter() {
+            render_pass.set_bind_group(
+                0,
+                &self.bind_group,
+                &[(*transform_id as u64 * self.aligned_model_matrix_size_offset) as u32],
+            );
+            mesh.bind(&mut *render_pass);
+            mesh.draw(&mut *render_pass);
+        }
+        for (mesh, transform_id) in self.lit_index_meshes.iter() {
             render_pass.set_bind_group(
                 0,
                 &self.bind_group,
