@@ -3,7 +3,7 @@ pub mod point_light;
 pub mod transform;
 pub mod vertex_mesh;
 
-pub type ObjectID = usize;
+pub type EntityID = u32;
 
 pub use index_mesh::IndexMesh;
 pub use point_light::PointLight;

@@ -1,8 +1,5 @@
 use crate::Renderer;
-use crate::renderer::mesh_renderer::lighting::PointLight;
-use chemical_engine::geometry::sphere;
 
-use chemical_engine::scene::SceneContainer;
 use std::sync::Arc;
 use winit::{
     dpi::PhysicalPosition,
@@ -14,6 +11,7 @@ use winit::{
     window::Window,
 };
 
+use log::info;
 #[derive(Debug, PartialEq)]
 pub(super) enum CameraMode {
     NoCameraControl,
@@ -28,7 +26,11 @@ pub(super) enum ChemicalEvent {
 use crate::{Camera, CameraController};
 use anyhow::anyhow;
 use chemical_engine::{
-    scene::types::{IndexMesh, Transform},
+    geometry::{cube, plane, sphere},
+    scene::{
+        SceneContainer,
+        types::{IndexMesh, PointLight, Transform, VertexMesh},
+    },
     utility::FPSCounter,
 };
 
@@ -37,7 +39,6 @@ pub(super) struct ChemicalEngine {
     event_loop_proxy: EventLoopProxy<ChemicalEvent>,
     window: Arc<Window>,
 
-    //universe_simulation: UniverseSimulation,
     camera: Camera,
     camera_controller: CameraController,
     camera_mode: CameraMode,
@@ -46,8 +47,6 @@ pub(super) struct ChemicalEngine {
 
     scene: SceneContainer,
 }
-
-const UNIVERSE_SIMULATION_ORBIT_TRAIL_RESOLUTION: u64 = 3000;
 
 impl ChemicalEngine {
     pub(super) fn new(
@@ -72,20 +71,46 @@ impl ChemicalEngine {
         )
             .into();
 
-        let (vertices, indices) = sphere::generate_index_sphere(200)
+        let (sphere_vertices, sphere_indices) = sphere::generate_index_sphere(200)
             .map_err(|e| anyhow!("Failed to generate index sphere: {}", e))
             .expect("Tried to create invalid index sphere for celestial body mesh!");
+        let cube_vertices = cube::generate_vertex_cube((1.0, 1.0, 1.0).into());
+        let plane_vertices = plane::generate_vertex_plane((50.0, 50.0).into());
 
-        let transform = Transform {
-            position: (0.0, 0.0, 0.0).into(),
-            scale: (3.0, 3.0, 3.0).into(),
-            orientation: (0.0, 0.0, 0.0, -1.0).into(),
+        let sphere_mesh_data = IndexMesh::new(&sphere_vertices, &sphere_indices, 1, true);
+        let plane_mesh_data = VertexMesh::new(&plane_vertices, 1, true);
+        let cube_mesh_data = VertexMesh::new(&cube_vertices, 1, true);
+
+        let plane_transform = Transform::default();
+        let cube_transform = Transform {
+            position: (5.0, 2.0, 2.0).into(),
+            orientation: (0.2, 0.3, 0.4, 0.5).into(),
+            scale: (1.0, 2.0, 1.0).into(),
         };
-        let index_mesh = IndexMesh::new(&vertices, &indices, 1, true, 0);
+        let sphere_transform = Transform {
+            position: (0.0, 3.0, 1.0).into(),
+            orientation: (0.2, 0.8, 0.4, 0.1).into(),
+            scale: (2.0, 2.0, 2.0).into(),
+        };
+
+        let point_light = PointLight {
+            position: (20.0, 20.0, 20.0).into(),
+            strength: 50.0,
+            colour: (1.0, 0.9, 0.6).into(),
+        };
 
         let mut scene = SceneContainer::new();
-        scene.transform_handler.insert_transform(transform);
-        scene.mesh_handler.insert_imesh(index_mesh);
+        scene
+            .transform_handler
+            .insert_transform(sphere_transform, 0);
+        scene.transform_handler.insert_transform(cube_transform, 1);
+        scene.transform_handler.insert_transform(plane_transform, 2);
+        scene.transform_handler.insert_transform(plane_transform, 4);
+        scene.mesh_handler.insert_imesh(sphere_mesh_data.clone(), 0);
+        scene.mesh_handler.insert_imesh(sphere_mesh_data, 4);
+        scene.mesh_handler.insert_vmesh(cube_mesh_data, 1);
+        scene.mesh_handler.insert_vmesh(plane_mesh_data, 2);
+        scene.light_handler.insert_point_light(point_light, 0);
 
         /*mesh_descriptor.transform_id = renderer.mesh_renderer.create_transform(&transform);
         renderer
@@ -158,7 +183,7 @@ impl ChemicalEngine {
             window: window,
             camera_mode: CameraMode::NoCameraControl,
             camera: camera,
-            camera_controller: CameraController::new(1.0, 0.0002, 0.07),
+            camera_controller: CameraController::new(1.0, 0.002, 0.07),
             fps_counter: FPSCounter::new(),
             window_center: window_center,
             scene,
@@ -194,10 +219,34 @@ impl ChemicalEngine {
                 .unwrap()
                 .position = body.position;
         }*/
+        let seconds_elapsed = self.fps_counter.seconds_elapsed;
+        self.scene
+            .transform_handler
+            .modify(0, move |t| {
+                t.position.x = (seconds_elapsed * 0.2).sin() as f32 * 10.0;
+                t.position.z = (seconds_elapsed * 0.2).cos() as f32 * 10.0;
+                t.position.y = 5.0 + (seconds_elapsed).cos() as f32 * 5.0;
+                let scale = 1.0 + ((seconds_elapsed * 0.2).sin().abs()) as f32;
+                t.scale = (scale, scale, scale).into();
+            })
+            .unwrap();
+        self.scene
+            .transform_handler
+            .modify(4, move |t| {
+                t.position.x = (seconds_elapsed * 0.2).sin() as f32 * 6.0;
+                t.position.z = (seconds_elapsed * 0.2).cos() as f32 * 6.0;
+                t.position.y = 5.0 + (seconds_elapsed).cos() as f32 * 1.0;
+                let scale = 1.0 + ((seconds_elapsed * 0.2).sin().abs()) as f32;
+                t.scale = (scale, scale, scale).into();
+            })
+            .unwrap();
 
         self.renderer.process_scene_operations(&mut self.scene);
         self.scene.clear_operations();
         self.fps_counter.update();
+        if let Some(fps) = self.fps_counter.fps {
+            info!("{}", fps);
+        }
     }
     pub(super) fn window_event(&mut self, event: &WindowEvent, event_loop: &ActiveEventLoop) {
         match event {

@@ -1,46 +1,45 @@
-use crate::scene::types::{ObjectID, Transform};
+use crate::scene::types::{EntityID, Transform};
 use anyhow::anyhow;
+use std::collections::HashMap;
 
 pub trait TransformOperationListener {
-    fn on_mod(&mut self, transform: &Transform, id: ObjectID);
-    fn on_insert(&mut self, transform: &Transform, id: ObjectID);
-    fn on_drop(&mut self, id: ObjectID);
+    fn on_mod(&mut self, transform: &Transform, id: EntityID);
+    fn on_insert(&mut self, transform: &Transform, id: EntityID);
+    fn on_drop(&mut self, id: EntityID);
 }
 pub struct TransformHandler {
-    transforms: Vec<Transform>,
+    transforms: HashMap<EntityID, Transform>,
 
-    mod_operations: Vec<ObjectID>,
-    drop_operations: Vec<ObjectID>,
-    insert_operations: Vec<ObjectID>,
+    mod_operations: Vec<EntityID>,
+    drop_operations: Vec<EntityID>,
+    insert_operations: Vec<EntityID>,
 }
 
 impl TransformHandler {
     pub fn new() -> Self {
         Self {
-            transforms: Vec::new(),
+            transforms: HashMap::new(),
             mod_operations: Vec::new(),
             drop_operations: Vec::new(),
             insert_operations: Vec::new(),
         }
     }
-    pub fn insert_transform(&mut self, transform: Transform) -> ObjectID {
-        self.transforms.push(transform);
-        let id = self.transforms.len() - 1;
+    pub fn insert_transform(&mut self, transform: Transform, id: EntityID) {
+        self.transforms.insert(id, transform);
         self.insert_operations.push(id);
-        id
     }
 
-    pub fn get(&self, id: ObjectID) -> Option<&Transform> {
-        Some(self.transforms.get(id)?)
+    pub fn get(&self, id: EntityID) -> Option<&Transform> {
+        Some(self.transforms.get(&id)?)
     }
     pub fn modify(
         &mut self,
-        id: ObjectID,
+        id: EntityID,
         modify: impl FnOnce(&mut Transform),
     ) -> anyhow::Result<()> {
         let transform = self
             .transforms
-            .get_mut(id)
+            .get_mut(&id)
             .ok_or_else(|| anyhow!("Failed to get transform!"))?;
         modify(transform);
         self.mod_operations.push(id);
@@ -55,7 +54,7 @@ impl TransformHandler {
         for id in self.insert_operations.iter() {
             let transform = self
                 .transforms
-                .get(*id)
+                .get(id)
                 .expect("Tried to update value on removed transform!");
             listener.on_insert(transform, *id);
         }
@@ -63,7 +62,7 @@ impl TransformHandler {
         for id in self.mod_operations.iter() {
             let transform = self
                 .transforms
-                .get(*id)
+                .get(id)
                 .expect("Tried to update value on removed transform!");
             listener.on_mod(transform, *id);
         }

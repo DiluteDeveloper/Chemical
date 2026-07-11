@@ -2,23 +2,28 @@ pub mod geometry;
 pub mod lighting;
 mod mesh;
 mod renderable;
+mod shadow_renderer;
 
 use super::Texture;
 use crate::Camera;
-use log::info;
+use cgmath::SquareMatrix;
+pub use shadow_renderer::ShadowRenderer;
+use std::collections::HashMap;
 
 use chemical_engine::scene::{
     type_handlers::{
         light_handler::LightOperationListener, mesh_handler::MeshOperationListener,
         transform_handler::TransformOperationListener,
     },
-    types::{IndexMesh, ObjectID, PointLight, Transform, VertexMesh, vertex_mesh::Vertex},
+    types::{EntityID, IndexMesh, PointLight, Transform, VertexMesh, vertex_mesh::Vertex},
 };
 
 use geometry::vertex;
 use lighting::LightStorage;
 use mesh::{BakedIndexMesh, BakedVertexMesh};
 pub use renderable::Renderable;
+
+type TransformIndex = u32;
 
 pub struct MeshRenderer {
     lit_render_pipeline: wgpu::RenderPipeline,
@@ -31,15 +36,15 @@ pub struct MeshRenderer {
     model_buffer: wgpu::Buffer,
     model_byte_offset: u64,
 
-    lit_vertex_meshes: Vec<BakedVertexMesh>,
-    lit_index_meshes: Vec<BakedIndexMesh>,
+    lit_vertex_meshes: HashMap<TransformIndex, BakedVertexMesh>,
+    lit_index_meshes: HashMap<TransformIndex, BakedIndexMesh>,
 
-    unlit_vertex_meshes: Vec<BakedVertexMesh>,
-    unlit_index_meshes: Vec<BakedIndexMesh>,
+    unlit_vertex_meshes: HashMap<TransformIndex, BakedVertexMesh>,
+    unlit_index_meshes: HashMap<TransformIndex, BakedIndexMesh>,
 
-    //pub light_storage: LightStorage,
+    pub light_storage: LightStorage,
 
-    //shadow_renderer: ShadowRenderer,
+    shadow_renderer: ShadowRenderer,
     queue: wgpu::Queue,
     device: wgpu::Device,
 }
@@ -107,7 +112,7 @@ impl MeshRenderer {
                     },
                     count: None,
                 },
-                /*wgpu::BindGroupLayoutEntry {
+                wgpu::BindGroupLayoutEntry {
                     binding: 5,
                     visibility: wgpu::ShaderStages::FRAGMENT,
                     ty: wgpu::BindingType::Texture {
@@ -122,7 +127,7 @@ impl MeshRenderer {
                     visibility: wgpu::ShaderStages::FRAGMENT,
                     ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Comparison),
                     count: None,
-                },*/
+                },
             ],
             label: Some("mesh_renderer_bind_group_layout"),
         });
@@ -157,14 +162,14 @@ impl MeshRenderer {
             mapped_at_creation: false,
         });
 
-        let light_storage = LightStorage::new(&device);
-        /*let shadow_renderer = ShadowRenderer::new(
+        let light_storage = LightStorage::new(&device, &queue);
+        let shadow_renderer = ShadowRenderer::new(
             &light_mat_buffer,
             &model_buffer,
             device,
             surface_caps,
             aligned_model_matrix_size_offset,
-        );*/
+        );
 
         let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &bind_group_layout,
@@ -183,7 +188,7 @@ impl MeshRenderer {
                 },
                 wgpu::BindGroupEntry {
                     binding: 2,
-                    resource: light_storage.get_buffer().as_entire_binding(),
+                    resource: light_storage.buffer.as_entire_binding(),
                 },
                 wgpu::BindGroupEntry {
                     binding: 3,
@@ -193,7 +198,7 @@ impl MeshRenderer {
                     binding: 4,
                     resource: light_mat_buffer.as_entire_binding(),
                 },
-                /*wgpu::BindGroupEntry {
+                wgpu::BindGroupEntry {
                     binding: 5,
                     resource: wgpu::BindingResource::TextureView(
                         &shadow_renderer.depth_texture.view,
@@ -204,7 +209,7 @@ impl MeshRenderer {
                     resource: wgpu::BindingResource::Sampler(
                         &shadow_renderer.depth_texture.sampler,
                     ),
-                },*/
+                },
             ],
             label: Some("mesh_renderer_bind_group"),
         });
@@ -292,74 +297,24 @@ impl MeshRenderer {
         let lit_render_pipeline = device.create_render_pipeline(&lit_render_pipeline_descriptor);
 
         MeshRenderer {
-            //shadow_renderer: shadow_renderer,
+            shadow_renderer: shadow_renderer,
             unlit_render_pipeline: unlit_render_pipeline,
             lit_render_pipeline: lit_render_pipeline,
             bind_group: bind_group,
             camera_buffer: camera_buffer,
             camera_pos_buffer: camera_pos_buffer,
             model_buffer: model_buffer,
-            //mesh_scene: MeshScene::new(aligned_model_matrix_size_offset),
-            //light_storage: light_storage,
+            light_storage: light_storage,
             light_mat_buffer: light_mat_buffer,
-            lit_vertex_meshes: Vec::new(),
-            lit_index_meshes: Vec::new(),
-            unlit_vertex_meshes: Vec::new(),
-            unlit_index_meshes: Vec::new(),
+            lit_vertex_meshes: HashMap::new(),
+            lit_index_meshes: HashMap::new(),
+            unlit_vertex_meshes: HashMap::new(),
+            unlit_index_meshes: HashMap::new(),
             model_byte_offset: aligned_model_matrix_size_offset,
             queue: queue.clone(),
             device: device.clone(),
         }
     }
-    /*pub fn create_vertex_mesh(&mut self, descriptor: &VertexMeshDescriptor, device: &wgpu::Device) {
-        match descriptor.is_lit {
-            true => {
-                self.mesh_scene.lit_vertex_meshes.push((
-                    VertexMesh::new(&descriptor.vertices, descriptor.num_instances, &device),
-                    descriptor.transform_id,
-                ));
-            }
-            false => {
-                self.mesh_scene.unlit_vertex_meshes.push((
-                    VertexMesh::new(&descriptor.vertices, descriptor.num_instances, &device),
-                    descriptor.transform_id,
-                ));
-            }
-        }
-    }
-    pub fn create_index_mesh(&mut self, descriptor: &IndexMeshDescriptor, device: &wgpu::Device) {
-        match descriptor.is_lit {
-            true => {
-                self.mesh_scene.lit_index_meshes.push((
-                    IndexMesh::new(
-                        &descriptor.vertices,
-                        &descriptor.indices,
-                        descriptor.num_instances,
-                        &device,
-                    ),
-                    descriptor.transform_id,
-                ));
-            }
-            false => {
-                self.mesh_scene.unlit_index_meshes.push((
-                    IndexMesh::new(
-                        &descriptor.vertices,
-                        &descriptor.indices,
-                        descriptor.num_instances,
-                        &device,
-                    ),
-                    descriptor.transform_id,
-                ));
-            }
-        }
-    }
-    pub fn create_transform(&mut self, transform: &Transform) -> TransformID {
-        self.mesh_scene.transforms.push(*transform);
-        self.mesh_scene.transforms.len() - 1
-    }
-    pub fn get_transform(&mut self, transform_id: TransformID) -> Option<&mut Transform> {
-        self.mesh_scene.transforms.get_mut(transform_id)
-    }*/
     pub(super) fn prepare(&mut self, camera: &Camera, encoder: &mut wgpu::CommandEncoder) {
         let pos = camera.transform.position;
         self.queue.write_buffer(
@@ -368,44 +323,31 @@ impl MeshRenderer {
             bytemuck::bytes_of(&[pos[0], pos[1], pos[2], 0.0]),
         );
 
-        //self.light_storage.update_buffer(&queue);
-
-        // let transform = TransformNoScale {
-        //     position: self.light_storage.point_lights[0].position.into(),
-        //     orientation: (-0.3536, 0.3536, 0.1464, 0.8536).into(),
-        // };
-        // let transform_mat: cgmath::Matrix4<f32> = (&transform).into();
-        // let proj = cgmath::ortho(-20.0, 20.0, -20.0, 20.0, 0.1, 100.0);
-        // let matrix = proj * transform_mat.invert().unwrap();
-        // let matrix_v: [[f32; 4]; 4] = matrix.into();
-        // //let matrix: [[f32; 4]; 4] = (&transform).into();
-        // queue.write_buffer(&self.light_mat_buffer, 0, bytemuck::bytes_of(&matrix_v));
-
         let v = camera.get_transformation_matrix().unwrap();
         self.queue
             .write_buffer(&self.camera_buffer, 0, bytemuck::bytes_of(&v));
 
-        //self.shadow_renderer
-        //   .build_shadow_pass(&self.mesh_scene, encoder);
+        let mut rp = self.shadow_renderer.start_pass(encoder);
+        self.render_no_pipeline_lit_only(&mut rp);
     }
-    pub(super) fn render(&mut self, render_pass: &mut wgpu::RenderPass) {
+    pub(super) fn render(&self, render_pass: &mut wgpu::RenderPass) {
         render_pass.set_pipeline(&self.unlit_render_pipeline);
 
-        for (i, mesh) in self.unlit_vertex_meshes.iter().enumerate() {
+        for (i, mesh) in self.unlit_vertex_meshes.iter() {
             render_pass.set_bind_group(
                 0,
                 &self.bind_group,
-                &[(i as u64 * self.model_byte_offset) as u32],
+                &[(*i as u64 * self.model_byte_offset) as u32],
             );
 
             mesh.bind(&mut *render_pass);
             mesh.draw(&mut *render_pass);
         }
-        for (i, mesh) in self.unlit_index_meshes.iter().enumerate() {
+        for (i, mesh) in self.unlit_index_meshes.iter() {
             render_pass.set_bind_group(
                 0,
                 &self.bind_group,
-                &[(i as u64 * self.model_byte_offset) as u32],
+                &[(*i as u64 * self.model_byte_offset) as u32],
             );
             mesh.bind(&mut *render_pass);
             mesh.draw(&mut *render_pass);
@@ -413,20 +355,41 @@ impl MeshRenderer {
 
         render_pass.set_pipeline(&self.lit_render_pipeline);
 
-        for (i, mesh) in self.lit_vertex_meshes.iter().enumerate() {
+        for (i, mesh) in self.lit_vertex_meshes.iter() {
             render_pass.set_bind_group(
                 0,
                 &self.bind_group,
-                &[(i as u64 * self.model_byte_offset) as u32],
+                &[(*i as u64 * self.model_byte_offset) as u32],
             );
             mesh.bind(&mut *render_pass);
             mesh.draw(&mut *render_pass);
         }
-        for (i, mesh) in self.lit_index_meshes.iter().enumerate() {
+        for (i, mesh) in self.lit_index_meshes.iter() {
             render_pass.set_bind_group(
                 0,
                 &self.bind_group,
-                &[(i as u64 * self.model_byte_offset) as u32],
+                &[(*i as u64 * self.model_byte_offset) as u32],
+            );
+            mesh.bind(&mut *render_pass);
+            mesh.draw(&mut *render_pass);
+        }
+    }
+
+    fn render_no_pipeline_lit_only(&self, render_pass: &mut wgpu::RenderPass) {
+        for (i, mesh) in self.lit_vertex_meshes.iter() {
+            render_pass.set_bind_group(
+                0,
+                &self.shadow_renderer.bind_group,
+                &[(*i as u64 * self.model_byte_offset) as u32],
+            );
+            mesh.bind(&mut *render_pass);
+            mesh.draw(&mut *render_pass);
+        }
+        for (i, mesh) in self.lit_index_meshes.iter() {
+            render_pass.set_bind_group(
+                0,
+                &self.shadow_renderer.bind_group,
+                &[(*i as u64 * self.model_byte_offset) as u32],
             );
             mesh.bind(&mut *render_pass);
             mesh.draw(&mut *render_pass);
@@ -435,37 +398,35 @@ impl MeshRenderer {
 }
 
 impl TransformOperationListener for MeshRenderer {
-    fn on_insert(&mut self, transform: &Transform, id: ObjectID) {
+    fn on_insert(&mut self, transform: &Transform, id: EntityID) {
         let t: [[f32; 4]; 4] = transform.into();
         self.queue.write_buffer(
             &self.model_buffer,
             id as u64 * self.model_byte_offset,
             bytemuck::bytes_of(&t),
         );
-        info!("Insert Transform");
     }
-    fn on_mod(&mut self, transform: &Transform, id: ObjectID) {
+    fn on_mod(&mut self, transform: &Transform, id: EntityID) {
         let t: [[f32; 4]; 4] = transform.into();
         self.queue.write_buffer(
             &self.model_buffer,
             id as u64 * self.model_byte_offset,
             bytemuck::bytes_of(&t),
         );
-        info!("Modify Transform");
     }
-    fn on_drop(&mut self, _id: ObjectID) {}
+    fn on_drop(&mut self, _id: EntityID) {}
 }
 impl MeshOperationListener for MeshRenderer {
-    fn on_mod_index_mesh(&mut self, mesh: &IndexMesh, id: ObjectID) {
+    fn on_mod_index_mesh(&mut self, mesh: &IndexMesh, id: EntityID) {
         if mesh.is_lit {
-            *self.lit_index_meshes.get_mut(id).unwrap() = BakedIndexMesh::new(
+            *self.lit_index_meshes.get_mut(&id).unwrap() = BakedIndexMesh::new(
                 &mesh.vertices,
                 &mesh.indices,
                 mesh.num_instances,
                 &self.device,
             )
         } else {
-            *self.unlit_index_meshes.get_mut(id).unwrap() = BakedIndexMesh::new(
+            *self.unlit_index_meshes.get_mut(&id).unwrap() = BakedIndexMesh::new(
                 &mesh.vertices,
                 &mesh.indices,
                 mesh.num_instances,
@@ -473,56 +434,71 @@ impl MeshOperationListener for MeshRenderer {
             )
         }
     }
-    fn on_mod_vertex_mesh(&mut self, mesh: &VertexMesh, id: ObjectID) {
+    fn on_mod_vertex_mesh(&mut self, mesh: &VertexMesh, id: EntityID) {
         if mesh.is_lit {
-            *self.lit_vertex_meshes.get_mut(id).unwrap() =
+            *self.lit_vertex_meshes.get_mut(&id).unwrap() =
                 BakedVertexMesh::new(&mesh.vertices, mesh.num_instances, &self.device);
         } else {
-            *self.unlit_vertex_meshes.get_mut(id).unwrap() =
+            *self.unlit_vertex_meshes.get_mut(&id).unwrap() =
                 BakedVertexMesh::new(&mesh.vertices, mesh.num_instances, &self.device);
         }
     }
-    fn on_insert_index_mesh(&mut self, mesh: &IndexMesh, id: ObjectID) {
+    fn on_insert_index_mesh(&mut self, mesh: &IndexMesh, id: EntityID) {
         if mesh.is_lit {
-            self.lit_index_meshes.push(BakedIndexMesh::new(
-                &mesh.vertices,
-                &mesh.indices,
-                mesh.num_instances,
-                &self.device,
-            ));
-        } else {
-            if self.unlit_index_meshes.len() <= id {
-                self.unlit_index_meshes.push(BakedIndexMesh::new(
+            self.lit_index_meshes.insert(
+                id,
+                BakedIndexMesh::new(
                     &mesh.vertices,
                     &mesh.indices,
                     mesh.num_instances,
                     &self.device,
-                ));
-            }
-        }
-    }
-    fn on_insert_vertex_mesh(&mut self, mesh: &VertexMesh, id: ObjectID) {
-        if mesh.is_lit {
-            self.lit_vertex_meshes.push(BakedVertexMesh::new(
-                &mesh.vertices,
-                mesh.num_instances,
-                &self.device,
-            ));
+                ),
+            );
         } else {
-            if self.unlit_vertex_meshes.len() <= id {
-                self.unlit_vertex_meshes.push(BakedVertexMesh::new(
+            self.unlit_index_meshes.insert(
+                id,
+                BakedIndexMesh::new(
                     &mesh.vertices,
+                    &mesh.indices,
                     mesh.num_instances,
                     &self.device,
-                ));
-            }
+                ),
+            );
         }
     }
-    fn on_drop_index_mesh(&mut self, _id: ObjectID) {}
-    fn on_drop_vertex_mesh(&mut self, _id: ObjectID) {}
+    fn on_insert_vertex_mesh(&mut self, mesh: &VertexMesh, id: EntityID) {
+        if mesh.is_lit {
+            self.lit_vertex_meshes.insert(
+                id,
+                BakedVertexMesh::new(&mesh.vertices, mesh.num_instances, &self.device),
+            );
+        } else {
+            self.unlit_vertex_meshes.insert(
+                id,
+                BakedVertexMesh::new(&mesh.vertices, mesh.num_instances, &self.device),
+            );
+        }
+    }
+    fn on_drop_index_mesh(&mut self, _id: EntityID) {}
+    fn on_drop_vertex_mesh(&mut self, _id: EntityID) {}
 }
 impl LightOperationListener for MeshRenderer {
-    fn on_drop_point_light(&mut self, id: ObjectID) {}
-    fn on_insert_point_light(&mut self, light: &PointLight, id: ObjectID) {}
-    fn on_mod_point_light(&mut self, light: &PointLight, id: ObjectID) {}
+    fn on_drop_point_light(&mut self, id: EntityID) {}
+    fn on_insert_point_light(&mut self, light: &PointLight, id: EntityID) {
+        self.light_storage.on_insert_point_light(light, id);
+
+        let transform = Transform {
+            position: light.position,
+            scale: (1.0, 1.0, 1.0).into(),
+            orientation: (-0.3536, 0.3536, 0.1464, 0.8536).into(),
+        };
+        let transform_mat: cgmath::Matrix4<f32> = (&transform).into();
+        let proj = cgmath::ortho(-20.0, 20.0, -20.0, 20.0, 0.1, 100.0);
+        let matrix = proj * transform_mat.invert().unwrap();
+        let matrix_v: [[f32; 4]; 4] = matrix.into();
+        //let matrix: [[f32; 4]; 4] = (&transform).into();
+        self.queue
+            .write_buffer(&self.light_mat_buffer, 0, bytemuck::bytes_of(&matrix_v));
+    }
+    fn on_mod_point_light(&mut self, light: &PointLight, id: EntityID) {}
 }

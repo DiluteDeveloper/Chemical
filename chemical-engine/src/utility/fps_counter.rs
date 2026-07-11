@@ -7,6 +7,7 @@ pub struct FPSCounter {
     pub fps: Option<i32>,
 
     pub delta: f64,
+    pub seconds_elapsed: f64,
 
     last_frame: Instant,
     fps_timer: Instant,
@@ -22,6 +23,7 @@ impl FPSCounter {
             fps: None,
             delta: 0.0,
             fps_timer: now,
+            seconds_elapsed: 0.0,
         }
     }
 
@@ -30,6 +32,7 @@ impl FPSCounter {
 
         let now = Instant::now();
         self.delta = (now - self.last_frame).as_secs_f64();
+        self.seconds_elapsed += self.delta;
         self.last_frame = now;
 
         if self.fps_timer.elapsed() >= Duration::from_secs(1) {

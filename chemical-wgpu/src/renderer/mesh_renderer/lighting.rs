@@ -1,5 +1,5 @@
 mod light_storage;
-mod point_light;
+mod render_point_light;
 
 pub use light_storage::LightStorage;
-pub use point_light::PointLight;
+pub use render_point_light::RenderPointLight;

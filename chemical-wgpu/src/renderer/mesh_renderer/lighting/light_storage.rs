@@ -1,18 +1,16 @@
-use super::PointLight;
-use anyhow::bail;
-
+use super::RenderPointLight;
+use chemical_engine::scene::types::{EntityID, PointLight};
 pub struct LightStorage {
-    buffer: wgpu::Buffer,
-    pub point_lights: Vec<PointLight>,
+    pub buffer: wgpu::Buffer,
+    queue: wgpu::Queue,
+    len: u32,
 }
 
 const MAX_POINT_LIGHTS: usize = 100;
 
-type PointLightID = usize;
-
 impl LightStorage {
-    pub fn new(device: &wgpu::Device) -> Self {
-        let size = size_of::<u32>() + (size_of::<PointLight>() * MAX_POINT_LIGHTS);
+    pub fn new(device: &wgpu::Device, queue: &wgpu::Queue) -> Self {
+        let size = size_of::<u32>() + (size_of::<RenderPointLight>() * MAX_POINT_LIGHTS);
         let buffer = device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("light_storage_buffer"),
             size: size as u64,
@@ -21,32 +19,26 @@ impl LightStorage {
         });
         LightStorage {
             buffer: buffer,
-            point_lights: Vec::new(),
+            queue: queue.clone(),
+            len: 0,
         }
     }
 
-    pub fn add_point_light(&mut self, point_light: &PointLight) -> anyhow::Result<PointLightID> {
-        if self.point_lights.len() == MAX_POINT_LIGHTS {
-            bail!("Max number of point lights reached!")
-        }
-        self.point_lights.push(*point_light);
-        Ok(self.point_lights.len() - 1)
-    }
+    pub(in crate::renderer::mesh_renderer) fn on_insert_point_light(
+        &mut self,
+        light: &PointLight,
+        id: EntityID,
+    ) {
+        self.len += 1;
+        // point light len is bytes 0..15 because of padding; be explicit here
+        self.queue
+            .write_buffer(&self.buffer, 0, bytemuck::bytes_of(&(self.len as u32)));
 
-    pub(in crate::renderer::mesh_renderer) fn get_buffer(&self) -> &wgpu::Buffer {
-        &self.buffer
-    }
-    pub(in crate::renderer::mesh_renderer) fn update_buffer(&mut self, queue: &wgpu::Queue) {
-        queue.write_buffer(
+        let rpl: RenderPointLight = light.into();
+        self.queue.write_buffer(
             &self.buffer,
-            0,
-            bytemuck::bytes_of(&(self.point_lights.len() as u32)),
-        );
-        // point light len is bytes 0..15 because of padding
-        queue.write_buffer(
-            &self.buffer,
-            size_of::<[f32; 4]>() as u64,
-            bytemuck::cast_slice(&self.point_lights),
+            size_of::<[f32; 4]>() as u64 + (size_of::<RenderPointLight>() * id as usize) as u64,
+            bytemuck::bytes_of(&rpl),
         );
     }
 }

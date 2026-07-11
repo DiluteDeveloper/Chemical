@@ -73,7 +73,7 @@ impl Renderer {
         let mut present_mode_idx = 0;
 
         for (i, present_mode) in surface_caps.present_modes.iter().enumerate() {
-            if (*present_mode) == wgpu::PresentMode::AutoVsync {
+            if (*present_mode) == wgpu::PresentMode::Immediate {
                 present_mode_idx = i;
             }
         }

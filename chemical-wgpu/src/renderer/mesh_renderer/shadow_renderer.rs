@@ -1,11 +1,10 @@
-use super::MeshScene;
-use super::Vertex;
+use super::geometry::vertex;
 use crate::renderer::Texture;
-use crate::renderer::mesh_renderer::Renderable;
+
 pub struct ShadowRenderer {
     pub depth_texture: Texture,
     render_pipeline: wgpu::RenderPipeline,
-    bind_group: wgpu::BindGroup,
+    pub bind_group: wgpu::BindGroup,
 }
 
 const SHADOW_SHADER_PATH: &str = "res/shaders/shadow_shader.wgsl";
@@ -84,7 +83,7 @@ impl ShadowRenderer {
             vertex: wgpu::VertexState {
                 module: &shader,
                 entry_point: Some("vs_main"), // 1.
-                buffers: &[Vertex::layout()], // 2.
+                buffers: &[vertex::layout()], // 2.
                 compilation_options: wgpu::PipelineCompilationOptions::default(),
             },
             fragment: None,
@@ -144,8 +143,8 @@ impl ShadowRenderer {
             bind_group: bind_group,
         }
     }
-    pub fn build_shadow_pass(&self, mesh_scene: &MeshScene, encoder: &mut wgpu::CommandEncoder) {
-        let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+    pub fn start_pass<'a>(&'a self, encoder: &'a mut wgpu::CommandEncoder) -> wgpu::RenderPass<'a> {
+        let mut rp = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             label: Some("Render Pass"),
             color_attachments: &[],
             depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
@@ -160,25 +159,7 @@ impl ShadowRenderer {
             timestamp_writes: None,
             multiview_mask: None,
         });
-        render_pass.set_pipeline(&self.render_pipeline);
-
-        for (mesh, transform_id) in mesh_scene.lit_vertex_meshes.iter() {
-            render_pass.set_bind_group(
-                0,
-                &self.bind_group,
-                &[(*transform_id as u64 * mesh_scene.aligned_model_matrix_size_offset) as u32],
-            );
-            mesh.bind(&mut render_pass);
-            mesh.draw(&mut render_pass);
-        }
-        for (mesh, transform_id) in mesh_scene.lit_index_meshes.iter() {
-            render_pass.set_bind_group(
-                0,
-                &self.bind_group,
-                &[(*transform_id as u64 * mesh_scene.aligned_model_matrix_size_offset) as u32],
-            );
-            mesh.bind(&mut render_pass);
-            mesh.draw(&mut render_pass);
-        }
+        rp.set_pipeline(&self.render_pipeline);
+        rp
     }
 }
