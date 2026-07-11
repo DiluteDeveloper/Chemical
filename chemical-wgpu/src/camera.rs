@@ -1,10 +1,9 @@
-use crate::utility::TransformNoScale;
 use anyhow::anyhow;
 use cgmath::{InnerSpace, Matrix4, Quaternion, Rad, Rotation, Rotation3, SquareMatrix, Vector3};
-use log::info;
+use chemical_engine::scene::types::Transform;
 
 pub struct Camera {
-    pub transform: TransformNoScale,
+    pub transform: Transform,
 
     proj: cgmath::Matrix4<f32>,
 }
@@ -21,7 +20,7 @@ impl Camera {
 
     pub fn new(aspect: f32, fov: f32, znear: f32, zfar: f32) -> Self {
         Self {
-            transform: TransformNoScale::default(),
+            transform: Transform::default(),
             proj: cgmath::perspective(cgmath::Deg(fov), aspect, znear, zfar),
         }
     }
@@ -99,7 +98,6 @@ impl CameraController {
     }
 
     pub fn update_camera(&mut self, camera: &mut Camera, delta: f32) {
-        info!("{:?}", camera.transform.orientation);
         let transform = &mut camera.transform;
         let mut fwd = transform.orientation.rotate_vector(-Vector3::unit_z());
         fwd.y = 0.0;

@@ -1,8 +1,8 @@
 use crate::Renderer;
 use crate::renderer::mesh_renderer::lighting::PointLight;
-use crate::renderer::mesh_renderer::{IndexMeshDescriptor, VertexMeshDescriptor, geometry};
-use crate::utility::Transform;
+use chemical_engine::geometry::sphere;
 
+use chemical_engine::scene::SceneContainer;
 use std::sync::Arc;
 use winit::{
     dpi::PhysicalPosition,
@@ -25,9 +25,12 @@ pub(super) enum ChemicalEvent {
     ChangeCameraMode(CameraMode),
 }
 
-use crate::utility::FPSCounter;
 use crate::{Camera, CameraController};
 use anyhow::anyhow;
+use chemical_engine::{
+    scene::types::{IndexMesh, Transform},
+    utility::FPSCounter,
+};
 
 pub(super) struct ChemicalEngine {
     renderer: Renderer,
@@ -40,6 +43,8 @@ pub(super) struct ChemicalEngine {
     camera_mode: CameraMode,
     fps_counter: FPSCounter,
     window_center: PhysicalPosition<f32>,
+
+    scene: SceneContainer,
 }
 
 const UNIVERSE_SIMULATION_ORBIT_TRAIL_RESOLUTION: u64 = 3000;
@@ -67,99 +72,26 @@ impl ChemicalEngine {
         )
             .into();
 
-        /*let universe_simulation = UniverseSimulation::new();
-        let (vertices, indices) = sphere::generate_index_sphere(30)
+        let (vertices, indices) = sphere::generate_index_sphere(200)
             .map_err(|e| anyhow!("Failed to generate index sphere: {}", e))
             .expect("Tried to create invalid index sphere for celestial body mesh!");
 
-        let mut mesh_descriptor = IndexMeshDescriptor {
-            vertices: vertices,
-            indices: indices,
-            num_instances: 1,
-            transform_id: 0,
-            is_lit: false,
-        };
-
-        for (i, body) in universe_simulation.celestial_bodies.iter().enumerate() {
-            let scale = body.mass.sqrt();
-            let transform = Transform {
-                position: body.position,
-                scale: (scale, scale, scale).into(),
-                orientation: (0.0, 0.0, 0.0, -1.0).into(),
-            };
-            mesh_descriptor.transform_id = renderer.mesh_renderer.create_transform(&transform);
-            renderer
-                .mesh_renderer
-                .create_index_mesh(&mesh_descriptor, &renderer.device);
-
-            let line_descriptor = LineDescriptor {
-                data: Some(vec![body.position]),
-                width: 20.0, //body.position.z.sqrt(),
-                colour: match i {
-                    0 => wgpu::Color {
-                        r: 0.204,
-                        g: 0.741,
-                        b: 0.216,
-                        a: 1.0,
-                    },
-                    1 => wgpu::Color {
-                        r: 0.741,
-                        g: 0.557,
-                        b: 0.204,
-                        a: 1.0,
-                    },
-                    2 => wgpu::Color {
-                        r: 0.741,
-                        g: 0.204,
-                        b: 0.204,
-                        a: 1.0,
-                    },
-                    3 => wgpu::Color {
-                        r: 1.0,
-                        g: 1.0,
-                        b: 1.0,
-                        a: 1.0,
-                    },
-                    4 => wgpu::Color {
-                        r: 0.384,
-                        g: 0.204,
-                        b: 0.741,
-                        a: 1.0,
-                    },
-                    5 => wgpu::Color {
-                        r: 0.741,
-                        g: 0.204,
-                        b: 0.518,
-                        a: 1.0,
-                    },
-                    _ => wgpu::Color::WHITE,
-                },
-            };
-            renderer.line_renderer.create_line(&line_descriptor);
-        }*/
-
-        let (mut vertices, indices) = geometry::sphere::generate_index_sphere(200)
-            .map_err(|e| anyhow!("Failed to generate index sphere: {}", e))
-            .expect("Tried to create invalid index sphere for celestial body mesh!");
-
-        let mut mesh_descriptor = IndexMeshDescriptor {
-            vertices: vertices,
-            indices: indices,
-            num_instances: 1,
-            transform_id: 0,
-            is_lit: false,
-        };
-
-        let mut transform = Transform {
+        let transform = Transform {
             position: (0.0, 0.0, 0.0).into(),
             scale: (3.0, 3.0, 3.0).into(),
             orientation: (0.0, 0.0, 0.0, -1.0).into(),
         };
+        let index_mesh = IndexMesh::new(&vertices, &indices, 1, true, 0);
+
+        let mut scene = SceneContainer::new();
+        scene.transform_handler.insert_transform(transform);
+        scene.mesh_handler.insert_imesh(index_mesh);
+
         /*mesh_descriptor.transform_id = renderer.mesh_renderer.create_transform(&transform);
         renderer
             .mesh_renderer
             .create_index_mesh(&mesh_descriptor, &renderer.device);*/
-        transform.position.x = 5.0;
+        /*transform.position.x = 5.0;
         mesh_descriptor.transform_id = renderer.mesh_renderer.create_transform(&transform);
         mesh_descriptor.is_lit = true;
         renderer
@@ -210,7 +142,11 @@ impl ChemicalEngine {
             .mesh_renderer
             .light_storage
             .add_point_light(&PointLight::new([20.0, 20.0, 20.0], [0.5, 1.0, 0.8], 50.0))
-            .unwrap();
+            .unwrap();*/
+
+        renderer.process_scene_operations(&mut scene);
+        scene.clear_operations();
+
         event_loop_proxy
             .as_ref()
             .unwrap()
@@ -225,6 +161,7 @@ impl ChemicalEngine {
             camera_controller: CameraController::new(1.0, 0.0002, 0.07),
             fps_counter: FPSCounter::new(),
             window_center: window_center,
+            scene,
             //universe_simulation: UniverseSimulation::new(),
         })
     }
@@ -257,6 +194,9 @@ impl ChemicalEngine {
                 .unwrap()
                 .position = body.position;
         }*/
+
+        self.renderer.process_scene_operations(&mut self.scene);
+        self.scene.clear_operations();
         self.fps_counter.update();
     }
     pub(super) fn window_event(&mut self, event: &WindowEvent, event_loop: &ActiveEventLoop) {

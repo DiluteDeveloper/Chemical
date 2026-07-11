@@ -1,4 +1,4 @@
-use super::{Index, Vertex};
+use crate::scene::types::{index_mesh::Index, vertex_mesh::Vertex};
 use cgmath::{InnerSpace, Vector3, num_traits::pow};
 
 const PI: f32 = 3.141592;

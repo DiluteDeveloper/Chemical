@@ -1,4 +1,4 @@
-use super::Vertex;
+use crate::scene::types::vertex_mesh::Vertex;
 pub fn generate_vertex_plane(extents: cgmath::Vector2<f32>) -> [Vertex; 6] {
     [
         Vertex {

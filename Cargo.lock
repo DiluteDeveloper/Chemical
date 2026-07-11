@@ -284,6 +284,8 @@ dependencies = [
 name = "chemical-engine"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "bytemuck",
  "cgmath",
  "log",
 ]

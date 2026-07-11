@@ -2,6 +2,7 @@ pub mod line_renderer;
 pub mod mesh_renderer;
 mod texture;
 
+use chemical_engine::scene::SceneContainer;
 pub use line_renderer::LineRenderer;
 pub use mesh_renderer::MeshRenderer;
 pub use texture::Texture;
@@ -19,12 +20,12 @@ pub struct Renderer {
 
     depth_texture: Texture,
 
-    pub device: wgpu::Device,
-    pub queue: wgpu::Queue,
-    pub config: wgpu::SurfaceConfiguration,
+    device: wgpu::Device,
+    queue: wgpu::Queue,
+    config: wgpu::SurfaceConfiguration,
 
-    pub mesh_renderer: MeshRenderer,
-    pub line_renderer: LineRenderer,
+    mesh_renderer: MeshRenderer,
+    line_renderer: LineRenderer,
 }
 
 impl Renderer {
@@ -99,7 +100,7 @@ impl Renderer {
             Texture::create_depth_texture(&device, config.width, config.height, "Depth Texture");
 
         Ok(Self {
-            mesh_renderer: MeshRenderer::new(&device, &config, &surface_caps),
+            mesh_renderer: MeshRenderer::new(&device, &config, &queue, &surface_caps),
             line_renderer: LineRenderer::new(&device, &config),
             surface,
             device,
@@ -143,8 +144,7 @@ impl Renderer {
             .create_command_encoder(&wgpu::CommandEncoderDescriptor {
                 label: Some("Render Encoder"),
             });
-        self.mesh_renderer
-            .prepare(&camera, &self.queue, &mut encoder);
+        self.mesh_renderer.prepare(&camera, &mut encoder);
 
         // render lights buffer after encoder before real render pass
         {
@@ -157,9 +157,9 @@ impl Renderer {
                     depth_slice: None,
                     ops: wgpu::Operations {
                         load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 0.1,
-                            g: 0.1,
-                            b: 0.1,
+                            r: 0.01,
+                            g: 0.01,
+                            b: 0.01,
                             a: 1.0,
                         }),
                         store: wgpu::StoreOp::Store,
@@ -188,5 +188,17 @@ impl Renderer {
         output.present();
 
         Ok(())
+    }
+
+    pub fn process_scene_operations(&mut self, scene: &mut SceneContainer) {
+        scene
+            .transform_handler
+            .dispatch_operations(&mut self.mesh_renderer);
+        scene
+            .mesh_handler
+            .dispatch_operations(&mut self.mesh_renderer);
+        scene
+            .light_handler
+            .dispatch_operations(&mut self.mesh_renderer);
     }
 }

@@ -3,7 +3,6 @@ use log::LevelFilter;
 mod camera;
 mod core;
 mod renderer;
-mod utility;
 
 use crate::core::app;
 pub use camera::{Camera, CameraController};
