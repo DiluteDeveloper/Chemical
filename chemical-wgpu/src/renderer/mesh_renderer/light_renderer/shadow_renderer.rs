@@ -1,5 +1,10 @@
 use std::num::NonZeroU64;
 
+use chemical_engine::scene::{
+    type_handlers::light_handler::LightOperationListener,
+    types::{DirectionalLight, EntityID, PointLight},
+};
+
 use super::super::geometry::vertex;
 use crate::renderer::mesh_renderer::light_renderer::{LightRenderer, ShaderDirectionalLight};
 pub struct ShadowRenderer {
@@ -7,7 +12,8 @@ pub struct ShadowRenderer {
     num_directional_lights: u32,
     render_pipeline: wgpu::RenderPipeline,
 
-    light_projection_bind_group: wgpu::BindGroup,
+    directional_light_projection_buffer: wgpu::Buffer,
+    directional_light_projection_bind_group: wgpu::BindGroup,
 
     queue: wgpu::Queue,
     device: wgpu::Device,
@@ -16,7 +22,7 @@ pub struct ShadowRenderer {
     queued_directional_light_shadow_passes: Vec<u32>,
 
     lightmap_sampler: wgpu::Sampler,
-    directional_light_alignment: u64,
+    matrix_uniform_offset: u64,
 }
 
 impl ShadowRenderer {
@@ -26,7 +32,6 @@ impl ShadowRenderer {
 
     pub fn new(
         model_matrix_bind_group_layout: &wgpu::BindGroupLayout,
-        directional_lights_buffer: &wgpu::Buffer,
         device: &wgpu::Device,
         queue: &wgpu::Queue,
     ) -> Self {
@@ -36,15 +41,15 @@ impl ShadowRenderer {
                     binding: 0,
                     visibility: wgpu::ShaderStages::VERTEX,
                     ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Storage { read_only: true },
+                        ty: wgpu::BufferBindingType::Uniform,
                         has_dynamic_offset: true,
                         min_binding_size: Some(
-                            NonZeroU64::new(size_of::<ShaderDirectionalLight>() as u64).unwrap(),
+                            NonZeroU64::new(size_of::<[[f32; 4]; 4]>() as u64).unwrap(),
                         ),
                     },
                     count: None,
                 }],
-                label: Some("shadow_renderer_directional_light_matrix_bind_group_layout"),
+                label: Some("shadow_renderer_light_projection_bind_group_layout"),
             });
         let shader_source = std::fs::read_to_string(Self::SHADOW_SHADER_PATH).expect(&format!(
             "Shader path '{}' was invalid!",
@@ -56,22 +61,30 @@ impl ShadowRenderer {
             source: wgpu::ShaderSource::Wgsl(shader_source.into()),
         });
 
-        let directional_light_offset_storage_alignment: u64 = wgpu::util::align_to(
-            size_of::<ShaderDirectionalLight>() as u32,
-            device.limits().min_storage_buffer_offset_alignment,
+        let matrix_uniform_offset: u64 = wgpu::util::align_to(
+            size_of::<[[f32; 4]; 4]>() as u32,
+            device.limits().min_uniform_buffer_offset_alignment,
         ) as u64;
-        let light_projection_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &light_projection_bind_group_layout,
-            entries: &[wgpu::BindGroupEntry {
-                binding: 0,
-                resource: wgpu::BindingResource::Buffer(wgpu::BufferBinding {
-                    buffer: &directional_lights_buffer,
-                    offset: 0,
-                    size: wgpu::BufferSize::new(directional_light_offset_storage_alignment),
-                }),
-            }],
-            label: Some("shadow_renderer_light_projection_bind_group"),
+
+        let directional_light_projection_buffer = device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("shadow_renderer_directional_light_projection_buffer"),
+            size: matrix_uniform_offset * LightRenderer::MAX_DIRECTIONAL_LIGHTS,
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+            mapped_at_creation: false,
         });
+        let directional_light_projection_bind_group =
+            device.create_bind_group(&wgpu::BindGroupDescriptor {
+                layout: &light_projection_bind_group_layout,
+                entries: &[wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: wgpu::BindingResource::Buffer(wgpu::BufferBinding {
+                        buffer: &directional_light_projection_buffer,
+                        offset: 0,
+                        size: wgpu::BufferSize::new(matrix_uniform_offset),
+                    }),
+                }],
+                label: Some("shadow_renderer_directional_light_projection_bind_group"),
+            });
 
         let render_pipeline_layout =
             device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
@@ -140,20 +153,17 @@ impl ShadowRenderer {
         let directional_light_maps: [wgpu::TextureView;
             LightRenderer::MAX_DIRECTIONAL_LIGHTS as usize] =
             std::array::from_fn(|_| Self::create_lightmap_texture_view(device));
-        let directional_light_alignment: u64 = wgpu::util::align_to(
-            size_of::<ShaderDirectionalLight>() as u64,
-            device.limits().min_storage_buffer_offset_alignment as u64,
-        );
         Self {
-            directional_light_alignment,
+            matrix_uniform_offset,
             lightmap_sampler,
             directional_light_maps: directional_light_maps,
             render_pipeline,
-            light_projection_bind_group,
+            directional_light_projection_buffer,
             queue: queue.clone(),
             device: device.clone(),
             queued_directional_light_shadow_passes: Vec::new(),
             num_directional_lights: 0,
+            directional_light_projection_bind_group,
         }
     }
 
@@ -187,8 +197,8 @@ impl ShadowRenderer {
         rp.set_pipeline(&self.render_pipeline);
         rp.set_bind_group(
             1,
-            &self.light_projection_bind_group,
-            &[(self.directional_light_alignment as usize * directional_light_idx) as u32],
+            &self.directional_light_projection_bind_group,
+            &[(self.matrix_uniform_offset as usize * directional_light_idx) as u32],
         );
         self.queued_directional_light_shadow_passes.pop();
         Some(rp)
@@ -227,11 +237,6 @@ impl ShadowRenderer {
             .create_view(&wgpu::TextureViewDescriptor::default())
     }
 
-    pub(super) fn add_directional_light(&mut self) {
-        self.queued_directional_light_shadow_passes
-            .push(self.num_directional_lights);
-        self.num_directional_lights += 1;
-    }
     pub fn reprocess_all(&mut self) {
         for n in 0..self.num_directional_lights {
             self.queued_directional_light_shadow_passes.push(n);
@@ -244,36 +249,23 @@ impl ShadowRenderer {
     pub fn get_lightmap_sampler(&self) -> &wgpu::Sampler {
         &self.lightmap_sampler
     }
-}
-/*
-impl LightOperationListener for ShadowRenderer {
-    fn on_drop_directional_light(&mut self, _id: EntityID) {}
-    fn on_drop_point_light(&mut self, _id: EntityID) {}
-    fn on_insert_directional_light(&mut self, light: &DirectionalLight, _id: EntityID) {
-        if self.num_directional_lights + 1 >= LightRenderer::MAX_DIRECTIONAL_LIGHTS as u32 {
-            warn!("Max number of directional lights reached! no more will be rendered.");
-            return;
-        }
-        let mut t = Transform::default();
-        t.position = (20.0, 20.0, 20.0).into();
-        t.orientation = light.orientation;
-        let transform_mat: cgmath::Matrix4<f32> = (&t).into();
-        let proj = cgmath::ortho(-20.0, 20.0, -20.0, 20.0, 0.1, 100.0);
-        let m = proj * transform_mat.invert().unwrap();
 
-        let matrix: [[f32; 4]; 4] = m.into();
+    pub fn add_directional_light_projection(&mut self, projection: &glam::Mat4) {
         self.queue.write_buffer(
-            &self.directional_light_matrix_buffer,
-            (self.num_directional_lights * size_of::<[[f32; 4]; 4]>() as u32) as u64,
-            bytemuck::bytes_of(&matrix),
+            &self.directional_light_projection_buffer,
+            self.num_directional_lights as u64 * self.matrix_uniform_offset,
+            bytemuck::bytes_of(projection),
         );
-
         self.queued_directional_light_shadow_passes
             .push(self.num_directional_lights);
         self.num_directional_lights += 1;
     }
-    fn on_insert_point_light(&mut self, _light: &PointLight, _id: EntityID) {}
-    fn on_mod_directional_light(&mut self, _light: &DirectionalLight, _id: EntityID) {}
-    fn on_mod_point_light(&mut self, _light: &PointLight, _id: EntityID) {}
+    pub fn update_directional_light_projection(&mut self, id: u32, projection: &glam::Mat4) {
+        self.queue.write_buffer(
+            &self.directional_light_projection_buffer,
+            id as u64 * self.matrix_uniform_offset,
+            bytemuck::bytes_of(projection),
+        );
+        self.queued_directional_light_shadow_passes.push(id);
+    }
 }
-*/

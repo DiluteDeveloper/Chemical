@@ -6,16 +6,8 @@ struct ModelNormalMatrix {
 // Group is the order specified in the render pipeline layout descriptor
 @group(0) @binding(1) 
 var<uniform> model_normal_matrix: ModelNormalMatrix;
-
-// Alignment of 16 bytes, size of 80 bytes
-// 16*5=80 bytes, so fits neatly into array
-struct DirectionalLight {
-    colour: vec3<f32>,
-    strength: f32,
-    projection: mat4x4<f32>}
-
 @group(1) @binding(0)
-var<storage> directional_light: DirectionalLight;
+var<uniform> projection: mat4x4<f32>;
 
 struct VertexInput {
     @location(0) position: vec3<f32>,
@@ -31,6 +23,6 @@ fn vs_main(
     vtx: VertexInput,
 ) -> VertexOutput {
     var out: VertexOutput;
-    out.position = directional_light.projection * model_normal_matrix.model_matrix * vec4<f32>(vtx.position, 1.0);
+    out.position = projection * model_normal_matrix.model_matrix * vec4<f32>(vtx.position, 1.0);
     return out;
 }

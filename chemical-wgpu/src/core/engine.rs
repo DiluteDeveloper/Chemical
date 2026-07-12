@@ -1,6 +1,10 @@
 use crate::Renderer;
 
-use glam::camera::rh::view;
+use glam::camera::rh::{
+    proj::directx,
+    view::{self, look_at_mat4},
+};
+use log::info;
 use std::sync::Arc;
 use winit::{
     dpi::PhysicalPosition,
@@ -59,7 +63,7 @@ impl ChemicalEngine {
 
         let mut camera = Camera::new(
             window_size.width as f32 / window_size.height as f32,
-            90.0,
+            60.0,
             0.01,
             10000.00,
         );
@@ -75,47 +79,70 @@ impl ChemicalEngine {
             .map_err(|e| anyhow!("Failed to generate index sphere: {}", e))
             .expect("Tried to create invalid index sphere for celestial body mesh!");
         let cube_vertices = cube::generate_vertex_cube((1.0, 1.0, 1.0).into());
-        let plane_vertices = plane::generate_vertex_plane((50.0, 50.0).into());
+        let plane_vertices = plane::generate_vertex_plane((1.0, 1.0).into());
 
         let sphere_mesh_data = Mesh::new(&sphere_vertices, Some(&sphere_indices), true);
+        let light_mesh_data = Mesh::new(&sphere_vertices, Some(&sphere_indices), false);
         let plane_mesh_data = Mesh::new(&plane_vertices, None, true);
         let cube_mesh_data = Mesh::new(&cube_vertices, None, true);
 
-        let plane_transform = Transform::default();
+        let plane_transform = Transform {
+            position: (0.0, -1.0, 0.0).into(),
+            orientation: glam::Quat::from_xyzw(0.0, 0.0, 0.0, -1.0),
+            scale: (5.0, 1.0, 5.0).into(),
+        };
         let cube_transform = Transform {
-            position: (0.0, 0.0, 0.0).into(),
+            position: (3.0, 00.0, 3.0).into(),
             orientation: glam::Quat::from_xyzw(0.0, 0.0, 0.0, -1.0),
             scale: (1.0, 1.0, 1.0).into(),
         };
         let sphere_transform = Transform {
-            position: (0.0, 3.0, 1.0).into(),
+            position: (-3.0, 0.0, -3.0).into(),
             orientation: glam::Quat::from_xyzw(0.0, 0.0, 0.0, -1.0),
-            scale: (2.0, 2.0, 2.0).into(),
+            scale: (1.0, 1.0, 1.0).into(),
         };
+        let mut light_model_transform = Transform::default();
+        light_model_transform.scale = (0.2, 0.2, 0.2).into();
 
         let directional_light = DirectionalLight {
-            orientation: glam::Quat::from_euler(glam::EulerRot::XYZ, -45.0, -45.0, -45.0),
-            strength: 50.0,
-            colour: (1.0, 0.9, 0.6).into(),
+            orientation: glam::Quat::from_euler(glam::EulerRot::XYZ, 0.0, 1.0, 1.0),
+            strength: 0.1,
+            colour: (1.0, 0.0, 0.0).into(),
+        };
+        let directional_light_2 = DirectionalLight {
+            orientation: glam::Quat::from_euler(glam::EulerRot::XYZ, 0.0, 1.0, 1.0),
+            strength: 0.1,
+            colour: (0.0, 0.0, 1.0).into(),
         };
 
         let mut scene = SceneContainer::new();
         scene
             .transform_handler
             .insert_transform(sphere_transform, 0);
-        scene.transform_handler.insert_transform(cube_transform, 1);
-        scene.transform_handler.insert_transform(plane_transform, 2);
-        scene.transform_handler.insert_transform(plane_transform, 4);
         scene.mesh_handler.insert_mesh(sphere_mesh_data.clone(), 0);
-        scene.mesh_handler.insert_mesh(sphere_mesh_data, 4);
+
+        scene.transform_handler.insert_transform(cube_transform, 1);
         scene.mesh_handler.insert_mesh(cube_mesh_data, 1);
+
+        scene.transform_handler.insert_transform(plane_transform, 2);
         scene.mesh_handler.insert_mesh(plane_mesh_data, 2);
+
         scene
-            .light_handler
-            .insert_directional_light(directional_light.clone(), 0);
+            .transform_handler
+            .insert_transform(light_model_transform, 3);
+        scene.mesh_handler.insert_mesh(light_mesh_data.clone(), 3);
+
+        scene
+            .transform_handler
+            .insert_transform(light_model_transform, 4);
+        scene.mesh_handler.insert_mesh(light_mesh_data, 4);
+
         scene
             .light_handler
             .insert_directional_light(directional_light, 0);
+        scene
+            .light_handler
+            .insert_directional_light(directional_light_2, 1);
 
         renderer.process_scene_operations(&mut scene);
         scene.clear_operations();
@@ -144,48 +171,57 @@ impl ChemicalEngine {
             self.camera_controller
                 .update_camera(&mut self.camera, self.fps_counter.delta as f32);
         }
-
-        // self.simulation_timer += self.fps_counter.delta as f32;
-        // if self.simulation_timer > 0.0 {
-        //     self.simulation_timer = 0.0;
-        //for _i in 0..UNIVERSE_SIMULATION_ORBIT_TRAIL_RESOLUTION {
-        //self.universe_simulation.tick(self.fps_counter.delta);
-        //}
-        // }
-
-        /*for (i, body) in self.universe_simulation.celestial_bodies.iter().enumerate() {
-            if self.universe_simulation.get_tick_count()
-                % UNIVERSE_SIMULATION_ORBIT_TRAIL_RESOLUTION
-                == 0
-            {
-                let line = self.renderer.line_renderer.get_line(i).unwrap();
-                line.push(&[body.position]);
-            }
-            self.renderer
-                .mesh_renderer
-                .get_transform(i)
-                .unwrap()
-                .position = body.position;
-        }*/
         let seconds_elapsed = self.fps_counter.seconds_elapsed;
+
         self.scene
-            .transform_handler
-            .modify(0, move |t| {
-                t.position.x = (seconds_elapsed * 0.2).sin() as f32 * 10.0;
-                t.position.z = (seconds_elapsed * 0.2).cos() as f32 * 10.0;
-                t.position.y = 5.0 + (seconds_elapsed).cos() as f32 * 5.0;
-                let scale = 1.0 + ((seconds_elapsed * 0.2).sin().abs()) as f32;
-                t.scale = (scale, scale, scale).into();
+            .light_handler
+            .modify_directional_light(0, move |t| {
+                t.orientation = glam::Quat::from_euler(
+                    glam::EulerRot::XYZ,
+                    seconds_elapsed as f32 + 0.01,
+                    1.0,
+                    0.0,
+                );
             })
             .unwrap();
+        let dir = self
+            .scene
+            .light_handler
+            .get_directional_light(0)
+            .unwrap()
+            .orientation
+            .to_axis_angle()
+            .0;
+        self.scene
+            .transform_handler
+            .modify(3, move |t| {
+                t.position = dir * 10.0;
+            })
+            .unwrap();
+
+        self.scene
+            .light_handler
+            .modify_directional_light(1, move |t| {
+                t.orientation = glam::Quat::from_euler(
+                    glam::EulerRot::ZYX,
+                    5.0 - seconds_elapsed as f32 + 0.01,
+                    1.0,
+                    0.0,
+                );
+            })
+            .unwrap();
+        let dir2 = self
+            .scene
+            .light_handler
+            .get_directional_light(1)
+            .unwrap()
+            .orientation
+            .to_axis_angle()
+            .0;
         self.scene
             .transform_handler
             .modify(4, move |t| {
-                t.position.x = (seconds_elapsed * 0.2).sin() as f32 * 6.0;
-                t.position.z = (seconds_elapsed * 0.2).cos() as f32 * 6.0;
-                t.position.y = 5.0 + (seconds_elapsed).cos() as f32 * 1.0;
-                let scale = 1.0 + ((seconds_elapsed * 0.2).sin().abs()) as f32;
-                t.scale = (scale, scale, scale).into();
+                t.position = dir2 * 10.0;
             })
             .unwrap();
 

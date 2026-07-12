@@ -463,5 +463,6 @@ impl LightOperationListener for MeshRenderer {
         light: &chemical_engine::scene::types::DirectionalLight,
         id: EntityID,
     ) {
+        self.light_renderer.on_mod_directional_light(light, id);
     }
 }

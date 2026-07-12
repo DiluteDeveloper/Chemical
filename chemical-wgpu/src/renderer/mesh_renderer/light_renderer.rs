@@ -48,12 +48,7 @@ impl LightRenderer {
             mapped_at_creation: false,
         });
         LightRenderer {
-            shadow_renderer: ShadowRenderer::new(
-                model_matrix_bind_group_layout,
-                &directional_lights_buffer,
-                device,
-                queue,
-            ),
+            shadow_renderer: ShadowRenderer::new(model_matrix_bind_group_layout, device, queue),
             directional_lights_buffer,
             directional_light_count_buffer,
             queue: queue.clone(),
@@ -81,7 +76,7 @@ impl LightRenderer {
 impl LightOperationListener for LightRenderer {
     fn on_drop_directional_light(&mut self, _id: EntityID) {}
     fn on_drop_point_light(&mut self, _id: EntityID) {}
-    fn on_insert_directional_light(&mut self, light: &DirectionalLight, _id: EntityID) {
+    fn on_insert_directional_light(&mut self, light: &DirectionalLight, id: EntityID) {
         if self.num_directional_lights + 1 >= Self::MAX_DIRECTIONAL_LIGHTS as u32 {
             warn!("Max number of directional lights reached! no more will be rendered.");
             return;
@@ -94,13 +89,23 @@ impl LightOperationListener for LightRenderer {
         let shader_light: ShaderDirectionalLight = light.into();
         self.queue.write_buffer(
             &self.directional_lights_buffer,
-            self.directional_light_alignment * (self.num_directional_lights as u64),
+            size_of::<ShaderDirectionalLight>() as u64 * (self.num_directional_lights as u64),
             bytemuck::bytes_of(&shader_light),
         );
         self.num_directional_lights += 1;
-        self.shadow_renderer.add_directional_light();
+        self.shadow_renderer
+            .add_directional_light_projection(&shader_light.projection);
     }
     fn on_insert_point_light(&mut self, _light: &PointLight, _id: EntityID) {}
-    fn on_mod_directional_light(&mut self, _light: &DirectionalLight, _id: EntityID) {}
+    fn on_mod_directional_light(&mut self, light: &DirectionalLight, id: EntityID) {
+        let shader_light: ShaderDirectionalLight = light.into();
+        self.queue.write_buffer(
+            &self.directional_lights_buffer,
+            size_of::<ShaderDirectionalLight>() as u64 * (id as u64),
+            bytemuck::bytes_of(&shader_light),
+        );
+        self.shadow_renderer
+            .update_directional_light_projection(id, &shader_light.projection);
+    }
     fn on_mod_point_light(&mut self, _light: &PointLight, _id: EntityID) {}
 }

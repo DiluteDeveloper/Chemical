@@ -29,7 +29,8 @@ fn vs_main(
     var out: VertexOutput;
     out.position = camera_matrix * model_normal_matrix.model_matrix * vec4<f32>(vtx.position, 1.0);
     // Take note that normals are not transformed to the world position; i.e, if you rotate the model the normals will be wrong!
-    out.normal = normalize(model_normal_matrix.normal_matrix * vtx.normal);
+    //out.normal = normalize(model_normal_matrix.normal_matrix * vtx.normal);
+    out.normal = vtx.normal;
     out.world_position = vec3<f32>((model_normal_matrix.model_matrix * vec4<f32>(vtx.position, 1.0)).xyz);
     return out;
 }
@@ -40,6 +41,8 @@ fn vs_main(
 struct DirectionalLight {
     colour: vec3<f32>,
     strength: f32,
+    dir: vec3<f32>,
+    // 4 bytes padding
     projection: mat4x4<f32>}
 
 @group(0) @binding(2)
@@ -63,31 +66,27 @@ const SPECULAR_STRENGTH: f32 = 0.01;
 
 fn process_directional_lights(normal: vec3<f32>, world_position: vec3<f32>) -> vec3<f32> {
 
-    var test_pos = vec3f(20.0, 20.0, 20.0);
     var surface_colour = vec3f(0);
     let view_dir = normalize(camera_position - world_position);
 
     for (var i = 0u; i < directional_light_count; i++) {
 
-        let fragment_to_light_vector = test_pos - world_position;
-        let dist = length(fragment_to_light_vector);
-        let dir = normalize(fragment_to_light_vector);
+        let light = directional_lights[i];
+        let diff = light.colour * max(dot(normal, light.dir), 0);
 
-        let radiance = directional_lights[i].colour * (1 / pow(dist, 2));
-        let nDotL = max(dot(normal, dir), 0);
-        let diff = radiance * nDotL;
+        let reflect_dir = reflect(-(light.dir), normal.xyz);
 
-        let reflect_dir = reflect(-(dir.xyz), normal.xyz);
+        let spec = light.colour * pow(max(dot(view_dir, reflect_dir), 0.0), 32.0);
 
-        let spec = directional_lights[i].colour * pow(max(dot(view_dir, reflect_dir), 0.0), 32.0);
-
-        let amb = directional_lights[i].colour;
-
-        let mapped_position = directional_lights[i].projection * vec4<f32>(world_position, 1.0);
+        let mapped_position = light.projection * vec4<f32>(world_position, 1.0);
         let shadow_coord = mapped_position.xyz / mapped_position.w;
         let uv = shadow_coord.xy * vec2(0.5, -0.5) + 0.5;
-        let shadow = textureSampleCompare(directional_light_maps[i], depth_sampler, uv, mapped_position.z);
-        surface_colour += (((spec * SPECULAR_STRENGTH) + (diff * DIFFUSE_STRENGTH)) * directional_lights[i].strength) * shadow;
+        if all(uv >= vec2<f32>(0.0)) && all(uv <= vec2<f32>(1.0)) {
+            let shadow = textureSampleCompare(directional_light_maps[i], depth_sampler, uv, mapped_position.z);
+            surface_colour += (((spec * SPECULAR_STRENGTH) + (diff * DIFFUSE_STRENGTH)) * light.strength) * shadow;
+        } else {
+            surface_colour += ((spec * SPECULAR_STRENGTH) + (diff * DIFFUSE_STRENGTH)) * light.strength;
+        }
     }
     return surface_colour;
 }
