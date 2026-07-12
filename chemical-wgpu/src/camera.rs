@@ -19,6 +19,10 @@ impl Camera {
             proj: directx::perspective(fov.to_radians(), aspect, znear, zfar),
         }
     }
+
+    pub fn update_projection(&mut self, aspect: f32, fov: f32, znear: f32, zfar: f32) {
+        self.proj = directx::perspective(fov.to_radians(), aspect, znear, zfar);
+    }
 }
 
 pub struct CameraController {

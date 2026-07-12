@@ -63,7 +63,7 @@ impl ChemicalEngine {
 
         let mut camera = Camera::new(
             window_size.width as f32 / window_size.height as f32,
-            60.0,
+            45.0,
             0.01,
             10000.00,
         );
@@ -83,11 +83,11 @@ impl ChemicalEngine {
 
         let sphere_mesh_data = Mesh::new(&sphere_vertices, Some(&sphere_indices), true);
         let light_mesh_data = Mesh::new(&sphere_vertices, Some(&sphere_indices), false);
-        let plane_mesh_data = Mesh::new(&plane_vertices, None, true);
+        //let plane_mesh_data = Mesh::new(&plane_vertices, None, true);
         let cube_mesh_data = Mesh::new(&cube_vertices, None, true);
 
-        let plane_transform = Transform {
-            position: (0.0, -1.0, 0.0).into(),
+        let under_cube_transform = Transform {
+            position: (0.0, -2.0, 0.0).into(),
             orientation: glam::Quat::from_xyzw(0.0, 0.0, 0.0, -1.0),
             scale: (5.0, 1.0, 5.0).into(),
         };
@@ -107,12 +107,12 @@ impl ChemicalEngine {
         let directional_light = DirectionalLight {
             orientation: glam::Quat::from_euler(glam::EulerRot::XYZ, 0.0, 1.0, 1.0),
             strength: 0.1,
-            colour: (1.0, 0.0, 0.0).into(),
+            colour: (1.0, 0.5, 0.0).into(),
         };
         let directional_light_2 = DirectionalLight {
             orientation: glam::Quat::from_euler(glam::EulerRot::XYZ, 0.0, 1.0, 1.0),
             strength: 0.1,
-            colour: (0.0, 0.0, 1.0).into(),
+            colour: (0.0, 0.5, 1.0).into(),
         };
 
         let mut scene = SceneContainer::new();
@@ -122,10 +122,12 @@ impl ChemicalEngine {
         scene.mesh_handler.insert_mesh(sphere_mesh_data.clone(), 0);
 
         scene.transform_handler.insert_transform(cube_transform, 1);
-        scene.mesh_handler.insert_mesh(cube_mesh_data, 1);
+        scene.mesh_handler.insert_mesh(cube_mesh_data.clone(), 1);
 
-        scene.transform_handler.insert_transform(plane_transform, 2);
-        scene.mesh_handler.insert_mesh(plane_mesh_data, 2);
+        scene
+            .transform_handler
+            .insert_transform(under_cube_transform, 2);
+        scene.mesh_handler.insert_mesh(cube_mesh_data, 2);
 
         scene
             .transform_handler
@@ -204,7 +206,7 @@ impl ChemicalEngine {
             .modify_directional_light(1, move |t| {
                 t.orientation = glam::Quat::from_euler(
                     glam::EulerRot::ZYX,
-                    5.0 - seconds_elapsed as f32 + 0.01,
+                    3.0 - seconds_elapsed as f32 + 0.01,
                     1.0,
                     0.0,
                 );
@@ -235,7 +237,15 @@ impl ChemicalEngine {
     pub(super) fn window_event(&mut self, event: &WindowEvent, event_loop: &ActiveEventLoop) {
         match event {
             WindowEvent::CloseRequested => event_loop.exit(),
-            WindowEvent::Resized(size) => self.renderer.resize(size.width, size.height),
+            WindowEvent::Resized(size) => {
+                self.renderer.resize(size.width, size.height);
+                self.camera.update_projection(
+                    size.width as f32 / size.height as f32,
+                    30.0,
+                    0.01,
+                    10000.00,
+                );
+            }
             WindowEvent::RedrawRequested => {
                 self.update();
 

@@ -27,8 +27,6 @@ pub struct ShadowRenderer {
 
 impl ShadowRenderer {
     const SHADOW_SHADER_PATH: &str = "res/shaders/shadow_shader.wgsl";
-    const LIGHT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_OFFSET: u64 =
-        (size_of::<u32>() + size_of::<[f32; 3]>() + size_of::<f32>()) as u64;
 
     pub fn new(
         model_matrix_bind_group_layout: &wgpu::BindGroupLayout,
@@ -109,7 +107,7 @@ impl ShadowRenderer {
                 topology: wgpu::PrimitiveTopology::TriangleList, // 1.
                 strip_index_format: None,
                 front_face: wgpu::FrontFace::Ccw, // 2.
-                cull_mode: Some(wgpu::Face::Back),
+                cull_mode: None,                  //Some(wgpu::Face::Back),
                 polygon_mode: wgpu::PolygonMode::Fill,
                 unclipped_depth: false,
                 conservative: false,
