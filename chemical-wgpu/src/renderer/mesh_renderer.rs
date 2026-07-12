@@ -1,27 +1,25 @@
-pub mod geometry;
-pub mod lighting;
-mod mesh;
+mod geometry;
+mod light_renderer;
 mod renderable;
-mod shadow_renderer;
+mod rendered_mesh;
 
 use super::Texture;
 use crate::Camera;
-use cgmath::SquareMatrix;
-pub use shadow_renderer::ShadowRenderer;
-use std::collections::HashMap;
+use cgmath::{Matrix, SquareMatrix};
+use light_renderer::LightRenderer;
+use std::{collections::HashMap, num::NonZeroU32};
 
 use chemical_engine::scene::{
     type_handlers::{
         light_handler::LightOperationListener, mesh_handler::MeshOperationListener,
         transform_handler::TransformOperationListener,
     },
-    types::{EntityID, IndexMesh, PointLight, Transform, VertexMesh, vertex_mesh::Vertex},
+    types::{EntityID, Mesh, PointLight, Transform, mesh::Vertex},
 };
 
 use geometry::vertex;
-use lighting::LightStorage;
-use mesh::{BakedIndexMesh, BakedVertexMesh};
-pub use renderable::Renderable;
+use renderable::Renderable;
+use rendered_mesh::RenderedMesh;
 
 type TransformIndex = u32;
 
@@ -29,24 +27,21 @@ pub struct MeshRenderer {
     lit_render_pipeline: wgpu::RenderPipeline,
     unlit_render_pipeline: wgpu::RenderPipeline,
     bind_group: wgpu::BindGroup,
-    camera_buffer: wgpu::Buffer,
+    directional_light_map_bind_group: wgpu::BindGroup,
+    camera_matrix_buffer: wgpu::Buffer,
     camera_pos_buffer: wgpu::Buffer,
-    light_mat_buffer: wgpu::Buffer,
 
-    model_buffer: wgpu::Buffer,
-    model_byte_offset: u64,
+    model_matrix_normal_matrix_buffer: wgpu::Buffer,
 
-    lit_vertex_meshes: HashMap<TransformIndex, BakedVertexMesh>,
-    lit_index_meshes: HashMap<TransformIndex, BakedIndexMesh>,
+    lit_meshes: HashMap<TransformIndex, RenderedMesh>,
+    unlit_meshes: HashMap<TransformIndex, RenderedMesh>,
 
-    unlit_vertex_meshes: HashMap<TransformIndex, BakedVertexMesh>,
-    unlit_index_meshes: HashMap<TransformIndex, BakedIndexMesh>,
+    light_renderer: LightRenderer,
 
-    pub light_storage: LightStorage,
-
-    shadow_renderer: ShadowRenderer,
     queue: wgpu::Queue,
     device: wgpu::Device,
+
+    model_matrix_normal_matrix_element_bytesize: u64,
 }
 
 const UNLIT_SHADER_PATH: &str = "res/shaders/unlit_shader.wgsl";
@@ -58,11 +53,11 @@ impl MeshRenderer {
         device: &wgpu::Device,
         config: &wgpu::SurfaceConfiguration,
         queue: &wgpu::Queue,
-        surface_caps: &wgpu::SurfaceCapabilities,
     ) -> Self {
         let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             entries: &[
                 wgpu::BindGroupLayoutEntry {
+                    // Camera matrix
                     binding: 0,
                     visibility: wgpu::ShaderStages::VERTEX,
                     ty: wgpu::BindingType::Buffer {
@@ -73,6 +68,7 @@ impl MeshRenderer {
                     count: None,
                 },
                 wgpu::BindGroupLayoutEntry {
+                    // Model matrix
                     binding: 1,
                     visibility: wgpu::ShaderStages::VERTEX,
                     ty: wgpu::BindingType::Buffer {
@@ -83,6 +79,7 @@ impl MeshRenderer {
                     count: None,
                 },
                 wgpu::BindGroupLayoutEntry {
+                    // Directional lights
                     binding: 2,
                     visibility: wgpu::ShaderStages::FRAGMENT,
                     ty: wgpu::BindingType::Buffer {
@@ -93,6 +90,7 @@ impl MeshRenderer {
                     count: None,
                 },
                 wgpu::BindGroupLayoutEntry {
+                    // Camera position
                     binding: 3,
                     visibility: wgpu::ShaderStages::FRAGMENT,
                     ty: wgpu::BindingType::Buffer {
@@ -103,27 +101,19 @@ impl MeshRenderer {
                     count: None,
                 },
                 wgpu::BindGroupLayoutEntry {
+                    // Directional light count
                     binding: 4,
-                    visibility: wgpu::ShaderStages::VERTEX,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
                     ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Uniform,
+                        ty: wgpu::BufferBindingType::Storage { read_only: true },
                         has_dynamic_offset: false,
                         min_binding_size: None,
                     },
                     count: None,
                 },
                 wgpu::BindGroupLayoutEntry {
+                    // Lightmap sampler
                     binding: 5,
-                    visibility: wgpu::ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Texture {
-                        sample_type: wgpu::TextureSampleType::Depth,
-                        view_dimension: wgpu::TextureViewDimension::D2,
-                        multisampled: false,
-                    },
-                    count: None,
-                },
-                wgpu::BindGroupLayoutEntry {
-                    binding: 6,
                     visibility: wgpu::ShaderStages::FRAGMENT,
                     ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Comparison),
                     count: None,
@@ -131,14 +121,23 @@ impl MeshRenderer {
             ],
             label: Some("mesh_renderer_bind_group_layout"),
         });
+        let directional_light_map_bind_group_layout =
+            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+                entries: &[wgpu::BindGroupLayoutEntry {
+                    // Directional light maps
+                    binding: 0,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Texture {
+                        sample_type: wgpu::TextureSampleType::Depth,
+                        view_dimension: wgpu::TextureViewDimension::D2,
+                        multisampled: false,
+                    },
+                    count: NonZeroU32::new(LightRenderer::MAX_DIRECTIONAL_LIGHTS as u32),
+                }],
+                label: Some("mesh_renderer_directional_light_map_bind_group_layout"),
+            });
 
-        let camera_buffer = device.create_buffer(&wgpu::BufferDescriptor {
-            label: None,
-            size: size_of::<[[f32; 4]; 4]>() as u64,
-            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
-            mapped_at_creation: false,
-        });
-        let light_mat_buffer = device.create_buffer(&wgpu::BufferDescriptor {
+        let camera_matrix_buffer = device.create_buffer(&wgpu::BufferDescriptor {
             label: None,
             size: size_of::<[[f32; 4]; 4]>() as u64,
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
@@ -146,73 +145,85 @@ impl MeshRenderer {
         });
         let camera_pos_buffer = device.create_buffer(&wgpu::BufferDescriptor {
             label: None,
-            size: size_of::<[f32; 4]>() as u64,
+            size: size_of::<[f32; 3]>() as u64,
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
 
-        let aligned_model_matrix_size_offset: u64 = wgpu::util::align_to(
+        let matrix_offset_uniform_alignment: u64 = wgpu::util::align_to(
             std::mem::size_of::<[[f32; 4]; 4]>() as u32,
             device.limits().min_uniform_buffer_offset_alignment,
         ) as u64;
-        let model_buffer = device.create_buffer(&wgpu::BufferDescriptor {
+        let model_matrix_normal_matrix_element_bytesize: u64 = matrix_offset_uniform_alignment
+            + wgpu::util::align_to(
+                std::mem::size_of::<[[f32; 3]; 3]>() as u32,
+                device.limits().min_uniform_buffer_offset_alignment,
+            ) as u64;
+        let model_matrix_normal_matrix_buffer = device.create_buffer(&wgpu::BufferDescriptor {
             label: None,
-            size: aligned_model_matrix_size_offset * MAX_TRANSFORMS,
+            size: model_matrix_normal_matrix_element_bytesize * MAX_TRANSFORMS,
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
 
-        let light_storage = LightStorage::new(&device, &queue);
-        let shadow_renderer = ShadowRenderer::new(
-            &light_mat_buffer,
-            &model_buffer,
-            device,
-            surface_caps,
-            aligned_model_matrix_size_offset,
-        );
+        let light_renderer = LightRenderer::new(&bind_group_layout, device, queue);
 
         let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &bind_group_layout,
             entries: &[
                 wgpu::BindGroupEntry {
+                    // Camera matrix
                     binding: 0,
-                    resource: camera_buffer.as_entire_binding(),
+                    resource: camera_matrix_buffer.as_entire_binding(),
                 },
                 wgpu::BindGroupEntry {
+                    // Model matrix
                     binding: 1,
                     resource: wgpu::BindingResource::Buffer(wgpu::BufferBinding {
-                        buffer: &model_buffer,
+                        buffer: &model_matrix_normal_matrix_buffer,
                         offset: 0,
-                        size: wgpu::BufferSize::new(aligned_model_matrix_size_offset),
+                        size: wgpu::BufferSize::new(model_matrix_normal_matrix_element_bytesize),
                     }),
                 },
                 wgpu::BindGroupEntry {
+                    // Directional lights
                     binding: 2,
-                    resource: light_storage.buffer.as_entire_binding(),
+                    resource: light_renderer
+                        .get_directional_lights_buffer()
+                        .as_entire_binding(),
                 },
                 wgpu::BindGroupEntry {
+                    // Camera pos
                     binding: 3,
                     resource: camera_pos_buffer.as_entire_binding(),
                 },
                 wgpu::BindGroupEntry {
+                    // Directional light count
                     binding: 4,
-                    resource: light_mat_buffer.as_entire_binding(),
+                    resource: light_renderer
+                        .get_directional_light_count_buffer()
+                        .as_entire_binding(),
                 },
                 wgpu::BindGroupEntry {
                     binding: 5,
-                    resource: wgpu::BindingResource::TextureView(
-                        &shadow_renderer.depth_texture.view,
-                    ),
-                },
-                wgpu::BindGroupEntry {
-                    binding: 6,
                     resource: wgpu::BindingResource::Sampler(
-                        &shadow_renderer.depth_texture.sampler,
+                        light_renderer.shadow_renderer.get_lightmap_sampler(),
                     ),
                 },
             ],
             label: Some("mesh_renderer_bind_group"),
         });
+        let directional_light_map_bind_group =
+            device.create_bind_group(&wgpu::BindGroupDescriptor {
+                layout: &directional_light_map_bind_group_layout,
+                entries: &[wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: wgpu::BindingResource::TextureViewArray(
+                        &light_renderer.shadow_renderer.get_directional_lightmaps(),
+                    ),
+                }],
+                label: Some("mesh_renderer_directional_light_map_bind_group"),
+            });
 
         let unlit_shader_source = std::fs::read_to_string(UNLIT_SHADER_PATH)
             .expect(&format!("Shader path '{}' was invalid!", UNLIT_SHADER_PATH));
@@ -233,7 +244,7 @@ impl MeshRenderer {
         let render_pipeline_layout =
             device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 label: Some("mesh_renderer_render_pipeline_layout"),
-                bind_group_layouts: &[&bind_group_layout],
+                bind_group_layouts: &[&bind_group_layout, &directional_light_map_bind_group_layout],
                 immediate_size: 0,
             });
         let unlit_render_pipeline_descriptor = wgpu::RenderPipelineDescriptor {
@@ -297,102 +308,78 @@ impl MeshRenderer {
         let lit_render_pipeline = device.create_render_pipeline(&lit_render_pipeline_descriptor);
 
         MeshRenderer {
-            shadow_renderer: shadow_renderer,
-            unlit_render_pipeline: unlit_render_pipeline,
-            lit_render_pipeline: lit_render_pipeline,
-            bind_group: bind_group,
-            camera_buffer: camera_buffer,
-            camera_pos_buffer: camera_pos_buffer,
-            model_buffer: model_buffer,
-            light_storage: light_storage,
-            light_mat_buffer: light_mat_buffer,
-            lit_vertex_meshes: HashMap::new(),
-            lit_index_meshes: HashMap::new(),
-            unlit_vertex_meshes: HashMap::new(),
-            unlit_index_meshes: HashMap::new(),
-            model_byte_offset: aligned_model_matrix_size_offset,
+            lit_render_pipeline,
+            unlit_render_pipeline,
+            bind_group,
+            model_matrix_normal_matrix_element_bytesize,
+            model_matrix_normal_matrix_buffer,
+            camera_pos_buffer,
+            camera_matrix_buffer,
+            light_renderer,
+            lit_meshes: HashMap::new(),
+            unlit_meshes: HashMap::new(),
             queue: queue.clone(),
             device: device.clone(),
+            directional_light_map_bind_group,
         }
     }
-    pub(super) fn prepare(&mut self, camera: &Camera, encoder: &mut wgpu::CommandEncoder) {
+    pub fn prepare(&mut self, camera: &Camera, encoder: &mut wgpu::CommandEncoder) {
         let pos = camera.transform.position;
-        self.queue.write_buffer(
-            &self.camera_pos_buffer,
-            0,
-            bytemuck::bytes_of(&[pos[0], pos[1], pos[2], 0.0]),
-        );
+        let pos_into: [f32; 3] = pos.into();
+        self.queue
+            .write_buffer(&self.camera_pos_buffer, 0, bytemuck::bytes_of(&pos_into));
 
         let v = camera.get_transformation_matrix().unwrap();
         self.queue
-            .write_buffer(&self.camera_buffer, 0, bytemuck::bytes_of(&v));
+            .write_buffer(&self.camera_matrix_buffer, 0, bytemuck::bytes_of(&v));
 
-        let mut rp = self.shadow_renderer.start_pass(encoder);
-        self.render_no_pipeline_lit_only(&mut rp);
-    }
-    pub(super) fn render(&self, render_pass: &mut wgpu::RenderPass) {
-        render_pass.set_pipeline(&self.unlit_render_pipeline);
+        loop {
+            let render_pass = self
+                .light_renderer
+                .start_queued_directional_light_shadow_pass(encoder);
 
-        for (i, mesh) in self.unlit_vertex_meshes.iter() {
-            render_pass.set_bind_group(
-                0,
-                &self.bind_group,
-                &[(*i as u64 * self.model_byte_offset) as u32],
-            );
-
-            mesh.bind(&mut *render_pass);
-            mesh.draw(&mut *render_pass);
+            match render_pass {
+                Some(mut rp) => {
+                    for (i, mesh) in self.lit_meshes.iter() {
+                        rp.set_bind_group(
+                            0,
+                            &self.bind_group,
+                            &[
+                                (*i as u64 * self.model_matrix_normal_matrix_element_bytesize)
+                                    as u32,
+                            ],
+                        );
+                        mesh.bind(&mut rp);
+                        mesh.draw(&mut rp);
+                    }
+                }
+                None => break,
+            }
         }
-        for (i, mesh) in self.unlit_index_meshes.iter() {
+    }
+    pub fn render(&self, render_pass: &mut wgpu::RenderPass) {
+        render_pass.set_pipeline(&self.unlit_render_pipeline);
+        render_pass.set_bind_group(1, &self.directional_light_map_bind_group, &[]);
+
+        for (i, mesh) in self.unlit_meshes.iter() {
             render_pass.set_bind_group(
                 0,
                 &self.bind_group,
-                &[(*i as u64 * self.model_byte_offset) as u32],
+                &[(*i as u64 * self.model_matrix_normal_matrix_element_bytesize) as u32],
             );
-            mesh.bind(&mut *render_pass);
-            mesh.draw(&mut *render_pass);
+            mesh.bind(render_pass);
+            mesh.draw(render_pass);
         }
 
         render_pass.set_pipeline(&self.lit_render_pipeline);
-
-        for (i, mesh) in self.lit_vertex_meshes.iter() {
+        for (i, mesh) in self.lit_meshes.iter() {
             render_pass.set_bind_group(
                 0,
                 &self.bind_group,
-                &[(*i as u64 * self.model_byte_offset) as u32],
+                &[(*i as u64 * self.model_matrix_normal_matrix_element_bytesize) as u32],
             );
-            mesh.bind(&mut *render_pass);
-            mesh.draw(&mut *render_pass);
-        }
-        for (i, mesh) in self.lit_index_meshes.iter() {
-            render_pass.set_bind_group(
-                0,
-                &self.bind_group,
-                &[(*i as u64 * self.model_byte_offset) as u32],
-            );
-            mesh.bind(&mut *render_pass);
-            mesh.draw(&mut *render_pass);
-        }
-    }
-
-    fn render_no_pipeline_lit_only(&self, render_pass: &mut wgpu::RenderPass) {
-        for (i, mesh) in self.lit_vertex_meshes.iter() {
-            render_pass.set_bind_group(
-                0,
-                &self.shadow_renderer.bind_group,
-                &[(*i as u64 * self.model_byte_offset) as u32],
-            );
-            mesh.bind(&mut *render_pass);
-            mesh.draw(&mut *render_pass);
-        }
-        for (i, mesh) in self.lit_index_meshes.iter() {
-            render_pass.set_bind_group(
-                0,
-                &self.shadow_renderer.bind_group,
-                &[(*i as u64 * self.model_byte_offset) as u32],
-            );
-            mesh.bind(&mut *render_pass);
-            mesh.draw(&mut *render_pass);
+            mesh.bind(render_pass);
+            mesh.draw(render_pass);
         }
     }
 }
@@ -401,104 +388,93 @@ impl TransformOperationListener for MeshRenderer {
     fn on_insert(&mut self, transform: &Transform, id: EntityID) {
         let t: [[f32; 4]; 4] = transform.into();
         self.queue.write_buffer(
-            &self.model_buffer,
-            id as u64 * self.model_byte_offset,
+            &self.model_matrix_normal_matrix_buffer,
+            id as u64 * self.model_matrix_normal_matrix_element_bytesize,
             bytemuck::bytes_of(&t),
         );
+        let mat: cgmath::Matrix4<f32> = transform.into();
+        let normal_matrix: cgmath::Matrix3<f32> =
+            cgmath::Matrix3::from_cols(mat.x.truncate(), mat.y.truncate(), mat.z.truncate())
+                .invert()
+                .unwrap()
+                .transpose();
+
+        let t2: [[f32; 3]; 3] = normal_matrix.into();
+        self.queue.write_buffer(
+            &self.model_matrix_normal_matrix_buffer,
+            size_of::<[[f32; 4]; 4]>() as u64
+                + (id as u64 * self.model_matrix_normal_matrix_element_bytesize),
+            bytemuck::bytes_of(&t2),
+        );
+        self.light_renderer.shadow_renderer.reprocess_all();
     }
     fn on_mod(&mut self, transform: &Transform, id: EntityID) {
         let t: [[f32; 4]; 4] = transform.into();
         self.queue.write_buffer(
-            &self.model_buffer,
-            id as u64 * self.model_byte_offset,
+            &self.model_matrix_normal_matrix_buffer,
+            id as u64 * self.model_matrix_normal_matrix_element_bytesize,
             bytemuck::bytes_of(&t),
         );
+        let mat: cgmath::Matrix4<f32> = transform.into();
+        let normal_matrix: cgmath::Matrix3<f32> =
+            cgmath::Matrix3::from_cols(mat.x.truncate(), mat.y.truncate(), mat.z.truncate())
+                .invert()
+                .unwrap()
+                .transpose();
+
+        let t2: [[f32; 3]; 3] = normal_matrix.into();
+        self.queue.write_buffer(
+            &self.model_matrix_normal_matrix_buffer,
+            size_of::<[[f32; 4]; 4]>() as u64
+                + (id as u64 * self.model_matrix_normal_matrix_element_bytesize),
+            bytemuck::bytes_of(&t2),
+        );
+        self.light_renderer.shadow_renderer.reprocess_all();
     }
     fn on_drop(&mut self, _id: EntityID) {}
 }
 impl MeshOperationListener for MeshRenderer {
-    fn on_mod_index_mesh(&mut self, mesh: &IndexMesh, id: EntityID) {
+    fn on_mod_mesh(&mut self, mesh: &Mesh, id: EntityID) {
         if mesh.is_lit {
-            *self.lit_index_meshes.get_mut(&id).unwrap() = BakedIndexMesh::new(
-                &mesh.vertices,
-                &mesh.indices,
-                mesh.num_instances,
-                &self.device,
-            )
+            *self.lit_meshes.get_mut(&id).unwrap() =
+                RenderedMesh::new(&mesh.vertices, mesh.indices.as_deref(), &self.device)
         } else {
-            *self.unlit_index_meshes.get_mut(&id).unwrap() = BakedIndexMesh::new(
-                &mesh.vertices,
-                &mesh.indices,
-                mesh.num_instances,
-                &self.device,
-            )
+            *self.unlit_meshes.get_mut(&id).unwrap() =
+                RenderedMesh::new(&mesh.vertices, mesh.indices.as_deref(), &self.device)
         }
     }
-    fn on_mod_vertex_mesh(&mut self, mesh: &VertexMesh, id: EntityID) {
+    fn on_insert_mesh(&mut self, mesh: &Mesh, id: EntityID) {
         if mesh.is_lit {
-            *self.lit_vertex_meshes.get_mut(&id).unwrap() =
-                BakedVertexMesh::new(&mesh.vertices, mesh.num_instances, &self.device);
-        } else {
-            *self.unlit_vertex_meshes.get_mut(&id).unwrap() =
-                BakedVertexMesh::new(&mesh.vertices, mesh.num_instances, &self.device);
-        }
-    }
-    fn on_insert_index_mesh(&mut self, mesh: &IndexMesh, id: EntityID) {
-        if mesh.is_lit {
-            self.lit_index_meshes.insert(
+            self.lit_meshes.insert(
                 id,
-                BakedIndexMesh::new(
-                    &mesh.vertices,
-                    &mesh.indices,
-                    mesh.num_instances,
-                    &self.device,
-                ),
+                RenderedMesh::new(&mesh.vertices, mesh.indices.as_deref(), &self.device),
             );
         } else {
-            self.unlit_index_meshes.insert(
+            self.unlit_meshes.insert(
                 id,
-                BakedIndexMesh::new(
-                    &mesh.vertices,
-                    &mesh.indices,
-                    mesh.num_instances,
-                    &self.device,
-                ),
+                RenderedMesh::new(&mesh.vertices, mesh.indices.as_deref(), &self.device),
             );
         }
     }
-    fn on_insert_vertex_mesh(&mut self, mesh: &VertexMesh, id: EntityID) {
-        if mesh.is_lit {
-            self.lit_vertex_meshes.insert(
-                id,
-                BakedVertexMesh::new(&mesh.vertices, mesh.num_instances, &self.device),
-            );
-        } else {
-            self.unlit_vertex_meshes.insert(
-                id,
-                BakedVertexMesh::new(&mesh.vertices, mesh.num_instances, &self.device),
-            );
-        }
-    }
-    fn on_drop_index_mesh(&mut self, _id: EntityID) {}
-    fn on_drop_vertex_mesh(&mut self, _id: EntityID) {}
+    fn on_drop_mesh(&mut self, _id: EntityID) {}
 }
+
 impl LightOperationListener for MeshRenderer {
     fn on_drop_point_light(&mut self, id: EntityID) {}
-    fn on_insert_point_light(&mut self, light: &PointLight, id: EntityID) {
-        self.light_storage.on_insert_point_light(light, id);
-
-        let transform = Transform {
-            position: light.position,
-            scale: (1.0, 1.0, 1.0).into(),
-            orientation: (-0.3536, 0.3536, 0.1464, 0.8536).into(),
-        };
-        let transform_mat: cgmath::Matrix4<f32> = (&transform).into();
-        let proj = cgmath::ortho(-20.0, 20.0, -20.0, 20.0, 0.1, 100.0);
-        let matrix = proj * transform_mat.invert().unwrap();
-        let matrix_v: [[f32; 4]; 4] = matrix.into();
-        //let matrix: [[f32; 4]; 4] = (&transform).into();
-        self.queue
-            .write_buffer(&self.light_mat_buffer, 0, bytemuck::bytes_of(&matrix_v));
-    }
+    fn on_insert_point_light(&mut self, light: &PointLight, id: EntityID) {}
     fn on_mod_point_light(&mut self, light: &PointLight, id: EntityID) {}
+    fn on_drop_directional_light(&mut self, id: EntityID) {}
+    fn on_insert_directional_light(
+        &mut self,
+        light: &chemical_engine::scene::types::DirectionalLight,
+        id: EntityID,
+    ) {
+        self.light_renderer.on_insert_directional_light(light, id);
+    }
+    fn on_mod_directional_light(
+        &mut self,
+        light: &chemical_engine::scene::types::DirectionalLight,
+        id: EntityID,
+    ) {
+    }
 }

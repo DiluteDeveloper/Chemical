@@ -55,15 +55,19 @@ impl Renderer {
             info.name, info.device_type, info.backend
         );
 
+        let mut limits = wgpu::Limits::default();
+        limits.max_binding_array_elements_per_shader_stage = 256;
+
         let (device, queue) = adapter
             .request_device(&wgpu::DeviceDescriptor {
                 label: None,
                 required_features: wgpu::Features {
-                    features_wgpu: wgpu::FeaturesWGPU::POLYGON_MODE_LINE,
+                    features_wgpu: wgpu::FeaturesWGPU::TEXTURE_BINDING_ARRAY |
+                    wgpu::FeaturesWGPU::SAMPLED_TEXTURE_AND_STORAGE_BUFFER_ARRAY_NON_UNIFORM_INDEXING,
                     features_webgpu: wgpu::FeaturesWebGPU::default(),
                 },
                 experimental_features: wgpu::ExperimentalFeatures::disabled(),
-                required_limits: wgpu::Limits::default(),
+                required_limits: limits,
                 memory_hints: Default::default(),
                 trace: wgpu::Trace::Off,
             })
@@ -100,7 +104,7 @@ impl Renderer {
             Texture::create_depth_texture(&device, config.width, config.height, "Depth Texture");
 
         Ok(Self {
-            mesh_renderer: MeshRenderer::new(&device, &config, &queue, &surface_caps),
+            mesh_renderer: MeshRenderer::new(&device, &config, &queue),
             line_renderer: LineRenderer::new(&device, &config),
             surface,
             device,

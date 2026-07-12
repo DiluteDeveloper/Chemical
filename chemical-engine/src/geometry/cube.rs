@@ -1,4 +1,4 @@
-use crate::scene::types::vertex_mesh::Vertex;
+use crate::scene::types::mesh::Vertex;
 
 pub fn generate_vertex_cube(extents: cgmath::Vector3<f32>) -> [Vertex; 36] {
     [

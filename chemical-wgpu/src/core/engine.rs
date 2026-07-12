@@ -29,7 +29,7 @@ use chemical_engine::{
     geometry::{cube, plane, sphere},
     scene::{
         SceneContainer,
-        types::{IndexMesh, PointLight, Transform, VertexMesh},
+        types::{DirectionalLight, Mesh, PointLight, Transform, directional_light},
     },
     utility::FPSCounter,
 };
@@ -77,9 +77,9 @@ impl ChemicalEngine {
         let cube_vertices = cube::generate_vertex_cube((1.0, 1.0, 1.0).into());
         let plane_vertices = plane::generate_vertex_plane((50.0, 50.0).into());
 
-        let sphere_mesh_data = IndexMesh::new(&sphere_vertices, &sphere_indices, 1, true);
-        let plane_mesh_data = VertexMesh::new(&plane_vertices, 1, true);
-        let cube_mesh_data = VertexMesh::new(&cube_vertices, 1, true);
+        let sphere_mesh_data = Mesh::new(&sphere_vertices, Some(&sphere_indices), true);
+        let plane_mesh_data = Mesh::new(&plane_vertices, None, true);
+        let cube_mesh_data = Mesh::new(&cube_vertices, None, true);
 
         let plane_transform = Transform::default();
         let cube_transform = Transform {
@@ -93,8 +93,8 @@ impl ChemicalEngine {
             scale: (2.0, 2.0, 2.0).into(),
         };
 
-        let point_light = PointLight {
-            position: (20.0, 20.0, 20.0).into(),
+        let directional_light = DirectionalLight {
+            orientation: (-0.3536, 0.3536, 0.1464, 0.8536).into(),
             strength: 50.0,
             colour: (1.0, 0.9, 0.6).into(),
         };
@@ -106,68 +106,16 @@ impl ChemicalEngine {
         scene.transform_handler.insert_transform(cube_transform, 1);
         scene.transform_handler.insert_transform(plane_transform, 2);
         scene.transform_handler.insert_transform(plane_transform, 4);
-        scene.mesh_handler.insert_imesh(sphere_mesh_data.clone(), 0);
-        scene.mesh_handler.insert_imesh(sphere_mesh_data, 4);
-        scene.mesh_handler.insert_vmesh(cube_mesh_data, 1);
-        scene.mesh_handler.insert_vmesh(plane_mesh_data, 2);
-        scene.light_handler.insert_point_light(point_light, 0);
-
-        /*mesh_descriptor.transform_id = renderer.mesh_renderer.create_transform(&transform);
-        renderer
-            .mesh_renderer
-            .create_index_mesh(&mesh_descriptor, &renderer.device);*/
-        /*transform.position.x = 5.0;
-        mesh_descriptor.transform_id = renderer.mesh_renderer.create_transform(&transform);
-        mesh_descriptor.is_lit = true;
-        renderer
-            .mesh_renderer
-            .create_index_mesh(&mesh_descriptor, &renderer.device);
-        transform.position.x = 0.0;
-        transform.position.z = 7.0;
-        transform.position.y = 3.0;
-        mesh_descriptor.transform_id = renderer.mesh_renderer.create_transform(&transform);
-        mesh_descriptor.is_lit = true;
-        renderer
-            .mesh_renderer
-            .create_index_mesh(&mesh_descriptor, &renderer.device);
-
-        vertices = geometry::cube::generate_vertex_cube((1.0, 1.0, 1.0).into()).to_vec();
-
-        let mut cube_mesh_descriptor = VertexMeshDescriptor {
-            vertices: vertices,
-            num_instances: 1,
-            transform_id: 0,
-            is_lit: true,
-        };
-        transform.position.x = -5.0;
-        transform.position.z = 0.0;
-        transform.position.y = 5.0;
-        cube_mesh_descriptor.transform_id = renderer.mesh_renderer.create_transform(&transform);
-        renderer
-            .mesh_renderer
-            .create_vertex_mesh(&cube_mesh_descriptor, &renderer.device);
-
-        vertices = geometry::plane::generate_vertex_plane((30.0, 30.0).into()).to_vec();
-
-        let mut plane_mesh_descriptor = VertexMeshDescriptor {
-            vertices: vertices,
-            num_instances: 1,
-            transform_id: 0,
-            is_lit: true,
-        };
-        transform.scale = (1.0, 1.0, 1.0).into();
-        transform.position.x = 0.0;
-        transform.position.y = -2.5;
-        plane_mesh_descriptor.transform_id = renderer.mesh_renderer.create_transform(&transform);
-        renderer
-            .mesh_renderer
-            .create_vertex_mesh(&plane_mesh_descriptor, &renderer.device);
-
-        renderer
-            .mesh_renderer
-            .light_storage
-            .add_point_light(&PointLight::new([20.0, 20.0, 20.0], [0.5, 1.0, 0.8], 50.0))
-            .unwrap();*/
+        scene.mesh_handler.insert_mesh(sphere_mesh_data.clone(), 0);
+        scene.mesh_handler.insert_mesh(sphere_mesh_data, 4);
+        scene.mesh_handler.insert_mesh(cube_mesh_data, 1);
+        scene.mesh_handler.insert_mesh(plane_mesh_data, 2);
+        scene
+            .light_handler
+            .insert_directional_light(directional_light.clone(), 0);
+        scene
+            .light_handler
+            .insert_directional_light(directional_light, 0);
 
         renderer.process_scene_operations(&mut scene);
         scene.clear_operations();
@@ -244,9 +192,9 @@ impl ChemicalEngine {
         self.renderer.process_scene_operations(&mut self.scene);
         self.scene.clear_operations();
         self.fps_counter.update();
-        if let Some(fps) = self.fps_counter.fps {
+        /*if let Some(fps) = self.fps_counter.fps {
             info!("{}", fps);
-        }
+        }*/
     }
     pub(super) fn window_event(&mut self, event: &WindowEvent, event_loop: &ActiveEventLoop) {
         match event {

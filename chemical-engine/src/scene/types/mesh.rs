@@ -4,19 +4,20 @@ pub struct Vertex {
     pub position: [f32; 3],
     pub normal: [f32; 3],
 }
+pub type Index = u32;
 
 #[derive(Clone)]
-pub struct VertexMesh {
+pub struct Mesh {
     pub vertices: Vec<Vertex>,
-    pub num_instances: u32,
+    pub indices: Option<Vec<Index>>,
     pub is_lit: bool,
 }
 
-impl VertexMesh {
-    pub fn new(vertices: &[Vertex], num_instances: u32, is_lit: bool) -> Self {
-        VertexMesh {
+impl Mesh {
+    pub fn new(vertices: &[Vertex], indices: Option<&[Index]>, is_lit: bool) -> Self {
+        Mesh {
             vertices: vertices.to_vec(),
-            num_instances,
+            indices: indices.map(|indices| indices.to_vec()),
             is_lit,
         }
     }
