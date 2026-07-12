@@ -25,10 +25,13 @@ pub struct Renderer {
     config: wgpu::SurfaceConfiguration,
 
     mesh_renderer: MeshRenderer,
-    line_renderer: LineRenderer,
+    pub line_renderer: LineRenderer,
+
+    msaa_view: wgpu::TextureView,
 }
 
 impl Renderer {
+    const MSAA_SAMPLE_COUNT: u32 = 8;
     pub async fn new(window: Arc<Window>) -> anyhow::Result<Renderer> {
         let size = window.inner_size();
 
@@ -63,7 +66,8 @@ impl Renderer {
                 label: None,
                 required_features: wgpu::Features {
                     features_wgpu: wgpu::FeaturesWGPU::TEXTURE_BINDING_ARRAY |
-                    wgpu::FeaturesWGPU::SAMPLED_TEXTURE_AND_STORAGE_BUFFER_ARRAY_NON_UNIFORM_INDEXING,
+                    wgpu::FeaturesWGPU::SAMPLED_TEXTURE_AND_STORAGE_BUFFER_ARRAY_NON_UNIFORM_INDEXING |
+                    wgpu::FeaturesWGPU::TEXTURE_ADAPTER_SPECIFIC_FORMAT_FEATURES,
                     features_webgpu: wgpu::FeaturesWebGPU::default(),
                 },
                 experimental_features: wgpu::ExperimentalFeatures::disabled(),
@@ -103,7 +107,10 @@ impl Renderer {
         let depth_texture =
             Texture::create_depth_texture(&device, config.width, config.height, "Depth Texture");
 
+        let msaa_view = Self::configure_msaa(&device, &config);
+
         Ok(Self {
+            msaa_view,
             mesh_renderer: MeshRenderer::new(&device, &config, &queue),
             line_renderer: LineRenderer::new(&device, &config),
             surface,
@@ -128,7 +135,29 @@ impl Renderer {
                 self.config.height,
                 "Depth Texture",
             );
+            let msaa_view = Self::configure_msaa(&self.device, &self.config);
+            self.msaa_view = msaa_view;
         }
+    }
+    fn configure_msaa(
+        device: &wgpu::Device,
+        config: &wgpu::SurfaceConfiguration,
+    ) -> wgpu::TextureView {
+        let msaa_texture = device.create_texture(&wgpu::TextureDescriptor {
+            label: Some("MSAA texture"),
+            size: wgpu::Extent3d {
+                width: config.width,
+                height: config.height,
+                depth_or_array_layers: 1,
+            },
+            mip_level_count: 1,
+            sample_count: Self::MSAA_SAMPLE_COUNT,
+            dimension: wgpu::TextureDimension::D2,
+            format: config.format, // match your surface/swapchain format
+            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
+            view_formats: &[],
+        });
+        msaa_texture.create_view(&wgpu::TextureViewDescriptor::default())
     }
 
     pub fn render(&mut self, camera: &Camera) -> Result<(), wgpu::SurfaceError> {
@@ -156,8 +185,8 @@ impl Renderer {
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("Render Pass"),
                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                    view: &view,
-                    resolve_target: None,
+                    view: &self.msaa_view,
+                    resolve_target: Some(&view),
                     depth_slice: None,
                     ops: wgpu::Operations {
                         load: wgpu::LoadOp::Clear(wgpu::Color {

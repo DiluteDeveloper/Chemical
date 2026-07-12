@@ -1,7 +1,7 @@
 mod line;
 
 use super::Texture;
-use crate::Camera;
+use crate::{Camera, Renderer};
 use line::LineSegment;
 pub use line::{Line, LineDescriptor};
 
@@ -162,9 +162,9 @@ impl LineRenderer {
                 bias: wgpu::DepthBiasState::default(),
             }), // 1.
             multisample: wgpu::MultisampleState {
-                count: 1,                         // 2.
-                mask: !0,                         // 3.
-                alpha_to_coverage_enabled: false, // 4.
+                count: Renderer::MSAA_SAMPLE_COUNT, // 2.
+                mask: !0,                           // 3.
+                alpha_to_coverage_enabled: false,   // 4.
             },
             multiview_mask: None, // 5.
             cache: None,          // 6.

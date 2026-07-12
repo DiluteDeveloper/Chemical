@@ -4,7 +4,7 @@ mod renderable;
 mod rendered_mesh;
 
 use super::Texture;
-use crate::Camera;
+use crate::{Camera, Renderer};
 use light_renderer::LightRenderer;
 use std::{collections::HashMap, num::NonZeroU32};
 
@@ -271,7 +271,7 @@ impl MeshRenderer {
                 topology: wgpu::PrimitiveTopology::TriangleList, // 1.
                 strip_index_format: None,
                 front_face: wgpu::FrontFace::Ccw, // 2.
-                cull_mode: Some(wgpu::Face::Back),
+                cull_mode: None,                  //Some(wgpu::Face::Back),
                 // Setting this to anything other than Fill requires Features::NON_FILL_POLYGON_MODE
                 polygon_mode: wgpu::PolygonMode::Fill,
                 // Requires Features::DEPTH_CLIP_CONTROL
@@ -287,9 +287,9 @@ impl MeshRenderer {
                 bias: wgpu::DepthBiasState::default(),
             }), // 1.
             multisample: wgpu::MultisampleState {
-                count: 1,                         // 2.
-                mask: !0,                         // 3.
-                alpha_to_coverage_enabled: false, // 4.
+                count: Renderer::MSAA_SAMPLE_COUNT, // 2.
+                mask: !0,                           // 3.
+                alpha_to_coverage_enabled: false,   // 4.
             },
             multiview_mask: None, // 5.
             cache: None,          // 6.
