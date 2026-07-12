@@ -1,11 +1,5 @@
 // Vertex shader
 
-const OPENGL_TO_WGPU_MATRIX: mat4x4<f32> = mat4x4<f32>(
-    vec4<f32>(1.0, 0.0, 0.0, 0.0),
-    vec4<f32>(0.0, 1.0, 0.0, 0.0),
-    vec4<f32>(0.0, 0.0, 0.5, 0.0),
-    vec4<f32>(0.0, 0.0, 0.5, 1.0),
-);
 // Group is the order specified in the render pipeline layout descriptor
 @group(0) @binding(0) 
 var<uniform> camera_matrix: mat4x4<f32>;
@@ -58,7 +52,7 @@ fn vs_main(
             fpos = vec3<f32>(500.0, 0.0, 0.0);
         }
     }
-    out.position = OPENGL_TO_WGPU_MATRIX * camera_matrix * vec4<f32>(fpos, 1.0);
+    out.position = camera_matrix * vec4<f32>(fpos, 1.0);
     out.colour = vtx.colour;
 
     return out;

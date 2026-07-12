@@ -2,7 +2,7 @@ use crate::utility::RGBColour;
 
 #[derive(Clone)]
 pub struct DirectionalLight {
-    pub orientation: cgmath::Quaternion<f32>,
+    pub orientation: glam::Quat,
     pub strength: f32,
     pub colour: RGBColour,
 }

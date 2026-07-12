@@ -1,4 +1,5 @@
-#[derive(Clone)]
+#[repr(C)]
+#[derive(Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct RGBColour {
     pub r: f32,
     pub g: f32,

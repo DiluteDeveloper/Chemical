@@ -1,27 +1,22 @@
-use anyhow::anyhow;
-use cgmath::{InnerSpace, Matrix4, Quaternion, Rad, Rotation, Rotation3, SquareMatrix, Vector3};
 use chemical_engine::scene::types::Transform;
+use glam::camera::rh::proj::directx;
+use winit::keyboard::KeyCode;
 
 pub struct Camera {
     pub transform: Transform,
 
-    proj: cgmath::Matrix4<f32>,
+    proj: glam::Mat4,
 }
 
 impl Camera {
-    pub fn get_transformation_matrix(&self) -> anyhow::Result<[[f32; 4]; 4]> {
-        let transform_matrix: Matrix4<f32> = (&self.transform).into();
-        Ok((self.proj
-            * transform_matrix
-                .invert()
-                .ok_or_else(|| anyhow!("Failed to invert transformation matrix"))?)
-        .into())
+    pub fn get_camera_matrix(&self) -> glam::Mat4 {
+        self.proj * self.transform.to_matrix().inverse()
     }
 
     pub fn new(aspect: f32, fov: f32, znear: f32, zfar: f32) -> Self {
         Self {
             transform: Transform::default(),
-            proj: cgmath::perspective(cgmath::Deg(fov), aspect, znear, zfar),
+            proj: directx::perspective(fov.to_radians(), aspect, znear, zfar),
         }
     }
 }
@@ -29,7 +24,7 @@ impl Camera {
 pub struct CameraController {
     acceleration: f32,
     look_sensitivity: f32,
-    velocity: cgmath::Vector3<f32>,
+    velocity: glam::Vec3,
     velocity_damping_factor: f32,
 
     is_forward_pressed: bool,
@@ -42,8 +37,6 @@ pub struct CameraController {
     pitch_delta: f32,
     yaw_delta: f32,
 }
-
-use winit::keyboard::KeyCode;
 
 impl CameraController {
     pub fn new(acceleration: f32, look_sensitivity: f32, velocity_damping_factor: f32) -> Self {
@@ -99,17 +92,15 @@ impl CameraController {
 
     pub fn update_camera(&mut self, camera: &mut Camera, delta: f32) {
         let transform = &mut camera.transform;
-        let mut fwd = transform.orientation.rotate_vector(-Vector3::unit_z());
+        let mut fwd = transform.orientation * -glam::Vec3::Z;
         fwd.y = 0.0;
-        let right = transform.orientation.rotate_vector(Vector3::unit_x());
+        let right = transform.orientation * glam::Vec3::X;
 
-        let yaw_delta = Quaternion::from_axis_angle(
-            cgmath::Vector3::unit_y(),
-            Rad(-self.yaw_delta * self.look_sensitivity),
-        );
+        let yaw_delta =
+            glam::Quat::from_axis_angle(glam::Vec3::Y, -self.yaw_delta * self.look_sensitivity);
 
         let pitch_delta =
-            Quaternion::from_axis_angle(right, Rad(-self.pitch_delta * self.look_sensitivity));
+            glam::Quat::from_axis_angle(right, -self.pitch_delta * self.look_sensitivity);
         self.pitch_delta = 0.0;
         self.yaw_delta = 0.0;
         transform.orientation = (yaw_delta * pitch_delta * transform.orientation).normalize();
@@ -127,10 +118,10 @@ impl CameraController {
             self.velocity -= right * self.acceleration * delta;
         }
         if self.is_up_pressed {
-            self.velocity += Vector3::unit_y() * self.acceleration * delta;
+            self.velocity += glam::Vec3::Y * self.acceleration * delta;
         }
         if self.is_down_pressed {
-            self.velocity -= Vector3::unit_y() * self.acceleration * delta;
+            self.velocity -= glam::Vec3::Y * self.acceleration * delta;
         }
         self.velocity += -self.velocity * self.velocity_damping_factor;
         transform.position += self.velocity;

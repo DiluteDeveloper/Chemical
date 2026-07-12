@@ -1,5 +1,6 @@
 use crate::Renderer;
 
+use glam::camera::rh::view;
 use std::sync::Arc;
 use winit::{
     dpi::PhysicalPosition,
@@ -11,7 +12,6 @@ use winit::{
     window::Window,
 };
 
-use log::info;
 #[derive(Debug, PartialEq)]
 pub(super) enum CameraMode {
     NoCameraControl,
@@ -29,7 +29,7 @@ use chemical_engine::{
     geometry::{cube, plane, sphere},
     scene::{
         SceneContainer,
-        types::{DirectionalLight, Mesh, PointLight, Transform, directional_light},
+        types::{DirectionalLight, Mesh, Transform},
     },
     utility::FPSCounter,
 };
@@ -83,18 +83,18 @@ impl ChemicalEngine {
 
         let plane_transform = Transform::default();
         let cube_transform = Transform {
-            position: (5.0, 2.0, 2.0).into(),
-            orientation: (0.2, 0.3, 0.4, 0.5).into(),
-            scale: (1.0, 2.0, 1.0).into(),
+            position: (0.0, 0.0, 0.0).into(),
+            orientation: glam::Quat::from_xyzw(0.0, 0.0, 0.0, -1.0),
+            scale: (1.0, 1.0, 1.0).into(),
         };
         let sphere_transform = Transform {
             position: (0.0, 3.0, 1.0).into(),
-            orientation: (0.2, 0.8, 0.4, 0.1).into(),
+            orientation: glam::Quat::from_xyzw(0.0, 0.0, 0.0, -1.0),
             scale: (2.0, 2.0, 2.0).into(),
         };
 
         let directional_light = DirectionalLight {
-            orientation: (-0.3536, 0.3536, 0.1464, 0.8536).into(),
+            orientation: glam::Quat::from_euler(glam::EulerRot::XYZ, -45.0, -45.0, -45.0),
             strength: 50.0,
             colour: (1.0, 0.9, 0.6).into(),
         };

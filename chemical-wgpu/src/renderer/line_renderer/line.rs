@@ -1,5 +1,4 @@
-use anyhow::{self, bail};
-use cgmath::{InnerSpace, Point3};
+use anyhow::{self};
 
 // Makes the memory layout of the struct C-like, rust normally optimizes struct memory layout
 #[repr(C)]
@@ -15,14 +14,14 @@ pub(super) struct LineSegment {
 }
 
 pub struct LineDescriptor {
-    pub data: Option<Vec<Point3<f32>>>,
+    pub data: Option<Vec<glam::Vec3>>,
     pub width: f32,
     pub colour: wgpu::Color,
 }
 
 pub struct Line {
     pub(super) segments: Vec<LineSegment>,
-    raw: Vec<Point3<f32>>,
+    raw: Vec<glam::Vec3>,
     colour: [f32; 4],
     width: f32,
 }
@@ -86,7 +85,7 @@ impl Line {
         l
     }
 
-    pub fn push(&mut self, points: &[cgmath::Point3<f32>]) {
+    pub fn push(&mut self, points: &[glam::Vec3]) {
         for p in points.iter() {
             self.raw.push(*p);
             match self.raw.len() {

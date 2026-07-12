@@ -5,7 +5,6 @@ mod rendered_mesh;
 
 use super::Texture;
 use crate::Camera;
-use cgmath::{Matrix, SquareMatrix};
 use light_renderer::LightRenderer;
 use std::{collections::HashMap, num::NonZeroU32};
 
@@ -14,7 +13,7 @@ use chemical_engine::scene::{
         light_handler::LightOperationListener, mesh_handler::MeshOperationListener,
         transform_handler::TransformOperationListener,
     },
-    types::{EntityID, Mesh, PointLight, Transform, mesh::Vertex},
+    types::{EntityID, Mesh, PointLight, Transform},
 };
 
 use geometry::vertex;
@@ -329,7 +328,7 @@ impl MeshRenderer {
         self.queue
             .write_buffer(&self.camera_pos_buffer, 0, bytemuck::bytes_of(&pos_into));
 
-        let v = camera.get_transformation_matrix().unwrap();
+        let v = camera.get_camera_matrix();
         self.queue
             .write_buffer(&self.camera_matrix_buffer, 0, bytemuck::bytes_of(&v));
 
@@ -386,48 +385,36 @@ impl MeshRenderer {
 
 impl TransformOperationListener for MeshRenderer {
     fn on_insert(&mut self, transform: &Transform, id: EntityID) {
-        let t: [[f32; 4]; 4] = transform.into();
+        let model_matrix = transform.to_matrix();
         self.queue.write_buffer(
             &self.model_matrix_normal_matrix_buffer,
             id as u64 * self.model_matrix_normal_matrix_element_bytesize,
-            bytemuck::bytes_of(&t),
+            bytemuck::bytes_of(&model_matrix),
         );
-        let mat: cgmath::Matrix4<f32> = transform.into();
-        let normal_matrix: cgmath::Matrix3<f32> =
-            cgmath::Matrix3::from_cols(mat.x.truncate(), mat.y.truncate(), mat.z.truncate())
-                .invert()
-                .unwrap()
-                .transpose();
+        let normal_matrix = glam::Mat3::from_mat4(model_matrix).inverse().transpose();
 
-        let t2: [[f32; 3]; 3] = normal_matrix.into();
         self.queue.write_buffer(
             &self.model_matrix_normal_matrix_buffer,
             size_of::<[[f32; 4]; 4]>() as u64
                 + (id as u64 * self.model_matrix_normal_matrix_element_bytesize),
-            bytemuck::bytes_of(&t2),
+            bytemuck::bytes_of(&normal_matrix),
         );
         self.light_renderer.shadow_renderer.reprocess_all();
     }
     fn on_mod(&mut self, transform: &Transform, id: EntityID) {
-        let t: [[f32; 4]; 4] = transform.into();
+        let model_matrix = transform.to_matrix();
         self.queue.write_buffer(
             &self.model_matrix_normal_matrix_buffer,
             id as u64 * self.model_matrix_normal_matrix_element_bytesize,
-            bytemuck::bytes_of(&t),
+            bytemuck::bytes_of(&model_matrix),
         );
-        let mat: cgmath::Matrix4<f32> = transform.into();
-        let normal_matrix: cgmath::Matrix3<f32> =
-            cgmath::Matrix3::from_cols(mat.x.truncate(), mat.y.truncate(), mat.z.truncate())
-                .invert()
-                .unwrap()
-                .transpose();
+        let normal_matrix = glam::Mat3::from_mat4(model_matrix).inverse().transpose();
 
-        let t2: [[f32; 3]; 3] = normal_matrix.into();
         self.queue.write_buffer(
             &self.model_matrix_normal_matrix_buffer,
             size_of::<[[f32; 4]; 4]>() as u64
                 + (id as u64 * self.model_matrix_normal_matrix_element_bytesize),
-            bytemuck::bytes_of(&t2),
+            bytemuck::bytes_of(&normal_matrix),
         );
         self.light_renderer.shadow_renderer.reprocess_all();
     }

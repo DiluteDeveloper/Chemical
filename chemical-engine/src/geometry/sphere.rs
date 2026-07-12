@@ -1,5 +1,6 @@
+use glam::Vec3;
+
 use crate::scene::types::mesh::{Index, Vertex};
-use cgmath::{InnerSpace, Vector3, num_traits::pow};
 
 const PI: f32 = 3.141592;
 
@@ -44,26 +45,26 @@ pub fn generate_vertex_sphere(resolution: u8) -> anyhow::Result<Vec<Vertex>, Str
             let cur_angle_vert = v * (res_radians / 2.0);
             let next_angle_vert = (v + 1.0) * (res_radians / 2.0);
 
-            let v0_pos: Vector3<f32> = Vector3::new(
+            let v0_pos: Vec3 = Vec3::new(
                 cur_angle.cos() * cur_angle_vert.sin(),
                 cur_angle_vert.cos(),
                 (cur_angle).sin() * (cur_angle_vert).sin(),
             );
 
-            let v1_pos: Vector3<f32> = Vector3::new(
+            let v1_pos: Vec3 = Vec3::new(
                 (next_angle - (res_radians / 2.0)).cos() * (next_angle_vert).sin(),
                 (next_angle_vert).cos(),
                 (next_angle - (res_radians / 2.0)).sin() * (next_angle_vert).sin(),
             );
 
-            let v2_pos: Vector3<f32> = Vector3::new(
+            let v2_pos: Vec3 = Vec3::new(
                 (next_angle).cos() * (cur_angle_vert).sin(),
                 (cur_angle_vert).cos(),
                 (next_angle).sin() * (cur_angle_vert).sin(),
             );
 
             // The upside down triangle from previous iteration
-            let v_neg_pos: Vector3<f32> = Vector3::new(
+            let v_neg_pos: Vec3 = Vec3::new(
                 (prev_angle + (res_radians / 2.0)).cos() * (next_angle_vert).sin(),
                 (next_angle_vert).cos(),
                 (prev_angle + (res_radians / 2.0)).sin() * (next_angle_vert).sin(),
@@ -106,13 +107,6 @@ pub fn generate_vertex_sphere(resolution: u8) -> anyhow::Result<Vec<Vertex>, Str
             }
         }
     }
-    //debug!(
-    //    "vertices: {:?}, vertex_capacity: {:?}",
-    //    vertices.len(),
-    //    vertex_capacity,
-    //    //indices.len(),
-    //    //index_capacity
-    //);
 
     Ok(vertices)
 }
@@ -160,7 +154,7 @@ pub fn generate_index_sphere(resolution: u8) -> anyhow::Result<(Vec<Vertex>, Vec
             // circle
             let cur_angle_vert = v * (res_radians / 2.0);
 
-            let v0_pos: Vector3<f32> = Vector3::new(
+            let v0_pos: Vec3 = Vec3::new(
                 (cur_angle).cos() * (cur_angle_vert).sin(),
                 (cur_angle_vert).cos(),
                 (cur_angle).sin() * (cur_angle_vert).sin(),
@@ -182,13 +176,12 @@ pub fn generate_index_sphere(resolution: u8) -> anyhow::Result<(Vec<Vertex>, Vec
     // Top and bottom have redundant 0,0,0 normals for the non-applicable
     // triangles
 
-    let tri_normals_capacity = pow(sized_res, 2) * 2;
-    let mut tri_normals: Vec<Vector3<f32>> =
-        vec![(0.0, 0.0, 0.0).into(); tri_normals_capacity as usize];
+    let tri_normals_capacity = sized_res.pow(2) * 2;
+    let mut tri_normals: Vec<Vec3> = vec![(0.0, 0.0, 0.0).into(); tri_normals_capacity as usize];
 
     // first horizontal index of the 2nd to last layer of the triangle (actual
     // last layer is just 1 vert)
-    let last_layer_idx = (pow(sized_res, 2) - (sized_res * 2)) + 1;
+    let last_layer_idx = (sized_res.pow(2) - (sized_res * 2)) + 1;
 
     // Generate face normals and indices
     for h_int in 0..sized_res {
@@ -196,12 +189,12 @@ pub fn generate_index_sphere(resolution: u8) -> anyhow::Result<(Vec<Vertex>, Vec
         {
             // Positive vertical and positive horizontal index into vertices array
             let v1_h0_idx = h_int + 1;
-            let v1_h0: Vector3<f32> = vertices[v1_h0_idx as usize].position.into();
+            let v1_h0: Vec3 = vertices[v1_h0_idx as usize].position.into();
 
             let v1_h1_idx = (v1_h0_idx % sized_res) + 1;
-            let v1_h1: Vector3<f32> = vertices[v1_h1_idx as usize].position.into();
+            let v1_h1: Vec3 = vertices[v1_h1_idx as usize].position.into();
 
-            let v0: Vector3<f32> = vertices[0].position.into();
+            let v0: Vec3 = vertices[0].position.into();
 
             indices.push(v1_h1_idx);
             indices.push(v1_h0_idx);
@@ -211,14 +204,14 @@ pub fn generate_index_sphere(resolution: u8) -> anyhow::Result<(Vec<Vertex>, Vec
 
             // v2= last layer
             let v2_h0_idx = h_int + last_layer_idx;
-            let v2_h0: Vector3<f32> = vertices[v2_h0_idx as usize].position.into();
+            let v2_h0: Vec3 = vertices[v2_h0_idx as usize].position.into();
             let v2_h1_idx = ((h_int + 1) % sized_res) + last_layer_idx;
-            let v2_h1: Vector3<f32> = vertices[v2_h1_idx as usize].position.into();
+            let v2_h1: Vec3 = vertices[v2_h1_idx as usize].position.into();
 
             // v3 = actual last vertex
             // This will be broken if vertex_capacity is broken
             let v3_idx = vertex_capacity - 1;
-            let v3: Vector3<f32> = vertices[v3_idx as usize].position.into();
+            let v3: Vec3 = vertices[v3_idx as usize].position.into();
 
             indices.push(v3_idx);
             indices.push(v2_h0_idx);
@@ -232,18 +225,18 @@ pub fn generate_index_sphere(resolution: u8) -> anyhow::Result<(Vec<Vertex>, Vec
     for v_int in 0..sized_res - 2 {
         for h_int in 0..sized_res {
             let v0_h0_idx = h_int + (v_int * sized_res) + 1;
-            let v0_h0: Vector3<f32> = vertices[v0_h0_idx as usize].position.into();
+            let v0_h0: Vec3 = vertices[v0_h0_idx as usize].position.into();
 
             let v0_h1_idx = ((h_int + 1) % sized_res) + (v_int * sized_res) + 1;
-            let v0_h1: Vector3<f32> = vertices[v0_h1_idx as usize].position.into();
+            let v0_h1: Vec3 = vertices[v0_h1_idx as usize].position.into();
 
             let v1_h0_idx = h_int + ((v_int + 1) * sized_res) + 1;
-            let v1_h0: Vector3<f32> = vertices[v1_h0_idx as usize].position.into();
+            let v1_h0: Vec3 = vertices[v1_h0_idx as usize].position.into();
 
             let v1_hneg1_idx = (((h_int as i64 - 1) + sized_res as i64) as u32 % sized_res)
                 + ((v_int + 1) * sized_res)
                 + 1;
-            let v1_hneg1: Vector3<f32> = vertices[v1_hneg1_idx as usize].position.into();
+            let v1_hneg1: Vec3 = vertices[v1_hneg1_idx as usize].position.into();
 
             {
                 // right side up triangle
@@ -288,7 +281,7 @@ pub fn generate_index_sphere(resolution: u8) -> anyhow::Result<(Vec<Vertex>, Vec
             let v3_tri5_idx = (h_int + ((v_int + 1) * sized_res)) * 2;
             let v3_tri6_idx = ((h_int + ((v_int + 1) * sized_res)) * 2) + 1;
 
-            let mut sum = Vector3::new(0.0, 0.0, 0.0);
+            let mut sum = Vec3::new(0.0, 0.0, 0.0);
 
             sum += tri_normals[v0_tri1_idx as usize];
             sum += tri_normals[v0_tri2_idx as usize];

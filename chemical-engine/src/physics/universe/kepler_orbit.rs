@@ -1,11 +1,10 @@
 use crate::physics::universe::celestial_body::CelestialBody;
-use cgmath::{InnerSpace, Vector3};
 
 const GRAVITY: f32 = 9.81;
 
 pub struct KeplerOrbitResult {
-    pub acceleration_a: Vector3<f32>,
-    pub acceleration_b: Vector3<f32>,
+    pub acceleration_a: glam::Vec3,
+    pub acceleration_b: glam::Vec3,
 }
 
 pub fn simulate_kepler_orbit(body_a: &CelestialBody, body_b: &CelestialBody) -> KeplerOrbitResult {

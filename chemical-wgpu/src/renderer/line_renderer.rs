@@ -215,7 +215,7 @@ impl LineRenderer {
         queue.write_buffer(
             &self.camera_buffer,
             0,
-            bytemuck::bytes_of(&camera.get_transformation_matrix().unwrap()),
+            bytemuck::bytes_of(&camera.get_camera_matrix()),
         );
         let pos = camera.transform.position;
         queue.write_buffer(

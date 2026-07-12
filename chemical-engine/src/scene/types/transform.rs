@@ -1,10 +1,14 @@
-use cgmath::{EuclideanSpace, Matrix4, Point3, Quaternion};
-
+use glam::{Mat4, Quat, Vec3};
 #[derive(Copy, Clone, Debug)]
 pub struct Transform {
-    pub position: Point3<f32>,
-    pub scale: Point3<f32>,
-    pub orientation: Quaternion<f32>,
+    pub position: Vec3,
+    pub scale: Vec3,
+    pub orientation: Quat,
+}
+impl Transform {
+    pub fn to_matrix(&self) -> Mat4 {
+        Mat4::from_scale_rotation_translation(self.scale, self.orientation, self.position)
+    }
 }
 
 impl Default for Transform {
@@ -12,26 +16,19 @@ impl Default for Transform {
         Transform {
             position: (0.0, 0.0, 0.0).into(),
             scale: (1.0, 1.0, 1.0).into(),
-            orientation: (0.0, 0.0, 0.0, -1.0).into(),
+            orientation: Quat::from_xyzw(0.0, 0.0, 0.0, -1.0),
         }
     }
 }
-
-impl From<&Transform> for Matrix4<f32> {
+/*
+impl From<&Transform> for Mat4 {
     fn from(v: &Transform) -> Self {
-        let translation_matrix = Matrix4::from_translation(v.position.to_vec());
-        let rotation_matrix = Matrix4::from(v.orientation);
-        let scale_matrix = Matrix4::from_nonuniform_scale(v.scale.x, v.scale.y, v.scale.z);
-
-        translation_matrix * rotation_matrix * scale_matrix
+        Mat4::from_scale_rotation_translation(v.scale, v.orientation, v.position)
+    }
+}*/
+/*impl From<&Transform> for [[f32; 4]; 4] {
+    fn from(v: &Transform) -> Self {
+        Mat4::from_scale_rotation_translation(v.scale, v.orientation, v.position).to_cols_array_2d()
     }
 }
-impl From<&Transform> for [[f32; 4]; 4] {
-    fn from(v: &Transform) -> Self {
-        let translation_matrix = Matrix4::from_translation(v.position.to_vec());
-        let rotation_matrix = Matrix4::from(v.orientation);
-        let scale_matrix = Matrix4::from_nonuniform_scale(v.scale.x, v.scale.y, v.scale.z);
-
-        (translation_matrix * rotation_matrix * scale_matrix).into()
-    }
-}
+*/

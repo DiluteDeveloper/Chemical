@@ -1,6 +1,8 @@
+use glam::Vec3;
+
 use crate::scene::types::mesh::Vertex;
 
-pub fn generate_vertex_cube(extents: cgmath::Vector3<f32>) -> [Vertex; 36] {
+pub fn generate_vertex_cube(extents: Vec3) -> [Vertex; 36] {
     [
         // Front face (+Z)
         Vertex {

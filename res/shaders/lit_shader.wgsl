@@ -1,13 +1,6 @@
 
 // Vertex shader
 
-const OPENGL_TO_WGPU_MATRIX: mat4x4<f32> = mat4x4<f32>(
-    vec4<f32>(1.0, 0.0, 0.0, 0.0),
-    vec4<f32>(0.0, 1.0, 0.0, 0.0),
-    vec4<f32>(0.0, 0.0, 0.5, 0.0),
-    vec4<f32>(0.0, 0.0, 0.5, 1.0),
-);
-
 struct ModelNormalMatrix {
     model_matrix: mat4x4<f32>,
     normal_matrix: mat3x3<f32>}
@@ -34,7 +27,7 @@ fn vs_main(
     @builtin(instance_index) idx: u32
 ) -> VertexOutput {
     var out: VertexOutput;
-    out.position = OPENGL_TO_WGPU_MATRIX * camera_matrix * model_normal_matrix.model_matrix * vec4<f32>(vtx.position, 1.0);
+    out.position = camera_matrix * model_normal_matrix.model_matrix * vec4<f32>(vtx.position, 1.0);
     // Take note that normals are not transformed to the world position; i.e, if you rotate the model the normals will be wrong!
     out.normal = normalize(model_normal_matrix.normal_matrix * vtx.normal);
     out.world_position = vec3<f32>((model_normal_matrix.model_matrix * vec4<f32>(vtx.position, 1.0)).xyz);
@@ -90,7 +83,7 @@ fn process_directional_lights(normal: vec3<f32>, world_position: vec3<f32>) -> v
 
         let amb = directional_lights[i].colour;
 
-        let mapped_position = OPENGL_TO_WGPU_MATRIX * directional_lights[i].projection * vec4<f32>(world_position, 1.0);
+        let mapped_position = directional_lights[i].projection * vec4<f32>(world_position, 1.0);
         let shadow_coord = mapped_position.xyz / mapped_position.w;
         let uv = shadow_coord.xy * vec2(0.5, -0.5) + 0.5;
         let shadow = textureSampleCompare(directional_light_maps[i], depth_sampler, uv, mapped_position.z);
