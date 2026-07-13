@@ -1,17 +1,10 @@
 use crate::{Renderer, renderer::line_renderer::LineDescriptor};
 
-use glam::camera::rh::{
-    proj::directx,
-    view::{self, look_at_mat4},
-};
-use log::info;
 use std::sync::Arc;
 use winit::{
-    dpi::PhysicalPosition,
-    event::KeyEvent,
-    event::WindowEvent,
-    event_loop::ActiveEventLoop,
-    event_loop::EventLoopProxy,
+    dpi::{PhysicalPosition, PhysicalSize},
+    event::{KeyEvent, WindowEvent},
+    event_loop::{ActiveEventLoop, EventLoopProxy},
     keyboard::{KeyCode, PhysicalKey},
     window::Window,
 };
@@ -29,17 +22,11 @@ pub(super) enum ChemicalEvent {
 
 use crate::{Camera, CameraController};
 use anyhow::anyhow;
-use chemical_engine::{
-    geometry::{cube, model, plane, sphere},
-    scene::{
-        SceneContainer,
-        types::{DirectionalLight, Mesh, Transform},
-    },
-    utility::FPSCounter,
-};
+use chemical_engine::{scene::SceneContainer, utility::FPSCounter};
 
 pub(super) struct ChemicalEngine {
     renderer: Renderer,
+
     event_loop_proxy: EventLoopProxy<ChemicalEvent>,
     window: Arc<Window>,
 
@@ -50,10 +37,13 @@ pub(super) struct ChemicalEngine {
     window_center: PhysicalPosition<f32>,
 
     scene: SceneContainer,
+
+    #[cfg(feature = "chemical-gui")]
+    gui: chemical_gui::ChemicalGUI,
 }
 
 impl ChemicalEngine {
-    pub(super) fn new(
+    pub fn new(
         window: Arc<Window>,
         event_loop_proxy: Option<EventLoopProxy<ChemicalEvent>>,
     ) -> anyhow::Result<Self> {
@@ -102,6 +92,8 @@ impl ChemicalEngine {
             .send_event(ChemicalEvent::ChangeCameraMode(CameraMode::NoCameraControl))
             .unwrap();
         Ok(ChemicalEngine {
+            #[cfg(feature = "chemical-gui")]
+            gui: renderer.create_gui(),
             renderer: renderer,
             event_loop_proxy: event_loop_proxy.expect("Event loop proxy was invalid"),
             window: window,
@@ -111,11 +103,10 @@ impl ChemicalEngine {
             fps_counter: FPSCounter::new(),
             window_center: window_center,
             scene,
-            //universe_simulation: UniverseSimulation::new(),
         })
     }
 
-    pub(super) fn update(&mut self) {
+    pub fn update(&mut self) {
         if self.camera_mode == CameraMode::FPSCameraControl {
             self.camera_controller
                 .update_camera(&mut self.camera, self.fps_counter.delta as f32);
@@ -128,28 +119,32 @@ impl ChemicalEngine {
             info!("{}", fps);
         }*/
     }
-    pub(super) fn window_event(&mut self, event: &WindowEvent, event_loop: &ActiveEventLoop) {
+    fn window_resized(&mut self, size: &PhysicalSize<u32>) {
+        self.renderer.resize(size.width, size.height);
+        self.camera
+            .update_projection(size.width as f32 / size.height as f32, 90.0, 0.01, 10000.00);
+        self.window_center = (size.width, size.height).into();
+        #[cfg(feature = "chemical-gui")]
+        self.gui.resize(size);
+    }
+    pub fn window_event(&mut self, event: &WindowEvent, event_loop: &ActiveEventLoop) {
         match event {
             WindowEvent::CloseRequested => event_loop.exit(),
             WindowEvent::Resized(size) => {
-                self.renderer.resize(size.width, size.height);
-                self.camera.update_projection(
-                    size.width as f32 / size.height as f32,
-                    90.0,
-                    0.01,
-                    10000.00,
-                );
+                self.window_resized(size);
             }
             WindowEvent::RedrawRequested => {
                 self.update();
 
-                match self.renderer.render(&self.camera) {
+                match self.renderer.render(
+                    &self.camera,
+                    #[cfg(feature = "chemical-gui")]
+                    &mut self.gui,
+                ) {
                     Ok(_) => {}
                     // Reconfigure the surface if it's lost or outdated
                     Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => {
-                        let size = self.window.inner_size();
-                        self.renderer.resize(size.width, size.height);
-                        self.window_center = (size.width, size.height).into();
+                        self.window_resized(&self.window.inner_size());
                     }
                     Err(e) => {
                         log::error!("Render loop failed: {}", e);

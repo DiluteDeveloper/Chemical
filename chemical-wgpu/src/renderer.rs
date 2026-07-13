@@ -23,6 +23,8 @@ pub struct Renderer {
     device: wgpu::Device,
     queue: wgpu::Queue,
     config: wgpu::SurfaceConfiguration,
+    adapter: wgpu::Adapter,
+    surface_format: wgpu::TextureFormat,
 
     mesh_renderer: MeshRenderer,
     pub line_renderer: LineRenderer,
@@ -120,6 +122,8 @@ impl Renderer {
             is_surface_configured: false,
             window,
             depth_texture,
+            adapter,
+            surface_format,
         })
     }
 
@@ -158,6 +162,17 @@ impl Renderer {
             view_formats: &[],
         });
         msaa_texture.create_view(&wgpu::TextureViewDescriptor::default())
+    }
+
+    #[cfg(feature = "chemical-gui")]
+    pub fn create_gui(&self) -> chemical_gui::ChemicalGUI {
+        chemical_gui::ChemicalGUI::new(
+            &self.device,
+            &self.queue,
+            &self.adapter,
+            &self.surface_format,
+            &self.window,
+        )
     }
 
     pub fn render(&mut self, camera: &Camera) -> Result<(), wgpu::SurfaceError> {
@@ -208,7 +223,6 @@ impl Renderer {
                 }),
                 occlusion_query_set: None,
                 timestamp_writes: None,
-                multiview_mask: None,
             });
 
             self.mesh_renderer.render(&mut render_pass);
@@ -216,11 +230,58 @@ impl Renderer {
                 .render(&camera, &self.queue, &mut render_pass);
         }
 
-        // submit will accept anything that implements IntoIter
         self.queue.submit(std::iter::once(encoder.finish()));
+
+        #[cfg(feature = "chemical-gui")]
+        gui.redraw(&output);
+
         output.present();
 
         Ok(())
+    }
+    pub fn render_to_view(
+        &mut self,
+        encoder: &mut wgpu::CommandEncoder,
+        view: &wgpu::TextureView,
+        camera: &Camera,
+    ) {
+        self.mesh_renderer.prepare(&camera, encoder);
+
+        // render lights buffer after encoder before real render pass
+        {
+            // Needs to be for the entire render pass all shaders
+            let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                label: Some("Render Pass"),
+                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                    view: &self.msaa_view,
+                    resolve_target: Some(&view),
+                    depth_slice: None,
+                    ops: wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(wgpu::Color {
+                            r: 0.01,
+                            g: 0.01,
+                            b: 0.01,
+                            a: 1.0,
+                        }),
+                        store: wgpu::StoreOp::Store,
+                    },
+                })],
+                depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+                    view: &self.depth_texture.view,
+                    depth_ops: Some(wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(1.0),
+                        store: wgpu::StoreOp::Store,
+                    }),
+                    stencil_ops: None,
+                }),
+                occlusion_query_set: None,
+                timestamp_writes: None,
+            });
+
+            self.mesh_renderer.render(&mut render_pass);
+            self.line_renderer
+                .render(&camera, &self.queue, &mut render_pass);
+        }
     }
 
     pub fn process_scene_operations(&mut self, scene: &mut SceneContainer) {

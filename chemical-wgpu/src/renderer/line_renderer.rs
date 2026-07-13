@@ -119,7 +119,7 @@ impl LineRenderer {
             device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 label: Some("line_renderer_render_pipeline_layout"),
                 bind_group_layouts: &[&bind_group_layout],
-                immediate_size: 0,
+                push_constant_ranges: &[],
             });
         let render_pipeline_descriptor = wgpu::RenderPipelineDescriptor {
             label: Some("line_renderer_render_pipeline"),
@@ -166,8 +166,8 @@ impl LineRenderer {
                 mask: !0,                           // 3.
                 alpha_to_coverage_enabled: false,   // 4.
             },
-            multiview_mask: None, // 5.
-            cache: None,          // 6.
+            multiview: None,
+            cache: None, // 6.
         };
         let render_pipeline = device.create_render_pipeline(&render_pipeline_descriptor);
 

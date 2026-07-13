@@ -91,7 +91,7 @@ impl ShadowRenderer {
                     &model_matrix_bind_group_layout,
                     &light_projection_bind_group_layout,
                 ],
-                immediate_size: 0,
+                push_constant_ranges: &[],
             });
         let render_pipeline_descriptor = wgpu::RenderPipelineDescriptor {
             label: Some("shadow_renderer_render_pipeline"),
@@ -128,7 +128,7 @@ impl ShadowRenderer {
                 mask: !0,
                 alpha_to_coverage_enabled: false,
             },
-            multiview_mask: None,
+            multiview: None,
             cache: None,
         };
 
@@ -141,7 +141,7 @@ impl ShadowRenderer {
             address_mode_w: wgpu::AddressMode::ClampToEdge,
             mag_filter: wgpu::FilterMode::Linear,
             min_filter: wgpu::FilterMode::Linear,
-            mipmap_filter: wgpu::MipmapFilterMode::Nearest,
+            mipmap_filter: wgpu::FilterMode::Nearest,
             compare: Some(wgpu::CompareFunction::LessEqual), // 5.
             lod_min_clamp: 0.0,
             lod_max_clamp: 100.0,
@@ -190,7 +190,6 @@ impl ShadowRenderer {
             }),
             occlusion_query_set: None,
             timestamp_writes: None,
-            multiview_mask: None,
         });
         rp.set_pipeline(&self.render_pipeline);
         rp.set_bind_group(

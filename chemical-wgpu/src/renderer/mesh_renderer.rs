@@ -244,7 +244,7 @@ impl MeshRenderer {
             device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 label: Some("mesh_renderer_render_pipeline_layout"),
                 bind_group_layouts: &[&bind_group_layout, &directional_light_map_bind_group_layout],
-                immediate_size: 0,
+                push_constant_ranges: &[],
             });
         let unlit_render_pipeline_descriptor = wgpu::RenderPipelineDescriptor {
             label: Some("mesh_renderer_render_pipeline"),
@@ -291,8 +291,8 @@ impl MeshRenderer {
                 mask: !0,                           // 3.
                 alpha_to_coverage_enabled: false,   // 4.
             },
-            multiview_mask: None, // 5.
-            cache: None,          // 6.
+            cache: None, // 6.
+            multiview: None,
         };
         let mut lit_render_pipeline_descriptor = unlit_render_pipeline_descriptor.clone();
         lit_render_pipeline_descriptor.vertex.module = &lit_shader;

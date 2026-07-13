@@ -10,4 +10,9 @@ default = []
 glam = { version = "0.33", features = [ "bytemuck", "debug-glam-assert", "fast-math" ] }
 log = "0.4"
 anyhow = "1.0"
+
+iced_wgpu = "0.14.0"
+iced_winit = "0.14.0"
+iced_widget = "0.14.0"
+
 chemical-engine = { path = "../chemical-engine" }
