@@ -1,4 +1,4 @@
-use chemical_engine::scene::types::mesh::Vertex;
+use crate::scene::types::mesh::Vertex;
 
 pub fn layout() -> wgpu::VertexBufferLayout<'static> {
     wgpu::VertexBufferLayout {

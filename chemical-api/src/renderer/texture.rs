@@ -1,9 +1,6 @@
-#![allow(dead_code)]
-use anyhow::*;
-use image::GenericImageView;
-
 use crate::Renderer;
 
+#[derive(Debug)]
 pub struct Texture {
     pub texture: wgpu::Texture,
     pub view: wgpu::TextureView,
@@ -11,7 +8,7 @@ pub struct Texture {
 }
 
 impl Texture {
-    pub fn from_bytes(
+    /*pub fn from_bytes(
         device: &wgpu::Device,
         queue: &wgpu::Queue,
         bytes: &[u8],
@@ -80,7 +77,7 @@ impl Texture {
             view,
             sampler,
         })
-    }
+    }*/
     pub const DEPTH_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Depth32Float; // 1.
 
     pub fn create_depth_texture(

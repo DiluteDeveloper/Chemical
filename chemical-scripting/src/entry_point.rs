@@ -1,5 +1,5 @@
 use anyhow::anyhow;
-use chemical_engine::{
+use chemical_api::{
     geometry::{cube, model, sphere},
     scene::{
         SceneContainer,

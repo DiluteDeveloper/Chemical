@@ -1,7 +1,7 @@
-use chemical_engine::scene::types::Transform;
+use crate::scene::types::Transform;
 use glam::camera::rh::proj::directx;
-use winit::keyboard::KeyCode;
 
+#[derive(Debug)]
 pub struct Camera {
     pub transform: Transform,
 
@@ -60,7 +60,7 @@ impl CameraController {
         }
     }
 
-    pub fn handle_key(&mut self, code: KeyCode, is_pressed: bool) {
+    /*pub fn handle_key(&mut self, code: KeyCode, is_pressed: bool) {
         match code {
             KeyCode::KeyW | KeyCode::ArrowUp => {
                 self.is_forward_pressed = is_pressed;
@@ -88,7 +88,7 @@ impl CameraController {
             }
             _ => return,
         }
-    }
+    }*/
     pub fn handle_mouse_moved(&mut self, pos: &(f32, f32)) {
         self.pitch_delta += pos.1;
         self.yaw_delta += pos.0;

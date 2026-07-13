@@ -22,6 +22,7 @@ impl ChemicalGUI {
         adapter: &wgpu::Adapter,
         format: &wgpu::TextureFormat,
         window: &Arc<winit::window::Window>,
+        counter: test::Counter,
     ) -> Self {
         let size = window.inner_size();
         let viewport = iced_wgpu::graphics::Viewport::with_physical_size(
@@ -46,7 +47,7 @@ impl ChemicalGUI {
         };
 
         Self {
-            counter: test::Counter::default(),
+            counter,
             viewport,
             cache: user_interface::Cache::new(),
             renderer,

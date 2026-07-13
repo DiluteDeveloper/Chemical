@@ -1,4 +1,4 @@
-use chemical_engine::scene::types::PointLight;
+use crate::scene::types::PointLight;
 
 #[repr(C)]
 #[derive(Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]

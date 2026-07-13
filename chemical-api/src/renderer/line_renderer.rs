@@ -5,6 +5,7 @@ use crate::{Camera, Renderer};
 use line::LineSegment;
 pub use line::{Line, LineDescriptor};
 
+#[derive(Debug)]
 pub struct LineRenderer {
     pub render_pipeline: wgpu::RenderPipeline,
     pub bind_group: wgpu::BindGroup,

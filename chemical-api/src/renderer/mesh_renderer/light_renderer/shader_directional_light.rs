@@ -1,4 +1,4 @@
-use chemical_engine::{
+use crate::{
     scene::types::{DirectionalLight, Transform},
     utility::RGBColour,
 };

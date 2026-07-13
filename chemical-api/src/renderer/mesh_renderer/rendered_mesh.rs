@@ -2,7 +2,8 @@ use wgpu::util::DeviceExt;
 
 use super::renderable::Renderable;
 
-use chemical_engine::scene::types::{mesh::Index, mesh::Vertex};
+use crate::scene::types::{mesh::Index, mesh::Vertex};
+#[derive(Debug)]
 pub struct RenderedMesh {
     vertex_buffer: wgpu::Buffer,
     index_buffer: Option<wgpu::Buffer>,

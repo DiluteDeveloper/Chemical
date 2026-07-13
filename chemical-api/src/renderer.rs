@@ -2,7 +2,7 @@ pub mod line_renderer;
 pub mod mesh_renderer;
 mod texture;
 
-use chemical_engine::scene::SceneContainer;
+use crate::scene::SceneContainer;
 pub use line_renderer::LineRenderer;
 pub use mesh_renderer::MeshRenderer;
 pub use texture::Texture;
@@ -13,18 +13,18 @@ use winit::window::Window;
 
 use crate::Camera;
 
+#[derive(Debug)]
 pub struct Renderer {
-    surface: wgpu::Surface<'static>,
+    pub surface: wgpu::Surface<'static>,
     is_surface_configured: bool,
-    window: Arc<Window>,
 
     depth_texture: Texture,
 
-    device: wgpu::Device,
-    queue: wgpu::Queue,
-    config: wgpu::SurfaceConfiguration,
-    adapter: wgpu::Adapter,
-    surface_format: wgpu::TextureFormat,
+    pub device: wgpu::Device,
+    pub queue: wgpu::Queue,
+    pub config: wgpu::SurfaceConfiguration,
+    pub adapter: wgpu::Adapter,
+    pub surface_format: wgpu::TextureFormat,
 
     mesh_renderer: MeshRenderer,
     pub line_renderer: LineRenderer,
@@ -120,7 +120,6 @@ impl Renderer {
             queue,
             config,
             is_surface_configured: false,
-            window,
             depth_texture,
             adapter,
             surface_format,
@@ -164,18 +163,7 @@ impl Renderer {
         msaa_texture.create_view(&wgpu::TextureViewDescriptor::default())
     }
 
-    #[cfg(feature = "chemical-gui")]
-    pub fn create_gui(&self) -> chemical_gui::ChemicalGUI {
-        chemical_gui::ChemicalGUI::new(
-            &self.device,
-            &self.queue,
-            &self.adapter,
-            &self.surface_format,
-            &self.window,
-        )
-    }
-
-    pub fn render(&mut self, camera: &Camera) -> Result<(), wgpu::SurfaceError> {
+    /*pub fn render(&mut self, camera: &Camera) -> Result<(), wgpu::SurfaceError> {
         self.window.request_redraw();
 
         if !self.is_surface_configured {
@@ -238,15 +226,22 @@ impl Renderer {
         output.present();
 
         Ok(())
+    }*/
+    pub fn prepare(&mut self, camera: &Camera) {
+        let mut encoder = self
+            .device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                label: Some("Render Encoder"),
+            });
+        self.mesh_renderer.prepare(&camera, &mut encoder);
+        self.queue.submit(std::iter::once(encoder.finish()));
     }
     pub fn render_to_view(
-        &mut self,
+        &self,
         encoder: &mut wgpu::CommandEncoder,
         view: &wgpu::TextureView,
         camera: &Camera,
     ) {
-        self.mesh_renderer.prepare(&camera, encoder);
-
         // render lights buffer after encoder before real render pass
         {
             // Needs to be for the entire render pass all shaders
@@ -257,12 +252,7 @@ impl Renderer {
                     resolve_target: Some(&view),
                     depth_slice: None,
                     ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 0.01,
-                            g: 0.01,
-                            b: 0.01,
-                            a: 1.0,
-                        }),
+                        load: wgpu::LoadOp::Load,
                         store: wgpu::StoreOp::Store,
                     },
                 })],
@@ -279,8 +269,8 @@ impl Renderer {
             });
 
             self.mesh_renderer.render(&mut render_pass);
-            self.line_renderer
-                .render(&camera, &self.queue, &mut render_pass);
+            // self.line_renderer
+            //     .render(&camera, &self.queue, &mut render_pass);
         }
     }
 

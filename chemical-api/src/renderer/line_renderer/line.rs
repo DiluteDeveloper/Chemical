@@ -3,7 +3,7 @@ use anyhow::{self};
 // Makes the memory layout of the struct C-like, rust normally optimizes struct memory layout
 #[repr(C)]
 // Automatically has traits Copy Clone and Debug
-#[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
+#[derive(Debug, Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
 pub(super) struct LineSegment {
     position_a: [f32; 3],
     position_a_norm: [f32; 3],
@@ -19,6 +19,7 @@ pub struct LineDescriptor {
     pub colour: wgpu::Color,
 }
 
+#[derive(Debug)]
 pub struct Line {
     pub(super) segments: Vec<LineSegment>,
     raw: Vec<glam::Vec3>,

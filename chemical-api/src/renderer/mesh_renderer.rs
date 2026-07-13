@@ -8,7 +8,7 @@ use crate::{Camera, Renderer};
 use light_renderer::LightRenderer;
 use std::{collections::HashMap, num::NonZeroU32};
 
-use chemical_engine::scene::{
+use crate::scene::{
     type_handlers::{
         light_handler::LightOperationListener, mesh_handler::MeshOperationListener,
         transform_handler::TransformOperationListener,
@@ -22,6 +22,7 @@ use rendered_mesh::RenderedMesh;
 
 type TransformIndex = u32;
 
+#[derive(Debug)]
 pub struct MeshRenderer {
     lit_render_pipeline: wgpu::RenderPipeline,
     unlit_render_pipeline: wgpu::RenderPipeline,
@@ -453,14 +454,14 @@ impl LightOperationListener for MeshRenderer {
     fn on_drop_directional_light(&mut self, id: EntityID) {}
     fn on_insert_directional_light(
         &mut self,
-        light: &chemical_engine::scene::types::DirectionalLight,
+        light: &crate::scene::types::DirectionalLight,
         id: EntityID,
     ) {
         self.light_renderer.on_insert_directional_light(light, id);
     }
     fn on_mod_directional_light(
         &mut self,
-        light: &chemical_engine::scene::types::DirectionalLight,
+        light: &crate::scene::types::DirectionalLight,
         id: EntityID,
     ) {
         self.light_renderer.on_mod_directional_light(light, id);

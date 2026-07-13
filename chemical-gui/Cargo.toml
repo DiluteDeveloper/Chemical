@@ -13,6 +13,6 @@ anyhow = "1.0"
 
 iced_wgpu = "0.14.0"
 iced_winit = "0.14.0"
-iced_widget = "0.14.0"
+iced_widget = { version = "0.14.0", features = ["wgpu"] }
 
-chemical-engine = { path = "../chemical-engine" }
+chemical-api = { path = "../chemical-api", features = ["dev-api"] }
