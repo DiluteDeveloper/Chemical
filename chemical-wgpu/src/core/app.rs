@@ -28,13 +28,16 @@ impl ApplicationHandler<engine::ChemicalEvent> for App {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         let all_monitors = event_loop.available_monitors().collect::<Vec<_>>();
         let target_monitor = all_monitors.get(0).unwrap();
+
+        #[cfg(feature = "chemical-scripting")]
+        let title = "Project Gamma";
+        #[cfg(not(feature = "chemical-scripting"))]
+        let title = format!("ChemicalEngineWGPU {}", env!("CARGO_PKG_VERSION"));
+
         let window_attributes = Window::default_attributes()
-            .with_title(String::from(format!(
-                "ChemicalRS {}",
-                env!("CARGO_PKG_VERSION")
-            )))
+            .with_title(String::from(title))
             .with_position(target_monitor.position())
-            .with_inner_size(winit::dpi::LogicalSize::new(1280.0, 720.0));
+            .with_inner_size(winit::dpi::LogicalSize::new(720.0, 480.0));
 
         self.engine = Some(
             engine::ChemicalEngine::new(

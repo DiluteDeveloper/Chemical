@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "chemical-engine",
     "chemical-wgpu",
+    "chemical-scripting",
 ]
 
 [profile.release]

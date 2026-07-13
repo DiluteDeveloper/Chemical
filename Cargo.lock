@@ -285,12 +285,42 @@ dependencies = [
 ]
 
 [[package]]
+name = "chemical-gui"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chemical-engine",
+ "glam",
+ "log",
+]
+
+[[package]]
+name = "chemical-scripting"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chemical-engine",
+ "glam",
+ "log",
+]
+
+[[package]]
+name = "chemical-scripting-integrator"
+version = "0.1.0"
+dependencies = [
+ "chemical-engine",
+ "chemical-scripting",
+]
+
+[[package]]
 name = "chemical-wgpu"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "bytemuck",
  "chemical-engine",
+ "chemical-gui",
+ "chemical-scripting-integrator",
  "env_logger",
  "glam",
  "image 0.24.9",

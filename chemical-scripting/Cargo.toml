@@ -1,5 +1,5 @@
 [package]
-name = "chemical-engine"
+name = "chemical-scripting"
 version = "0.1.0"
 edition = "2024"
 
@@ -10,5 +10,4 @@ default = []
 glam = { version = "0.33", features = [ "bytemuck", "debug-glam-assert", "fast-math" ] }
 log = "0.4"
 anyhow = "1.0"
-bytemuck = { version = "1.24", features = ["derive"] }
-gltf = "1.4.0"
+chemical-engine = { path = "../chemical-engine" }

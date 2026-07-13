@@ -75,95 +75,6 @@ impl ChemicalEngine {
         )
             .into();
 
-        let (sphere_vertices, sphere_indices) = sphere::generate_index_sphere(200)
-            .map_err(|e| anyhow!("Failed to generate index sphere: {}", e))
-            .expect("Tried to create invalid index sphere for celestial body mesh!");
-        let cube_vertices = cube::generate_vertex_cube((1.0, 1.0, 1.0).into());
-
-        let sphere_mesh_data = Mesh::new(&sphere_vertices, Some(&sphere_indices), true);
-        let light_mesh_data = Mesh::new(&sphere_vertices, Some(&sphere_indices), false);
-        let model_mesh_data = model::gltf_load("res/models/stanford_dragon.gltf", true)
-            .expect("Failed to load model!");
-        let slum_mesh_data =
-            model::gltf_load("res/models/slums.gltf", true).expect("Failed to load model!");
-        let cube_mesh_data = Mesh::new(&cube_vertices, None, true);
-
-        let under_cube_transform = Transform {
-            position: (0.0, -2.0, 0.0).into(),
-            orientation: glam::Quat::from_xyzw(0.0, 0.0, 0.0, -1.0),
-            scale: (5.0, 1.0, 5.0).into(),
-        };
-        let cube_transform = Transform {
-            position: (3.0, 0.0, 3.0).into(),
-            orientation: glam::Quat::from_xyzw(0.0, 0.0, 0.0, -1.0),
-            scale: (1.0, 1.0, 1.0).into(),
-        };
-        let model_transform = Transform {
-            position: (-2.0, 0.68, 2.0).into(),
-            orientation: glam::Quat::from_xyzw(0.0, 0.0, 0.0, -1.0),
-            scale: (3.0, 3.0, 3.0).into(),
-        };
-        let sphere_transform = Transform {
-            position: (-3.0, 0.0, -3.0).into(),
-            orientation: glam::Quat::from_xyzw(0.0, 0.0, 0.0, -1.0),
-            scale: (1.0, 1.0, 1.0).into(),
-        };
-        let mut light_model_transform = Transform::default();
-        light_model_transform.scale = (0.2, 0.2, 0.2).into();
-
-        let directional_light = DirectionalLight {
-            orientation: glam::Quat::from_euler(glam::EulerRot::ZYX, -1.00, 0.70, -0.5),
-            strength: 0.1,
-            colour: (1.0, 0.5, 0.6).into(),
-        };
-        let directional_light_2 = DirectionalLight {
-            orientation: glam::Quat::from_euler(glam::EulerRot::XYZ, 1.0, 1.0, 0.0),
-            strength: 0.1,
-            colour: (0.0, 0.5, 1.0).into(),
-        };
-
-        let mut scene = SceneContainer::new();
-        /*scene
-            .transform_handler
-            .insert_transform(sphere_transform, 0);
-        scene.mesh_handler.insert_mesh(sphere_mesh_data.clone(), 0);
-
-        scene.transform_handler.insert_transform(cube_transform, 1);
-        scene.mesh_handler.insert_mesh(cube_mesh_data.clone(), 1);
-
-        scene
-            .transform_handler
-            .insert_transform(under_cube_transform, 2);
-        scene.mesh_handler.insert_mesh(cube_mesh_data, 2);*/
-
-        scene
-            .transform_handler
-            .insert_transform(light_model_transform, 3);
-        scene.mesh_handler.insert_mesh(light_mesh_data.clone(), 3);
-
-        /*scene.transform_handler.insert_transform(model_transform, 5);
-        scene
-            .mesh_handler
-            .insert_mesh(model_mesh_data.get(0).unwrap().clone(), 5);*/
-
-        // scene
-        //     .transform_handler
-        //     .insert_transform(light_model_transform, 4);
-        // scene.mesh_handler.insert_mesh(light_mesh_data, 4);
-
-        for (i, mesh) in slum_mesh_data.iter().enumerate() {
-            scene
-                .transform_handler
-                .insert_transform(Transform::default(), 6 + i as u32);
-            scene.mesh_handler.insert_mesh(mesh.clone(), 6 + i as u32);
-        }
-        scene
-            .light_handler
-            .insert_directional_light(directional_light, 0);
-        // scene
-        //     .light_handler
-        //     .insert_directional_light(directional_light_2, 1);
-
         renderer.line_renderer.create_line(&LineDescriptor {
             data: Some(vec![
                 (-7.0, 0.0, 7.0).into(),
@@ -180,7 +91,8 @@ impl ChemicalEngine {
                 a: 1.0,
             },
         });
-
+        let mut scene = SceneContainer::new();
+        chemical_scripting_integrator::entry_point::start(&mut scene);
         renderer.process_scene_operations(&mut scene);
         scene.clear_operations();
 
@@ -208,71 +120,7 @@ impl ChemicalEngine {
             self.camera_controller
                 .update_camera(&mut self.camera, self.fps_counter.delta as f32);
         }
-        let seconds_elapsed = self.fps_counter.seconds_elapsed;
-
-        /*self.scene
-        .light_handler
-        .modify_directional_light(0, move |t| {
-            t.orientation = glam::Quat::from_euler(
-                glam::EulerRot::XYZ,
-                seconds_elapsed as f32 + 0.01,
-                1.0,
-                0.0,
-            );
-        })
-        .unwrap();*/
-        let dir = self
-            .scene
-            .light_handler
-            .get_directional_light(0)
-            .unwrap()
-            .orientation
-            .to_axis_angle()
-            .0;
-        self.scene
-            .transform_handler
-            .modify(3, move |t| {
-                t.position = dir * 100.0;
-            })
-            .unwrap();
-
-        // self.scene
-        //     .light_handler
-        //     .modify_directional_light(1, move |t| {
-        //         t.orientation = glam::Quat::from_euler(
-        //             glam::EulerRot::ZYX,
-        //             3.0 - seconds_elapsed as f32 + 0.01,
-        //             1.0,
-        //             0.0,
-        //         );
-        //     })
-        //     .unwrap();
-        // let dir2 = self
-        //     .scene
-        //     .light_handler
-        //     .get_directional_light(1)
-        //     .unwrap()
-        //     .orientation
-        //     .to_axis_angle()
-        //     .0;
-        // self.scene
-        //     .transform_handler
-        //     .modify(4, move |t| {
-        //         t.position = dir2 * 10.0;
-        //     })
-        //     .unwrap();
-        /*self.scene
-        .transform_handler
-        .modify(5, move |t| {
-            t.orientation = glam::Quat::from_euler(
-                glam::EulerRot::ZYX,
-                0.0,
-                seconds_elapsed as f32 + 0.01,
-                0.0,
-            );
-        })
-        .unwrap();*/
-
+        chemical_scripting_integrator::entry_point::update(&mut self.scene);
         self.renderer.process_scene_operations(&mut self.scene);
         self.scene.clear_operations();
         self.fps_counter.update();
@@ -336,6 +184,14 @@ impl ChemicalEngine {
                                 .unwrap();
                         }
                     },
+                    (KeyCode::F5, true) => {
+                        #[cfg(feature = "chemical-gui")]
+                        chemical_gui::entry_point::launch_game();
+                    }
+                    (KeyCode::F4, true) => {
+                        #[cfg(feature = "chemical-gui")]
+                        chemical_gui::entry_point::build_game();
+                    }
                     _ => (),
                 }
                 self.camera_controller.handle_key(*code, is_pressed);
