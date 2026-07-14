@@ -1,11 +1,18 @@
-use chemical_api::{Renderer, renderer::line_renderer::LineDescriptor};
-#[cfg(feature = "chemical-gui")]
-use chemical_gui::test::Counter;
+use chemical_api::{
+    Camera, Renderer,
+    camera::CameraController,
+    renderer::{self, line_renderer::LineDescriptor},
+    scene::SceneContainer,
+    utility::FPSCounter,
+};
+use glam::Vec2;
 
-use std::sync::{Arc, Mutex};
+use crate::input;
+use anyhow::anyhow;
+use std::sync::Arc;
 use winit::{
     dpi::{PhysicalPosition, PhysicalSize},
-    event::{KeyEvent, WindowEvent},
+    event::{DeviceEvent, KeyEvent, WindowEvent},
     event_loop::{ActiveEventLoop, EventLoopProxy},
     keyboard::{KeyCode, PhysicalKey},
     window::Window,
@@ -22,23 +29,21 @@ pub(super) enum ChemicalEvent {
     ChangeCameraMode(CameraMode),
 }
 
-use anyhow::anyhow;
-use chemical_api::{Camera, camera::CameraController};
-use chemical_api::{scene::SceneContainer, utility::FPSCounter};
-
 pub(super) struct ChemicalEngine {
-    renderer: Arc<Mutex<Renderer>>,
+    renderer: Renderer,
 
     event_loop_proxy: EventLoopProxy<ChemicalEvent>,
     window: Arc<Window>,
 
-    camera: Arc<Mutex<Camera>>,
+    camera: Camera,
     camera_controller: CameraController,
     camera_mode: CameraMode,
     fps_counter: FPSCounter,
     window_center: PhysicalPosition<f32>,
 
     scene: SceneContainer,
+    direction: Vec2,
+    offset: Vec2,
 
     #[cfg(feature = "chemical-gui")]
     gui: chemical_gui::ChemicalGUI,
@@ -50,17 +55,45 @@ impl ChemicalEngine {
         event_loop_proxy: Option<EventLoopProxy<ChemicalEvent>>,
     ) -> anyhow::Result<Self> {
         let window_size = window.inner_size();
-        let mut renderer = Arc::new(Mutex::new(
-            pollster::block_on(Renderer::new(Arc::clone(&window)))
-                .map_err(|e| anyhow!("Failed to initialise renderer: {}", e))?,
-        ));
 
-        let mut camera = Arc::new(Mutex::new(Camera::new(
+        let (surface, texture_format, device, queue, adapter, surface_config) = pollster::block_on(
+            Renderer::initialize_window_surface(Arc::clone(&window), window_size, false),
+        )
+        .map_err(|e| anyhow!("Failed to initialise renderer: {}", e))?;
+
+        #[cfg(feature = "chemical-gui")]
+        let gui = chemical_gui::ChemicalGUI::new(
+            &device,
+            &queue,
+            &adapter,
+            &texture_format,
+            Arc::clone(&window),
+        );
+
+        let render_target = renderer::RenderTarget::Custom(
+            PhysicalSize {
+                width: 500,
+                height: 500,
+            },
+            wgpu::Origin3d { x: 10, y: 10, z: 0 },
+        );
+        let renderer_descriptor = renderer::RendererDescriptor {
+            texture_format,
+            device,
+            queue,
+            render_target: render_target,
+            surface_config,
+            surface,
+            // window: Arc::clone(&window),
+        };
+        let mut renderer = Renderer::new(renderer_descriptor);
+
+        let camera = Camera::new(
             window_size.width as f32 / window_size.height as f32,
             90.0,
             0.01,
             10000.00,
-        )));
+        );
 
         let window_center = (
             window_size.width as f32 / 2.0,
@@ -68,31 +101,28 @@ impl ChemicalEngine {
         )
             .into();
 
-        // renderer.line_renderer.create_line(&LineDescriptor {
-        //     data: Some(vec![
-        //         (-7.0, 0.0, 7.0).into(),
-        //         (7.0, 0.0, 7.0).into(),
-        //         (7.0, 0.0, -7.0).into(),
-        //         (-7.0, 0.0, -7.0).into(),
-        //         (-7.0, 0.0, 7.0).into(),
-        //     ]),
-        //     width: 0.2,
-        //     colour: wgpu::Color {
-        //         r: 1.0,
-        //         g: 0.5,
-        //         b: 0.5,
-        //         a: 1.0,
-        //     },
-        // });
+        renderer.line_renderer.create_line(&LineDescriptor {
+            data: Some(vec![
+                (-7.0, 0.0, 7.0).into(),
+                (7.0, 0.0, 7.0).into(),
+                (7.0, 0.0, -7.0).into(),
+                (-7.0, 0.0, -7.0).into(),
+                (-7.0, 0.0, 7.0).into(),
+            ]),
+            width: 0.2,
+            colour: wgpu::Color {
+                r: 1.0,
+                g: 0.5,
+                b: 0.5,
+                a: 1.0,
+            },
+        });
         let mut scene = SceneContainer::new();
 
         #[cfg(feature = "chemical-scripting")]
         chemical_scripting::entry_point::start(&mut scene);
 
-        renderer
-            .lock()
-            .unwrap()
-            .process_scene_operations(&mut scene);
+        renderer.process_scene_operations(&mut scene);
         scene.clear_operations();
 
         event_loop_proxy
@@ -101,65 +131,94 @@ impl ChemicalEngine {
             .send_event(ChemicalEvent::ChangeCameraMode(CameraMode::NoCameraControl))
             .unwrap();
 
-        let renderer_guard = renderer.lock().unwrap();
-
         Ok(ChemicalEngine {
+            renderer,
             #[cfg(feature = "chemical-gui")]
-            gui: chemical_gui::ChemicalGUI::new(
-                &renderer_guard.device,
-                &renderer_guard.queue,
-                &renderer_guard.adapter,
-                &renderer_guard.surface_format,
-                &window,
-                Counter::new(camera.clone(), renderer.clone()),
-            ),
-            renderer: renderer.clone(),
+            gui,
             event_loop_proxy: event_loop_proxy.expect("Event loop proxy was invalid"),
-            window: window,
+            window,
             camera_mode: CameraMode::NoCameraControl,
-            camera: camera,
+            camera,
             camera_controller: CameraController::new(1.0, 0.002, 0.07),
             fps_counter: FPSCounter::new(),
-            window_center: window_center,
+            window_center,
             scene,
+            direction: (1.0, 1.0).into(),
+            offset: (0.0, 0.0).into(),
         })
     }
 
     pub fn update(&mut self) {
         if self.camera_mode == CameraMode::FPSCameraControl {
-            self.camera_controller.update_camera(
-                &mut self.camera.lock().unwrap(),
-                self.fps_counter.delta as f32,
-            );
+            self.camera_controller
+                .update_camera(&mut self.camera, self.fps_counter.delta as f32);
         }
         #[cfg(feature = "chemical-scripting")]
         chemical_scripting::entry_point::update(&mut self.scene);
 
-        self.renderer
-            .lock()
-            .unwrap()
-            .process_scene_operations(&mut self.scene);
+        self.renderer.process_scene_operations(&mut self.scene);
         self.scene.clear_operations();
         self.fps_counter.update();
+
+        self.render_target_moved(&renderer::RenderTarget::Custom(
+            PhysicalSize {
+                width: 500,
+                height: 500,
+            },
+            wgpu::Origin3d {
+                x: self.offset.x as u32,
+                y: self.offset.y as u32,
+                z: 0,
+            },
+        ));
+
+        self.offset.x += self.direction.x;
+        self.offset.y += self.direction.y;
+
+        if self.offset.y as i32 + 500 >= 720 {
+            self.direction.y = -1.0;
+        } else if self.offset.y as i32 <= 0 {
+            self.direction.y = 1.0;
+        }
+        if self.offset.x as i32 + 500 >= 1280 {
+            self.direction.x = -1.0;
+        } else if self.offset.x as i32 <= 0 {
+            self.direction.x = 1.0;
+        }
+
         /*if let Some(fps) = self.fps_counter.fps {
             info!("{}", fps);
         }*/
     }
     fn window_resized(&mut self, size: &PhysicalSize<u32>) {
         //self.renderer.resize(size.width, size.height);
-        self.camera.lock().unwrap().update_projection(
-            size.width as f32 / size.height as f32,
-            90.0,
-            0.01,
-            10000.00,
-        );
-        self.window_center = (size.width, size.height).into();
+        #[cfg(not(feature = "chemical-gui"))]
+        self.camera
+            .update_projection(size.width as f32 / size.height as f32, 90.0, 0.01, 10000.00);
+
+        self.window_center = (size.width / 2, size.height / 2).into();
         #[cfg(feature = "chemical-gui")]
         self.gui.resize(size);
         self.renderer
-            .lock()
-            .unwrap()
-            .resize(size.width, size.height);
+            .resize(renderer::RenderTarget::Window(PhysicalSize {
+                width: size.width,
+                height: size.height,
+            }));
+    }
+    #[cfg(feature = "chemical-gui")]
+    fn render_target_moved(&mut self, render_target: &renderer::RenderTarget) {
+        self.renderer.resize(render_target.clone());
+        match render_target {
+            renderer::RenderTarget::Custom(size, offset) => {
+                self.camera.update_projection(
+                    size.width as f32 / size.height as f32,
+                    90.0,
+                    0.01,
+                    10000.00,
+                );
+            }
+            renderer::RenderTarget::Window(_) => (),
+        }
     }
     pub fn window_event(&mut self, event: &WindowEvent, event_loop: &ActiveEventLoop) {
         match event {
@@ -169,30 +228,25 @@ impl ChemicalEngine {
             }
             WindowEvent::RedrawRequested => {
                 self.update();
-                let tex = {
-                    let renderer = self.renderer.lock().unwrap();
-                    renderer.surface.get_current_texture().unwrap()
-                    // lock released here, at the end of this block — `tex` is now owned, independent of the guard
+                let encoder = self.renderer.prepare(&self.camera);
+
+                let (encoder, surface_texture) = match self.renderer.render(&self.camera, encoder) {
+                    Ok(texture) => texture,
+                    // Reconfigure the surface if it's lost or outdated
+                    Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => {
+                        self.window_resized(&self.window.inner_size());
+                        return;
+                    }
+                    Err(e) => {
+                        log::error!("Render loop failed: {}", e);
+                        return;
+                    }
                 };
+                #[cfg(feature = "chemical-gui")]
+                self.gui.redraw(&surface_texture);
+                self.renderer.publish(encoder, surface_texture);
 
-                self.gui.redraw(&tex); // redraw probably wants a reference, that's fine
                 self.window.request_redraw();
-                tex.present(); // now valid — consumes the owned SurfaceTexture
-
-                // match self.renderer.render(
-                //     &self.camera,
-                //     #[cfg(feature = "chemical-gui")]
-                //     &mut self.gui,
-                // ) {
-                //     Ok(_) => {}
-                //     // Reconfigure the surface if it's lost or outdated
-                //     Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => {
-                //         self.window_resized(&self.window.inner_size());
-                //     }
-                //     Err(e) => {
-                //         log::error!("Render loop failed: {}", e);
-                //     }
-                // }
             }
             WindowEvent::KeyboardInput {
                 event:
@@ -232,18 +286,25 @@ impl ChemicalEngine {
                     }
                     _ => (),
                 }
-                //self.camera_controller.handle_key(*code, is_pressed);
+                if let Some(kc) = input::winit_keycode_to_chemical(*code) {
+                    self.camera_controller.handle_key(kc, is_pressed);
+                }
             }
             WindowEvent::CursorMoved { position, .. } => {
                 let dx = position.x as f32 - self.window_center.x;
                 let dy = position.y as f32 - self.window_center.y;
 
-                self.camera_controller.handle_mouse_moved(&(dx, dy));
+                #[cfg(feature = "chemical-gui")]
+                self.gui.cursor_moved(*position);
 
-                if self.camera_mode == CameraMode::FPSCameraControl {
-                    self.window
-                        .set_cursor_position(self.window_center)
-                        .expect("Failed to set cursor position to center");
+                match self.camera_mode {
+                    CameraMode::FPSCameraControl => {
+                        self.camera_controller.handle_mouse_moved(&(dx, dy));
+                        self.window
+                            .set_cursor_position(self.window_center)
+                            .expect("Failed to set cursor position to center");
+                    }
+                    _ => (),
                 }
             }
             _ => {}
@@ -269,9 +330,10 @@ impl ChemicalEngine {
         _event_loop: &ActiveEventLoop,
     ) {
         match _event {
-            // DeviceEvent::MouseMotion { delta, .. } => {
-            //     self.camera_controller.handle_mouse_moved(&delta);
-            // }
+            DeviceEvent::MouseMotion { delta, .. } => {
+                self.camera_controller
+                    .handle_mouse_moved(&(delta.0 as f32, delta.1 as f32));
+            }
             _ => {}
         }
     }

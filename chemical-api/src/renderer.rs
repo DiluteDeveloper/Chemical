@@ -9,36 +9,137 @@ pub use texture::Texture;
 
 use log::info;
 use std::sync::Arc;
-use winit::window::Window;
+use winit::{dpi::PhysicalSize, window::Window};
 
 use crate::Camera;
 
+#[derive(Debug, Clone, PartialEq)]
+pub enum RenderTarget {
+    Window(PhysicalSize<u32>),
+    Custom(PhysicalSize<u32>, wgpu::Origin3d),
+}
+
 #[derive(Debug)]
-pub struct Renderer {
-    pub surface: wgpu::Surface<'static>,
-    is_surface_configured: bool,
-
-    depth_texture: Texture,
-
+pub struct RendererDescriptor {
+    pub texture_format: wgpu::TextureFormat,
     pub device: wgpu::Device,
     pub queue: wgpu::Queue,
-    pub config: wgpu::SurfaceConfiguration,
-    pub adapter: wgpu::Adapter,
-    pub surface_format: wgpu::TextureFormat,
+    pub surface: wgpu::Surface<'static>,
+    pub render_target: RenderTarget,
+    pub surface_config: wgpu::SurfaceConfiguration,
+    // pub window: Arc<Window>,
+}
+#[derive(Debug)]
+pub struct Renderer {
+    depth_texture: Texture,
+    msaa_view: wgpu::TextureView,
+    texture_format: wgpu::TextureFormat,
+    surface: wgpu::Surface<'static>,
+    custom_render_target: Option<wgpu::Texture>,
+    render_target: RenderTarget,
+    surface_config: wgpu::SurfaceConfiguration,
+
+    device: wgpu::Device,
+    queue: wgpu::Queue,
 
     mesh_renderer: MeshRenderer,
     pub line_renderer: LineRenderer,
-
-    msaa_view: wgpu::TextureView,
 }
 
 impl Renderer {
     const MSAA_SAMPLE_COUNT: u32 = 8;
-    pub async fn new(window: Arc<Window>) -> anyhow::Result<Renderer> {
-        let size = window.inner_size();
 
-        // The instance is a handle to our GPU
-        // BackendBit::PRIMARY => Vulkan + Metal + DX12 + Browser WebGPU
+    pub fn new(descriptor: RendererDescriptor) -> Self {
+        // let (surface, texture_format, present_mode, alpha_mode, device, queue, adapter) =
+        //     Self::init(window).await?;
+
+        match descriptor.render_target {
+            RenderTarget::Custom(size, _) => {
+                // let window_size = descriptor.window.inner_size();
+                let depth_texture = Texture::create_depth_texture(
+                    &descriptor.device,
+                    size.width,
+                    size.height,
+                    "Depth Texture",
+                );
+                let msaa_view = Self::create_msaa_view(
+                    &descriptor.device,
+                    descriptor.texture_format,
+                    size.width,
+                    size.height,
+                );
+                let custom_render_target = Some(Self::create_custom_target(
+                    &descriptor.device,
+                    descriptor.texture_format,
+                    size.width,
+                    size.height,
+                ));
+                Self {
+                    mesh_renderer: MeshRenderer::new(
+                        &descriptor.device,
+                        descriptor.texture_format,
+                        &descriptor.queue,
+                    ),
+                    line_renderer: LineRenderer::new(&descriptor.device, descriptor.texture_format),
+                    depth_texture,
+                    msaa_view,
+                    texture_format: descriptor.texture_format,
+                    device: descriptor.device,
+                    queue: descriptor.queue,
+                    surface: descriptor.surface,
+                    surface_config: descriptor.surface_config,
+                    custom_render_target,
+                    render_target: descriptor.render_target,
+                }
+            }
+            RenderTarget::Window(size) => {
+                let depth_texture = Texture::create_depth_texture(
+                    &descriptor.device,
+                    size.width,
+                    size.height,
+                    "Depth Texture",
+                );
+                let msaa_view = Self::create_msaa_view(
+                    &descriptor.device,
+                    descriptor.texture_format,
+                    size.width,
+                    size.height,
+                );
+                Self {
+                    mesh_renderer: MeshRenderer::new(
+                        &descriptor.device,
+                        descriptor.texture_format,
+                        &descriptor.queue,
+                    ),
+                    line_renderer: LineRenderer::new(&descriptor.device, descriptor.texture_format),
+                    depth_texture,
+                    msaa_view,
+                    texture_format: descriptor.texture_format,
+                    device: descriptor.device,
+                    queue: descriptor.queue,
+                    surface: descriptor.surface,
+                    custom_render_target: None,
+                    render_target: descriptor.render_target,
+                    surface_config: descriptor.surface_config,
+                }
+            }
+        }
+    }
+
+    pub async fn initialize_window_surface(
+        window: Arc<Window>,
+        size: PhysicalSize<u32>,
+        is_render_target: bool,
+    ) -> anyhow::Result<(
+        wgpu::Surface<'static>,
+        wgpu::TextureFormat,
+        // wgpu::PresentMode,
+        // wgpu::CompositeAlphaMode,
+        wgpu::Device,
+        wgpu::Queue,
+        wgpu::Adapter,
+        wgpu::SurfaceConfiguration,
+    )> {
         let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
             backends: wgpu::Backends::PRIMARY,
             ..Default::default()
@@ -80,111 +181,152 @@ impl Renderer {
             .await?;
 
         let surface_caps = surface.get_capabilities(&adapter);
-        let mut present_mode_idx = 0;
+        // let mut present_mode_idx = 0;
 
-        for (i, present_mode) in surface_caps.present_modes.iter().enumerate() {
-            if (*present_mode) == wgpu::PresentMode::Immediate {
-                present_mode_idx = i;
-            }
-        }
-        // Shader code in this tutorial assumes an sRGB surface texture. Using a different
-        // one will result in all the colors coming out darker. If you want to support non
-        // sRGB surfaces, you'll need to account for that when drawing to the frame.
+        // for (i, present_mode) in surface_caps.present_modes.iter().enumerate() {
+        //     if (*present_mode) == wgpu::PresentMode::Immediate {
+        //         present_mode_idx = i;
+        //     }
+        // }
+
         let surface_format = surface_caps
             .formats
             .iter()
             .find(|f| f.is_srgb())
             .copied()
             .unwrap_or(surface_caps.formats[0]);
-        let config = wgpu::SurfaceConfiguration {
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
+
+        let usage = match is_render_target {
+            false => wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_DST,
+            true => wgpu::TextureUsages::RENDER_ATTACHMENT,
+        };
+        let surface_config = wgpu::SurfaceConfiguration {
+            usage: usage,
             format: surface_format,
             width: size.width,
             height: size.height,
-            present_mode: surface_caps.present_modes[present_mode_idx],
+            present_mode: surface_caps.present_modes[0],
             alpha_mode: surface_caps.alpha_modes[0],
             view_formats: vec![],
             desired_maximum_frame_latency: 2,
         };
-        let depth_texture =
-            Texture::create_depth_texture(&device, config.width, config.height, "Depth Texture");
+        surface.configure(&device, &surface_config);
 
-        let msaa_view = Self::configure_msaa(&device, &config);
-
-        Ok(Self {
-            msaa_view,
-            mesh_renderer: MeshRenderer::new(&device, &config, &queue),
-            line_renderer: LineRenderer::new(&device, &config),
+        Ok((
             surface,
+            surface_format,
+            // surface_caps.present_modes[0],
+            // surface_caps.alpha_modes[0],
             device,
             queue,
-            config,
-            is_surface_configured: false,
-            depth_texture,
             adapter,
-            surface_format,
-        })
+            surface_config,
+        ))
     }
 
-    pub fn resize(&mut self, width: u32, height: u32) {
-        if width > 0 && height > 0 {
-            self.config.width = width;
-            self.config.height = height;
-            self.surface.configure(&self.device, &self.config);
-            self.is_surface_configured = true;
-            self.depth_texture = Texture::create_depth_texture(
-                &self.device,
-                self.config.width,
-                self.config.height,
-                "Depth Texture",
-            );
-            let msaa_view = Self::configure_msaa(&self.device, &self.config);
-            self.msaa_view = msaa_view;
+    pub fn resize(&mut self, render_target: RenderTarget) {
+        match render_target {
+            RenderTarget::Window(size) => {
+                self.surface_config.width = size.width;
+                self.surface_config.height = size.height;
+                self.surface.configure(&self.device, &self.surface_config);
+            }
+            RenderTarget::Custom(size, _) => {
+                self.depth_texture = Texture::create_depth_texture(
+                    &self.device,
+                    size.width,
+                    size.height,
+                    "Depth Texture",
+                );
+                self.msaa_view = Self::create_msaa_view(
+                    &self.device,
+                    self.texture_format,
+                    size.width,
+                    size.height,
+                );
+                self.custom_render_target = Some(Self::create_custom_target(
+                    &self.device,
+                    self.texture_format,
+                    size.width,
+                    size.height,
+                ));
+                self.render_target = render_target;
+            }
         }
     }
-    fn configure_msaa(
+    fn create_msaa_view(
         device: &wgpu::Device,
-        config: &wgpu::SurfaceConfiguration,
+        format: wgpu::TextureFormat,
+        width: u32,
+        height: u32,
     ) -> wgpu::TextureView {
-        let msaa_texture = device.create_texture(&wgpu::TextureDescriptor {
-            label: Some("MSAA texture"),
+        device
+            .create_texture(&wgpu::TextureDescriptor {
+                label: Some("MSAA texture"),
+                size: wgpu::Extent3d {
+                    width: width,
+                    height: height,
+                    depth_or_array_layers: 1,
+                },
+                mip_level_count: 1,
+                sample_count: Self::MSAA_SAMPLE_COUNT,
+                dimension: wgpu::TextureDimension::D2,
+                format: format,
+                usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
+                view_formats: &[],
+            })
+            .create_view(&wgpu::TextureViewDescriptor::default())
+    }
+    fn create_custom_target(
+        device: &wgpu::Device,
+        format: wgpu::TextureFormat,
+        width: u32,
+        height: u32,
+    ) -> wgpu::Texture {
+        device.create_texture(&wgpu::TextureDescriptor {
+            label: Some("Custom target texture"),
             size: wgpu::Extent3d {
-                width: config.width,
-                height: config.height,
+                width: width,
+                height: height,
                 depth_or_array_layers: 1,
             },
             mip_level_count: 1,
-            sample_count: Self::MSAA_SAMPLE_COUNT,
+            sample_count: 1,
             dimension: wgpu::TextureDimension::D2,
-            format: config.format, // match your surface/swapchain format
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
+            format: format,
+            usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC,
             view_formats: &[],
-        });
-        msaa_texture.create_view(&wgpu::TextureViewDescriptor::default())
+        })
     }
-
-    /*pub fn render(&mut self, camera: &Camera) -> Result<(), wgpu::SurfaceError> {
-        self.window.request_redraw();
-
-        if !self.is_surface_configured {
-            return Ok(());
-        }
-
-        let output = self.surface.get_current_texture()?;
-        let view = output
-            .texture
-            .create_view(&wgpu::TextureViewDescriptor::default());
-
+    pub fn prepare(&mut self, camera: &Camera) -> wgpu::CommandEncoder {
         let mut encoder = self
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor {
                 label: Some("Render Encoder"),
             });
         self.mesh_renderer.prepare(&camera, &mut encoder);
+        encoder
+    }
 
-        // render lights buffer after encoder before real render pass
+    pub fn render(
+        &mut self,
+        camera: &Camera,
+        mut encoder: wgpu::CommandEncoder,
+    ) -> anyhow::Result<(wgpu::CommandEncoder, wgpu::SurfaceTexture), wgpu::SurfaceError> {
+        // let output = self.surface.get_current_texture()?;
+        // let view = output
+        //     .texture
+        //     .create_view(&wgpu::TextureViewDescriptor::default());
+        let surface_texture = self.surface.get_current_texture()?;
+        let surface_texture_tex = &surface_texture.texture;
+
+        let render_target_texture = match &self.custom_render_target {
+            Some(vw) => vw,
+            None => &surface_texture_tex,
+        };
+        let view = render_target_texture.create_view(&wgpu::TextureViewDescriptor::default());
+
         {
-            // Needs to be for the entire render pass all shaders
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("Render Pass"),
                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {
@@ -217,61 +359,43 @@ impl Renderer {
             self.line_renderer
                 .render(&camera, &self.queue, &mut render_pass);
         }
-
-        self.queue.submit(std::iter::once(encoder.finish()));
-
-        #[cfg(feature = "chemical-gui")]
-        gui.redraw(&output);
-
-        output.present();
-
-        Ok(())
-    }*/
-    pub fn prepare(&mut self, camera: &Camera) {
-        let mut encoder = self
-            .device
-            .create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                label: Some("Render Encoder"),
-            });
-        self.mesh_renderer.prepare(&camera, &mut encoder);
-        self.queue.submit(std::iter::once(encoder.finish()));
+        Ok((encoder, surface_texture))
     }
-    pub fn render_to_view(
+    pub fn publish(
         &self,
-        encoder: &mut wgpu::CommandEncoder,
-        view: &wgpu::TextureView,
-        camera: &Camera,
+        mut encoder: wgpu::CommandEncoder,
+        surface_texture: wgpu::SurfaceTexture,
     ) {
-        // render lights buffer after encoder before real render pass
-        {
-            // Needs to be for the entire render pass all shaders
-            let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                label: Some("Render Pass"),
-                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                    view: &self.msaa_view,
-                    resolve_target: Some(&view),
-                    depth_slice: None,
-                    ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Load,
-                        store: wgpu::StoreOp::Store,
+        match self.render_target {
+            RenderTarget::Custom(size, offset) => {
+                encoder.copy_texture_to_texture(
+                    self.custom_render_target
+                        .as_ref()
+                        .expect("Custom render target is None while render_target is Custom!")
+                        .as_image_copy(),
+                    wgpu::TexelCopyTextureInfo {
+                        texture: &surface_texture.texture,
+                        mip_level: 0,
+                        origin: wgpu::Origin3d {
+                            x: offset.x,
+                            y: offset.y,
+                            z: 0,
+                        },
+                        aspect: wgpu::TextureAspect::All,
                     },
-                })],
-                depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
-                    view: &self.depth_texture.view,
-                    depth_ops: Some(wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(1.0),
-                        store: wgpu::StoreOp::Store,
-                    }),
-                    stencil_ops: None,
-                }),
-                occlusion_query_set: None,
-                timestamp_writes: None,
-            });
-
-            self.mesh_renderer.render(&mut render_pass);
-            // self.line_renderer
-            //     .render(&camera, &self.queue, &mut render_pass);
+                    wgpu::Extent3d {
+                        width: size.width,
+                        height: size.height,
+                        depth_or_array_layers: 1,
+                    },
+                );
+            }
+            _ => (),
         }
+
+        self.queue.submit(std::iter::once(encoder.finish()));
+
+        surface_texture.present();
     }
 
     pub fn process_scene_operations(&mut self, scene: &mut SceneContainer) {

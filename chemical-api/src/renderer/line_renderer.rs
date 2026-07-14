@@ -62,7 +62,7 @@ impl LineRenderer {
         }
     }
 
-    pub(super) fn new(device: &wgpu::Device, config: &wgpu::SurfaceConfiguration) -> Self {
+    pub(super) fn new(device: &wgpu::Device, texture_format: wgpu::TextureFormat) -> Self {
         let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             entries: &[
                 wgpu::BindGroupLayoutEntry {
@@ -137,7 +137,7 @@ impl LineRenderer {
                 entry_point: Some("fs_main"),
                 targets: &[Some(wgpu::ColorTargetState {
                     // 4.
-                    format: config.format,
+                    format: texture_format,
                     blend: Some(wgpu::BlendState::REPLACE),
                     write_mask: wgpu::ColorWrites::ALL,
                 })],

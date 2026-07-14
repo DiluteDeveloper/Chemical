@@ -51,7 +51,7 @@ const MAX_TRANSFORMS: u64 = 1000;
 impl MeshRenderer {
     pub(super) fn new(
         device: &wgpu::Device,
-        config: &wgpu::SurfaceConfiguration,
+        texture_format: wgpu::TextureFormat,
         queue: &wgpu::Queue,
     ) -> Self {
         let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
@@ -262,7 +262,7 @@ impl MeshRenderer {
                 entry_point: Some("fs_main"),
                 targets: &[Some(wgpu::ColorTargetState {
                     // 4.
-                    format: config.format,
+                    format: texture_format,
                     blend: Some(wgpu::BlendState::REPLACE),
                     write_mask: wgpu::ColorWrites::ALL,
                 })],

@@ -1,6 +1,7 @@
 use log::LevelFilter;
 
 mod core;
+mod input;
 
 use crate::core::app;
 

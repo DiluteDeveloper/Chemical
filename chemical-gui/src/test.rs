@@ -5,28 +5,14 @@ pub enum Message {
 }
 pub struct Counter {
     value: i64,
-    render_frame: SceneProgram,
 }
 impl Counter {
-    pub fn new(camera: Arc<Mutex<Camera>>, renderer: Arc<Mutex<chemical_api::Renderer>>) -> Self {
-        Self {
-            value: 0,
-            render_frame: SceneProgram {
-                renderer: renderer,
-                camera: camera,
-            },
-        }
+    pub fn new() -> Self {
+        Self { value: 0 }
     }
 }
-
-use std::sync::{Arc, Mutex};
-
-use chemical_api::Camera;
-use iced_wgpu::Renderer;
-use iced_widget::{Column, button, column, shader, text};
-use iced_winit::core::{Length, Theme};
-
-use crate::frame::{RenderFrame, SceneProgram};
+use iced_widget::{Column, button, column, text};
+use iced_winit::core::{Rectangle, Theme};
 
 // update view logic
 // display interface
@@ -35,11 +21,8 @@ use crate::frame::{RenderFrame, SceneProgram};
 
 impl Counter {
     // run before display
-    pub fn view(&self) -> Column<'_, Message, Theme, Renderer> {
+    pub fn view(&self) -> Column<'_, Message> {
         column![
-            shader(&self.render_frame)
-                .width(Length::FillPortion(3))
-                .height(Length::Fill),
             button("+").on_press(Message::Increment),
             text(self.value),
             button("-").on_press(Message::Decrement)

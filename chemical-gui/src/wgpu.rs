@@ -1,10 +1,10 @@
 use std::sync::Arc;
 use std::time::Instant;
 
-use crate::test;
+use crate::test::{self, Counter, Message};
 use iced_wgpu::wgpu;
 use iced_winit::runtime::user_interface;
-use iced_winit::{core, futures::futures, winit};
+use iced_winit::{core, winit};
 
 pub struct ChemicalGUI {
     counter: test::Counter,
@@ -21,14 +21,14 @@ impl ChemicalGUI {
         queue: &wgpu::Queue,
         adapter: &wgpu::Adapter,
         format: &wgpu::TextureFormat,
-        window: &Arc<winit::window::Window>,
-        counter: test::Counter,
+        window: Arc<winit::window::Window>,
     ) -> Self {
         let size = window.inner_size();
         let viewport = iced_wgpu::graphics::Viewport::with_physical_size(
             core::Size::new(size.width, size.height),
             window.scale_factor() as f32,
         );
+
         let renderer = {
             let engine = iced_wgpu::Engine::new(
                 &adapter,
@@ -47,11 +47,11 @@ impl ChemicalGUI {
         };
 
         Self {
-            counter,
+            counter: Counter::new(),
             viewport,
             cache: user_interface::Cache::new(),
             renderer,
-            window: window.clone(),
+            window: window,
             cursor: core::mouse::Cursor::Unavailable,
         }
     }
