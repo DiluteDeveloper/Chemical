@@ -1,18 +1,21 @@
 use std::sync::Arc;
 use std::time::Instant;
 
-use crate::test::{self, Counter, Message};
+use crate::{PrimaryView, primary_view};
+use crate::{ViewportRegion, viewport_region};
+use iced_wgpu::graphics::Viewport;
 use iced_wgpu::wgpu;
 use iced_winit::runtime::user_interface;
 use iced_winit::{core, winit};
 
 pub struct ChemicalGUI {
-    counter: test::Counter,
     viewport: iced_wgpu::graphics::Viewport,
     cache: user_interface::Cache,
     renderer: iced_wgpu::Renderer,
     window: Arc<winit::window::Window>,
     cursor: core::mouse::Cursor,
+
+    primary_view: PrimaryView,
 }
 
 impl ChemicalGUI {
@@ -22,7 +25,7 @@ impl ChemicalGUI {
         adapter: &wgpu::Adapter,
         format: &wgpu::TextureFormat,
         window: Arc<winit::window::Window>,
-    ) -> Self {
+    ) -> (Self, ViewportRegion) {
         let size = window.inner_size();
         let viewport = iced_wgpu::graphics::Viewport::with_physical_size(
             core::Size::new(size.width, size.height),
@@ -46,20 +49,26 @@ impl ChemicalGUI {
             )
         };
 
-        Self {
-            counter: Counter::new(),
-            viewport,
-            cache: user_interface::Cache::new(),
-            renderer,
-            window: window,
-            cursor: core::mouse::Cursor::Unavailable,
-        }
+        let (primary_view, viewport_region) = PrimaryView::new();
+
+        (
+            Self {
+                viewport,
+                cache: user_interface::Cache::new(),
+                renderer,
+                window: window,
+                cursor: core::mouse::Cursor::Unavailable,
+                primary_view: primary_view,
+            },
+            viewport_region,
+        )
     }
-    pub fn resize(&mut self, size: &iced_winit::winit::dpi::PhysicalSize<u32>) {
+    pub fn resize(&mut self, size: &iced_winit::winit::dpi::PhysicalSize<u32>) -> ViewportRegion {
         self.viewport = iced_wgpu::graphics::Viewport::with_physical_size(
             core::Size::new(size.width, size.height),
             self.window.scale_factor() as f32,
         );
+        PrimaryView::resize(size)
     }
 
     pub fn redraw(&mut self, surface_texture: &wgpu::SurfaceTexture) {
@@ -68,7 +77,7 @@ impl ChemicalGUI {
             .create_view(&wgpu::TextureViewDescriptor::default());
 
         let mut interface = user_interface::UserInterface::build(
-            self.counter.view(),
+            self.primary_view.view(),
             self.viewport.logical_size(),
             std::mem::take(&mut self.cache),
             &mut self.renderer,
@@ -101,7 +110,7 @@ impl ChemicalGUI {
 
         interface.draw(
             &mut self.renderer,
-            &core::Theme::GruvboxLight,
+            &core::Theme::GruvboxDark,
             &core::renderer::Style::default(),
             self.cursor,
         );

@@ -62,7 +62,7 @@ impl ChemicalEngine {
         .map_err(|e| anyhow!("Failed to initialise renderer: {}", e))?;
 
         #[cfg(feature = "chemical-gui")]
-        let gui = chemical_gui::ChemicalGUI::new(
+        let (gui, viewport_region) = chemical_gui::ChemicalGUI::new(
             &device,
             &queue,
             &adapter,
@@ -72,10 +72,16 @@ impl ChemicalEngine {
 
         let render_target = renderer::RenderTarget::Custom(
             PhysicalSize {
-                width: 500,
-                height: 500,
+                width: viewport_region.width,
+                height: viewport_region.height,
             },
-            wgpu::Origin3d { x: 10, y: 10, z: 0 },
+            wgpu::Origin3d {
+                // x: (1280 / 2) - 360,
+                // y: (720 / 2) - 240,
+                x: viewport_region.offset_x,
+                y: viewport_region.offset_y,
+                z: 0,
+            },
         );
         let renderer_descriptor = renderer::RendererDescriptor {
             texture_format,
@@ -160,35 +166,6 @@ impl ChemicalEngine {
         self.scene.clear_operations();
         self.fps_counter.update();
 
-        self.render_target_moved(&renderer::RenderTarget::Custom(
-            PhysicalSize {
-                width: 500,
-                height: 500,
-            },
-            wgpu::Origin3d {
-                x: self.offset.x as u32,
-                y: self.offset.y as u32,
-                z: 0,
-            },
-        ));
-
-        self.offset.x += self.direction.x;
-        self.offset.y += self.direction.y;
-
-        if self.offset.y as i32 + 500 >= 720 {
-            self.direction.y = -1.0;
-        } else if self.offset.y as i32 <= 0 {
-            self.direction.y = 1.0;
-        }
-        if self.offset.x as i32 + 500 >= 1280 {
-            self.direction.x = -1.0;
-        } else if self.offset.x as i32 <= 0 {
-            self.direction.x = 1.0;
-        }
-
-        /*if let Some(fps) = self.fps_counter.fps {
-            info!("{}", fps);
-        }*/
     }
     fn window_resized(&mut self, size: &PhysicalSize<u32>) {
         //self.renderer.resize(size.width, size.height);
@@ -276,14 +253,14 @@ impl ChemicalEngine {
                                 .unwrap();
                         }
                     },
-                    (KeyCode::F5, true) => {
-                        #[cfg(feature = "chemical-gui")]
-                        chemical_gui::entry_point::launch_game();
-                    }
-                    (KeyCode::F4, true) => {
-                        #[cfg(feature = "chemical-gui")]
-                        chemical_gui::entry_point::build_game();
-                    }
+                    // (KeyCode::F5, true) => {
+                    //     #[cfg(feature = "chemical-gui")]
+                    //     chemical_gui::entry_point::launch_game();
+                    // }
+                    // (KeyCode::F4, true) => {
+                    //     #[cfg(feature = "chemical-gui")]
+                    //     chemical_gui::entry_point::build_game();
+                    // }
                     _ => (),
                 }
                 if let Some(kc) = input::winit_keycode_to_chemical(*code) {

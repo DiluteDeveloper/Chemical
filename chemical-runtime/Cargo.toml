@@ -32,3 +32,7 @@ required-features = ["chemical-gui"]
 name = "ChemicalGame"
 path = "src/main.rs"
 required-features = ["chemical-scripting"]
+
+[lints.rust]
+dead_code = "allow"
+unused_code = "allow"

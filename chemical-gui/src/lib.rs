@@ -1,5 +1,8 @@
-pub mod entry_point;
-mod test;
-pub mod wgpu;
+pub mod chemical_gui;
+pub use chemical_gui::ChemicalGUI;
 
-pub use wgpu::ChemicalGUI;
+mod primary_view;
+use primary_view::PrimaryView;
+
+pub mod viewport_region;
+pub use viewport_region::ViewportRegion;
