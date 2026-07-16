@@ -311,8 +311,8 @@ impl Renderer {
     pub fn render(
         &mut self,
         camera: &Camera,
-        mut encoder: wgpu::CommandEncoder,
-    ) -> anyhow::Result<(wgpu::CommandEncoder, wgpu::SurfaceTexture), wgpu::SurfaceError> {
+        encoder: &mut wgpu::CommandEncoder,
+    ) -> anyhow::Result<wgpu::SurfaceTexture, wgpu::SurfaceError> {
         // let output = self.surface.get_current_texture()?;
         // let view = output
         //     .texture
@@ -359,12 +359,12 @@ impl Renderer {
             self.line_renderer
                 .render(&camera, &self.queue, &mut render_pass);
         }
-        Ok((encoder, surface_texture))
+        Ok(surface_texture)
     }
-    pub fn publish(
+    pub fn paste_render_texture(
         &self,
-        mut encoder: wgpu::CommandEncoder,
-        surface_texture: wgpu::SurfaceTexture,
+        encoder: &mut wgpu::CommandEncoder,
+        surface_texture: &wgpu::SurfaceTexture,
     ) {
         match self.render_target {
             RenderTarget::Custom(size, offset) => {
@@ -392,9 +392,11 @@ impl Renderer {
             }
             _ => (),
         }
-
+    }
+    pub fn submit(&self, encoder: wgpu::CommandEncoder) {
         self.queue.submit(std::iter::once(encoder.finish()));
-
+    }
+    pub fn present(&self, surface_texture: wgpu::SurfaceTexture) {
         surface_texture.present();
     }
 

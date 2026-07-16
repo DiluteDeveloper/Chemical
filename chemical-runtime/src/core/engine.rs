@@ -165,7 +165,6 @@ impl ChemicalEngine {
         self.renderer.process_scene_operations(&mut self.scene);
         self.scene.clear_operations();
         self.fps_counter.update();
-
     }
     fn window_resized(&mut self, size: &PhysicalSize<u32>) {
         //self.renderer.resize(size.width, size.height);
@@ -205,9 +204,9 @@ impl ChemicalEngine {
             }
             WindowEvent::RedrawRequested => {
                 self.update();
-                let encoder = self.renderer.prepare(&self.camera);
+                let mut encoder = self.renderer.prepare(&self.camera);
 
-                let (encoder, surface_texture) = match self.renderer.render(&self.camera, encoder) {
+                let surface_texture = match self.renderer.render(&self.camera, &mut encoder) {
                     Ok(texture) => texture,
                     // Reconfigure the surface if it's lost or outdated
                     Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => {
@@ -219,9 +218,12 @@ impl ChemicalEngine {
                         return;
                     }
                 };
+                self.renderer
+                    .paste_render_texture(&mut encoder, &surface_texture);
+                self.renderer.submit(encoder);
                 #[cfg(feature = "chemical-gui")]
                 self.gui.redraw(&surface_texture);
-                self.renderer.publish(encoder, surface_texture);
+                self.renderer.present(surface_texture);
 
                 self.window.request_redraw();
             }
