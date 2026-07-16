@@ -1,5 +1,5 @@
-/// Specification for where the scene viewport should be placed.
-///
+/// Parameters for where the viewport should be rendered on the window.
+#[derive(Debug)]
 pub struct ViewportRegion {
     pub width: u32,
     pub height: u32,

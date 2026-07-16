@@ -1,6 +1,6 @@
 use anyhow::anyhow;
 use chemical_api::{
-    geometry::{cube, model, sphere},
+    geometry::{model, sphere},
     scene::{
         SceneContainer,
         types::{DirectionalLight, Mesh, Transform},
@@ -11,36 +11,36 @@ pub fn start(scene: &mut SceneContainer) {
     let (sphere_vertices, sphere_indices) = sphere::generate_index_sphere(200)
         .map_err(|e| anyhow!("Failed to generate index sphere: {}", e))
         .expect("Tried to create invalid index sphere for celestial body mesh!");
-    let cube_vertices = cube::generate_vertex_cube((1.0, 1.0, 1.0).into());
+    // let cube_vertices = cube::generate_vertex_cube((1.0, 1.0, 1.0).into());
 
-    let sphere_mesh_data = Mesh::new(&sphere_vertices, Some(&sphere_indices), true);
+    // let sphere_mesh_data = Mesh::new(&sphere_vertices, Some(&sphere_indices), true);
     let light_mesh_data = Mesh::new(&sphere_vertices, Some(&sphere_indices), false);
-    let model_mesh_data =
-        model::gltf_load("res/models/stanford_dragon.gltf", true).expect("Failed to load model!");
+    // let model_mesh_data =
+    //     model::gltf_load("res/models/stanford_dragon.gltf", true).expect("Failed to load model!");
     let slum_mesh_data =
         model::gltf_load("res/models/slums.gltf", true).expect("Failed to load model!");
-    let cube_mesh_data = Mesh::new(&cube_vertices, None, true);
+    // let cube_mesh_data = Mesh::new(&cube_vertices, None, true);
 
-    let under_cube_transform = Transform {
-        position: (0.0, -2.0, 0.0).into(),
-        orientation: glam::Quat::from_xyzw(0.0, 0.0, 0.0, -1.0),
-        scale: (5.0, 1.0, 5.0).into(),
-    };
-    let cube_transform = Transform {
-        position: (3.0, 0.0, 3.0).into(),
-        orientation: glam::Quat::from_xyzw(0.0, 0.0, 0.0, -1.0),
-        scale: (1.0, 1.0, 1.0).into(),
-    };
-    let model_transform = Transform {
-        position: (-2.0, 0.68, 2.0).into(),
-        orientation: glam::Quat::from_xyzw(0.0, 0.0, 0.0, -1.0),
-        scale: (3.0, 3.0, 3.0).into(),
-    };
-    let sphere_transform = Transform {
-        position: (-3.0, 0.0, -3.0).into(),
-        orientation: glam::Quat::from_xyzw(0.0, 0.0, 0.0, -1.0),
-        scale: (1.0, 1.0, 1.0).into(),
-    };
+    // let under_cube_transform = Transform {
+    //     position: (0.0, -2.0, 0.0).into(),
+    //     orientation: glam::Quat::from_xyzw(0.0, 0.0, 0.0, -1.0),
+    //     scale: (5.0, 1.0, 5.0).into(),
+    // };
+    // let cube_transform = Transform {
+    //     position: (3.0, 0.0, 3.0).into(),
+    //     orientation: glam::Quat::from_xyzw(0.0, 0.0, 0.0, -1.0),
+    //     scale: (1.0, 1.0, 1.0).into(),
+    // };
+    // let model_transform = Transform {
+    //     position: (-2.0, 0.68, 2.0).into(),
+    //     orientation: glam::Quat::from_xyzw(0.0, 0.0, 0.0, -1.0),
+    //     scale: (3.0, 3.0, 3.0).into(),
+    // };
+    // let sphere_transform = Transform {
+    //     position: (-3.0, 0.0, -3.0).into(),
+    //     orientation: glam::Quat::from_xyzw(0.0, 0.0, 0.0, -1.0),
+    //     scale: (1.0, 1.0, 1.0).into(),
+    // };
     let mut light_model_transform = Transform::default();
     light_model_transform.scale = (0.2, 0.2, 0.2).into();
 
@@ -49,11 +49,11 @@ pub fn start(scene: &mut SceneContainer) {
         strength: 0.1,
         colour: (0.0, 0.5, 1.0).into(),
     };
-    let directional_light_2 = DirectionalLight {
-        orientation: glam::Quat::from_euler(glam::EulerRot::XYZ, 1.0, 1.0, 0.0),
-        strength: 0.1,
-        colour: (1.0, 0.5, 0.0).into(),
-    };
+    // let directional_light_2 = DirectionalLight {
+    //     orientation: glam::Quat::from_euler(glam::EulerRot::XYZ, 1.0, 1.0, 0.0),
+    //     strength: 0.1,
+    //     colour: (1.0, 0.5, 0.0).into(),
+    // };
 
     /*scene
         .transform_handler
@@ -97,7 +97,7 @@ pub fn start(scene: &mut SceneContainer) {
     //     .insert_directional_light(directional_light_2, 1);
 }
 pub fn update(scene: &mut SceneContainer) {
-    let seconds_elapsed = 0.0;
+    // let seconds_elapsed = 0.0;
 
     /*self.scene
     .light_handler

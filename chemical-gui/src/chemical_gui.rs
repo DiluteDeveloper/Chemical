@@ -1,13 +1,12 @@
 use std::sync::Arc;
 use std::time::Instant;
 
-use crate::{PrimaryView, primary_view};
-use crate::{ViewportRegion, viewport_region};
-use iced_wgpu::graphics::Viewport;
+use crate::PrimaryView;
 use iced_wgpu::wgpu;
 use iced_winit::runtime::user_interface;
 use iced_winit::{core, winit};
 
+/// Initialises and processes GUI rendering.
 pub struct ChemicalGUI {
     viewport: iced_wgpu::graphics::Viewport,
     cache: user_interface::Cache,
@@ -19,13 +18,14 @@ pub struct ChemicalGUI {
 }
 
 impl ChemicalGUI {
+    /// Initialises the GUI renderer and engine.
     pub fn new(
         device: &wgpu::Device,
         queue: &wgpu::Queue,
         adapter: &wgpu::Adapter,
         format: &wgpu::TextureFormat,
         window: Arc<winit::window::Window>,
-    ) -> (Self, ViewportRegion) {
+    ) -> Self {
         let size = window.inner_size();
         let viewport = iced_wgpu::graphics::Viewport::with_physical_size(
             core::Size::new(size.width, size.height),
@@ -49,28 +49,24 @@ impl ChemicalGUI {
             )
         };
 
-        let (primary_view, viewport_region) = PrimaryView::new(&size);
-
-        (
-            Self {
-                viewport,
-                cache: user_interface::Cache::new(),
-                renderer,
-                window: window,
-                cursor: core::mouse::Cursor::Unavailable,
-                primary_view: primary_view,
-            },
-            viewport_region,
-        )
+        Self {
+            viewport,
+            cache: user_interface::Cache::new(),
+            renderer,
+            window: window,
+            cursor: core::mouse::Cursor::Unavailable,
+            primary_view: PrimaryView::new(),
+        }
     }
-    pub fn resize(&mut self, size: &iced_winit::winit::dpi::PhysicalSize<u32>) -> ViewportRegion {
+    /// Resizes the GUI viewport to `size`.
+    pub fn resize(&mut self, size: &iced_winit::winit::dpi::PhysicalSize<u32>) {
         self.viewport = iced_wgpu::graphics::Viewport::with_physical_size(
             core::Size::new(size.width, size.height),
             self.window.scale_factor() as f32,
         );
-        PrimaryView::resize(size)
     }
 
+    /// Draw GUI to `surface_texture`.
     pub fn redraw(&mut self, surface_texture: &wgpu::SurfaceTexture) {
         let view = surface_texture
             .texture
@@ -82,8 +78,6 @@ impl ChemicalGUI {
             std::mem::take(&mut self.cache),
             &mut self.renderer,
         );
-
-        //let counter_view = self.counter.view();
 
         let mut messages = Vec::new();
         let (state, _) = interface.update(
@@ -124,6 +118,7 @@ impl ChemicalGUI {
         );
     }
 
+    /// Updates the GUI cursor position to `position`.
     pub fn cursor_moved(&mut self, position: winit::dpi::PhysicalPosition<f64>) {
         self.cursor = core::mouse::Cursor::Available(iced_winit::conversion::cursor_position(
             position,
