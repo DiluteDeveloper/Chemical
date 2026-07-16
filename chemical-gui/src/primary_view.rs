@@ -3,7 +3,7 @@ pub enum Message {
     Increment,
     Decrement,
 }
-use iced_wgpu::Renderer;
+use iced_wgpu::{Renderer, core::window};
 use iced_widget::{column, container, row, text};
 use iced_winit::core::{
     Element,
@@ -13,70 +13,71 @@ use iced_winit::core::{
 
 use crate::ViewportRegion;
 
+const LEFT_PANEL_WIDTH: u32 = 240;
+const RIGHT_PANEL_WIDTH: u32 = 240;
+const TOP_PANEL_HEIGHT: u32 = 120;
+const BOTTOM_PANEL_HEIGHT: u32 = 120;
+
 pub struct PrimaryView {}
 
 impl PrimaryView {
-    pub fn new() -> (Self, ViewportRegion) {
+    pub fn new(window_size: &iced_winit::winit::dpi::PhysicalSize<u32>) -> (Self, ViewportRegion) {
         (
             Self {},
             ViewportRegion {
-                width: 500,
-                height: 500,
-                offset_x: 0,
-                offset_y: 0,
+                width: window_size.width - LEFT_PANEL_WIDTH - RIGHT_PANEL_WIDTH,
+                height: window_size.height - TOP_PANEL_HEIGHT - BOTTOM_PANEL_HEIGHT,
+                offset_x: LEFT_PANEL_WIDTH,
+                offset_y: TOP_PANEL_HEIGHT,
             },
         )
     }
-    pub fn resize(size: &iced_winit::winit::dpi::PhysicalSize<u32>) -> ViewportRegion {
+    pub fn resize(window_size: &iced_winit::winit::dpi::PhysicalSize<u32>) -> ViewportRegion {
         ViewportRegion {
-            width: 500,
-            height: 500,
-            offset_x: 500,
-            offset_y: 500,
+            width: window_size.width - LEFT_PANEL_WIDTH - RIGHT_PANEL_WIDTH,
+            height: window_size.height - TOP_PANEL_HEIGHT - BOTTOM_PANEL_HEIGHT,
+            offset_x: LEFT_PANEL_WIDTH,
+            offset_y: TOP_PANEL_HEIGHT,
         }
     }
     pub fn view(&self) -> Element<'_, Message, Theme, Renderer> {
-        // Top menu / toolbar
-        let top_bar = container(text("File   Edit   View   Tools"))
+        let top_panel = container(text("File   Edit   View   Tools"))
             .padding(8)
             .width(Fill)
-            .height(120)
+            .height(TOP_PANEL_HEIGHT)
             .style(container::bordered_box);
 
-        // Left panel: scene hierarchy, asset browser, etc.
         let left_panel = container(text("Hierarchy"))
             .padding(10)
-            .width(280)
+            .width(LEFT_PANEL_WIDTH)
             .height(Fill)
             .style(container::bordered_box);
 
-        // Right panel: inspector / properties
         let right_panel = container(text("Inspector"))
             .padding(10)
-            .width(280)
+            .width(RIGHT_PANEL_WIDTH)
             .height(Fill)
             .style(container::bordered_box);
 
-        // Bottom bar: console / status / timeline
-        let bottom_bar = container(text("Console"))
+        let bottom_panel = container(text("Console"))
             .padding(8)
             .width(Fill)
-            .height(120)
+            .height(BOTTOM_PANEL_HEIGHT)
             .style(container::bordered_box);
 
         let viewport = container("")
-            .width(Length::Fixed(1280.0))
-            .height(Length::Fixed(720.0))
-            .center_x(Length::Fixed(1280.0))
-            .center_y(Length::Fixed(720.0));
+            .width(Fill)
+            .height(Fill)
+            .center_x(Fill)
+            .center_y(Fill);
 
-        // Center the fixed 720x480 viewport in whatever space is left
-        // between the two side panels, regardless of window size.
-        let viewport_area = container(viewport).center_x(Fill).center_y(Fill);
+        // // Center the fixed 720x480 viewport in whatever space is left
+        // // between the two side panels, regardless of window size.
+        // let viewport_area = container(viewport).center_x(Fill).center_y(Fill);
 
-        let middle_row = row![left_panel, viewport_area, right_panel].height(Fill);
+        let middle_row = row![left_panel, viewport, right_panel].height(Fill);
 
-        column![top_bar, middle_row, bottom_bar]
+        column![top_panel, middle_row, bottom_panel]
             .width(Fill)
             .height(Fill)
             .into()

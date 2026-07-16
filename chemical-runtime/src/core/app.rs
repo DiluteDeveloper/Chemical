@@ -37,7 +37,8 @@ impl ApplicationHandler<engine::ChemicalEvent> for App {
         let window_attributes = Window::default_attributes()
             .with_title(String::from(title))
             .with_position(target_monitor.position())
-            .with_inner_size(winit::dpi::LogicalSize::new(1280.0, 720.0));
+            .with_inner_size(winit::dpi::LogicalSize::new(1280.0, 720.0))
+            .with_min_inner_size(winit::dpi::LogicalSize::new(640.0, 360.0));
 
         self.engine = Some(
             engine::ChemicalEngine::new(

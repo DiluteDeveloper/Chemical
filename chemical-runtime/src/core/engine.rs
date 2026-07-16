@@ -76,8 +76,6 @@ impl ChemicalEngine {
                 height: viewport_region.height,
             },
             wgpu::Origin3d {
-                // x: (1280 / 2) - 360,
-                // y: (720 / 2) - 240,
                 x: viewport_region.offset_x,
                 y: viewport_region.offset_y,
                 z: 0,
@@ -94,8 +92,9 @@ impl ChemicalEngine {
         };
         let mut renderer = Renderer::new(renderer_descriptor);
 
+        #[cfg(feature = "chemical-gui")]
         let camera = Camera::new(
-            window_size.width as f32 / window_size.height as f32,
+            viewport_region.width as f32 / viewport_region.height as f32,
             90.0,
             0.01,
             10000.00,
@@ -164,38 +163,59 @@ impl ChemicalEngine {
 
         self.renderer.process_scene_operations(&mut self.scene);
         self.scene.clear_operations();
-        self.fps_counter.update();
+        self.fps_counter.update()
     }
     fn window_resized(&mut self, size: &PhysicalSize<u32>) {
-        //self.renderer.resize(size.width, size.height);
-        #[cfg(not(feature = "chemical-gui"))]
-        self.camera
-            .update_projection(size.width as f32 / size.height as f32, 90.0, 0.01, 10000.00);
-
         self.window_center = (size.width / 2, size.height / 2).into();
-        #[cfg(feature = "chemical-gui")]
-        self.gui.resize(size);
-        self.renderer
-            .resize(renderer::RenderTarget::Window(PhysicalSize {
-                width: size.width,
-                height: size.height,
-            }));
-    }
-    #[cfg(feature = "chemical-gui")]
-    fn render_target_moved(&mut self, render_target: &renderer::RenderTarget) {
-        self.renderer.resize(render_target.clone());
-        match render_target {
-            renderer::RenderTarget::Custom(size, offset) => {
-                self.camera.update_projection(
-                    size.width as f32 / size.height as f32,
-                    90.0,
-                    0.01,
-                    10000.00,
-                );
+        cfg_select! {
+            feature = "chemical-gui" => {
+                self.renderer.resize(renderer::RenderTarget::Window(PhysicalSize {
+                        width: size.width,
+                        height: size.height,
+                    }));
+                let viewport_region = self.gui.resize(size);
+
+                self.camera
+                    .update_projection(viewport_region.width as f32 / viewport_region.height as f32, 90.0, 0.01, 10000.00);
+                self.renderer.resize(renderer::RenderTarget::Custom(
+                    PhysicalSize {
+                        width: viewport_region.width,
+                        height: viewport_region.height,
+                    },
+                    wgpu::Origin3d {
+                        x: viewport_region.offset_x,
+                        y: viewport_region.offset_y,
+                        z: 0,
+                    },
+                ));
             }
-            renderer::RenderTarget::Window(_) => (),
+            _ => {
+
+                self.camera
+                .update_projection(size.width as f32 / size.height as f32, 90.0, 0.01, 10000.00);
+                self.renderer.resize(renderer::RenderTarget::Window(PhysicalSize {
+                        width: size.width,
+                        height: size.height,
+                    }));
+            }
         }
     }
+
+    // #[cfg(feature = "chemical-gui")]
+    // fn render_target_moved(&mut self, render_target: &renderer::RenderTarget) {
+    //     self.renderer.resize(render_target.clone());
+    //     match render_target {
+    //         renderer::RenderTarget::Custom(size, offset) => {
+    //             self.camera.update_projection(
+    //                 size.width as f32 / size.height as f32,
+    //                 90.0,
+    //                 0.01,
+    //                 10000.00,
+    //             );
+    //         }
+    //         renderer::RenderTarget::Window(_) => (),
+    //     }
+    // }
     pub fn window_event(&mut self, event: &WindowEvent, event_loop: &ActiveEventLoop) {
         match event {
             WindowEvent::CloseRequested => event_loop.exit(),

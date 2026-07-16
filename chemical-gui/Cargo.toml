@@ -20,4 +20,4 @@ chemical-api = { path = "../chemical-api", features = ["dev-api"] }
 [lints.rust]
 dead_code = "allow"
 unused_code = "allow"
-
+inactive_code = "allow"

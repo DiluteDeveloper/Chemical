@@ -49,7 +49,7 @@ impl ChemicalGUI {
             )
         };
 
-        let (primary_view, viewport_region) = PrimaryView::new();
+        let (primary_view, viewport_region) = PrimaryView::new(&size);
 
         (
             Self {
