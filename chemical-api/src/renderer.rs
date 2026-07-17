@@ -2,16 +2,17 @@ pub mod line_renderer;
 pub mod mesh_renderer;
 mod texture;
 
-use crate::scene::SceneContainer;
+use std::sync::Arc;
+
+use anyhow::anyhow;
 pub use line_renderer::LineRenderer;
+use log::info;
 pub use mesh_renderer::MeshRenderer;
 pub use texture::Texture;
-
-use log::info;
-use std::sync::Arc;
 use winit::{dpi::PhysicalSize, window::Window};
 
 use crate::Camera;
+use crate::scene::SceneContainer;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum RenderTarget {
@@ -224,14 +225,35 @@ impl Renderer {
         ))
     }
 
-    pub fn resize(&mut self, render_target: RenderTarget) {
-        match render_target {
-            RenderTarget::Window(size) => {
+    pub fn resize(&mut self, render_target: RenderTarget) -> anyhow::Result<()> {
+        match (&render_target, &self.render_target) {
+            (RenderTarget::Window(size), RenderTarget::Window(_)) => {
                 self.surface_config.width = size.width;
                 self.surface_config.height = size.height;
                 self.surface.configure(&self.device, &self.surface_config);
+
+                self.depth_texture = Texture::create_depth_texture(
+                    &self.device,
+                    size.width,
+                    size.height,
+                    "Depth Texture",
+                );
+                self.msaa_view = Self::create_msaa_view(
+                    &self.device,
+                    self.texture_format,
+                    size.width,
+                    size.height,
+                );
+                self.render_target = render_target;
+                Ok(())
             }
-            RenderTarget::Custom(size, _) => {
+            (RenderTarget::Window(size), RenderTarget::Custom(_, _)) => {
+                self.surface_config.width = size.width;
+                self.surface_config.height = size.height;
+                self.surface.configure(&self.device, &self.surface_config);
+                Ok(())
+            }
+            (RenderTarget::Custom(size, _), RenderTarget::Custom(_, _)) => {
                 self.depth_texture = Texture::create_depth_texture(
                     &self.device,
                     size.width,
@@ -251,7 +273,11 @@ impl Renderer {
                     size.height,
                 ));
                 self.render_target = render_target;
+                Ok(())
             }
+            (RenderTarget::Custom(_, _), RenderTarget::Window(_)) => Err(anyhow!(
+                "Tried to resize renderer with custom target but renderer is set to window render target"
+            )),
         }
     }
     fn create_msaa_view(

@@ -308,7 +308,20 @@ dependencies = [
 ]
 
 [[package]]
-name = "chemical-engine"
+name = "chemical-gui"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chemical-api",
+ "glam 0.33.2",
+ "iced_wgpu",
+ "iced_widget",
+ "iced_winit",
+ "log",
+]
+
+[[package]]
+name = "chemical-runtime"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -322,19 +335,6 @@ dependencies = [
  "pollster",
  "wgpu",
  "winit",
-]
-
-[[package]]
-name = "chemical-gui"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "chemical-api",
- "glam 0.33.2",
- "iced_wgpu",
- "iced_widget",
- "iced_winit",
- "log",
 ]
 
 [[package]]

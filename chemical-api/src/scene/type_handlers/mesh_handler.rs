@@ -1,6 +1,8 @@
-use crate::scene::types::{EntityID, Mesh};
-use anyhow::anyhow;
 use std::collections::HashMap;
+
+use anyhow::anyhow;
+
+use crate::scene::types::{EntityID, Mesh};
 
 pub trait MeshOperationListener {
     fn on_mod_mesh(&mut self, mesh: &Mesh, id: EntityID);

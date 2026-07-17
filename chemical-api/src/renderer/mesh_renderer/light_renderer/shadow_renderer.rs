@@ -1,12 +1,11 @@
 use std::num::NonZeroU64;
 
+use super::super::geometry::vertex;
+use crate::renderer::mesh_renderer::light_renderer::{LightRenderer, ShaderDirectionalLight};
 use crate::scene::{
     type_handlers::light_handler::LightOperationListener,
     types::{DirectionalLight, EntityID, PointLight},
 };
-
-use super::super::geometry::vertex;
-use crate::renderer::mesh_renderer::light_renderer::{LightRenderer, ShaderDirectionalLight};
 #[derive(Debug)]
 pub struct ShadowRenderer {
     directional_light_maps: [wgpu::TextureView; LightRenderer::MAX_DIRECTIONAL_LIGHTS as usize],

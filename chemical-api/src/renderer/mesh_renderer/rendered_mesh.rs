@@ -1,7 +1,6 @@
 use wgpu::util::DeviceExt;
 
 use super::renderable::Renderable;
-
 use crate::scene::types::{mesh::Index, mesh::Vertex};
 #[derive(Debug)]
 pub struct RenderedMesh {

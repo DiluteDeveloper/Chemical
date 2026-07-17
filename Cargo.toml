@@ -4,6 +4,7 @@ members = [
     "chemical-api",
     "chemical-runtime",
     "chemical-scripting",
+    "chemical-gui",
 ]
 
 [profile.release]

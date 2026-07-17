@@ -3,11 +3,14 @@ mod light_renderer;
 mod renderable;
 mod rendered_mesh;
 
-use super::Texture;
-use crate::{Camera, Renderer};
-use light_renderer::LightRenderer;
 use std::{collections::HashMap, num::NonZeroU32};
 
+use geometry::vertex;
+use light_renderer::LightRenderer;
+use renderable::Renderable;
+use rendered_mesh::RenderedMesh;
+
+use super::Texture;
 use crate::scene::{
     type_handlers::{
         light_handler::LightOperationListener, mesh_handler::MeshOperationListener,
@@ -15,10 +18,7 @@ use crate::scene::{
     },
     types::{EntityID, Mesh, PointLight, Transform},
 };
-
-use geometry::vertex;
-use renderable::Renderable;
-use rendered_mesh::RenderedMesh;
+use crate::{Camera, Renderer};
 
 type TransformIndex = u32;
 

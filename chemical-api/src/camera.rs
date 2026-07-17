@@ -1,7 +1,7 @@
-use crate::scene::types::Transform;
 use glam::camera::rh::proj::directx;
 
 use crate::input::KeyCode;
+use crate::scene::types::Transform;
 #[derive(Debug)]
 pub struct Camera {
     pub transform: Transform,

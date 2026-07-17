@@ -1,10 +1,11 @@
-use crate::{
-    scene::types::{DirectionalLight, Transform},
-    utility::RGBColour,
-};
 use glam::{
     Mat4, Vec3,
     camera::rh::{proj::directx, view::look_at_mat4},
+};
+
+use crate::{
+    scene::types::{DirectionalLight, Transform},
+    utility::RGBColour,
 };
 
 #[repr(C)]

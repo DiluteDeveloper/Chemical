@@ -1,9 +1,10 @@
 mod line;
 
-use super::Texture;
-use crate::{Camera, Renderer};
 use line::LineSegment;
 pub use line::{Line, LineDescriptor};
+
+use super::Texture;
+use crate::{Camera, Renderer};
 
 #[derive(Debug)]
 pub struct LineRenderer {

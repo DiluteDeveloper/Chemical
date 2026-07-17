@@ -1,3 +1,6 @@
+use std::sync::Arc;
+
+use anyhow::anyhow;
 use chemical_api::{
     Camera, Renderer,
     camera::CameraController,
@@ -5,11 +8,6 @@ use chemical_api::{
     scene::SceneContainer,
     utility::FPSCounter,
 };
-use glam::Vec2;
-
-use crate::input;
-use anyhow::anyhow;
-use std::sync::Arc;
 use winit::{
     dpi::{PhysicalPosition, PhysicalSize},
     event::{DeviceEvent, KeyEvent, WindowEvent},
@@ -17,6 +15,8 @@ use winit::{
     keyboard::{KeyCode, PhysicalKey},
     window::Window,
 };
+
+use crate::input;
 
 #[derive(Debug, PartialEq)]
 pub enum CameraMode {
@@ -42,8 +42,6 @@ pub struct ChemicalEngine {
     window_center: PhysicalPosition<f32>,
 
     scene: SceneContainer,
-    direction: Vec2,
-    offset: Vec2,
 
     #[cfg(feature = "chemical-gui")]
     gui: chemical_gui::ChemicalGUI,
@@ -69,9 +67,10 @@ impl ChemicalEngine {
             &texture_format,
             Arc::clone(&window),
         );
+        #[cfg(feature = "chemical-gui")]
         let viewport_region = chemical_gui::PrimaryView::get_viewport_region(&window_size)
             .expect("Failed to retrieve viewport region");
-
+        #[cfg(feature = "chemical-gui")]
         let render_target = renderer::RenderTarget::Custom(
             PhysicalSize {
                 width: viewport_region.width,
@@ -83,6 +82,9 @@ impl ChemicalEngine {
                 z: 0,
             },
         );
+        #[cfg(not(feature = "chemical-gui"))]
+        let render_target = renderer::RenderTarget::Window(window_size);
+
         let renderer_descriptor = renderer::RendererDescriptor {
             texture_format,
             device,
@@ -90,13 +92,19 @@ impl ChemicalEngine {
             render_target: render_target,
             surface_config,
             surface,
-            // window: Arc::clone(&window),
         };
         let mut renderer = Renderer::new(renderer_descriptor);
 
         #[cfg(feature = "chemical-gui")]
         let camera = Camera::new(
             viewport_region.width as f32 / viewport_region.height as f32,
+            90.0,
+            0.01,
+            10000.00,
+        );
+        #[cfg(not(feature = "chemical-gui"))]
+        let camera = Camera::new(
+            window_size.width as f32 / window_size.height as f32,
             90.0,
             0.01,
             10000.00,
@@ -150,8 +158,6 @@ impl ChemicalEngine {
             fps_counter: FPSCounter::new(),
             window_center,
             scene,
-            direction: (1.0, 1.0).into(),
-            offset: (0.0, 0.0).into(),
         })
     }
 
@@ -169,19 +175,26 @@ impl ChemicalEngine {
     }
     fn window_resized(&mut self, window_size: &PhysicalSize<u32>) {
         self.window_center = (window_size.width / 2, window_size.height / 2).into();
-        cfg_select! {
-            feature = "chemical-gui" => {
-                self.renderer.resize(renderer::RenderTarget::Window(PhysicalSize {
-                        width: window_size.width,
-                        height: window_size.height,
-                    }));
-                self.gui.resize(window_size);
+        #[cfg(feature = "chemical-gui")]
+        {
+            self.renderer
+                .resize(renderer::RenderTarget::Window(PhysicalSize {
+                    width: window_size.width,
+                    height: window_size.height,
+                }))
+                .expect("Failed to resize renderer");
+            self.gui.resize(window_size);
+            let viewport_region = chemical_gui::PrimaryView::get_viewport_region(&window_size)
+                .expect("Failed to retrieve viewport region");
 
-                let viewport_region = chemical_gui::PrimaryView::get_viewport_region(&window_size).expect("Failed to retrieve viewport region");
-
-                self.camera
-                    .update_projection(viewport_region.width as f32 / viewport_region.height as f32, 90.0, 0.01, 10000.00);
-                self.renderer.resize(renderer::RenderTarget::Custom(
+            self.camera.update_projection(
+                viewport_region.width as f32 / viewport_region.height as f32,
+                90.0,
+                0.01,
+                10000.00,
+            );
+            self.renderer
+                .resize(renderer::RenderTarget::Custom(
                     PhysicalSize {
                         width: viewport_region.width,
                         height: viewport_region.height,
@@ -191,17 +204,23 @@ impl ChemicalEngine {
                         y: viewport_region.offset_y,
                         z: 0,
                     },
-                ));
-            }
-            _ => {
-
-                self.camera
-                .update_projection(size.width as f32 / size.height as f32, 90.0, 0.01, 10000.00);
-                self.renderer.resize(renderer::RenderTarget::Window(PhysicalSize {
-                        width: window_size.width,
-                        height: window_size.height,
-                    }));
-            }
+                ))
+                .expect("Failed to resize renderer");
+        }
+        #[cfg(not(feature = "chemical-gui"))]
+        {
+            self.camera.update_projection(
+                window_size.width as f32 / window_size.height as f32,
+                90.0,
+                0.01,
+                10000.00,
+            );
+            self.renderer
+                .resize(renderer::RenderTarget::Window(PhysicalSize {
+                    width: window_size.width,
+                    height: window_size.height,
+                }))
+                .expect("Failed to resize renderer");
         }
     }
 

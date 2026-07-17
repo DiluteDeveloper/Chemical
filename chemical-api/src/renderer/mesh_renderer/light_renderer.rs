@@ -2,13 +2,14 @@ mod shader_directional_light;
 mod shader_point_light;
 mod shadow_renderer;
 
+use log::warn;
+use shader_directional_light::ShaderDirectionalLight;
+use shadow_renderer::ShadowRenderer;
+
 use crate::scene::{
     type_handlers::light_handler::LightOperationListener,
     types::{DirectionalLight, EntityID, PointLight},
 };
-use log::warn;
-use shader_directional_light::ShaderDirectionalLight;
-use shadow_renderer::ShadowRenderer;
 
 #[derive(Debug)]
 pub struct LightRenderer {

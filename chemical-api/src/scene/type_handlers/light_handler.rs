@@ -1,6 +1,8 @@
-use crate::scene::types::{DirectionalLight, EntityID, PointLight};
-use anyhow::anyhow;
 use std::collections::HashMap;
+
+use anyhow::anyhow;
+
+use crate::scene::types::{DirectionalLight, EntityID, PointLight};
 
 pub trait LightOperationListener {
     fn on_mod_point_light(&mut self, light: &PointLight, id: EntityID);

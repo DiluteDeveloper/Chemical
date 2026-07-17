@@ -1,10 +1,11 @@
 use std::sync::Arc;
 use std::time::Instant;
 
-use crate::PrimaryView;
 use iced_wgpu::wgpu;
 use iced_winit::runtime::user_interface;
 use iced_winit::{core, winit};
+
+use crate::PrimaryView;
 
 /// Initialises and processes GUI rendering.
 pub struct ChemicalGUI {
