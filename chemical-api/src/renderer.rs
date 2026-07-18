@@ -11,8 +11,8 @@ pub use mesh_renderer::MeshRenderer;
 pub use texture::Texture;
 use winit::{dpi::PhysicalSize, window::Window};
 
+use super::scene::Scene;
 use crate::Camera;
-use crate::scene::SceneContainer;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum RenderTarget {
@@ -182,13 +182,6 @@ impl Renderer {
             .await?;
 
         let surface_caps = surface.get_capabilities(&adapter);
-        // let mut present_mode_idx = 0;
-
-        // for (i, present_mode) in surface_caps.present_modes.iter().enumerate() {
-        //     if (*present_mode) == wgpu::PresentMode::Immediate {
-        //         present_mode_idx = i;
-        //     }
-        // }
 
         let surface_format = surface_caps
             .formats
@@ -216,8 +209,6 @@ impl Renderer {
         Ok((
             surface,
             surface_format,
-            // surface_caps.present_modes[0],
-            // surface_caps.alpha_modes[0],
             device,
             queue,
             adapter,
@@ -324,13 +315,13 @@ impl Renderer {
             view_formats: &[],
         })
     }
-    pub fn prepare(&mut self, camera: &Camera) -> wgpu::CommandEncoder {
+    pub fn prepare(&mut self, camera: &Camera, scene: &Scene) -> wgpu::CommandEncoder {
         let mut encoder = self
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor {
                 label: Some("Render Encoder"),
             });
-        self.mesh_renderer.prepare(&camera, &mut encoder);
+        self.mesh_renderer.prepare(&camera, &scene, &mut encoder);
         encoder
     }
 

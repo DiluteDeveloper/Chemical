@@ -1,23 +1,22 @@
-use super::EntityID;
-use super::TrackedEntityList;
+use super::entities::{EntityID, EntityList};
 
-pub trait HasEntityList<T> {
-    fn get_entity_list(&self) -> &TrackedEntityList<T>;
-    fn get_entity_list_mut(&mut self) -> &mut TrackedEntityList<T>;
+pub trait HasEntityList<T: EntityList> {
+    fn get_entity_list(&self) -> &T;
+    fn get_entity_list_mut(&mut self) -> &mut T;
 }
 
 macro_rules! define_scene{
     ($($field:ident : $ty:ty),* $(,)?) => {
         #[derive(Default)]
         pub struct Scene{
-            $($field: TrackedEntityList<$ty>),*
+            $($field: $ty),*
         }
         $(
             impl HasEntityList<$ty> for Scene {
-                fn get_entity_list(&self) -> &TrackedEntityList<$ty> {
+                fn get_entity_list(&self) -> &$ty {
                     &self.$field
                 }
-                fn get_entity_list_mut(&mut self) -> &mut TrackedEntityList<$ty> {
+                fn get_entity_list_mut(&mut self) -> &mut $ty {
                     &mut self.$field
                 }
             }
@@ -26,7 +25,7 @@ macro_rules! define_scene{
 }
 
 define_scene! {
-    static_meshes: super::entities::StaticMeshEntity,
+    static_meshes: super::StaticMeshEntity,
 }
 impl Scene {
     pub fn insert_entity<Entity>(&mut self, entity: Entity) -> EntityID
