@@ -2,10 +2,10 @@ use std::sync::Arc;
 
 use anyhow::anyhow;
 use chemical_api::{
-    Camera, Renderer,
+    Camera,
     camera::CameraController,
+    renderer::Renderer,
     renderer::{self, line_renderer::LineDescriptor},
-    scene::SceneContainer,
     utility::FPSCounter,
 };
 use winit::{
@@ -41,7 +41,7 @@ pub struct ChemicalEngine {
     fps_counter: FPSCounter,
     window_center: PhysicalPosition<f32>,
 
-    scene: SceneContainer,
+    world: hecs::World,
 
     #[cfg(feature = "chemical-gui")]
     gui: chemical_gui::ChemicalGUI,
@@ -132,13 +132,10 @@ impl ChemicalEngine {
                 a: 1.0,
             },
         });
-        let mut scene = SceneContainer::new();
+        let mut world = hecs::World::new();
 
         #[cfg(feature = "chemical-scripting")]
-        chemical_scripting::entry_point::start(&mut scene);
-
-        renderer.process_scene_operations(&mut scene);
-        scene.clear_operations();
+        chemical_scripting::entry_point::start(&mut world);
 
         event_loop_proxy
             .as_ref()
@@ -157,7 +154,7 @@ impl ChemicalEngine {
             camera_controller: CameraController::new(1.0, 0.002, 0.07),
             fps_counter: FPSCounter::new(),
             window_center,
-            scene,
+            world,
         })
     }
 
@@ -167,10 +164,8 @@ impl ChemicalEngine {
                 .update_camera(&mut self.camera, self.fps_counter.delta as f32);
         }
         #[cfg(feature = "chemical-scripting")]
-        chemical_scripting::entry_point::update(&mut self.scene);
+        chemical_scripting::entry_point::update(&mut self.world);
 
-        self.renderer.process_scene_operations(&mut self.scene);
-        self.scene.clear_operations();
         self.fps_counter.update()
     }
     fn window_resized(&mut self, window_size: &PhysicalSize<u32>) {
@@ -232,7 +227,7 @@ impl ChemicalEngine {
             }
             WindowEvent::RedrawRequested => {
                 self.update();
-                let mut encoder = self.renderer.prepare(&self.camera);
+                let mut encoder = self.renderer.prepare(&self.camera, &self.world);
 
                 let surface_texture = match self.renderer.render(&self.camera, &mut encoder) {
                     Ok(texture) => texture,

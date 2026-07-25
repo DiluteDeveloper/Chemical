@@ -1,20 +1,17 @@
 use anyhow::anyhow;
 use chemical_api::{
     geometry::{model, sphere},
-    scene::{
-        SceneContainer,
-        types::{DirectionalLight, Mesh, Transform},
-    },
+    scene::types::{DirectionalLight, StaticMesh, Transform},
 };
 
-pub fn start(scene: &mut SceneContainer) {
+pub fn start(world: &mut hecs::World) {
     let (sphere_vertices, sphere_indices) = sphere::generate_index_sphere(200)
         .map_err(|e| anyhow!("Failed to generate index sphere: {}", e))
         .expect("Tried to create invalid index sphere for celestial body mesh!");
     // let cube_vertices = cube::generate_vertex_cube((1.0, 1.0, 1.0).into());
 
     // let sphere_mesh_data = Mesh::new(&sphere_vertices, Some(&sphere_indices), true);
-    let light_mesh_data = Mesh::new(&sphere_vertices, Some(&sphere_indices), false);
+    let light_mesh_data = StaticMesh::new(&sphere_vertices, Some(&sphere_indices), false);
     // let model_mesh_data =
     //     model::gltf_load("res/models/stanford_dragon.gltf", true).expect("Failed to load model!");
     let slum_mesh_data =
@@ -55,51 +52,54 @@ pub fn start(scene: &mut SceneContainer) {
     //     colour: (1.0, 0.5, 0.0).into(),
     // };
 
-    /*scene
+    /*world
         .transform_handler
         .insert_transform(sphere_transform, 0);
-    scene.mesh_handler.insert_mesh(sphere_mesh_data.clone(), 0);
+    world.mesh_handler.insert_mesh(sphere_mesh_data.clone(), 0);
 
-    scene.transform_handler.insert_transform(cube_transform, 1);
-    scene.mesh_handler.insert_mesh(cube_mesh_data.clone(), 1);
+    world.transform_handler.insert_transform(cube_transform, 1);
+    world.mesh_handler.insert_mesh(cube_mesh_data.clone(), 1);
 
-    scene
+    world
         .transform_handler
         .insert_transform(under_cube_transform, 2);
-    scene.mesh_handler.insert_mesh(cube_mesh_data, 2);*/
+    world.mesh_handler.insert_mesh(cube_mesh_data, 2);*/
 
-    scene
-        .transform_handler
-        .insert_transform(light_model_transform, 3);
-    scene.mesh_handler.insert_mesh(light_mesh_data.clone(), 3);
+    world.spawn((light_model_transform, light_mesh_data.clone()));
+    // world
+    //     .transform_handler
+    //     .insert_transform(light_model_transform, 3);
+    // world.mesh_handler.insert_mesh(light_mesh_data.clone(), 3);
 
-    /*scene.transform_handler.insert_transform(model_transform, 5);
-    scene
+    /*world.transform_handler.insert_transform(model_transform, 5);
+    world
         .mesh_handler
         .insert_mesh(model_mesh_data.get(0).unwrap().clone(), 5);*/
 
-    // scene
+    // world
     //     .transform_handler
     //     .insert_transform(light_model_transform, 4);
-    // scene.mesh_handler.insert_mesh(light_mesh_data, 4);
+    // world.mesh_handler.insert_mesh(light_mesh_data, 4);
 
-    for (i, mesh) in slum_mesh_data.iter().enumerate() {
-        scene
-            .transform_handler
-            .insert_transform(Transform::default(), 6 + i as u32);
-        scene.mesh_handler.insert_mesh(mesh.clone(), 6 + i as u32);
+    for mesh in slum_mesh_data.iter() {
+        world.spawn((Transform::default(), mesh.clone()));
+        // world
+        //     .transform_handler
+        //     .insert_transform(Transform::default(), 6 + i as u32);
+        // world.mesh_handler.insert_mesh(mesh.clone(), 6 + i as u32);
     }
-    scene
-        .light_handler
-        .insert_directional_light(directional_light, 0);
-    // scene
+    world.spawn((directional_light,));
+    // world
+    //     .light_handler
+    //     .insert_directional_light(directional_light, 0);
+    // world
     //     .light_handler
     //     .insert_directional_light(directional_light_2, 1);
 }
-pub fn update(scene: &mut SceneContainer) {
+pub fn update(world: &mut hecs::World) {
     // let seconds_elapsed = 0.0;
 
-    /*self.scene
+    /*self.world
     .light_handler
     .modify_directional_light(0, move |t| {
         t.orientation = glam::Quat::from_euler(
@@ -110,17 +110,17 @@ pub fn update(scene: &mut SceneContainer) {
         );
     })
     .unwrap();*/
-    let dir = scene
-        .light_handler
-        .get_directional_light(0)
-        .unwrap()
-        .orientation
-        .to_axis_angle()
-        .0;
-    scene
-        .transform_handler
-        .modify(3, move |t| {
-            t.position = dir * 100.0;
-        })
-        .unwrap();
+    // let dir = world
+    //     .light_handler
+    //     .get_directional_light(0)
+    //     .unwrap()
+    //     .orientation
+    //     .to_axis_angle()
+    //     .0;
+    // world
+    //     .transform_handler
+    //     .modify(3, move |t| {
+    //         t.position = dir * 100.0;
+    //     })
+    //     .unwrap();
 }

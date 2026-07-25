@@ -10,6 +10,7 @@ default = []
 glam = { version = "0.33", features = [ "bytemuck", "debug-glam-assert", "fast-math" ] }
 log = "0.4"
 anyhow = "1.0"
+hecs = "0.11.0"
 chemical-api = { path = "../chemical-api" }
 
 [lints.rust]

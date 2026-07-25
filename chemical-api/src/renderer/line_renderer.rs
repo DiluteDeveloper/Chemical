@@ -4,7 +4,7 @@ use line::LineSegment;
 pub use line::{Line, LineDescriptor};
 
 use super::Texture;
-use crate::{Camera, Renderer};
+use crate::{Camera, renderer::Renderer};
 
 #[derive(Debug)]
 pub struct LineRenderer {

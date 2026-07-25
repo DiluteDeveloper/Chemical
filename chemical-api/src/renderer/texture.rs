@@ -1,4 +1,4 @@
-use crate::Renderer;
+use crate::renderer::Renderer;
 
 #[derive(Debug)]
 pub struct Texture {

@@ -11,7 +11,6 @@ pub use mesh_renderer::MeshRenderer;
 pub use texture::Texture;
 use winit::{dpi::PhysicalSize, window::Window};
 
-use super::scene::Scene;
 use crate::Camera;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -48,7 +47,7 @@ pub struct Renderer {
 }
 
 impl Renderer {
-    const MSAA_SAMPLE_COUNT: u32 = 8;
+    const MSAA_SAMPLE_COUNT: u32 = 4;
 
     pub fn new(descriptor: RendererDescriptor) -> Self {
         // let (surface, texture_format, present_mode, alpha_mode, device, queue, adapter) =
@@ -315,13 +314,13 @@ impl Renderer {
             view_formats: &[],
         })
     }
-    pub fn prepare(&mut self, camera: &Camera, scene: &Scene) -> wgpu::CommandEncoder {
+    pub fn prepare(&mut self, camera: &Camera, world: &hecs::World) -> wgpu::CommandEncoder {
         let mut encoder = self
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor {
                 label: Some("Render Encoder"),
             });
-        self.mesh_renderer.prepare(&camera, &scene, &mut encoder);
+        self.mesh_renderer.prepare(&camera, &world, &mut encoder);
         encoder
     }
 
@@ -415,17 +414,5 @@ impl Renderer {
     }
     pub fn present(&self, surface_texture: wgpu::SurfaceTexture) {
         surface_texture.present();
-    }
-
-    pub fn process_scene_operations(&mut self, scene: &mut SceneContainer) {
-        scene
-            .transform_handler
-            .dispatch_operations(&mut self.mesh_renderer);
-        scene
-            .mesh_handler
-            .dispatch_operations(&mut self.mesh_renderer);
-        scene
-            .light_handler
-            .dispatch_operations(&mut self.mesh_renderer);
     }
 }
