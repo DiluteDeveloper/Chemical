@@ -3,6 +3,7 @@
 debug
 target
 rustfmt.toml
+.DS_Store
 
 *.vscode/
 

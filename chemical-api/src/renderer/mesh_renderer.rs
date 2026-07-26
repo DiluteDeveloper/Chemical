@@ -47,7 +47,7 @@ const MAX_TRANSFORMS: u64 = 1000;
 impl MeshRenderer {
     pub(super) fn new(
         device: &wgpu::Device,
-        texture_format: wgpu::TextureFormat,
+        render_texture_format: wgpu::TextureFormat,
         queue: &wgpu::Queue,
     ) -> Self {
         let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
@@ -258,7 +258,7 @@ impl MeshRenderer {
                 entry_point: Some("fs_main"),
                 targets: &[Some(wgpu::ColorTargetState {
                     // 4.
-                    format: texture_format,
+                    format: render_texture_format,
                     blend: Some(wgpu::BlendState::REPLACE),
                     write_mask: wgpu::ColorWrites::ALL,
                 })],
@@ -284,9 +284,9 @@ impl MeshRenderer {
                 bias: wgpu::DepthBiasState::default(),
             }), // 1.
             multisample: wgpu::MultisampleState {
-                count: Renderer::MSAA_SAMPLE_COUNT, // 2.
-                mask: !0,                           // 3.
-                alpha_to_coverage_enabled: false,   // 4.
+                count: 1,                         // 2.
+                mask: !0,                         // 3.
+                alpha_to_coverage_enabled: false, // 4.
             },
             cache: None, // 6.
             multiview: None,
