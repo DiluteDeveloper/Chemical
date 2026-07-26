@@ -1,11 +1,13 @@
-pub mod static_mesh_entity;
-pub use static_mesh_entity::StaticMeshEntity;
+use crate::scene::types::{Mesh, Transform};
 
 pub type EntityID = usize;
 
-pub(crate) trait EntityList {
-    type InsertType;
-    type ReturnType;
-    fn insert(&mut self, mesh: Self::InsertType) -> EntityID;
-    fn get(&mut self, id: EntityID) -> Self::ReturnType;
+pub struct StaticMeshEntityDescriptor {
+    pub transform: Transform,
+    pub mesh: Mesh,
+}
+
+pub struct StaticMeshEntityRef<'a> {
+    pub transform: &'a mut Transform,
+    pub mesh: &'a Mesh,
 }
