@@ -3,7 +3,7 @@ mod light_renderer;
 mod renderable;
 mod rendered_mesh;
 
-use std::num::NonZeroU32;
+use std::{collections::HashMap, num::NonZeroU32};
 
 use geometry::vertex;
 use light_renderer::LightRenderer;
@@ -13,7 +13,7 @@ use rendered_mesh::RenderedMesh;
 use crate::{
     Camera,
     renderer::{Renderer, Texture},
-    scene::Scene,
+    scene::types::{StaticMesh, Transform},
 };
 
 #[derive(Debug)]
@@ -28,7 +28,9 @@ pub struct MeshRenderer {
     model_matrix_normal_matrix_buffer: wgpu::Buffer,
 
     lit_meshes: Vec<RenderedMesh>,
+    lit_meshes_sparse: HashMap<hecs::Entity, usize>,
     unlit_meshes: Vec<RenderedMesh>,
+    unlit_meshes_sparse: HashMap<hecs::Entity, usize>,
 
     light_renderer: LightRenderer,
 
@@ -45,7 +47,7 @@ const MAX_TRANSFORMS: u64 = 1000;
 impl MeshRenderer {
     pub(super) fn new(
         device: &wgpu::Device,
-        texture_format: wgpu::TextureFormat,
+        render_texture_format: wgpu::TextureFormat,
         queue: &wgpu::Queue,
     ) -> Self {
         let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
@@ -256,7 +258,7 @@ impl MeshRenderer {
                 entry_point: Some("fs_main"),
                 targets: &[Some(wgpu::ColorTargetState {
                     // 4.
-                    format: texture_format,
+                    format: render_texture_format,
                     blend: Some(wgpu::BlendState::REPLACE),
                     write_mask: wgpu::ColorWrites::ALL,
                 })],
@@ -282,9 +284,9 @@ impl MeshRenderer {
                 bias: wgpu::DepthBiasState::default(),
             }), // 1.
             multisample: wgpu::MultisampleState {
-                count: Renderer::MSAA_SAMPLE_COUNT, // 2.
-                mask: !0,                           // 3.
-                alpha_to_coverage_enabled: false,   // 4.
+                count: 1,                         // 2.
+                mask: !0,                         // 3.
+                alpha_to_coverage_enabled: false, // 4.
             },
             cache: None, // 6.
             multiview: None,
@@ -310,6 +312,8 @@ impl MeshRenderer {
             camera_pos_buffer,
             camera_matrix_buffer,
             light_renderer,
+            lit_meshes_sparse: HashMap::new(),
+            unlit_meshes_sparse: HashMap::new(),
             lit_meshes: Vec::new(),
             unlit_meshes: Vec::new(),
             queue: queue.clone(),
@@ -317,21 +321,72 @@ impl MeshRenderer {
             directional_light_map_bind_group,
         }
     }
-    pub fn prepare(&mut self, camera: &Camera, scene: &Scene, encoder: &mut wgpu::CommandEncoder) {
-        let model_matrix = transform.to_matrix();
-        self.queue.write_buffer(
-            &self.model_matrix_normal_matrix_buffer,
-            id as u64 * self.model_matrix_normal_matrix_element_bytesize,
-            bytemuck::bytes_of(&model_matrix),
-        );
-        let normal_matrix = glam::Mat3::from_mat4(model_matrix).inverse().transpose();
+    pub fn prepare(
+        &mut self,
+        camera: &Camera,
+        world: &hecs::World,
+        encoder: &mut wgpu::CommandEncoder,
+    ) {
+        let mut lit_mesh_idx = 0_u32;
+        let mut unlit_mesh_idx = 0_u32;
+        for (entity, static_mesh, transform) in world
+            .query::<(hecs::Entity, &StaticMesh, &Transform)>()
+            .iter()
+        {
+            if static_mesh.is_lit {
+                if !self.lit_meshes_sparse.contains_key(&entity) {
+                    self.lit_meshes_sparse.insert(entity, self.lit_meshes.len());
+                    self.lit_meshes.push(RenderedMesh::new(
+                        &static_mesh.vertices,
+                        static_mesh.indices.as_ref().map(|v| &**v),
+                        &self.device,
+                    ));
+                }
+                let model_matrix = transform.to_matrix();
+                self.queue.write_buffer(
+                    &self.model_matrix_normal_matrix_buffer,
+                    unlit_mesh_idx as u64 * self.model_matrix_normal_matrix_element_bytesize,
+                    bytemuck::bytes_of(&model_matrix),
+                );
+                let normal_matrix = glam::Mat3::from_mat4(model_matrix).inverse().transpose();
 
-        self.queue.write_buffer(
-            &self.model_matrix_normal_matrix_buffer,
-            size_of::<[[f32; 4]; 4]>() as u64
-                + (id as u64 * self.model_matrix_normal_matrix_element_bytesize),
-            bytemuck::bytes_of(&normal_matrix),
-        );
+                self.queue.write_buffer(
+                    &self.model_matrix_normal_matrix_buffer,
+                    size_of::<[[f32; 4]; 4]>() as u64
+                        + (unlit_mesh_idx as u64
+                            * self.model_matrix_normal_matrix_element_bytesize),
+                    bytemuck::bytes_of(&normal_matrix),
+                );
+                unlit_mesh_idx += 1;
+            } else if !static_mesh.is_lit {
+                if !self.unlit_meshes_sparse.contains_key(&entity) {
+                    self.unlit_meshes_sparse
+                        .insert(entity, self.unlit_meshes.len());
+                    self.unlit_meshes.push(RenderedMesh::new(
+                        &static_mesh.vertices,
+                        static_mesh.indices.as_ref().map(|v| &**v),
+                        &self.device,
+                    ));
+                }
+                let model_matrix = transform.to_matrix();
+                self.queue.write_buffer(
+                    &self.model_matrix_normal_matrix_buffer,
+                    lit_mesh_idx as u64 * self.model_matrix_normal_matrix_element_bytesize,
+                    bytemuck::bytes_of(&model_matrix),
+                );
+                let normal_matrix = glam::Mat3::from_mat4(model_matrix).inverse().transpose();
+
+                self.queue.write_buffer(
+                    &self.model_matrix_normal_matrix_buffer,
+                    size_of::<[[f32; 4]; 4]>() as u64
+                        + (lit_mesh_idx as u64 * self.model_matrix_normal_matrix_element_bytesize),
+                    bytemuck::bytes_of(&normal_matrix),
+                );
+                lit_mesh_idx += 1;
+            }
+        }
+        self.light_renderer.prepare(world);
+
         let pos = camera.transform.position;
         let pos_into: [f32; 3] = pos.into();
         self.queue
@@ -348,12 +403,12 @@ impl MeshRenderer {
 
             match render_pass {
                 Some(mut rp) => {
-                    for (i, mesh) in self.lit_meshes.iter() {
+                    for (i, mesh) in self.lit_meshes.iter().enumerate() {
                         rp.set_bind_group(
                             0,
                             &self.bind_group,
                             &[
-                                (*i as u64 * self.model_matrix_normal_matrix_element_bytesize)
+                                (i as u64 * self.model_matrix_normal_matrix_element_bytesize)
                                     as u32,
                             ],
                         );
@@ -369,109 +424,25 @@ impl MeshRenderer {
         render_pass.set_pipeline(&self.unlit_render_pipeline);
         render_pass.set_bind_group(1, &self.directional_light_map_bind_group, &[]);
 
-        for (i, mesh) in self.unlit_meshes.iter() {
+        for (i, mesh) in self.unlit_meshes.iter().enumerate() {
             render_pass.set_bind_group(
                 0,
                 &self.bind_group,
-                &[(*i as u64 * self.model_matrix_normal_matrix_element_bytesize) as u32],
+                &[(i as u64 * self.model_matrix_normal_matrix_element_bytesize) as u32],
             );
             mesh.bind(render_pass);
             mesh.draw(render_pass);
         }
 
         render_pass.set_pipeline(&self.lit_render_pipeline);
-        for (i, mesh) in self.lit_meshes.iter() {
+        for (i, mesh) in self.lit_meshes.iter().enumerate() {
             render_pass.set_bind_group(
                 0,
                 &self.bind_group,
-                &[(*i as u64 * self.model_matrix_normal_matrix_element_bytesize) as u32],
+                &[(i as u64 * self.model_matrix_normal_matrix_element_bytesize) as u32],
             );
             mesh.bind(render_pass);
             mesh.draw(render_pass);
         }
     }
 }
-
-// impl TransformOperationListener for MeshRenderer {
-//     fn on_insert(&mut self, transform: &Transform, id: EntityID) {
-//         let model_matrix = transform.to_matrix();
-//         self.queue.write_buffer(
-//             &self.model_matrix_normal_matrix_buffer,
-//             id as u64 * self.model_matrix_normal_matrix_element_bytesize,
-//             bytemuck::bytes_of(&model_matrix),
-//         );
-//         let normal_matrix = glam::Mat3::from_mat4(model_matrix).inverse().transpose();
-//
-//         self.queue.write_buffer(
-//             &self.model_matrix_normal_matrix_buffer,
-//             size_of::<[[f32; 4]; 4]>() as u64
-//                 + (id as u64 * self.model_matrix_normal_matrix_element_bytesize),
-//             bytemuck::bytes_of(&normal_matrix),
-//         );
-//         self.light_renderer.shadow_renderer.reprocess_all();
-//     }
-//     fn on_mod(&mut self, transform: &Transform, id: EntityID) {
-//         let model_matrix = transform.to_matrix();
-//         self.queue.write_buffer(
-//             &self.model_matrix_normal_matrix_buffer,
-//             id as u64 * self.model_matrix_normal_matrix_element_bytesize,
-//             bytemuck::bytes_of(&model_matrix),
-//         );
-//         let normal_matrix = glam::Mat3::from_mat4(model_matrix).inverse().transpose();
-//
-//         self.queue.write_buffer(
-//             &self.model_matrix_normal_matrix_buffer,
-//             size_of::<[[f32; 4]; 4]>() as u64
-//                 + (id as u64 * self.model_matrix_normal_matrix_element_bytesize),
-//             bytemuck::bytes_of(&normal_matrix),
-//         );
-//         self.light_renderer.shadow_renderer.reprocess_all();
-//     }
-//     fn on_drop(&mut self, _id: EntityID) {}
-// }
-// impl MeshOperationListener for MeshRenderer {
-//     fn on_mod_mesh(&mut self, mesh: &Mesh, id: EntityID) {
-//         if mesh.is_lit {
-//             *self.lit_meshes.get_mut(&id).unwrap() =
-//                 RenderedMesh::new(&mesh.vertices, mesh.indices.as_deref(), &self.device)
-//         } else {
-//             *self.unlit_meshes.get_mut(&id).unwrap() =
-//                 RenderedMesh::new(&mesh.vertices, mesh.indices.as_deref(), &self.device)
-//         }
-//     }
-//     fn on_insert_mesh(&mut self, mesh: &Mesh, id: EntityID) {
-//         if mesh.is_lit {
-//             self.lit_meshes.insert(
-//                 id,
-//                 RenderedMesh::new(&mesh.vertices, mesh.indices.as_deref(), &self.device),
-//             );
-//         } else {
-//             self.unlit_meshes.insert(
-//                 id,
-//                 RenderedMesh::new(&mesh.vertices, mesh.indices.as_deref(), &self.device),
-//             );
-//         }
-//     }
-//     fn on_drop_mesh(&mut self, _id: EntityID) {}
-// }
-//
-// impl LightOperationListener for MeshRenderer {
-//     fn on_drop_point_light(&mut self, id: EntityID) {}
-//     fn on_insert_point_light(&mut self, light: &PointLight, id: EntityID) {}
-//     fn on_mod_point_light(&mut self, light: &PointLight, id: EntityID) {}
-//     fn on_drop_directional_light(&mut self, id: EntityID) {}
-//     fn on_insert_directional_light(
-//         &mut self,
-//         light: &crate::scene::types::DirectionalLight,
-//         id: EntityID,
-//     ) {
-//         self.light_renderer.on_insert_directional_light(light, id);
-//     }
-//     fn on_mod_directional_light(
-//         &mut self,
-//         light: &crate::scene::types::DirectionalLight,
-//         id: EntityID,
-//     ) {
-//         self.light_renderer.on_mod_directional_light(light, id);
-//     }
-// }

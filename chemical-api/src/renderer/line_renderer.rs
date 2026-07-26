@@ -4,7 +4,7 @@ use line::LineSegment;
 pub use line::{Line, LineDescriptor};
 
 use super::Texture;
-use crate::{Camera, Renderer};
+use crate::{Camera, renderer::Renderer};
 
 #[derive(Debug)]
 pub struct LineRenderer {
@@ -164,9 +164,9 @@ impl LineRenderer {
                 bias: wgpu::DepthBiasState::default(),
             }), // 1.
             multisample: wgpu::MultisampleState {
-                count: Renderer::MSAA_SAMPLE_COUNT, // 2.
-                mask: !0,                           // 3.
-                alpha_to_coverage_enabled: false,   // 4.
+                count: 1,                         // 2.
+                mask: !0,                         // 3.
+                alpha_to_coverage_enabled: false, // 4.
             },
             multiview: None,
             cache: None, // 6.

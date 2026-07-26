@@ -301,6 +301,7 @@ dependencies = [
  "env_logger",
  "glam 0.33.2",
  "gltf",
+ "hecs",
  "log",
  "pollster",
  "wgpu",
@@ -331,6 +332,7 @@ dependencies = [
  "chemical-scripting",
  "env_logger",
  "glam 0.33.2",
+ "hecs",
  "log",
  "pollster",
  "wgpu",
@@ -344,6 +346,7 @@ dependencies = [
  "anyhow",
  "chemical-api",
  "glam 0.33.2",
+ "hecs",
  "log",
 ]
 
@@ -1061,6 +1064,17 @@ name = "hashbrown"
 version = "0.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed5909b6e89a2db4456e54cd5f673791d7eca6732202bbf2a9cc504fe2f9b84a"
+
+[[package]]
+name = "hecs"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f3a2d85ff28b1e1a1c183b6ca9ec1a6b97e7937fb989988a74d9db39760a07b8"
+dependencies = [
+ "foldhash 0.2.0",
+ "hashbrown 0.16.1",
+ "spin",
+]
 
 [[package]]
 name = "hermit-abi"
@@ -2442,6 +2456,12 @@ checksum = "dd538fb6910ac1099850255cf94a94df6551fbdd602454387d0adb2d1ca6dead"
 dependencies = [
  "serde",
 ]
+
+[[package]]
+name = "spin"
+version = "0.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "023a211cb3138dbc438680b32560ad89f699977624c9f8dbb95a47d5b4c07dd3"
 
 [[package]]
 name = "spirv"

@@ -1,4 +1,4 @@
-use crate::Renderer;
+use crate::renderer::Renderer;
 
 #[derive(Debug)]
 pub struct Texture {
@@ -96,7 +96,7 @@ impl Texture {
             label: Some(label),
             size,
             mip_level_count: 1,
-            sample_count: Renderer::MSAA_SAMPLE_COUNT,
+            sample_count: 1,
             dimension: wgpu::TextureDimension::D2,
             format: Self::DEPTH_FORMAT,
             usage: wgpu::TextureUsages::RENDER_ATTACHMENT // 3.

@@ -1,11 +1,8 @@
 use std::num::NonZeroU64;
 
 use super::super::geometry::vertex;
-use crate::renderer::mesh_renderer::light_renderer::{LightRenderer, ShaderDirectionalLight};
-use crate::scene::{
-    type_handlers::light_handler::LightOperationListener,
-    types::{DirectionalLight, EntityID, PointLight},
-};
+use crate::renderer::mesh_renderer::light_renderer::LightRenderer;
+
 #[derive(Debug)]
 pub struct ShadowRenderer {
     directional_light_maps: [wgpu::TextureView; LightRenderer::MAX_DIRECTIONAL_LIGHTS as usize],
@@ -247,16 +244,16 @@ impl ShadowRenderer {
         &self.lightmap_sampler
     }
 
-    pub fn add_directional_light_projection(&mut self, projection: &glam::Mat4) {
-        self.queue.write_buffer(
-            &self.directional_light_projection_buffer,
-            self.num_directional_lights as u64 * self.matrix_uniform_offset,
-            bytemuck::bytes_of(projection),
-        );
-        self.queued_directional_light_shadow_passes
-            .push(self.num_directional_lights);
-        self.num_directional_lights += 1;
-    }
+    // pub fn add_directional_light_projection(&mut self, projection: &glam::Mat4) {
+    //     self.queue.write_buffer(
+    //         &self.directional_light_projection_buffer,
+    //         self.num_directional_lights as u64 * self.matrix_uniform_offset,
+    //         bytemuck::bytes_of(projection),
+    //     );
+    //     self.queued_directional_light_shadow_passes
+    //         .push(self.num_directional_lights);
+    //     self.num_directional_lights += 1;
+    // }
     pub fn update_directional_light_projection(&mut self, id: u32, projection: &glam::Mat4) {
         self.queue.write_buffer(
             &self.directional_light_projection_buffer,

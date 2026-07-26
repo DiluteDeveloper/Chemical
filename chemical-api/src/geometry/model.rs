@@ -1,11 +1,11 @@
 use crate::scene::types::{
-    Mesh,
+    StaticMesh,
     mesh::{Index, Vertex},
 };
 
-pub fn gltf_load(path: &str, is_lit: bool) -> Option<Vec<Mesh>> {
+pub fn gltf_load(path: &str, is_lit: bool) -> Option<Vec<StaticMesh>> {
     let (gltf, buffers, _) = gltf::import(path).ok()?;
-    let mut meshes: Vec<Mesh> = Vec::new();
+    let mut meshes: Vec<StaticMesh> = Vec::new();
     for mesh in gltf.meshes() {
         let mut vertices: Vec<Vertex> = Vec::new();
         let mut indices: Vec<Index> = Vec::new();
@@ -31,9 +31,9 @@ pub fn gltf_load(path: &str, is_lit: bool) -> Option<Vec<Mesh>> {
             }
         }
         if indices.len() == 0 {
-            meshes.push(Mesh::new(&vertices, None, is_lit))
+            meshes.push(StaticMesh::new(&vertices, None, is_lit))
         } else {
-            meshes.push(Mesh::new(&vertices, Some(&indices), is_lit))
+            meshes.push(StaticMesh::new(&vertices, Some(&indices), is_lit))
         }
     }
     Some(meshes)
