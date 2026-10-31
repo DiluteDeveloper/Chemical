@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/dilute/dev/chemical_mc
+CMAKE_SOURCE_DIR = /home/dilute/dev/ChemicalMC
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/dilute/dev/chemical_mc/build
+CMAKE_BINARY_DIR = /home/dilute/dev/ChemicalMC/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,16 +87,16 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/dilute/dev/chemical_mc/build/CMakeFiles /home/dilute/dev/chemical_mc/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/dilute/dev/ChemicalMC/build/CMakeFiles /home/dilute/dev/ChemicalMC/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/dilute/dev/chemical_mc/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/dilute/dev/ChemicalMC/build/CMakeFiles 0
 .PHONY : all
 
 # The main codegen target
 codegen: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/dilute/dev/chemical_mc/build/CMakeFiles /home/dilute/dev/chemical_mc/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/dilute/dev/ChemicalMC/build/CMakeFiles /home/dilute/dev/ChemicalMC/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 codegen
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/dilute/dev/chemical_mc/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/dilute/dev/ChemicalMC/build/CMakeFiles 0
 .PHONY : codegen
 
 # The main clean target
@@ -343,29 +343,29 @@ _deps/imgui-src/imgui_widgets.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/imgui.dir/build.make CMakeFiles/imgui.dir/_deps/imgui-src/imgui_widgets.cpp.s
 .PHONY : _deps/imgui-src/imgui_widgets.cpp.s
 
-src/core/main.o: src/core/main.cpp.o
-.PHONY : src/core/main.o
+src/core/core.o: src/core/core.cpp.o
+.PHONY : src/core/core.o
 
 # target to build an object file
-src/core/main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/core/main.cpp.o
-.PHONY : src/core/main.cpp.o
+src/core/core.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/core/core.cpp.o
+.PHONY : src/core/core.cpp.o
 
-src/core/main.i: src/core/main.cpp.i
-.PHONY : src/core/main.i
+src/core/core.i: src/core/core.cpp.i
+.PHONY : src/core/core.i
 
 # target to preprocess a source file
-src/core/main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/core/main.cpp.i
-.PHONY : src/core/main.cpp.i
+src/core/core.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/core/core.cpp.i
+.PHONY : src/core/core.cpp.i
 
-src/core/main.s: src/core/main.cpp.s
-.PHONY : src/core/main.s
+src/core/core.s: src/core/core.cpp.s
+.PHONY : src/core/core.s
 
 # target to generate assembly for a file
-src/core/main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/core/main.cpp.s
-.PHONY : src/core/main.cpp.s
+src/core/core.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/core/core.cpp.s
+.PHONY : src/core/core.cpp.s
 
 src/graphics/opengl/buffer.o: src/graphics/opengl/buffer.cpp.o
 .PHONY : src/graphics/opengl/buffer.o
@@ -713,9 +713,9 @@ help:
 	@echo "... _deps/imgui-src/imgui_widgets.o"
 	@echo "... _deps/imgui-src/imgui_widgets.i"
 	@echo "... _deps/imgui-src/imgui_widgets.s"
-	@echo "... src/core/main.o"
-	@echo "... src/core/main.i"
-	@echo "... src/core/main.s"
+	@echo "... src/core/core.o"
+	@echo "... src/core/core.i"
+	@echo "... src/core/core.s"
 	@echo "... src/graphics/opengl/buffer.o"
 	@echo "... src/graphics/opengl/buffer.i"
 	@echo "... src/graphics/opengl/buffer.s"

@@ -24,7 +24,7 @@ namespace Chemical {
         {
             for (uint8_t z = 0; z < CHUNK_SIZE; z++)
             {
-                height_map[x][z] = GenerateNoiseLayer(stb_seed, glm::vec2((origin.x * CHUNK_SIZE) + x, (origin.z * CHUNK_SIZE) + z), 0.07f, 60);
+                height_map[x][z] = GenerateNoiseLayer(stb_seed, glm::vec2((origin.x * CHUNK_SIZE) + x, (origin.z * CHUNK_SIZE) + z), 0.03f, 60);
             }
         }
         return height_map;

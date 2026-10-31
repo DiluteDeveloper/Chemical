@@ -74,7 +74,7 @@ target_compile_options(imgui PUBLIC -sUSE_GLFW=3)
 # Main target
 # ---------------------------------------------------------------------------
 set(SOURCE_FILES
-    src/core/main.cpp
+    src/core/core.cpp
     # src/core/resource_manager.cpp
 
     src/graphics/opengl/buffer.cpp
@@ -117,6 +117,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 )
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     GLM_ENABLE_EXPERIMENTAL
+    # CHEMICAL_USE_IMGUI
 )
 
 target_link_options(${PROJECT_NAME} PRIVATE

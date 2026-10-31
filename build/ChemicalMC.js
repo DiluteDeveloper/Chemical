@@ -50,7 +50,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /tmp/tmp72aap9ri.js
+// include: /tmp/tmplaj5ctd6.js
 
   if (!Module['expectedDataFileDownloads']) {
     Module['expectedDataFileDownloads'] = 0;
@@ -241,21 +241,21 @@ Module['FS_createPath']("/res/textures", "blocks", true, true);
 
   })();
 
-// end include: /tmp/tmp72aap9ri.js
-// include: /tmp/tmp8gumsv7c.js
+// end include: /tmp/tmplaj5ctd6.js
+// include: /tmp/tmp9c4cpbr7.js
 
     // All the pre-js content up to here must remain later on, we need to run
     // it.
     if (Module['$ww'] || (typeof ENVIRONMENT_IS_PTHREAD != 'undefined' && ENVIRONMENT_IS_PTHREAD)) Module['preRun'] = [];
     var necessaryPreJSTasks = Module['preRun'].slice();
-  // end include: /tmp/tmp8gumsv7c.js
-// include: /tmp/tmpso1rzta8.js
+  // end include: /tmp/tmp9c4cpbr7.js
+// include: /tmp/tmps3wt5vnz.js
 
     if (!Module['preRun']) throw 'Module.preRun should exist because file support used it; did a pre-js delete it?';
     necessaryPreJSTasks.forEach((task) => {
       if (Module['preRun'].indexOf(task) < 0) throw 'All preRun tasks that exist before user pre-js code should remain after; did you replace Module or modify Module.preRun?';
     });
-  // end include: /tmp/tmpso1rzta8.js
+  // end include: /tmp/tmps3wt5vnz.js
 
 
 // Sometimes an existing Module object exists with properties
@@ -8695,6 +8695,8 @@ function dbg(...args) {
   };
   var _glfwCreateWindow = (width, height, title, monitor, share) => GLFW.createWindow(width, height, title, monitor, share);
 
+  var _glfwDestroyWindow = (winid) => GLFW.destroyWindow(winid);
+
   var _glfwGetCursorPos = (winid, x, y) => GLFW.getCursorPos(winid, x, y);
 
   var _glfwGetKey = (winid, key) => GLFW.getKey(winid, key);
@@ -8763,6 +8765,35 @@ function dbg(...args) {
   var _glfwSetMouseButtonCallback = (winid, cbfun) => GLFW.setMouseButtonCallback(winid, cbfun);
 
   var _glfwSwapBuffers = (winid) => GLFW.swapBuffers(winid);
+
+  var _glfwTerminate = () => {
+      window.removeEventListener("gamepadconnected", GLFW.onGamepadConnected, true);
+      window.removeEventListener("gamepaddisconnected", GLFW.onGamepadDisconnected, true);
+      window.removeEventListener("keydown", GLFW.onKeydown, true);
+      window.removeEventListener("keypress", GLFW.onKeyPress, true);
+      window.removeEventListener("keyup", GLFW.onKeyup, true);
+      window.removeEventListener("blur", GLFW.onBlur, true);
+      Module["canvas"].removeEventListener("touchmove", GLFW.onMousemove, true);
+      Module["canvas"].removeEventListener("touchstart", GLFW.onMouseButtonDown, true);
+      Module["canvas"].removeEventListener("touchcancel", GLFW.onMouseButtonUp, true);
+      Module["canvas"].removeEventListener("touchend", GLFW.onMouseButtonUp, true);
+      Module["canvas"].removeEventListener("mousemove", GLFW.onMousemove, true);
+      Module["canvas"].removeEventListener("mousedown", GLFW.onMouseButtonDown, true);
+      Module["canvas"].removeEventListener("mouseup", GLFW.onMouseButtonUp, true);
+      Module["canvas"].removeEventListener('wheel', GLFW.onMouseWheel, true);
+      Module["canvas"].removeEventListener('mousewheel', GLFW.onMouseWheel, true);
+      Module["canvas"].removeEventListener('mouseenter', GLFW.onMouseenter, true);
+      Module["canvas"].removeEventListener('mouseleave', GLFW.onMouseleave, true);
+      Module["canvas"].removeEventListener('drop', GLFW.onDrop, true);
+      Module["canvas"].removeEventListener('dragover', GLFW.onDragover, true);
+  
+      if (GLFW.devicePixelRatioMQL)
+        GLFW.devicePixelRatioMQL.removeEventListener('change', GLFW.onDevicePixelRatioChange);
+  
+      Module["canvas"].width = Module["canvas"].height = 1;
+      GLFW.windows = null;
+      GLFW.active = null;
+    };
 
   var _glfwWindowHint = (target, hint) => {
       GLFW.hints[target] = hint;
@@ -9017,6 +9048,8 @@ function assignWasmImports() {
     /** @export */
     glfwCreateWindow: _glfwCreateWindow,
     /** @export */
+    glfwDestroyWindow: _glfwDestroyWindow,
+    /** @export */
     glfwGetCursorPos: _glfwGetCursorPos,
     /** @export */
     glfwGetKey: _glfwGetKey,
@@ -9032,6 +9065,8 @@ function assignWasmImports() {
     glfwSetMouseButtonCallback: _glfwSetMouseButtonCallback,
     /** @export */
     glfwSwapBuffers: _glfwSwapBuffers,
+    /** @export */
+    glfwTerminate: _glfwTerminate,
     /** @export */
     glfwWindowHint: _glfwWindowHint,
     /** @export */

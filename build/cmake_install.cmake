@@ -1,4 +1,4 @@
-# Install script for directory: /home/dilute/dev/chemical_mc
+# Install script for directory: /home/dilute/dev/ChemicalMC
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,23 +39,23 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/home/dilute/dev/chemical_mc/build/_deps/glm-build/cmake_install.cmake")
+  include("/home/dilute/dev/ChemicalMC/build/_deps/glm-build/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/home/dilute/dev/chemical_mc/build/_deps/spdlog-build/cmake_install.cmake")
+  include("/home/dilute/dev/ChemicalMC/build/_deps/spdlog-build/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/home/dilute/dev/chemical_mc/build/_deps/nlohmann_json-build/cmake_install.cmake")
+  include("/home/dilute/dev/ChemicalMC/build/_deps/nlohmann_json-build/cmake_install.cmake")
 endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
 if(CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "/home/dilute/dev/chemical_mc/build/install_local_manifest.txt"
+  file(WRITE "/home/dilute/dev/ChemicalMC/build/install_local_manifest.txt"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()
 if(CMAKE_INSTALL_COMPONENT)
@@ -71,6 +71,6 @@ else()
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "/home/dilute/dev/chemical_mc/build/${CMAKE_INSTALL_MANIFEST}"
+  file(WRITE "/home/dilute/dev/ChemicalMC/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()
