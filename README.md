@@ -14,4 +14,4 @@ root/build/ : make
 
 # Host locally (python3 or python cmd)
 
-root/ : python serve.py
+root/ : python3 -m http.server
