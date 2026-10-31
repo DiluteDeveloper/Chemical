@@ -333,11 +333,17 @@ int main(int argc, char* argv[]) {
 
     core->textures.push_back(std::move(leaves));
 
-    core->loader = std::make_unique<ChunkLoader>(glm::vec3{}, 300, 8);
+    core->textures[2].BindTexture(0);
+    core->textures[0].BindTexture(1);
+    core->textures[1].BindTexture(2);
+    core->textures[3].BindTexture(3);
+
+    core->loader = std::make_unique<ChunkLoader>(glm::vec3{}, 300, 12);
 
     // The shader objects can stay local: once the program is linked it doesn't need them any more.
     OpenGL::Shader vertex_chunk_shader(Util::ReadFile("res/shaders/chunk_shader.vert").c_str(), OpenGL::ShaderType::VERTEX_SHADER);
     OpenGL::Shader fragment_chunk_shader(Util::ReadFile("res/shaders/chunk_shader.frag").c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
+
 
     OpenGL::VertexLayout vertex_layout;
     vertex_layout.AddAttribute(OpenGL::VertexAttribute{ 1, 0, OpenGL::DataType::UNSIGNED_INT, OpenGL::DataTransformation::INT });
@@ -346,6 +352,14 @@ int main(int argc, char* argv[]) {
         const OpenGL::Shader*>{ &vertex_chunk_shader, & fragment_chunk_shader }, vertex_layout);
 
     core->chunk_shader->SetUniformMatrix4FV("v_proj", 1, false, &core->projection[0][0]);
+
+    core->chunk_shader->SetUniform1I("stoneTexture", 0);
+    core->chunk_shader->SetUniform1I("dirtTexture", 1);
+    core->chunk_shader->SetUniform1I("grassTexture", 2);
+    core->chunk_shader->SetUniform1I("bedrockTexture", 3);
+    core->chunk_shader->SetUniform1I("oaklogtopTexture", 4);
+    core->chunk_shader->SetUniform1I("oaklogsideTexture", 5);
+    core->chunk_shader->SetUniform1I("oakleavesTexture", 6);
 
     emscripten_set_main_loop_arg(
         [](void* arg) {

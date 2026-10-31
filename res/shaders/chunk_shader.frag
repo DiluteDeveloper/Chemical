@@ -22,9 +22,9 @@ vec4 SampleTex() {
 	case 1u: return texture(dirtTexture, texCoord);
 	case 2u: return texture(grassTexture, texCoord);
 	case 3u: return texture(bedrockTexture, texCoord);
-	case 4u: return texture(oaklogtopTexture, texCoord);
-	case 5u: return texture(oaklogsideTexture, texCoord);
-	case 6u: return texture(oakleavesTexture, texCoord);
+	// case 4u: return texture(oaklogtopTexture, texCoord);
+	// case 5u: return texture(oaklogsideTexture, texCoord);
+	// case 6u: return texture(oakleavesTexture, texCoord);
 	}
 	return vec4(1.0, 0.0, 1.0, 1.0); // missing tex
 }

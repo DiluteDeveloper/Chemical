@@ -49,7 +49,7 @@ vec3 GetBlockPositionWithinChunk() {
 }
 
 uint GetBlockTextureID(uint face) {
-	switch (v_bit_data >> 22u) {
+	switch (v_bit_data >> 22) {
 	case 1u: return 0u; // stone
 	case 2u: return 1u; // dirt
 	case 3u: return 2u; // grass

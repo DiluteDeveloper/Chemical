@@ -15,3 +15,7 @@ root/build/ : make
 # Host locally (python3 or python cmd)
 
 root/ : python3 -m http.server
+
+# Helpful build command for development
+
+cd build && make && cd .. && python3 -m http.server

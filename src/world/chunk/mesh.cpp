@@ -40,6 +40,7 @@ namespace Chemical {
 
 						uint32_t vertex = 0x00000005;
 
+
 						vertex += static_cast<uint32_t>(primary_block_type) << 22;
 
 						vertex += static_cast<uint32_t>(x) << 17;

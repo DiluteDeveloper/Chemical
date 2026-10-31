@@ -24,7 +24,7 @@ namespace Chemical {
         {
             for (uint8_t z = 0; z < CHUNK_SIZE; z++)
             {
-                height_map[x][z] = GenerateNoiseLayer(stb_seed, glm::vec2((origin.x * CHUNK_SIZE) + x, (origin.z * CHUNK_SIZE) + z), 0.03f, 50);
+                height_map[x][z] = GenerateNoiseLayer(stb_seed, glm::vec2((origin.x * CHUNK_SIZE) + x, (origin.z * CHUNK_SIZE) + z), 0.07f, 60);
             }
         }
         return height_map;
@@ -50,8 +50,10 @@ namespace Chemical {
 
 
 					if (y <= height - 1) {
-						if (y <= height - 4)
+						if (y <= height - 4) {
 							grid.SetBlockType(BlockType::Stone, x, y, z);
+                        }
+
 						else
 							grid.SetBlockType(BlockType::Dirt, x, y, z);
 					}

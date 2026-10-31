@@ -1,4 +1,5 @@
 #include <GLES3/gl3.h>
+#include <spdlog/spdlog.h>
 
 #include "texture.h"
 
@@ -70,7 +71,7 @@ namespace Chemical {
 
 		void Texture::Release() {
 			if (rendererID != 0) {
-				glDeleteTextures(1, &rendererID);
+				// glDeleteTextures(1, &rendererID);
 				rendererID = 0;
 			}
 		}

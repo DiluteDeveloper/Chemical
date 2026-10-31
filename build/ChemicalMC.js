@@ -50,7 +50,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /tmp/tmpl2j0r8qv.js
+// include: /tmp/tmp72aap9ri.js
 
   if (!Module['expectedDataFileDownloads']) {
     Module['expectedDataFileDownloads'] = 0;
@@ -237,25 +237,25 @@ Module['FS_createPath']("/res/textures", "blocks", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/res/shaders/chunk_shader.frag", "start": 0, "end": 1114}, {"filename": "/res/shaders/chunk_shader.vert", "start": 1114, "end": 3214}, {"filename": "/res/shaders/test_shader.frag", "start": 3214, "end": 3338}, {"filename": "/res/shaders/test_shader.vert", "start": 3338, "end": 3514}, {"filename": "/res/textures/blocks/bedrock.png", "start": 3514, "end": 4151}, {"filename": "/res/textures/blocks/dirt.png", "start": 4151, "end": 5004}, {"filename": "/res/textures/blocks/grass.png", "start": 5004, "end": 6138}, {"filename": "/res/textures/blocks/leaves.png", "start": 6138, "end": 6523}, {"filename": "/res/textures/blocks/oaklogside.png", "start": 6523, "end": 7363}, {"filename": "/res/textures/blocks/oaklogtop.png", "start": 7363, "end": 8143}, {"filename": "/res/textures/blocks/stone.png", "start": 8143, "end": 8573}], "remote_package_size": 8573});
+    loadPackage({"files": [{"filename": "/res/shaders/chunk_shader.frag", "start": 0, "end": 1123}, {"filename": "/res/shaders/chunk_shader.vert", "start": 1123, "end": 3222}, {"filename": "/res/shaders/test_shader.frag", "start": 3222, "end": 3346}, {"filename": "/res/shaders/test_shader.vert", "start": 3346, "end": 3522}, {"filename": "/res/textures/blocks/bedrock.png", "start": 3522, "end": 4159}, {"filename": "/res/textures/blocks/dirt.png", "start": 4159, "end": 5012}, {"filename": "/res/textures/blocks/grass.png", "start": 5012, "end": 6146}, {"filename": "/res/textures/blocks/leaves.png", "start": 6146, "end": 6531}, {"filename": "/res/textures/blocks/oaklogside.png", "start": 6531, "end": 7371}, {"filename": "/res/textures/blocks/oaklogtop.png", "start": 7371, "end": 8151}, {"filename": "/res/textures/blocks/stone.png", "start": 8151, "end": 8581}], "remote_package_size": 8581});
 
   })();
 
-// end include: /tmp/tmpl2j0r8qv.js
-// include: /tmp/tmpd6wuq_jb.js
+// end include: /tmp/tmp72aap9ri.js
+// include: /tmp/tmp8gumsv7c.js
 
     // All the pre-js content up to here must remain later on, we need to run
     // it.
     if (Module['$ww'] || (typeof ENVIRONMENT_IS_PTHREAD != 'undefined' && ENVIRONMENT_IS_PTHREAD)) Module['preRun'] = [];
     var necessaryPreJSTasks = Module['preRun'].slice();
-  // end include: /tmp/tmpd6wuq_jb.js
-// include: /tmp/tmpj87nkhal.js
+  // end include: /tmp/tmp8gumsv7c.js
+// include: /tmp/tmpso1rzta8.js
 
     if (!Module['preRun']) throw 'Module.preRun should exist because file support used it; did a pre-js delete it?';
     necessaryPreJSTasks.forEach((task) => {
       if (Module['preRun'].indexOf(task) < 0) throw 'All preRun tasks that exist before user pre-js code should remain after; did you replace Module or modify Module.preRun?';
     });
-  // end include: /tmp/tmpj87nkhal.js
+  // end include: /tmp/tmpso1rzta8.js
 
 
 // Sometimes an existing Module object exists with properties
@@ -6383,19 +6383,6 @@ function dbg(...args) {
       GL.shaders[id] = null;
     };
 
-  var _glDeleteTextures = (n, textures) => {
-      for (var i = 0; i < n; i++) {
-        var id = HEAP32[(((textures)+(i*4))>>2)];
-        var texture = GL.textures[id];
-        // GL spec: "glDeleteTextures silently ignores 0s and names that do not
-        // correspond to existing textures".
-        if (!texture) continue;
-        GLctx.deleteTexture(texture);
-        texture.name = 0;
-        GL.textures[id] = null;
-      }
-    };
-
   var _glDeleteVertexArrays = (n, vaos) => {
       for (var i = 0; i < n; i++) {
         var id = HEAP32[(((vaos)+(i*4))>>2)];
@@ -6942,6 +6929,11 @@ function dbg(...args) {
         GL.recordError(0x502/*GL_INVALID_OPERATION*/);
       }
     };
+  
+  var _glUniform1i = (location, v0) => {
+      GLctx.uniform1i(webglGetUniformLocation(location), v0);
+    };
+
   
   var miniTempWebGLIntBuffers = [];
   
@@ -8963,8 +8955,6 @@ function assignWasmImports() {
     /** @export */
     glDeleteShader: _glDeleteShader,
     /** @export */
-    glDeleteTextures: _glDeleteTextures,
-    /** @export */
     glDeleteVertexArrays: _glDeleteVertexArrays,
     /** @export */
     glDetachShader: _glDetachShader,
@@ -9012,6 +9002,8 @@ function assignWasmImports() {
     glTexSubImage2D: _glTexSubImage2D,
     /** @export */
     glTexSubImage3D: _glTexSubImage3D,
+    /** @export */
+    glUniform1i: _glUniform1i,
     /** @export */
     glUniform2iv: _glUniform2iv,
     /** @export */
