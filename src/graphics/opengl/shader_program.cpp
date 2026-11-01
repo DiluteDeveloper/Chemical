@@ -1,4 +1,4 @@
-#include <GLES3/gl3.h>
+#include "graphics/gl.h"
 #include <spdlog/spdlog.h>
 
 #include <stdexcept>
@@ -23,7 +23,6 @@ namespace Chemical {
 
 			glCompileShader(rendererID);
 
-            spdlog::info("Hello!");
 			int success = 0;
 			glGetShaderiv(rendererID, GL_COMPILE_STATUS, &success);
 			if (success != GL_TRUE) {
@@ -31,7 +30,6 @@ namespace Chemical {
 				char infoLog[1024];
 				glGetShaderInfoLog(rendererID, 1024, nullptr, infoLog);
 
-                spdlog::info("Hello! failed");
 				spdlog::error("Shader compilation failed. [{:#x}] \n{}", (uint32_t)type, infoLog);
 				// the destructor won't run when the constructor throws
 				glDeleteShader(rendererID);

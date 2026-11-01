@@ -50,7 +50,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /tmp/tmplaj5ctd6.js
+// include: /tmp/tmpdiotmykt.js
 
   if (!Module['expectedDataFileDownloads']) {
     Module['expectedDataFileDownloads'] = 0;
@@ -71,8 +71,8 @@ if (ENVIRONMENT_IS_NODE) {
         // web worker
         PACKAGE_PATH = encodeURIComponent(location.pathname.toString().substring(0, location.pathname.toString().lastIndexOf('/')) + '/');
       }
-      var PACKAGE_NAME = 'ChemicalMC.data';
-      var REMOTE_PACKAGE_BASE = 'ChemicalMC.data';
+      var PACKAGE_NAME = 'ChemicalMC_wasm.data';
+      var REMOTE_PACKAGE_BASE = 'ChemicalMC_wasm.data';
       if (typeof Module['locateFilePackage'] === 'function' && !Module['locateFile']) {
         Module['locateFile'] = Module['locateFilePackage'];
         err('warning: you defined Module.locateFilePackage, that has been renamed to Module.locateFile (using your locateFilePackage for now)');
@@ -213,10 +213,10 @@ Module['FS_createPath']("/res/textures", "blocks", true, true);
           var files = metadata['files'];
           for (var i = 0; i < files.length; ++i) {
             DataRequest.prototype.requests[files[i].filename].onload();
-          }          Module['removeRunDependency']('datafile_ChemicalMC.data');
+          }          Module['removeRunDependency']('datafile_ChemicalMC_wasm.data');
 
       };
-      Module['addRunDependency']('datafile_ChemicalMC.data');
+      Module['addRunDependency']('datafile_ChemicalMC_wasm.data');
 
       if (!Module['preloadResults']) Module['preloadResults'] = {};
 
@@ -241,21 +241,21 @@ Module['FS_createPath']("/res/textures", "blocks", true, true);
 
   })();
 
-// end include: /tmp/tmplaj5ctd6.js
-// include: /tmp/tmp9c4cpbr7.js
+// end include: /tmp/tmpdiotmykt.js
+// include: /tmp/tmpu9rwb1uy.js
 
     // All the pre-js content up to here must remain later on, we need to run
     // it.
     if (Module['$ww'] || (typeof ENVIRONMENT_IS_PTHREAD != 'undefined' && ENVIRONMENT_IS_PTHREAD)) Module['preRun'] = [];
     var necessaryPreJSTasks = Module['preRun'].slice();
-  // end include: /tmp/tmp9c4cpbr7.js
-// include: /tmp/tmps3wt5vnz.js
+  // end include: /tmp/tmpu9rwb1uy.js
+// include: /tmp/tmp7_gw1f__.js
 
     if (!Module['preRun']) throw 'Module.preRun should exist because file support used it; did a pre-js delete it?';
     necessaryPreJSTasks.forEach((task) => {
       if (Module['preRun'].indexOf(task) < 0) throw 'All preRun tasks that exist before user pre-js code should remain after; did you replace Module or modify Module.preRun?';
     });
-  // end include: /tmp/tmps3wt5vnz.js
+  // end include: /tmp/tmp7_gw1f__.js
 
 
 // Sometimes an existing Module object exists with properties
@@ -1079,7 +1079,7 @@ function createExportWrapper(name, nargs) {
 // include: runtime_exceptions.js
 // end include: runtime_exceptions.js
 function findWasmBinary() {
-    var f = 'ChemicalMC.wasm';
+    var f = 'ChemicalMC_wasm.wasm';
     if (!isDataURI(f)) {
       return locateFile(f);
     }

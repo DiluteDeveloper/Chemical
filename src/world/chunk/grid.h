@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "../block.h"
 #include "block_grid.h"
 #include "mesh.h"

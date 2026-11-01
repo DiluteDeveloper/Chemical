@@ -1,5 +1,6 @@
 #include <spdlog/spdlog.h>
 #include <fstream>
+#include <iterator>
 
 #include "filestream.h"
 

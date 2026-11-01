@@ -1,5 +1,4 @@
-#include <GLES3/gl3.h>
-
+#include "graphics/gl.h"
 #include "buffer.h"
 
 namespace Chemical {

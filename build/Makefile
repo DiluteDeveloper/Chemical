@@ -137,17 +137,17 @@ imgui/fast:
 .PHONY : imgui/fast
 
 #=============================================================================
-# Target rules for targets named ChemicalMC
+# Target rules for targets named ChemicalMC_wasm
 
 # Build rule for target.
-ChemicalMC: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 ChemicalMC
-.PHONY : ChemicalMC
+ChemicalMC_wasm: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 ChemicalMC_wasm
+.PHONY : ChemicalMC_wasm
 
 # fast build rule for target.
-ChemicalMC/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/build
-.PHONY : ChemicalMC/fast
+ChemicalMC_wasm/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/build
+.PHONY : ChemicalMC_wasm/fast
 
 #=============================================================================
 # Target rules for targets named glm
@@ -348,7 +348,7 @@ src/core/core.o: src/core/core.cpp.o
 
 # target to build an object file
 src/core/core.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/core/core.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/core/core.cpp.o
 .PHONY : src/core/core.cpp.o
 
 src/core/core.i: src/core/core.cpp.i
@@ -356,7 +356,7 @@ src/core/core.i: src/core/core.cpp.i
 
 # target to preprocess a source file
 src/core/core.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/core/core.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/core/core.cpp.i
 .PHONY : src/core/core.cpp.i
 
 src/core/core.s: src/core/core.cpp.s
@@ -364,7 +364,7 @@ src/core/core.s: src/core/core.cpp.s
 
 # target to generate assembly for a file
 src/core/core.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/core/core.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/core/core.cpp.s
 .PHONY : src/core/core.cpp.s
 
 src/graphics/opengl/buffer.o: src/graphics/opengl/buffer.cpp.o
@@ -372,7 +372,7 @@ src/graphics/opengl/buffer.o: src/graphics/opengl/buffer.cpp.o
 
 # target to build an object file
 src/graphics/opengl/buffer.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/graphics/opengl/buffer.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/graphics/opengl/buffer.cpp.o
 .PHONY : src/graphics/opengl/buffer.cpp.o
 
 src/graphics/opengl/buffer.i: src/graphics/opengl/buffer.cpp.i
@@ -380,7 +380,7 @@ src/graphics/opengl/buffer.i: src/graphics/opengl/buffer.cpp.i
 
 # target to preprocess a source file
 src/graphics/opengl/buffer.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/graphics/opengl/buffer.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/graphics/opengl/buffer.cpp.i
 .PHONY : src/graphics/opengl/buffer.cpp.i
 
 src/graphics/opengl/buffer.s: src/graphics/opengl/buffer.cpp.s
@@ -388,7 +388,7 @@ src/graphics/opengl/buffer.s: src/graphics/opengl/buffer.cpp.s
 
 # target to generate assembly for a file
 src/graphics/opengl/buffer.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/graphics/opengl/buffer.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/graphics/opengl/buffer.cpp.s
 .PHONY : src/graphics/opengl/buffer.cpp.s
 
 src/graphics/opengl/misc.o: src/graphics/opengl/misc.cpp.o
@@ -396,7 +396,7 @@ src/graphics/opengl/misc.o: src/graphics/opengl/misc.cpp.o
 
 # target to build an object file
 src/graphics/opengl/misc.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/graphics/opengl/misc.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/graphics/opengl/misc.cpp.o
 .PHONY : src/graphics/opengl/misc.cpp.o
 
 src/graphics/opengl/misc.i: src/graphics/opengl/misc.cpp.i
@@ -404,7 +404,7 @@ src/graphics/opengl/misc.i: src/graphics/opengl/misc.cpp.i
 
 # target to preprocess a source file
 src/graphics/opengl/misc.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/graphics/opengl/misc.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/graphics/opengl/misc.cpp.i
 .PHONY : src/graphics/opengl/misc.cpp.i
 
 src/graphics/opengl/misc.s: src/graphics/opengl/misc.cpp.s
@@ -412,7 +412,7 @@ src/graphics/opengl/misc.s: src/graphics/opengl/misc.cpp.s
 
 # target to generate assembly for a file
 src/graphics/opengl/misc.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/graphics/opengl/misc.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/graphics/opengl/misc.cpp.s
 .PHONY : src/graphics/opengl/misc.cpp.s
 
 src/graphics/opengl/shader_program.o: src/graphics/opengl/shader_program.cpp.o
@@ -420,7 +420,7 @@ src/graphics/opengl/shader_program.o: src/graphics/opengl/shader_program.cpp.o
 
 # target to build an object file
 src/graphics/opengl/shader_program.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/graphics/opengl/shader_program.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/graphics/opengl/shader_program.cpp.o
 .PHONY : src/graphics/opengl/shader_program.cpp.o
 
 src/graphics/opengl/shader_program.i: src/graphics/opengl/shader_program.cpp.i
@@ -428,7 +428,7 @@ src/graphics/opengl/shader_program.i: src/graphics/opengl/shader_program.cpp.i
 
 # target to preprocess a source file
 src/graphics/opengl/shader_program.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/graphics/opengl/shader_program.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/graphics/opengl/shader_program.cpp.i
 .PHONY : src/graphics/opengl/shader_program.cpp.i
 
 src/graphics/opengl/shader_program.s: src/graphics/opengl/shader_program.cpp.s
@@ -436,7 +436,7 @@ src/graphics/opengl/shader_program.s: src/graphics/opengl/shader_program.cpp.s
 
 # target to generate assembly for a file
 src/graphics/opengl/shader_program.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/graphics/opengl/shader_program.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/graphics/opengl/shader_program.cpp.s
 .PHONY : src/graphics/opengl/shader_program.cpp.s
 
 src/graphics/opengl/texture.o: src/graphics/opengl/texture.cpp.o
@@ -444,7 +444,7 @@ src/graphics/opengl/texture.o: src/graphics/opengl/texture.cpp.o
 
 # target to build an object file
 src/graphics/opengl/texture.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/graphics/opengl/texture.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/graphics/opengl/texture.cpp.o
 .PHONY : src/graphics/opengl/texture.cpp.o
 
 src/graphics/opengl/texture.i: src/graphics/opengl/texture.cpp.i
@@ -452,7 +452,7 @@ src/graphics/opengl/texture.i: src/graphics/opengl/texture.cpp.i
 
 # target to preprocess a source file
 src/graphics/opengl/texture.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/graphics/opengl/texture.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/graphics/opengl/texture.cpp.i
 .PHONY : src/graphics/opengl/texture.cpp.i
 
 src/graphics/opengl/texture.s: src/graphics/opengl/texture.cpp.s
@@ -460,7 +460,7 @@ src/graphics/opengl/texture.s: src/graphics/opengl/texture.cpp.s
 
 # target to generate assembly for a file
 src/graphics/opengl/texture.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/graphics/opengl/texture.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/graphics/opengl/texture.cpp.s
 .PHONY : src/graphics/opengl/texture.cpp.s
 
 src/graphics/opengl/vertex_array.o: src/graphics/opengl/vertex_array.cpp.o
@@ -468,7 +468,7 @@ src/graphics/opengl/vertex_array.o: src/graphics/opengl/vertex_array.cpp.o
 
 # target to build an object file
 src/graphics/opengl/vertex_array.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/graphics/opengl/vertex_array.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/graphics/opengl/vertex_array.cpp.o
 .PHONY : src/graphics/opengl/vertex_array.cpp.o
 
 src/graphics/opengl/vertex_array.i: src/graphics/opengl/vertex_array.cpp.i
@@ -476,7 +476,7 @@ src/graphics/opengl/vertex_array.i: src/graphics/opengl/vertex_array.cpp.i
 
 # target to preprocess a source file
 src/graphics/opengl/vertex_array.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/graphics/opengl/vertex_array.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/graphics/opengl/vertex_array.cpp.i
 .PHONY : src/graphics/opengl/vertex_array.cpp.i
 
 src/graphics/opengl/vertex_array.s: src/graphics/opengl/vertex_array.cpp.s
@@ -484,7 +484,7 @@ src/graphics/opengl/vertex_array.s: src/graphics/opengl/vertex_array.cpp.s
 
 # target to generate assembly for a file
 src/graphics/opengl/vertex_array.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/graphics/opengl/vertex_array.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/graphics/opengl/vertex_array.cpp.s
 .PHONY : src/graphics/opengl/vertex_array.cpp.s
 
 src/transform/transform.o: src/transform/transform.cpp.o
@@ -492,7 +492,7 @@ src/transform/transform.o: src/transform/transform.cpp.o
 
 # target to build an object file
 src/transform/transform.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/transform/transform.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/transform/transform.cpp.o
 .PHONY : src/transform/transform.cpp.o
 
 src/transform/transform.i: src/transform/transform.cpp.i
@@ -500,7 +500,7 @@ src/transform/transform.i: src/transform/transform.cpp.i
 
 # target to preprocess a source file
 src/transform/transform.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/transform/transform.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/transform/transform.cpp.i
 .PHONY : src/transform/transform.cpp.i
 
 src/transform/transform.s: src/transform/transform.cpp.s
@@ -508,7 +508,7 @@ src/transform/transform.s: src/transform/transform.cpp.s
 
 # target to generate assembly for a file
 src/transform/transform.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/transform/transform.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/transform/transform.cpp.s
 .PHONY : src/transform/transform.cpp.s
 
 src/util/filestream.o: src/util/filestream.cpp.o
@@ -516,7 +516,7 @@ src/util/filestream.o: src/util/filestream.cpp.o
 
 # target to build an object file
 src/util/filestream.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/util/filestream.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/util/filestream.cpp.o
 .PHONY : src/util/filestream.cpp.o
 
 src/util/filestream.i: src/util/filestream.cpp.i
@@ -524,7 +524,7 @@ src/util/filestream.i: src/util/filestream.cpp.i
 
 # target to preprocess a source file
 src/util/filestream.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/util/filestream.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/util/filestream.cpp.i
 .PHONY : src/util/filestream.cpp.i
 
 src/util/filestream.s: src/util/filestream.cpp.s
@@ -532,7 +532,7 @@ src/util/filestream.s: src/util/filestream.cpp.s
 
 # target to generate assembly for a file
 src/util/filestream.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/util/filestream.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/util/filestream.cpp.s
 .PHONY : src/util/filestream.cpp.s
 
 src/util/image_loader.o: src/util/image_loader.cpp.o
@@ -540,7 +540,7 @@ src/util/image_loader.o: src/util/image_loader.cpp.o
 
 # target to build an object file
 src/util/image_loader.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/util/image_loader.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/util/image_loader.cpp.o
 .PHONY : src/util/image_loader.cpp.o
 
 src/util/image_loader.i: src/util/image_loader.cpp.i
@@ -548,7 +548,7 @@ src/util/image_loader.i: src/util/image_loader.cpp.i
 
 # target to preprocess a source file
 src/util/image_loader.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/util/image_loader.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/util/image_loader.cpp.i
 .PHONY : src/util/image_loader.cpp.i
 
 src/util/image_loader.s: src/util/image_loader.cpp.s
@@ -556,7 +556,7 @@ src/util/image_loader.s: src/util/image_loader.cpp.s
 
 # target to generate assembly for a file
 src/util/image_loader.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/util/image_loader.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/util/image_loader.cpp.s
 .PHONY : src/util/image_loader.cpp.s
 
 src/world/chunk/block_grid.o: src/world/chunk/block_grid.cpp.o
@@ -564,7 +564,7 @@ src/world/chunk/block_grid.o: src/world/chunk/block_grid.cpp.o
 
 # target to build an object file
 src/world/chunk/block_grid.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/world/chunk/block_grid.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/world/chunk/block_grid.cpp.o
 .PHONY : src/world/chunk/block_grid.cpp.o
 
 src/world/chunk/block_grid.i: src/world/chunk/block_grid.cpp.i
@@ -572,7 +572,7 @@ src/world/chunk/block_grid.i: src/world/chunk/block_grid.cpp.i
 
 # target to preprocess a source file
 src/world/chunk/block_grid.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/world/chunk/block_grid.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/world/chunk/block_grid.cpp.i
 .PHONY : src/world/chunk/block_grid.cpp.i
 
 src/world/chunk/block_grid.s: src/world/chunk/block_grid.cpp.s
@@ -580,7 +580,7 @@ src/world/chunk/block_grid.s: src/world/chunk/block_grid.cpp.s
 
 # target to generate assembly for a file
 src/world/chunk/block_grid.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/world/chunk/block_grid.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/world/chunk/block_grid.cpp.s
 .PHONY : src/world/chunk/block_grid.cpp.s
 
 src/world/chunk/height_map.o: src/world/chunk/height_map.cpp.o
@@ -588,7 +588,7 @@ src/world/chunk/height_map.o: src/world/chunk/height_map.cpp.o
 
 # target to build an object file
 src/world/chunk/height_map.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/world/chunk/height_map.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/world/chunk/height_map.cpp.o
 .PHONY : src/world/chunk/height_map.cpp.o
 
 src/world/chunk/height_map.i: src/world/chunk/height_map.cpp.i
@@ -596,7 +596,7 @@ src/world/chunk/height_map.i: src/world/chunk/height_map.cpp.i
 
 # target to preprocess a source file
 src/world/chunk/height_map.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/world/chunk/height_map.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/world/chunk/height_map.cpp.i
 .PHONY : src/world/chunk/height_map.cpp.i
 
 src/world/chunk/height_map.s: src/world/chunk/height_map.cpp.s
@@ -604,7 +604,7 @@ src/world/chunk/height_map.s: src/world/chunk/height_map.cpp.s
 
 # target to generate assembly for a file
 src/world/chunk/height_map.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/world/chunk/height_map.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/world/chunk/height_map.cpp.s
 .PHONY : src/world/chunk/height_map.cpp.s
 
 src/world/chunk/loader.o: src/world/chunk/loader.cpp.o
@@ -612,7 +612,7 @@ src/world/chunk/loader.o: src/world/chunk/loader.cpp.o
 
 # target to build an object file
 src/world/chunk/loader.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/world/chunk/loader.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/world/chunk/loader.cpp.o
 .PHONY : src/world/chunk/loader.cpp.o
 
 src/world/chunk/loader.i: src/world/chunk/loader.cpp.i
@@ -620,7 +620,7 @@ src/world/chunk/loader.i: src/world/chunk/loader.cpp.i
 
 # target to preprocess a source file
 src/world/chunk/loader.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/world/chunk/loader.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/world/chunk/loader.cpp.i
 .PHONY : src/world/chunk/loader.cpp.i
 
 src/world/chunk/loader.s: src/world/chunk/loader.cpp.s
@@ -628,7 +628,7 @@ src/world/chunk/loader.s: src/world/chunk/loader.cpp.s
 
 # target to generate assembly for a file
 src/world/chunk/loader.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/world/chunk/loader.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/world/chunk/loader.cpp.s
 .PHONY : src/world/chunk/loader.cpp.s
 
 src/world/chunk/mesh.o: src/world/chunk/mesh.cpp.o
@@ -636,7 +636,7 @@ src/world/chunk/mesh.o: src/world/chunk/mesh.cpp.o
 
 # target to build an object file
 src/world/chunk/mesh.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/world/chunk/mesh.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/world/chunk/mesh.cpp.o
 .PHONY : src/world/chunk/mesh.cpp.o
 
 src/world/chunk/mesh.i: src/world/chunk/mesh.cpp.i
@@ -644,7 +644,7 @@ src/world/chunk/mesh.i: src/world/chunk/mesh.cpp.i
 
 # target to preprocess a source file
 src/world/chunk/mesh.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/world/chunk/mesh.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/world/chunk/mesh.cpp.i
 .PHONY : src/world/chunk/mesh.cpp.i
 
 src/world/chunk/mesh.s: src/world/chunk/mesh.cpp.s
@@ -652,7 +652,7 @@ src/world/chunk/mesh.s: src/world/chunk/mesh.cpp.s
 
 # target to generate assembly for a file
 src/world/chunk/mesh.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/world/chunk/mesh.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/world/chunk/mesh.cpp.s
 .PHONY : src/world/chunk/mesh.cpp.s
 
 src/world/chunk/threaded.o: src/world/chunk/threaded.cpp.o
@@ -660,7 +660,7 @@ src/world/chunk/threaded.o: src/world/chunk/threaded.cpp.o
 
 # target to build an object file
 src/world/chunk/threaded.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/world/chunk/threaded.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/world/chunk/threaded.cpp.o
 .PHONY : src/world/chunk/threaded.cpp.o
 
 src/world/chunk/threaded.i: src/world/chunk/threaded.cpp.i
@@ -668,7 +668,7 @@ src/world/chunk/threaded.i: src/world/chunk/threaded.cpp.i
 
 # target to preprocess a source file
 src/world/chunk/threaded.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/world/chunk/threaded.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/world/chunk/threaded.cpp.i
 .PHONY : src/world/chunk/threaded.cpp.i
 
 src/world/chunk/threaded.s: src/world/chunk/threaded.cpp.s
@@ -676,7 +676,7 @@ src/world/chunk/threaded.s: src/world/chunk/threaded.cpp.s
 
 # target to generate assembly for a file
 src/world/chunk/threaded.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC.dir/build.make CMakeFiles/ChemicalMC.dir/src/world/chunk/threaded.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ChemicalMC_wasm.dir/build.make CMakeFiles/ChemicalMC_wasm.dir/src/world/chunk/threaded.cpp.s
 .PHONY : src/world/chunk/threaded.cpp.s
 
 # Help Target
@@ -688,7 +688,7 @@ help:
 	@echo "... codegen"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... ChemicalMC"
+	@echo "... ChemicalMC_wasm"
 	@echo "... glm"
 	@echo "... imgui"
 	@echo "... spdlog"

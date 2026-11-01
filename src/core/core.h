@@ -37,7 +37,7 @@ namespace Chemical {
             void SetupImGui(const std::string_view& glsl_version);
 
             float camSpeed = 0.2f;
-            float sensitivity = 0.08f;
+            float sensitivity = 0.01f;
             double oldx = 0, oldy = 0;
 	
 	};

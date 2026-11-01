@@ -4,18 +4,30 @@ This is a fork/continuation of the Minecraft clone
 OpenGL C++ project from two years ago (in branch mc),
 Modified to run in the browser with Emscripten.
 
-# Configure
+# Configure and build (web)
 
-root/ : emcmake cmake -B build
+## Release
 
-# Build
+root/ : emcmake cmake -S . -B build/ -DCMAKE_BUILD_TYPE=RELEASE && cd build && cmake --build . --target ChemicalMC_wasm
 
-root/build/ : make
+## Debug
 
-# Host locally (python3 or python cmd)
+root/ : emcmake cmake -S . -B build/ -DCMAKE_BUILD_TYPE=DEBUG && cd build && cmake --build . --target ChemicalMC_wasm
+
+# Configure and build (native)
+
+## Release
+
+root/ : cmake -S . -B build/ -DCMAKE_BUILD_TYPE=RELEASE && cd build && cmake --build . --target ChemicalMC_native
+
+## Debug
+
+root/ : cmake -S . -B build/ -DCMAKE_BUILD_TYPE=DEBUG && cd build && cmake --build . --target ChemicalMC_native
+
+## Ubuntu packages required to build GLFW
+
+sudo apt install libwayland-dev libxkbcommon-dev xorg-dev
+
+# Host web server locally (python3 or python cmd)
 
 root/ : python3 -m http.server
-
-# Helpful build command for development
-
-cd build && make && cd .. && python3 -m http.server

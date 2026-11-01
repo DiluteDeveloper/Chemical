@@ -1,9 +1,12 @@
-#include <GLES3/gl3.h>
+#include <graphics/gl.h>
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_glfw.h>
-#include <emscripten.h>
+
+#ifdef EMSCRIPTEN
+    #include <emscripten.h>
+#endif
 
 #include <spdlog/spdlog.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -31,6 +34,7 @@ namespace Chemical {
         spdlog::set_level(spdlog::level::trace);
 
         spdlog::trace("Initialising GLFW");
+        // glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
 
         if (!glfwInit()) {
             spdlog::trace("GLFW initialization failed.");
@@ -44,9 +48,14 @@ namespace Chemical {
         spdlog::trace("Setting GLFW window hints");
 
         const char* glsl_version = "#version 300 es";
+
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, OPENGL_MAJOR_VERSION);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, OPENGL_MINOR_VERSION);
+#if defined(EMSCRIPTEN)
         glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+#elif defined(GLAD) 
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#endif
 
         spdlog::trace("Creating GLFW window");
 
@@ -62,12 +71,21 @@ namespace Chemical {
         glfwSetMouseButtonCallback(window, [](GLFWwindow* w, int button, int action, int mods) {
             glfwSetInputMode(w, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         });
+        // if (glfwRawMouseMotionSupported())
+        //     glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
         SetupImGui(glsl_version);
 
         spdlog::trace("Setting OpenGL context to GLFW window");
 
         glfwMakeContextCurrent(window);
+
+#ifdef GLAD
+        if (!gladLoadGL((GLADloadfunc)glfwGetProcAddress)) {
+            spdlog::critical("Failed to load GL loader into GLFW");
+            throw std::exception();
+        }
+#endif
 
         glClearColor(1.0f, 0.7f, 0.9f, 1.0f);
 
@@ -264,6 +282,7 @@ namespace Chemical {
         chunk_shader->SetUniform1I("oaklogsideTexture", 5);
         chunk_shader->SetUniform1I("oakleavesTexture", 6);
 
+#ifdef EMSCRIPTEN
         emscripten_set_main_loop_arg(
             [](void* arg) {
                 static_cast<Core*>(arg)->Update();
@@ -272,6 +291,11 @@ namespace Chemical {
             0,
             true
         );
+#else
+        while(!glfwWindowShouldClose(window)) {
+            Update();
+        }
+#endif
     }
 
     void Core::SetupImGui(const std::string_view& glsl_version) {
