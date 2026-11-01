@@ -259,7 +259,7 @@ namespace Chemical {
         textures[1].BindTexture(2);
         textures[3].BindTexture(3);
 
-        loader = std::make_unique<ChunkLoader>(glm::vec3{}, 300, 12);
+        loader = std::make_unique<ChunkLoader>(glm::vec3{}, 300, 8);
 
         // The shader objects can stay local: once the program is linked it doesn't need them any more.
         OpenGL::Shader vertex_chunk_shader(Util::ReadFile("res/shaders/chunk_shader.vert").c_str(), OpenGL::ShaderType::VERTEX_SHADER);
