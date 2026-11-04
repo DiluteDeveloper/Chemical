@@ -18,11 +18,11 @@ root/ : emcmake cmake -S . -B build/ -DCMAKE_BUILD_TYPE=DEBUG && cd build && cma
 
 ## Release
 
-root/ : cmake -S . -B build/ -DCMAKE_BUILD_TYPE=RELEASE && cd build && cmake --build . --target ChemicalMC_native
+root/ : cmake -S . -B build_native/ -DCMAKE_BUILD_TYPE=RELEASE && cd build_native && cmake --build . --target ChemicalMC_native
 
 ## Debug
 
-root/ : cmake -S . -B build/ -DCMAKE_BUILD_TYPE=DEBUG && cd build && cmake --build . --target ChemicalMC_native
+root/ : cmake -S . -B build_native/ -DCMAKE_BUILD_TYPE=DEBUG && cd build_native && cmake --build . --target ChemicalMC_native
 
 ## Ubuntu packages required to build GLFW
 

@@ -1,3 +1,5 @@
+#pragma once
+
 #if defined(EMSCRIPTEN)
     #include <GLES3/gl3.h>
 #elif defined(GLAD) 

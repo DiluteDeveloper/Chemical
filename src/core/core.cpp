@@ -1,5 +1,3 @@
-#include <graphics/gl.h>
-#include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_glfw.h>
@@ -14,13 +12,9 @@
 #include <memory>
 #include <utility>
 
-#include "graphics/opengl/texture.h"
-#include "graphics/opengl/shader_program.h"
-#include "util/filestream.h"
-#include "world/chunk/loader.h"
-#include "world/chunk/renderer.h"
+#include "graphics/gl.h"
 
-#include <stb_image.h>
+#include <GLFW/glfw3.h>
 
 #include "core.h"
 
@@ -29,6 +23,28 @@ using namespace Chemical;
 namespace Chemical {
 
     Core::Core() {
+
+        // offset of 5,5,5
+        // minpos 5,0,5
+
+        // std::vector<BlockFaceGroup> bfgs;
+        // bfgs.emplace_back(glm::ivec3(5,0,5),glm::ivec3(10,5,10), 
+        //         BlockType::Dirt, BlockFaceOrientation::POSITIVE_Z);
+        // bfgs.emplace_back(glm::ivec3(5,0,5),glm::ivec3(10,5,10), 
+        //         BlockType::Stone, BlockFaceOrientation::POSITIVE_Z);
+        // bfgs.emplace_back(glm::ivec3(5,0,5),glm::ivec3(10,5,10), 
+        //         BlockType::Stone, BlockFaceOrientation::POSITIVE_Z);
+        // bfgs.emplace_back(glm::ivec3(5,0,5),glm::ivec3(10,5,10), 
+        //         BlockType::Air, BlockFaceOrientation::POSITIVE_Z);
+        // bfgs.emplace_back(glm::ivec3(5,0,5),glm::ivec3(10,5,10), 
+        //         BlockType::Stone, BlockFaceOrientation::POSITIVE_Z);
+        // bfgs.emplace_back(glm::ivec3(5,0,5),glm::ivec3(10,5,10), 
+        //         BlockType::Dirt, BlockFaceOrientation::POSITIVE_Z);
+        //
+        //
+        // std::vector<uint32_t> vaos;
+        // Graphics::Renderer::ConvertBlockFaceGroupsToVAOs_Inplace(bfgs, vaos);
+
         // GLFW INITIALIZATION ----------------------------
         
         spdlog::set_level(spdlog::level::trace);
@@ -99,7 +115,6 @@ namespace Chemical {
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);
 
-
         projection = glm::perspectiveLH(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f, 10000.0f);
 
         std::random_device rd;
@@ -107,180 +122,30 @@ namespace Chemical {
 
         glfwGetCursorPos(window, &oldx, &oldy);
 
-        // Each texture is moved into core->textures after it is set up. The GL texture name moves with it
-        // (the moved-from object is left with id 0 and deletes nothing), so the unit bindings stay valid.
-        textures.reserve(7);
-
-        int width=0, height=0, channels=0;
-        void* dirtdata = stbi_load("res/textures/blocks/dirt.png", &width, &height, &channels, 0);
-
-        OpenGL::TextureStorageParameters p;
-        p.internalFormat = OpenGL::TextureInternalFormat::RGB8;
-        p.width = width;
-        p.height = height;
-        OpenGL::Texture dirt(p);
-
-        OpenGL::TextureDataParameters param;
-        param.baseFormat = OpenGL::TextureBaseFormat::RGB;
-        param.dataType = OpenGL::DataType::UNSIGNED_BYTE;
-        param.width = width;
-        param.height = height;
-        // param.textureType = OpenGL::TextureType::TEXTURE_2D;
-        dirt.SetTextureData(param, dirtdata);
-
-        stbi_image_free(dirtdata);
-
-        dirt.GenerateMipmaps();
-
-        dirt.BindTexture(1);
-
-        dirt.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MIN_FILTER, GL_NEAREST);
-        dirt.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MAG_FILTER, GL_NEAREST);
-
-        textures.push_back(std::move(dirt));
-
-
-        void* grassdata = stbi_load("res/textures/blocks/grass.png", &width, &height, &channels, 0);
-
-        OpenGL::Texture grass(p);
-
-        grass.SetTextureData(param, grassdata);
-
-        stbi_image_free(grassdata);
-
-        grass.GenerateMipmaps();
-
-        grass.BindTexture(2);
-
-        grass.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MIN_FILTER, GL_NEAREST);
-        grass.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MAG_FILTER, GL_NEAREST);
-
-        textures.push_back(std::move(grass));
-
-        void* stonedata = stbi_load("res/textures/blocks/stone.png", &width, &height, &channels, 0);
-
-        OpenGL::Texture stone(p);
-
-        stone.SetTextureData(param, stonedata);
-
-        stbi_image_free(stonedata);
-
-        stone.GenerateMipmaps();
-
-        stone.BindTexture(0);
-
-        stone.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MIN_FILTER, GL_NEAREST);
-        stone.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MAG_FILTER, GL_NEAREST);
-
-        textures.push_back(std::move(stone));
-
-        void* beddata = stbi_load("res/textures/blocks/bedrock.png", &width, &height, &channels, 0);
-
-        OpenGL::Texture bed(p);
-
-        bed.SetTextureData(param, beddata);
-
-        stbi_image_free(beddata);
-
-        bed.GenerateMipmaps();
-
-        bed.BindTexture(3);
-
-        bed.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MIN_FILTER, GL_NEAREST);
-        bed.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MAG_FILTER, GL_NEAREST);
-
-        textures.push_back(std::move(bed));
-
-        void* logtopdata = stbi_load("res/textures/blocks/oaklogtop.png", &width, &height, &channels, 0);
-
-        OpenGL::Texture logtop(p);
-
-        logtop.SetTextureData(param, logtopdata);
-
-        stbi_image_free(logtopdata);
-
-        logtop.GenerateMipmaps();
-
-        logtop.BindTexture(4);
-
-        logtop.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MIN_FILTER, GL_NEAREST);
-        logtop.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MAG_FILTER, GL_NEAREST);
-
-        textures.push_back(std::move(logtop));
-
-        void* logsidedata = stbi_load("res/textures/blocks/oaklogside.png", &width, &height, &channels, 0);
-
-        OpenGL::Texture logside(p);
-
-        logside.SetTextureData(param, logsidedata);
-
-        stbi_image_free(logsidedata);
-
-        logside.GenerateMipmaps();
-
-        logside.BindTexture(5);
-
-        logside.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MIN_FILTER, GL_NEAREST);
-        logside.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MAG_FILTER, GL_NEAREST);
-
-        textures.push_back(std::move(logside));
-
-        OpenGL::TextureStorageParameters pleaves;
-        pleaves.internalFormat = OpenGL::TextureInternalFormat::RGBA8;
-        pleaves.width = width;
-        pleaves.height = height;
-
-        OpenGL::TextureDataParameters paramleaves;
-        paramleaves.baseFormat = OpenGL::TextureBaseFormat::RGBA;
-        paramleaves.dataType = OpenGL::DataType::UNSIGNED_BYTE;
-        paramleaves.width = width;
-        paramleaves.height = height;
-        // paramleaves.textureType = OpenGL::TextureType::TEXTURE_2D;
-
-        void* leavesdata = stbi_load("res/textures/blocks/leaves.png", &width, &height, &channels, 0);
-
-        OpenGL::Texture leaves(pleaves);
-
-        leaves.SetTextureData(paramleaves, leavesdata);
-
-        stbi_image_free(leavesdata);
-
-        leaves.GenerateMipmaps();
-
-        leaves.BindTexture(6);
-
-        leaves.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MIN_FILTER, GL_NEAREST);
-        leaves.SetTextureSetting(OpenGL::TextureSettings::TEXTURE_MAG_FILTER, GL_NEAREST);
-
-        textures.push_back(std::move(leaves));
-
-        textures[2].BindTexture(0);
-        textures[0].BindTexture(1);
-        textures[1].BindTexture(2);
-        textures[3].BindTexture(3);
-
-        loader = std::make_unique<ChunkLoader>(glm::vec3{}, 300, 8);
-
-        // The shader objects can stay local: once the program is linked it doesn't need them any more.
-        OpenGL::Shader vertex_chunk_shader(Util::ReadFile("res/shaders/chunk_shader.vert").c_str(), OpenGL::ShaderType::VERTEX_SHADER);
-        OpenGL::Shader fragment_chunk_shader(Util::ReadFile("res/shaders/chunk_shader.frag").c_str(), OpenGL::ShaderType::FRAGMENT_SHADER);
-
-
-        OpenGL::VertexLayout vertex_layout;
-        vertex_layout.AddAttribute(OpenGL::VertexAttribute{ 1, 0, OpenGL::DataType::UNSIGNED_INT, OpenGL::DataTransformation::INT });
-
-        chunk_shader = std::make_unique<OpenGL::ShaderProgram>(std::initializer_list<
-            const OpenGL::Shader*>{ &vertex_chunk_shader, & fragment_chunk_shader }, vertex_layout);
-
-        chunk_shader->SetUniformMatrix4FV("v_proj", 1, false, &projection[0][0]);
-
-        chunk_shader->SetUniform1I("stoneTexture", 0);
-        chunk_shader->SetUniform1I("dirtTexture", 1);
-        chunk_shader->SetUniform1I("grassTexture", 2);
-        chunk_shader->SetUniform1I("bedrockTexture", 3);
-        chunk_shader->SetUniform1I("oaklogtopTexture", 4);
-        chunk_shader->SetUniform1I("oaklogsideTexture", 5);
-        chunk_shader->SetUniform1I("oakleavesTexture", 6);
+        renderer = Graphics::Renderer::CreateRenderer();
+
+        if(renderer == nullptr) {
+            spdlog::critical("Failed to create renderer. Terminating...");
+            return;
+        }
+
+        std::vector<BlockFaceGroup> bfgs;
+        bfgs.emplace_back(glm::ivec3(5,0,5),glm::ivec3(10,5,10), 
+                BlockType::Dirt, BlockFaceOrientation::POSITIVE_Z);
+        bfgs.emplace_back(glm::ivec3(5,0,5),glm::ivec3(10,5,10), 
+                BlockType::Stone, BlockFaceOrientation::POSITIVE_Z);
+        bfgs.emplace_back(glm::ivec3(5,2,5),glm::ivec3(10,5,10), 
+                BlockType::Stone, BlockFaceOrientation::POSITIVE_Z);
+        bfgs.emplace_back(glm::ivec3(5,0,6),glm::ivec3(10,5,10), 
+                BlockType::Air, BlockFaceOrientation::POSITIVE_Z);
+        bfgs.emplace_back(glm::ivec3(5,0,5),glm::ivec3(10,5,10), 
+                BlockType::Stone, BlockFaceOrientation::POSITIVE_Z);
+        bfgs.emplace_back(glm::ivec3(-50,-50,-50),glm::ivec3(50,50,-50), 
+                BlockType::Dirt, BlockFaceOrientation::POSITIVE_Z);
+
+        renderer->UploadBlockFaceGroups(bfgs);
+
+        renderer->UpdateProjectionMatrix(projection);
 
 #ifdef EMSCRIPTEN
         emscripten_set_main_loop_arg(
@@ -393,8 +258,11 @@ namespace Chemical {
 #endif
         UpdatePlayer();
 
-        loader->UpdateCenter(player_transform.position);
-        RenderChunkGrid(loader->GetChunkGrid(), *chunk_shader, glm::inverse(player_transform.GetTransform()));
+        renderer->UpdateViewMatrix(glm::inverse(player_transform.GetTransform()));
+        renderer->Render();
+
+        // loader->UpdateCenter(player_transform.position);
+        // RenderChunkGrid(loader->GetChunkGrid(), *chunk_shader, glm::inverse(player_transform.GetTransform()));
 
 #ifdef CHEMICAL_USE_IMGUI
         ImGui::Render();

@@ -71,8 +71,7 @@ namespace Chemical {
 			Release();
 		}
 
-		ShaderProgram::ShaderProgram(std::initializer_list<const Shader*> shaders, const VertexLayout& layout) :
-			layout(layout) {
+		ShaderProgram::ShaderProgram(std::initializer_list<const Shader*> shaders) {
 			rendererID = glCreateProgram();
 
 			for (const Shader* shader : shaders) {

@@ -115,6 +115,7 @@ set(SOURCE_FILES
     src/graphics/opengl/shader_program.cpp
     src/graphics/opengl/texture.cpp
     src/graphics/opengl/vertex_array.cpp
+    src/graphics/renderer.cpp
 
     src/transform/transform.cpp
 
@@ -147,6 +148,7 @@ if (DEFINED EMSCRIPTEN)
         # CHEMICAL_USE_IMGUI
         OPENGL_MAJOR_VERSION=${OPENGL_MAJOR_VERSION}
         OPENGL_MINOR_VERSION=${OPENGL_MINOR_VERSION}
+        GLFW_INCLUDE_NONE
     )
     set_target_properties(${TARGET} PROPERTIES SUFFIX ".js")
 else()
@@ -160,6 +162,7 @@ else()
         GLAD
         OPENGL_MAJOR_VERSION=${OPENGL_MAJOR_VERSION}
         OPENGL_MINOR_VERSION=${OPENGL_MINOR_VERSION}
+        GLFW_INCLUDE_NONE
     )
     add_custom_command(TARGET ${TARGET} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory

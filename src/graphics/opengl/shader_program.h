@@ -81,17 +81,15 @@ namespace Chemical {
 
 			std::unordered_map<std::string, Uniform> uniforms; // lazily filled location cache
 
-			OpenGL::VertexLayout layout;
-
 			void Release();
 			void Use();
 			int32_t GetLocation(std::string_view name);
 
 		public:
-			ShaderProgram(std::initializer_list<const Shader*> shaders, const VertexLayout& layout);
+			ShaderProgram(std::initializer_list<const Shader*> shaders);
 
 			ShaderProgram(ShaderProgram&& other) noexcept :
-				rendererID(std::exchange(other.rendererID, 0)), uniforms(std::move(other.uniforms)), layout(std::move(other.layout)) {}
+				rendererID(std::exchange(other.rendererID, 0)), uniforms(std::move(other.uniforms)){}
 
 			ShaderProgram(const ShaderProgram&) = delete;
 			ShaderProgram& operator =(const ShaderProgram&) = delete;
@@ -100,12 +98,10 @@ namespace Chemical {
 					Release();
 					rendererID = std::exchange(other.rendererID, 0);
 					uniforms = std::move(other.uniforms);
-					layout = std::move(other.layout);
+					// layout = std::move(other.layout);
 				}
 				return *this;
 			}
-
-			const VertexLayout& GetLayout() const { return layout; }
 
 			~ShaderProgram();
 
