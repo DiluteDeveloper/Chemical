@@ -24,9 +24,9 @@ root/ : cmake -S . -B build_native/ -DCMAKE_BUILD_TYPE=RELEASE && cd build_nativ
 
 root/ : cmake -S . -B build_native/ -DCMAKE_BUILD_TYPE=DEBUG && cd build_native && cmake --build . --target ChemicalMC_native
 
-## Ubuntu packages required to build GLFW
+## Ubuntu packages required to build Dawn
 
-sudo apt install libwayland-dev libxkbcommon-dev xorg-dev
+sudo apt-get install libxrandr-dev libxinerama-dev libxcursor-dev mesa-common-dev libx11-xcb-dev pkg-config nodejs npm
 
 # Host web server locally (python3 or python cmd)
 
