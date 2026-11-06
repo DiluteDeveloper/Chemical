@@ -1,4 +1,6 @@
 build/
+build_es/
+*compile_commands.json
 CMakeFiles/
 CMakeCache.txt
 *.o

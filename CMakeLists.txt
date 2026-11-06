@@ -1,7 +1,35 @@
-# emcmake cmake -S . -B build/ -G Ninja
-# cmake -S . -B build/ -G Ninja
-# cmake --build . -j$(nproc) && ./ChemicalMC_PK 
-# cmake --build . -j$(nproc)
+# Dependencies (native, web)
+    # cmake (sudo apt install cmake)
+# Dependencies (native)
+    # For Dawn
+        # sudo apt-get install libxrandr-dev libxinerama-dev libxcursor-dev mesa-common-dev libx11-xcb-dev pkg-config nodejs npm
+# Dependencies (web)
+    # Emscripten >= 6.0.13 (apt repo version is too old)
+
+# All in one compile commands
+    # Native (in root directory)
+        # cmake -S . -B build/ -DUSE_MOLD=false -DCMAKE_BUILD_TYPE=Release && cd build && cmake --build . -j$(nproc)
+    # Web (in root directory)
+        # emcmake cmake -S . -B build/ -DUSE_MOLD=false -DCMAKE_BUILD_TYPE=Release && cd build && cmake --build . -j$(nproc) && python3 -m http.server
+
+# Development Quick Commands (Linux) (Mainly for personal development use)
+    # Dependencies (native, web)
+        # mold linker (sudo apt install mold) for faster link times
+        # bear (sudo apt install bear) for lsp symbols
+        # ninja (sudo apt install generate-ninja) for faster compilation
+
+    # Configure (web)
+        # emcmake cmake -S . -B build_es/ -G Ninja -DCMAKE_BUILD_TYPE=Debug -DUSE_MOLD=true
+    # Configure (native)
+        # cmake -S . -B build/ -G Ninja -DCMAKE_BUILD_TYPE=Debug -DUSE_MOLD=true
+    # Build and Run (native)
+        # bear -- cmake --build . -j$(nproc) && mv compile_commands.json ../ && ./ChemicalMC_PK
+    # Build and Run (web)
+        # bear -- cmake --build . -j$(nproc) && mv compile_commands.json ../ && python3 -m http.server
+    # Build
+        # bear -- cmake --build . -j$(nproc) && mv compile_commands.json ../
+    # Emscripten latest version
+        # source ~/dev/emsdk/emsdk_env.sh
 
 cmake_minimum_required(VERSION 4.2.3)
 project(ChemicalMC_PK
@@ -21,32 +49,18 @@ set(CMAKE_CXX_FLAGS "-pthread -Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread")
+
+if(USE_MOLD)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread -fuse-ld=mold")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread -fuse-ld=mold")
+else()
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread")
+endif()
+
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 include(FetchContent)
-
-FetchContent_Declare(dawn
-    GIT_REPOSITORY https://github.com/google/dawn.git
-    GIT_TAG v20261104.212356
-    GIT_SHALLOW true
-    GIT_SUBMODULES ""
-)
-set(DAWN_ENABLE_DESKTOP_GL OFF CACHE BOOL "" FORCE)
-set(DAWN_ENABLE_OPENGLES   OFF CACHE BOOL "" FORCE)
-set(DAWN_ENABLE_NULL       OFF CACHE BOOL "" FORCE)
-set(TINT_BUILD_GLSL_WRITER OFF CACHE BOOL "" FORCE)
-set(TINT_BUILD_GLSL_VALIDATOR OFF CACHE BOOL "" FORCE)
-set(DAWN_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
-set(TINT_BUILD_CMD_TOOLS OFF CACHE BOOL "" FORCE)
-set(TINT_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(DAWN_FETCH_DEPENDENCIES ON CACHE BOOL "" FORCE)
-# set(DAWN_BUILD_MONOLITHIC_LIBRARY STATIC CACHE STRING "" FORCE)
-# set(BUILD_SHARED_LIBS OFF)
-
-# Dawn defines the following
-#define WEBGPU_BACKEND_DAWN
-#define WEBGPU_BACKEND_WGPU
-#define WEBGPU_BACKEND_EMSCRIPTEN
 
 FetchContent_Declare(glm
     GIT_REPOSITORY https://github.com/g-truc/glm.git
@@ -56,22 +70,42 @@ FetchContent_Declare(glm
 
 FetchContent_Declare(spdlog
     GIT_REPOSITORY https://github.com/gabime/spdlog.git
-    GIT_TAG        v1.15.0
+    GIT_TAG        v1.17.0
     GIT_SHALLOW    TRUE
 )
-FetchContent_MakeAvailable(dawn glm spdlog)
 
-add_executable(${PROJECT_NAME} src/main.cpp src/webgpu.cpp)
-target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm spdlog::spdlog dawn::webgpu_dawn)
+FetchContent_MakeAvailable(glm spdlog)
+
+add_executable(${PROJECT_NAME} src/main.cpp src/webgpu/chemical_webgpu.cpp)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm spdlog::spdlog)
 
 if(EMSCRIPTEN)
+    target_compile_options(${PROJECT_NAME} PUBLIC --use-port=emdawnwebgpu)
+    target_link_options(${PROJECT_NAME} PUBLIC --use-port=emdawnwebgpu -sASYNCIFY)
     set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".html")
+else()
+    FetchContent_Declare(dawn
+        GIT_REPOSITORY https://github.com/google/dawn.git
+        GIT_TAG v20261104.212356
+        GIT_SHALLOW true
+        GIT_SUBMODULES ""
+    )
+    set(DAWN_ENABLE_DESKTOP_GL OFF CACHE BOOL "" FORCE)
+    set(DAWN_ENABLE_OPENGLES   OFF CACHE BOOL "" FORCE)
+    set(DAWN_ENABLE_NULL       OFF CACHE BOOL "" FORCE)
+    set(TINT_BUILD_GLSL_WRITER OFF CACHE BOOL "" FORCE)
+    set(TINT_BUILD_GLSL_VALIDATOR OFF CACHE BOOL "" FORCE)
+    set(DAWN_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
+    set(TINT_BUILD_CMD_TOOLS OFF CACHE BOOL "" FORCE)
+    set(TINT_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(DAWN_FETCH_DEPENDENCIES ON CACHE BOOL "" FORCE)
+
+    FetchContent_MakeAvailable(dawn)
+
+    target_link_libraries(${PROJECT_NAME} PRIVATE dawn::webgpu_dawn)
 endif()
 
-
-# set(DAWN_FETCH_DEPENDENCIES ON CACHE BOOL "" FORCE)
-# set(DAWN_BUILD_MONOLITHIC_LIBRARY STATIC CACHE STRING "" FORCE)
-# set(BUILD_SHARED_LIBS OFF)
 
 
 # ---------------------------------------------------------------------------

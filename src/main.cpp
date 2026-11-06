@@ -1,5 +1,5 @@
 #include <spdlog/spdlog.h>
-#include "webgpu.h"
+#include "webgpu/chemical_webgpu.h"
 
 using namespace Chemical;
 
