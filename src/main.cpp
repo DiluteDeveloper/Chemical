@@ -8,12 +8,10 @@ int main() {
     spdlog::set_level(spdlog::level::trace);
 
     spdlog::trace("Initialising Chemical::WebGPU.");
-    WebGPU* wgpu = WebGPU::initialise();
-
-    if(!wgpu) {
-        spdlog::critical("Failed to initialise Chemical::WebGPU.");
+    try {
+        WebGPU wgpu;
+    } catch (const std::runtime_error& e) {
+        spdlog::critical("Failed to initialise WebGPU: {}", e.what());
         return -1;
     }
-
-    WebGPU::shutdown(wgpu);
 }

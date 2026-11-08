@@ -8,7 +8,7 @@
 
 namespace Chemical {
     
-    WebGPU* WebGPU::initialise() {
+    WebGPU::WebGPU() {
 
         spdlog::trace("Creating WebGPU instance.");
 
@@ -22,10 +22,8 @@ namespace Chemical {
         WGPUInstance wgpu_instance = wgpuCreateInstance(&desc);
 #endif
 
-        if(!wgpu_instance) {
-            spdlog::error("Failed to create WebGPU instance.");
-            return nullptr;
-        }
+        if(!wgpu_instance)
+            throw std::runtime_error("Failed to create WebGPU instance.");
 
         struct AsyncObjectRequests {
             WGPUAdapter adapter = nullptr;
@@ -48,28 +46,22 @@ namespace Chemical {
         wgpuInstanceProcessEvents(wgpu_instance);
 #endif
 
-        if(!requests.adapter) {
-            spdlog::error("Failed to request WebGPU adapter.");
-            return nullptr;
-        }
+        if(!requests.adapter)
+            throw std::runtime_error("Failed to request WebGPU adapter.");
+
+        adapter = requests.adapter;
+        print_adapter_info(adapter);
 
         spdlog::trace("Releasing WebGPU instance.");
 
-        // Drop down reference count and release if 0 (Referenced by adapter)
+        // Drop down reference count and release if 0 (Referenced by adapter so released with adapter now)
         wgpuInstanceRelease(wgpu_instance);
-
-        WebGPU* wgpu = new WebGPU();
-        wgpu->wgpu_adapter = requests.adapter;
-        return wgpu;
     }
 
-    void WebGPU::shutdown(WebGPU* wgpu) {
+    WebGPU::~WebGPU() {
 
         spdlog::trace("Releasing WebGPU adapter.");
-        wgpuAdapterRelease(wgpu->wgpu_adapter);
-
-        spdlog::trace("Releasing Chemical::WebGPU.");
-        delete wgpu;
+        wgpuAdapterRelease(adapter);
     }
 
     void WebGPU::request_adapter_async(WGPUInstance instance, WGPUAdapter& out_adapter, bool& out_is_adapter_processed, const WGPURequestAdapterOptions* options) {
@@ -94,5 +86,102 @@ namespace Chemical {
                      &out_is_adapter_processed
             }
         );
+    }
+    void WebGPU::print_adapter_info(WGPUAdapter& adapter) {
+
+        set_backend_types();
+        set_adapter_types();
+
+        WGPUAdapterInfo info;
+        info.nextInChain = nullptr;
+
+        wgpuAdapterGetInfo(adapter, &info);
+
+        spdlog::trace("WebGPU adapter information {");
+
+		spdlog::trace("\tvendor: {},", info.vendor.data);
+		spdlog::trace("\tarchitecture: {},", info.architecture.data);
+		spdlog::trace("\tdevice: {},", info.device.data);
+		spdlog::trace("\tdescription: {},", info.description.data);
+
+        // Just let it crash honestly its so rare
+		spdlog::trace("\tbackendType: {},", backend_types->at(info.backendType));
+		spdlog::trace("\tadapterType: {},", adapter_types->at(info.adapterType));
+		spdlog::trace("\tvendorID: {},", info.vendorID);
+		spdlog::trace("\tdeviceID: {},", info.deviceID);
+		spdlog::trace("\tsubgroupMinSize: {},", info.subgroupMinSize);
+		spdlog::trace("\tsubgroupMaxSize: {},", info.subgroupMaxSize);
+
+        spdlog::trace("}");
+
+        wgpuAdapterInfoFreeMembers(info);
+
+        set_feature_names();
+
+        // This segfaults when initialised to nullptr?
+        // Im not sure im using this API correctly or deleting it correctly
+        WGPUSupportedFeatures* features = new WGPUSupportedFeatures();
+        wgpuAdapterGetFeatures(adapter, features);
+
+        spdlog::trace("WebGPU adapter supported features {");
+
+        for(size_t i = 0; i < features->featureCount; i++) {
+            int feature = *(features->features + i);
+            if (auto search = feature_names->find(feature); search != feature_names->end())
+                spdlog::trace("\t{},", search->second);
+            else
+                spdlog::warn("\tWebGPU adapter feature {0:x} does not appear to have a reflected name, Chemical may not support this feature.", feature);
+            
+        }
+
+        spdlog::trace("}");
+
+        wgpuSupportedFeaturesFreeMembers(*features);
+        delete features;
+
+        // Does not need to be freed supposedly
+        WGPULimits limits;
+        limits.nextInChain = nullptr;
+
+        wgpuAdapterGetLimits(adapter, &limits);
+
+        spdlog::trace("WebGPU adapter limits {");
+
+
+		spdlog::trace("\tmaxTextureDimension1D: {}", limits.maxTextureDimension1D);
+		spdlog::trace("\tmaxTextureDimension2D: {}", limits.maxTextureDimension2D);
+		spdlog::trace("\tmaxTextureDimension3D: {}", limits.maxTextureDimension3D);
+		spdlog::trace("\tmaxTextureArrayLayers: {}", limits.maxTextureArrayLayers);
+		spdlog::trace("\tmaxBindGroups: {}", limits.maxBindGroups);
+		spdlog::trace("\tmaxBindGroupsPlusVertexBuffers: {}", limits.maxBindGroupsPlusVertexBuffers);
+		spdlog::trace("\tmaxBindingsPerBindGroup: {}", limits.maxBindingsPerBindGroup);
+		spdlog::trace("\tmaxDynamicUniformBuffersPerPipelineLayout: {}", limits.maxDynamicUniformBuffersPerPipelineLayout);
+		spdlog::trace("\tmaxDynamicStorageBuffersPerPipelineLayout: {}", limits.maxDynamicStorageBuffersPerPipelineLayout);
+		spdlog::trace("\tmaxSampledTexturesPerShaderStage: {}", limits.maxSampledTexturesPerShaderStage);
+		spdlog::trace("\tmaxSamplersPerShaderStage: {}", limits.maxSamplersPerShaderStage);
+		spdlog::trace("\tmaxStorageBuffersPerShaderStage: {}", limits.maxStorageBuffersPerShaderStage);
+		spdlog::trace("\tmaxStorageTexturesPerShaderStage: {}", limits.maxStorageTexturesPerShaderStage);
+		spdlog::trace("\tmaxUniformBuffersPerShaderStage: {}", limits.maxUniformBuffersPerShaderStage);
+		spdlog::trace("\tmaxUniformBufferBindingSize: {}", limits.maxUniformBufferBindingSize);
+		spdlog::trace("\tmaxStorageBufferBindingSize: {}", limits.maxStorageBufferBindingSize);
+		spdlog::trace("\tminUniformBufferOffsetAlignment: {}", limits.minUniformBufferOffsetAlignment);
+		spdlog::trace("\tminStorageBufferOffsetAlignment: {}", limits.minStorageBufferOffsetAlignment);
+		spdlog::trace("\tmaxVertexBuffers: {}", limits.maxVertexBuffers);
+		spdlog::trace("\tmaxBufferSize: {}", limits.maxBufferSize);
+		spdlog::trace("\tmaxVertexAttributes: {}", limits.maxVertexAttributes);
+		spdlog::trace("\tmaxVertexBufferArrayStride: {}", limits.maxVertexBufferArrayStride);
+		spdlog::trace("\tmaxInterStageShaderVariables: {}", limits.maxInterStageShaderVariables);
+		spdlog::trace("\tmaxColorAttachments: {}", limits.maxColorAttachments);
+		spdlog::trace("\tmaxColorAttachmentBytesPerSample: {}", limits.maxColorAttachmentBytesPerSample);
+		spdlog::trace("\tmaxComputeWorkgroupStorageSize: {}", limits.maxComputeWorkgroupStorageSize);
+		spdlog::trace("\tmaxComputeInvocationsPerWorkgroup: {}", limits.maxComputeInvocationsPerWorkgroup);
+		spdlog::trace("\tmaxComputeWorkgroupSizeX: {}", limits.maxComputeWorkgroupSizeX);
+		spdlog::trace("\tmaxComputeWorkgroupSizeY: {}", limits.maxComputeWorkgroupSizeY);
+		spdlog::trace("\tmaxComputeWorkgroupSizeZ: {}", limits.maxComputeWorkgroupSizeZ);
+		spdlog::trace("\tmaxComputeWorkgroupsPerDimension: {}", limits.maxComputeWorkgroupsPerDimension);
+		spdlog::trace("\tmaxImmediateSize: {}", limits.maxImmediateSize);
+
+        spdlog::trace("}");
+
     }
 }
