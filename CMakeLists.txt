@@ -78,8 +78,7 @@ FetchContent_MakeAvailable(glm spdlog)
 
 add_executable(${PROJECT_NAME} 
     src/main.cpp 
-    src/webgpu/chemical_webgpu.cpp
-    src/webgpu/reflection.cpp
+    src/wgpu.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm spdlog::spdlog)
