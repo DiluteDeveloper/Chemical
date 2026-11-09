@@ -14,12 +14,12 @@ namespace Chemical {
     class WGPU {
     public:
 
-        static std::tuple<WGPUInstance, WGPUAdapter, 
-            WGPUDevice, WGPUQueue> initialise_webgpu();
+        static std::tuple<WGPUInstance, WGPUAdapter, WGPUDevice, WGPUQueue> initialise_webgpu();
+        static void terminate_webgpu(std::tuple<WGPUInstance, WGPUAdapter, WGPUDevice, WGPUQueue>& wgpu);
 
         static void print_adapter_info(WGPUAdapter& adapter);
         static WGPUStringView 
-            create_webgpu_string_view(const std::string_view& string);
+            string_view(const std::string_view& string);
     private:
 
         static void request_adapter_async(WGPUInstance instance, WGPUAdapter& out_adapter, bool& out_is_adapter_processed, const WGPURequestAdapterOptions* options);

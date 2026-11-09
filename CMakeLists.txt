@@ -19,9 +19,9 @@
         # ninja (sudo apt install generate-ninja) for faster compilation
 
     # Configure (web)
-        # emcmake cmake -S . -B build_es/ -G Ninja -DCMAKE_BUILD_TYPE=Debug -DUSE_MOLD=true
+    # emcmake cmake -S . -B build_es/ -G Ninja -DCMAKE_BUILD_TYPE=Debug -DUSE_MOLD=true
     # Configure (native)
-        # cmake -S . -B build/ -G Ninja -DCMAKE_BUILD_TYPE=Debug -DUSE_MOLD=true
+    # cmake -S . -B build/ -DCMAKE_CXX_FLAGS="-DFORCE_X11" -G Ninja -DCMAKE_BUILD_TYPE=Debug -DUSE_MOLD=true
     # Build and Run (native)
         # bear -- cmake --build . -j$(nproc) && mv compile_commands.json ../ && ./ChemicalMC_PK
     # Build and Run (web)
@@ -44,8 +44,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(CMAKE_C_FLAGS "-pthread")
-set(CMAKE_CXX_FLAGS "-pthread -Wall -Wextra")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
@@ -61,6 +61,14 @@ endif()
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 include(FetchContent)
+
+# if(NOT EMSCRIPTEN)
+#     FetchContent_Declare(glfw
+#         GIT_REPOSITORY https://github.com/glfw/glfw.git
+#         GIT_TAG        3.5.1
+#         GIT_SHALLOW    FALSE
+#     )
+# endif()
 
 FetchContent_Declare(glm
     GIT_REPOSITORY https://github.com/g-truc/glm.git
@@ -79,13 +87,14 @@ FetchContent_MakeAvailable(glm spdlog)
 add_executable(${PROJECT_NAME} 
     src/main.cpp 
     src/wgpu.cpp
+    src/glfw.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm spdlog::spdlog)
 
 if(EMSCRIPTEN)
-    target_compile_options(${PROJECT_NAME} PUBLIC --use-port=emdawnwebgpu)
-    target_link_options(${PROJECT_NAME} PUBLIC --use-port=emdawnwebgpu -sASYNCIFY)
+    target_compile_options(${PROJECT_NAME} PRIVATE --use-port=emdawnwebgpu)
+    target_link_options(${PROJECT_NAME} PRIVATE --use-port=emdawnwebgpu -sASYNCIFY -sUSE_GLFW=3)
     set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".html")
 else()
     FetchContent_Declare(dawn
@@ -106,7 +115,9 @@ else()
 
     FetchContent_MakeAvailable(dawn)
 
-    target_link_libraries(${PROJECT_NAME} PRIVATE dawn::webgpu_dawn)
+    target_link_libraries(${PROJECT_NAME} PRIVATE dawn::webgpu_dawn glfw)
+
+    # target_compile_definitions(${PROJECT_NAME} GLFW_INCLUDE_NONE)
 endif()
 
 

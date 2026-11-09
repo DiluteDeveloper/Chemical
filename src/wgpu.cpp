@@ -8,11 +8,10 @@
 
 namespace Chemical {
     
-    std::tuple<WGPUInstance, WGPUAdapter, 
-        WGPUDevice, WGPUQueue> WGPU::initialise_webgpu() {
+    std::tuple<WGPUInstance, WGPUAdapter, WGPUDevice, WGPUQueue> WGPU::initialise_webgpu() {
 
-        auto wgpu = std::make_tuple<WGPUInstance, WGPUAdapter, 
-        WGPUDevice, WGPUQueue>(nullptr, nullptr, nullptr, nullptr);
+        auto wgpu = std::make_tuple<WGPUInstance, WGPUAdapter, WGPUDevice, WGPUQueue>(nullptr, nullptr, nullptr, nullptr);
+
         auto& [instance, adapter, device, queue] = wgpu;
 
         spdlog::trace("Creating WebGPU instance.");
@@ -21,7 +20,7 @@ namespace Chemical {
 
 #ifdef __EMSCRIPTEN__
         spdlog::trace("Using Emscripten WebGPU backend.");
-        WGPUInstance wgpu_instance = wgpuCreateInstance(nullptr);
+        instance = wgpuCreateInstance(nullptr);
 #else
         instance = wgpuCreateInstance(&desc);
 #endif
@@ -38,9 +37,9 @@ namespace Chemical {
         request_adapter_async(instance, adapter, is_adapter_processed, &adapter_options);
 
 #ifdef __EMSCRIPTEN__
-        while(!requests.is_adapter_processed) {
+        while(!is_adapter_processed) {
             emscripten_sleep(100); 
-            wgpuInstanceProcessEvents(wgpu_instance);
+            wgpuInstanceProcessEvents(instance);
         }
 #else
         wgpuInstanceProcessEvents(instance);
@@ -49,20 +48,13 @@ namespace Chemical {
         if(!adapter)
             throw std::runtime_error("Failed to request WebGPU adapter.");
 
-        // print_adapter_info(.adapter);
-
-        // spdlog::trace("Releasing WebGPU instance.");
-
-        // Drop down reference count and release if 0 (Referenced by adapter so released with adapter now)
-        // wgpuInstanceRelease(wgpu_instance);
-
         spdlog::trace("Requesting WebGPU device.");
 
         bool is_device_processed = false;
 
         WGPUDeviceDescriptor device_descriptor = WGPU_DEVICE_DESCRIPTOR_INIT;
-        device_descriptor.label = create_webgpu_string_view("WGPUDevice");
-        device_descriptor.defaultQueue.label= create_webgpu_string_view("WGPUDeviceQueue");
+        device_descriptor.label = string_view("WGPUDevice");
+        device_descriptor.defaultQueue.label= string_view("WGPUDeviceQueue");
 
         auto on_webgpu_device_lost = [](WGPUDevice const *, WGPUDeviceLostReason reason, WGPUStringView message, void*, void*) {
 
@@ -88,9 +80,9 @@ namespace Chemical {
 
 
 #ifdef __EMSCRIPTEN__
-        while(!requests.is_adapter_processed) {
+        while(!is_device_processed) {
             emscripten_sleep(100); 
-            wgpuInstanceProcessEvents(wgpu_instance);
+            wgpuInstanceProcessEvents(instance);
         }
 #else
         wgpuInstanceProcessEvents(instance);
@@ -99,18 +91,36 @@ namespace Chemical {
         if(!device)
             throw std::runtime_error("Failed to request WebGPU device.");
 
-        // spdlog::trace("Releasing WebGPU adapter.");
-        // wgpuAdapterRelease(requests.adapter);
-        
         queue = wgpuDeviceGetQueue(device);
 
+        // this callback doesn't work how i expect it to anyway
+        //      auto on_queue_work_done = [](WGPUQueueWorkDoneStatus, WGPUStringView message, void*, void*) {
+        // spdlog::trace("Queued work finished: {}", message.data);
+        //      };
+        //
+        //      wgpuQueueOnSubmittedWorkDone(queue, 
+        //          WGPUQueueWorkDoneCallbackInfo {
+        //          nullptr,
+        //          WGPUCallbackMode_AllowProcessEvents,
+        //          on_queue_work_done,
+        //          nullptr,
+        //          nullptr
+        //      });
         return wgpu;
     }
+    void WGPU::terminate_webgpu(std::tuple<WGPUInstance, WGPUAdapter, WGPUDevice, WGPUQueue>& wgpu) {
 
-    //
-    //     spdlog::trace("Releasing WebGPU device.");
-    //     wgpuDeviceRelease(device);
-    // }
+        auto& [instance, adapter,device, queue] = wgpu;
+
+        spdlog::trace("Releasing WebGPU instance.");
+        wgpuInstanceRelease(instance);
+        spdlog::trace("Releasing WebGPU adapter.");
+        wgpuAdapterRelease(adapter);
+        spdlog::trace("Releasing WebGPU queue.");
+        wgpuQueueRelease(queue);
+        spdlog::trace("Releasing WebGPU device.");
+        wgpuDeviceRelease(device);
+    }
 
     void WGPU::request_adapter_async(WGPUInstance instance, WGPUAdapter& out_adapter, bool& out_is_adapter_processed, const WGPURequestAdapterOptions* options) {
 
@@ -135,6 +145,7 @@ namespace Chemical {
             }
         );
     }
+
     void WGPU::request_device_async(WGPUAdapter& adapter, WGPUDevice& out_device, bool& out_is_device_processed, const WGPUDeviceDescriptor* descriptor) {
 
         auto on_device_request_ended = [](WGPURequestDeviceStatus status,
@@ -159,6 +170,7 @@ namespace Chemical {
             }
         );
     }
+
     void WGPU::print_adapter_info(WGPUAdapter& adapter) {
 
         auto backend_type_map = get_backend_type_map();
@@ -170,22 +182,22 @@ namespace Chemical {
 
         wgpuAdapterGetInfo(adapter, &info);
 
-        spdlog::trace("WebGPU adapter information {");
+        spdlog::info("WebGPU adapter information {");
 
-		spdlog::trace("\tvendor: {},", info.vendor.data);
-		spdlog::trace("\tarchitecture: {},", info.architecture.data);
-		spdlog::trace("\tdevice: {},", info.device.data);
-		spdlog::trace("\tdescription: {},", info.description.data);
+		spdlog::info("\tvendor: {},", info.vendor.data);
+		spdlog::info("\tarchitecture: {},", info.architecture.data);
+		spdlog::info("\tdevice: {},", info.device.data);
+		spdlog::info("\tdescription: {},", info.description.data);
 
         // Just let it crash honestly its so rare
-		spdlog::trace("\tbackendType: {},", backend_type_map.at(info.backendType));
-		spdlog::trace("\tadapterType: {},", adapter_type_map.at(info.adapterType));
-		spdlog::trace("\tvendorID: {},", info.vendorID);
-		spdlog::trace("\tdeviceID: {},", info.deviceID);
-		spdlog::trace("\tsubgroupMinSize: {},", info.subgroupMinSize);
-		spdlog::trace("\tsubgroupMaxSize: {},", info.subgroupMaxSize);
+		spdlog::info("\tbackendType: {},", backend_type_map.at(info.backendType));
+		spdlog::info("\tadapterType: {},", adapter_type_map.at(info.adapterType));
+		spdlog::info("\tvendorID: {},", info.vendorID);
+		spdlog::info("\tdeviceID: {},", info.deviceID);
+		spdlog::info("\tsubgroupMinSize: {},", info.subgroupMinSize);
+		spdlog::info("\tsubgroupMaxSize: {},", info.subgroupMaxSize);
 
-        spdlog::trace("}");
+        spdlog::info("}");
 
         wgpuAdapterInfoFreeMembers(info);
 
@@ -194,18 +206,18 @@ namespace Chemical {
         WGPUSupportedFeatures* features = new WGPUSupportedFeatures();
         wgpuAdapterGetFeatures(adapter, features);
 
-        spdlog::trace("WebGPU adapter supported features {");
+        spdlog::info("WebGPU adapter supported features {");
 
         for(size_t i = 0; i < features->featureCount; i++) {
             int feature = *(features->features + i);
             if (auto search = feature_name_map.find(feature); search != feature_name_map.end())
-                spdlog::trace("\t{},", search->second);
+                spdlog::info("\t{},", search->second);
             else
                 spdlog::warn("\tWebGPU adapter feature {0:x} does not appear to have a reflected name, Chemical may not support this feature.", feature);
             
         }
 
-        spdlog::trace("}");
+        spdlog::info("}");
 
         wgpuSupportedFeaturesFreeMembers(*features);
         delete features;
@@ -216,46 +228,47 @@ namespace Chemical {
 
         wgpuAdapterGetLimits(adapter, &limits);
 
-        spdlog::trace("WebGPU adapter limits {");
+        spdlog::info("WebGPU adapter limits {");
 
 
-		spdlog::trace("\tmaxTextureDimension1D: {}", limits.maxTextureDimension1D);
-		spdlog::trace("\tmaxTextureDimension2D: {}", limits.maxTextureDimension2D);
-		spdlog::trace("\tmaxTextureDimension3D: {}", limits.maxTextureDimension3D);
-		spdlog::trace("\tmaxTextureArrayLayers: {}", limits.maxTextureArrayLayers);
-		spdlog::trace("\tmaxBindGroups: {}", limits.maxBindGroups);
-		spdlog::trace("\tmaxBindGroupsPlusVertexBuffers: {}", limits.maxBindGroupsPlusVertexBuffers);
-		spdlog::trace("\tmaxBindingsPerBindGroup: {}", limits.maxBindingsPerBindGroup);
-		spdlog::trace("\tmaxDynamicUniformBuffersPerPipelineLayout: {}", limits.maxDynamicUniformBuffersPerPipelineLayout);
-		spdlog::trace("\tmaxDynamicStorageBuffersPerPipelineLayout: {}", limits.maxDynamicStorageBuffersPerPipelineLayout);
-		spdlog::trace("\tmaxSampledTexturesPerShaderStage: {}", limits.maxSampledTexturesPerShaderStage);
-		spdlog::trace("\tmaxSamplersPerShaderStage: {}", limits.maxSamplersPerShaderStage);
-		spdlog::trace("\tmaxStorageBuffersPerShaderStage: {}", limits.maxStorageBuffersPerShaderStage);
-		spdlog::trace("\tmaxStorageTexturesPerShaderStage: {}", limits.maxStorageTexturesPerShaderStage);
-		spdlog::trace("\tmaxUniformBuffersPerShaderStage: {}", limits.maxUniformBuffersPerShaderStage);
-		spdlog::trace("\tmaxUniformBufferBindingSize: {}", limits.maxUniformBufferBindingSize);
-		spdlog::trace("\tmaxStorageBufferBindingSize: {}", limits.maxStorageBufferBindingSize);
-		spdlog::trace("\tminUniformBufferOffsetAlignment: {}", limits.minUniformBufferOffsetAlignment);
-		spdlog::trace("\tminStorageBufferOffsetAlignment: {}", limits.minStorageBufferOffsetAlignment);
-		spdlog::trace("\tmaxVertexBuffers: {}", limits.maxVertexBuffers);
-		spdlog::trace("\tmaxBufferSize: {}", limits.maxBufferSize);
-		spdlog::trace("\tmaxVertexAttributes: {}", limits.maxVertexAttributes);
-		spdlog::trace("\tmaxVertexBufferArrayStride: {}", limits.maxVertexBufferArrayStride);
-		spdlog::trace("\tmaxInterStageShaderVariables: {}", limits.maxInterStageShaderVariables);
-		spdlog::trace("\tmaxColorAttachments: {}", limits.maxColorAttachments);
-		spdlog::trace("\tmaxColorAttachmentBytesPerSample: {}", limits.maxColorAttachmentBytesPerSample);
-		spdlog::trace("\tmaxComputeWorkgroupStorageSize: {}", limits.maxComputeWorkgroupStorageSize);
-		spdlog::trace("\tmaxComputeInvocationsPerWorkgroup: {}", limits.maxComputeInvocationsPerWorkgroup);
-		spdlog::trace("\tmaxComputeWorkgroupSizeX: {}", limits.maxComputeWorkgroupSizeX);
-		spdlog::trace("\tmaxComputeWorkgroupSizeY: {}", limits.maxComputeWorkgroupSizeY);
-		spdlog::trace("\tmaxComputeWorkgroupSizeZ: {}", limits.maxComputeWorkgroupSizeZ);
-		spdlog::trace("\tmaxComputeWorkgroupsPerDimension: {}", limits.maxComputeWorkgroupsPerDimension);
-		spdlog::trace("\tmaxImmediateSize: {}", limits.maxImmediateSize);
+		spdlog::info("\tmaxTextureDimension1D: {}", limits.maxTextureDimension1D);
+		spdlog::info("\tmaxTextureDimension2D: {}", limits.maxTextureDimension2D);
+		spdlog::info("\tmaxTextureDimension3D: {}", limits.maxTextureDimension3D);
+		spdlog::info("\tmaxTextureArrayLayers: {}", limits.maxTextureArrayLayers);
+		spdlog::info("\tmaxBindGroups: {}", limits.maxBindGroups);
+		spdlog::info("\tmaxBindGroupsPlusVertexBuffers: {}", limits.maxBindGroupsPlusVertexBuffers);
+		spdlog::info("\tmaxBindingsPerBindGroup: {}", limits.maxBindingsPerBindGroup);
+		spdlog::info("\tmaxDynamicUniformBuffersPerPipelineLayout: {}", limits.maxDynamicUniformBuffersPerPipelineLayout);
+		spdlog::info("\tmaxDynamicStorageBuffersPerPipelineLayout: {}", limits.maxDynamicStorageBuffersPerPipelineLayout);
+		spdlog::info("\tmaxSampledTexturesPerShaderStage: {}", limits.maxSampledTexturesPerShaderStage);
+		spdlog::info("\tmaxSamplersPerShaderStage: {}", limits.maxSamplersPerShaderStage);
+		spdlog::info("\tmaxStorageBuffersPerShaderStage: {}", limits.maxStorageBuffersPerShaderStage);
+		spdlog::info("\tmaxStorageTexturesPerShaderStage: {}", limits.maxStorageTexturesPerShaderStage);
+		spdlog::info("\tmaxUniformBuffersPerShaderStage: {}", limits.maxUniformBuffersPerShaderStage);
+		spdlog::info("\tmaxUniformBufferBindingSize: {}", limits.maxUniformBufferBindingSize);
+		spdlog::info("\tmaxStorageBufferBindingSize: {}", limits.maxStorageBufferBindingSize);
+		spdlog::info("\tminUniformBufferOffsetAlignment: {}", limits.minUniformBufferOffsetAlignment);
+		spdlog::info("\tminStorageBufferOffsetAlignment: {}", limits.minStorageBufferOffsetAlignment);
+		spdlog::info("\tmaxVertexBuffers: {}", limits.maxVertexBuffers);
+		spdlog::info("\tmaxBufferSize: {}", limits.maxBufferSize);
+		spdlog::info("\tmaxVertexAttributes: {}", limits.maxVertexAttributes);
+		spdlog::info("\tmaxVertexBufferArrayStride: {}", limits.maxVertexBufferArrayStride);
+		spdlog::info("\tmaxInterStageShaderVariables: {}", limits.maxInterStageShaderVariables);
+		spdlog::info("\tmaxColorAttachments: {}", limits.maxColorAttachments);
+		spdlog::info("\tmaxColorAttachmentBytesPerSample: {}", limits.maxColorAttachmentBytesPerSample);
+		spdlog::info("\tmaxComputeWorkgroupStorageSize: {}", limits.maxComputeWorkgroupStorageSize);
+		spdlog::info("\tmaxComputeInvocationsPerWorkgroup: {}", limits.maxComputeInvocationsPerWorkgroup);
+		spdlog::info("\tmaxComputeWorkgroupSizeX: {}", limits.maxComputeWorkgroupSizeX);
+		spdlog::info("\tmaxComputeWorkgroupSizeY: {}", limits.maxComputeWorkgroupSizeY);
+		spdlog::info("\tmaxComputeWorkgroupSizeZ: {}", limits.maxComputeWorkgroupSizeZ);
+		spdlog::info("\tmaxComputeWorkgroupsPerDimension: {}", limits.maxComputeWorkgroupsPerDimension);
+		spdlog::info("\tmaxImmediateSize: {}", limits.maxImmediateSize);
 
-        spdlog::trace("}");
+        spdlog::info("}");
 
     }
-    WGPUStringView WGPU::create_webgpu_string_view(const std::string_view& string) {
+
+    WGPUStringView WGPU::string_view(const std::string_view& string) {
         return WGPUStringView {
             string.data(),
             string.size()
@@ -366,6 +379,7 @@ namespace Chemical {
         
         return *feature_names;
     }
+
     std::unordered_map<int, const char*>& WGPU::get_backend_type_map() {
         static std::unique_ptr<std::unordered_map<int, const char*>> backend_types;
         if(backend_types != nullptr)
@@ -385,6 +399,7 @@ namespace Chemical {
         });
         return *backend_types;
     }
+
     std::unordered_map<int, const char*>& WGPU::get_adapter_type_map() {
         static std::unique_ptr<std::unordered_map<int, const char*>> adapter_types;
         if(adapter_types != nullptr)
