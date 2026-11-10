@@ -94,7 +94,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm spdlog::spdlog)
 
 if(EMSCRIPTEN)
     target_compile_options(${PROJECT_NAME} PRIVATE --use-port=emdawnwebgpu)
-    target_link_options(${PROJECT_NAME} PRIVATE --use-port=emdawnwebgpu -sASYNCIFY -sUSE_GLFW=3)
+    target_link_options(${PROJECT_NAME} PRIVATE --use-port=emdawnwebgpu --use-port=contrib.glfw3 -sASYNCIFY)
     set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".html")
 else()
     FetchContent_Declare(dawn
@@ -115,12 +115,10 @@ else()
 
     FetchContent_MakeAvailable(dawn)
 
-    target_link_libraries(${PROJECT_NAME} PRIVATE dawn::webgpu_dawn glfw)
+    target_link_libraries(${PROJECT_NAME} PRIVATE dawn::webgpu_dawn dawn_glfw glfw)
 
     # target_compile_definitions(${PROJECT_NAME} GLFW_INCLUDE_NONE)
 endif()
-
-
 
 # ---------------------------------------------------------------------------
 # Dependencies
