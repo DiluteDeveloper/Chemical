@@ -98,6 +98,25 @@ namespace Chemical {
 
        }
 
+        std::tuple<wgpu::SurfaceTexture, wgpu::TextureView> WebGPU::GetNextSurfaceViewData(const wgpu::Surface& surface) {
+            wgpu::SurfaceTexture surface_texture;
+            surface.GetCurrentTexture(&surface_texture);
+            if(surface_texture.status != wgpu::SurfaceGetCurrentTextureStatus::SuccessOptimal) {
+                spdlog::warn("Surface texture status is not success optimal");
+                return std::make_tuple(surface_texture, nullptr);
+            }
+
+            wgpu::TextureViewDescriptor view_descriptor;
+            view_descriptor.format = surface_texture.texture.GetFormat();
+            view_descriptor.dimension = wgpu::TextureViewDimension::e2D;
+            view_descriptor.mipLevelCount = 1;
+            view_descriptor.arrayLayerCount = 1;
+            view_descriptor.aspect = wgpu::TextureAspect::All;
+            wgpu::TextureView target_view = surface_texture.texture.CreateView(&view_descriptor);
+            
+            return std::make_tuple(surface_texture, target_view);
+        }
+
         std::unordered_map<int, std::string> WebGPU::CreateFeatureNameMap() {
 
             return std::unordered_map<int, std::string>{

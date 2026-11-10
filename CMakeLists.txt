@@ -86,15 +86,15 @@ FetchContent_MakeAvailable(glm spdlog)
 
 add_executable(${PROJECT_NAME} 
     src/main.cpp 
-    src/wgpu.cpp
-    src/glfw.cpp
+    src/app.cpp
+    src/utils/webgpu_utils.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm spdlog::spdlog)
 
 if(EMSCRIPTEN)
     target_compile_options(${PROJECT_NAME} PRIVATE --use-port=emdawnwebgpu)
-    target_link_options(${PROJECT_NAME} PRIVATE --use-port=emdawnwebgpu --use-port=contrib.glfw3 -sASYNCIFY)
+    target_link_options(${PROJECT_NAME} PRIVATE --use-port=emdawnwebgpu --use-port=contrib.glfw3 -sASYNCIFY --preload-file ${CMAKE_SOURCE_DIR}/res@/res)
     set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".html")
 else()
     FetchContent_Declare(dawn
@@ -119,6 +119,12 @@ else()
 
     # target_compile_definitions(${PROJECT_NAME} GLFW_INCLUDE_NONE)
 endif()
+
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_SOURCE_DIR}/res
+            ${CMAKE_CURRENT_BINARY_DIR}/res)
 
 # ---------------------------------------------------------------------------
 # Dependencies

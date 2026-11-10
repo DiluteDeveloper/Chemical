@@ -7,7 +7,7 @@
 namespace Chemical {
 
 
-	namespace Util {
+	namespace Utils {
 		std::string ReadFile(const std::filesystem::path& filePath) {
 
 			std::ifstream file(filePath);

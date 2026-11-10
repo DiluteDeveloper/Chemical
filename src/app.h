@@ -18,11 +18,17 @@ namespace Chemical {
         wgpu::Device webgpu_device;
         wgpu::Queue webgpu_queue;
         wgpu::Surface webgpu_surface;
+        wgpu::TextureFormat webgpu_surface_format;
+        wgpu::RenderPipeline pipeline;
 
         GLFWwindow* glfw_window;
         
         void SetupWGPU();
         void SetupGLFW();
+        void SetupRenderPipeline();
+        void ConfigureSurface();
+        void RenderPass(const wgpu::TextureView& view);
+
         static void ApplicationLoop(void* arg);
     };
 }

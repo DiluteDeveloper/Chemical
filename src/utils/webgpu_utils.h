@@ -9,8 +9,9 @@ namespace Chemical {
         public:
 
             static void PrintAdapterInfo(wgpu::Adapter& adapter);
+            static std::tuple<wgpu::SurfaceTexture, wgpu::TextureView> GetNextSurfaceViewData(const wgpu::Surface& surface);
 
-            static wgpu::StringView CreateStringView(const std::string_view& string);
+            // static wgpu::StringView CreateStringView(const std::string_view& string);
         private:
 
             static std::unordered_map<int, 
