@@ -11,7 +11,9 @@ namespace Chemical {
             static void PrintAdapterInfo(wgpu::Adapter& adapter);
             static std::tuple<wgpu::SurfaceTexture, wgpu::TextureView> GetNextSurfaceViewData(const wgpu::Surface& surface);
 
-            // static wgpu::StringView CreateStringView(const std::string_view& string);
+            static void AwaitAsync(const wgpu::Instance& instance, const wgpu::Future& future);
+
+            static wgpu::Limits CreateRequiredLimits();
         private:
 
             static std::unordered_map<int, 

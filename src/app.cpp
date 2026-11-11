@@ -1,4 +1,7 @@
+#include <cstdint>
+#include <iterator>
 #include <spdlog/spdlog.h>
+#include <webgpu/webgpu_cpp.h>
 #include <webgpu/webgpu_glfw.h>
 #include <fstream>
 
@@ -21,6 +24,9 @@ namespace Chemical {
 
         Utils::WebGPU::PrintAdapterInfo(webgpu_adapter);
 
+        // ReadBackBuffer();
+
+        InitialiseBuffers();
 
 #ifdef __EMSCRIPTEN__
         emscripten_set_main_loop_arg(ApplicationLoop, this, 0, true);
@@ -55,6 +61,7 @@ namespace Chemical {
         // pingpong = (pingpong + 1) % 2;
 
         glfwPollEvents();
+        app.webgpu_instance.ProcessEvents();
     }
     void App::SetupWGPU() {
 
@@ -64,51 +71,38 @@ namespace Chemical {
         
         spdlog::trace("Requesting WebGPU adapter.");
 
-        webgpu_instance.RequestAdapter(nullptr, wgpu::CallbackMode::AllowProcessEvents, [this](wgpu::RequestAdapterStatus status, wgpu::Adapter new_adapter, wgpu::StringView message) {
+        wgpu::Future adapter_future = webgpu_instance.RequestAdapter(nullptr, wgpu::CallbackMode::WaitAnyOnly, [this](wgpu::RequestAdapterStatus status, wgpu::Adapter new_adapter, wgpu::StringView message) {
             if (status == wgpu::RequestAdapterStatus::Success)
                 webgpu_adapter = new_adapter;
             else
                 spdlog::error("WebGPU adapter request failed: {}", message.data);
         });
 
-#ifdef __EMSCRIPTEN__
-        while(!webgpu_adapter) {
-            emscripten_sleep(10); 
-            webgpu_instance.ProcessEvents();
-        }
-#else
-        webgpu_instance.ProcessEvents();
-#endif
-
+        Utils::WebGPU::AwaitAsync(webgpu_instance, adapter_future);
 
         // Device ----------------------------------------
         
         spdlog::trace("Requesting WebGPU device.");
 
         wgpu::DeviceDescriptor device_descriptor;
-        device_descriptor.SetDeviceLostCallback(wgpu::CallbackMode::AllowProcessEvents, [](const wgpu::Device&, wgpu::DeviceLostReason, wgpu::StringView message) {
+        wgpu::Limits required_limits = Utils::WebGPU::CreateRequiredLimits();
+        device_descriptor.requiredLimits = &required_limits;
+
+        device_descriptor.SetDeviceLostCallback(wgpu::CallbackMode::WaitAnyOnly, [](const wgpu::Device&, wgpu::DeviceLostReason, wgpu::StringView message) {
             spdlog::error("WebGPU device lost: {}", message.data);
         });
         device_descriptor.SetUncapturedErrorCallback([](const wgpu::Device&, wgpu::ErrorType type, wgpu::StringView message) {
             spdlog::error("WebGPU device uncaptured error: {} with error type: ", message.data, ((int)type));
         });
 
-        webgpu_adapter.RequestDevice(&device_descriptor, wgpu::CallbackMode::AllowProcessEvents, [this](wgpu::RequestDeviceStatus status, wgpu::Device new_device, wgpu::StringView message) {
+        wgpu::Future device_future = webgpu_adapter.RequestDevice(&device_descriptor, wgpu::CallbackMode::WaitAnyOnly, [this](wgpu::RequestDeviceStatus status, wgpu::Device new_device, wgpu::StringView message) {
           if (status == wgpu::RequestDeviceStatus::Success)
               webgpu_device = new_device;
           else
               spdlog::error("WebGPU device request failed: {}", message.data);
         });
 
-#ifdef __EMSCRIPTEN__
-        while(!webgpu_device) {
-            emscripten_sleep(10); 
-            webgpu_instance.ProcessEvents();
-        }
-#else
-        webgpu_instance.ProcessEvents();
-#endif
-
+        Utils::WebGPU::AwaitAsync(webgpu_instance, device_future);
 
         webgpu_queue = webgpu_device.GetQueue();
 
@@ -180,7 +174,8 @@ namespace Chemical {
         wgpu::RenderPassEncoder render_pass = encoder.BeginRenderPass(&rp_desc);
     
         render_pass.SetPipeline(pipeline);
-        render_pass.Draw(3, 1, 0, 0);
+        render_pass.SetVertexBuffer(0, vertex_buffer, 0, vertex_buffer.GetSize());
+        render_pass.Draw(vertex_count, 1, 0, 0);
         render_pass.End();
 
         wgpu::CommandBuffer cmd = encoder.Finish(nullptr);
@@ -203,10 +198,22 @@ namespace Chemical {
 
         wgpu::ShaderModule shader_module = webgpu_device.CreateShaderModule(&shader_desc);
 
+        wgpu::VertexBufferLayout layout;        
+
+        wgpu::VertexAttribute attrib;
+
+        layout.attributeCount = 1;
+        layout.attributes = &attrib;
+        layout.arrayStride = 2 * sizeof(float);
+
+        attrib.format = wgpu::VertexFormat::Float32x2;
+        attrib.shaderLocation = 0;
+        attrib.offset = 0;
+
         wgpu::RenderPipelineDescriptor rp_desc;
 
-        // rp_desc.vertex.bufferCount = 0;
-        // rp_desc.vertex.buffers = nullptr;
+        rp_desc.vertex.bufferCount = 1;
+        rp_desc.vertex.buffers = &layout;
         rp_desc.vertex.module = shader_module;
         rp_desc.vertex.entryPoint = "vs_main";
         rp_desc.vertex.constantCount = 0;
@@ -251,5 +258,70 @@ namespace Chemical {
         rp_desc.layout = nullptr;
 
         pipeline = webgpu_device.CreateRenderPipeline(&rp_desc);
+    }
+    void App::ReadBackBuffer() {
+
+        wgpu::BufferDescriptor buffer_desc;
+        buffer_desc.label = "Some GPU-side data buffer";
+        buffer_desc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::CopySrc;
+        buffer_desc.size = 16;
+        buffer_desc.mappedAtCreation = false;
+        wgpu::Buffer buffer1 = webgpu_device.CreateBuffer(&buffer_desc);
+        buffer_desc.label = "Some GPU-side data buffer";
+        buffer_desc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::MapRead;
+        wgpu::Buffer& buffer2 = *new wgpu::Buffer(webgpu_device.CreateBuffer(&buffer_desc));
+
+        std::vector<uint8_t> numbers(16);
+        for (uint8_t i = 0; i < 16; ++i) numbers[i] = i;
+
+        webgpu_queue.WriteBuffer(buffer1, 0, numbers.data(), numbers.size());
+
+        wgpu::CommandEncoder encoder = webgpu_device.CreateCommandEncoder(nullptr);
+
+        encoder.CopyBufferToBuffer(buffer1, 0, buffer2, 0, 16);
+
+        wgpu::CommandBuffer cmd = encoder.Finish(nullptr);
+
+        webgpu_queue.Submit(1, &cmd);
+
+        buffer2.MapAsync(wgpu::MapMode::Read, 0, 16, wgpu::CallbackMode::AllowProcessEvents, [](wgpu::MapAsyncStatus status, wgpu::StringView, wgpu::Buffer* buffer) {
+            if(status == wgpu::MapAsyncStatus::Success)  {
+                spdlog::info("Buffer 2 mapped with status {}", (int)status);
+                uint8_t* buffer_data = (uint8_t*)buffer->GetConstMappedRange(0, 16);
+                spdlog::info("bufferData = [");
+                for (int i = 0; i < 16; ++i) {
+                    if (i > 0) spdlog::info(", ");
+                    spdlog::info("{}", (int)buffer_data[i]);
+                }
+                spdlog::info("]");
+                buffer->Unmap();
+            }
+            else
+                spdlog::error("Buffer 2 mapped with status {}", (int)status);
+        }, &buffer2);
+
+    }
+    void App::InitialiseBuffers() {
+        std::vector<float> vertex_data = {
+            // Define a first triangle:
+            -0.5, -0.5,
+            +0.5, -0.5,
+            +0.0, +0.5,
+
+            // Add a second triangle:
+            -0.55f, -0.5,
+            -0.05f, +0.5,
+            -0.55f, +0.5
+        };
+        
+        vertex_count = static_cast<uint32_t>(vertex_data.size() / 2);
+
+        wgpu::BufferDescriptor buffer_desc;
+        buffer_desc.size = vertex_data.size() * sizeof(float);
+        buffer_desc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Vertex;
+        buffer_desc.mappedAtCreation = false;
+        vertex_buffer = webgpu_device.CreateBuffer(&buffer_desc);
+        
+        webgpu_queue.WriteBuffer(vertex_buffer, 0, vertex_data.data(), buffer_desc.size);
     }
 }

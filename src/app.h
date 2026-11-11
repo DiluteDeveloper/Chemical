@@ -21,6 +21,9 @@ namespace Chemical {
         wgpu::TextureFormat webgpu_surface_format;
         wgpu::RenderPipeline pipeline;
 
+        uint32_t vertex_count = 0;
+        wgpu::Buffer vertex_buffer;
+
         GLFWwindow* glfw_window;
         
         void SetupWGPU();
@@ -28,6 +31,8 @@ namespace Chemical {
         void SetupRenderPipeline();
         void ConfigureSurface();
         void RenderPass(const wgpu::TextureView& view);
+        void ReadBackBuffer();
+        void InitialiseBuffers();
 
         static void ApplicationLoop(void* arg);
     };

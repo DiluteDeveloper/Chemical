@@ -1,6 +1,7 @@
 #include "webgpu_utils.h"
 
 #include <spdlog/spdlog.h>
+#include <webgpu/webgpu_cpp.h>
 
 #ifdef __EMSCRIPTEN__
     #include <emscripten.h>
@@ -228,7 +229,7 @@ namespace Chemical {
                 {wgpu::BackendType::OpenGL, "wgpu::BackendType::OpenGL"},
                 {wgpu::BackendType::OpenGLES, "wgpu::BackendType::OpenGLES"}
             };
-       }
+        }
 
         std::unordered_map<wgpu::AdapterType, std::string> WebGPU::CreateAdapterTypeMap() {
             return std::unordered_map<wgpu::AdapterType, std::string>{
@@ -237,7 +238,29 @@ namespace Chemical {
                 {wgpu::AdapterType::CPU, "wgpu::AdapterType::CPU"},
                 {wgpu::AdapterType::Unknown, "wgpu::AdapterType::Unknown"}
             };
-       }
-   } 
+        }
+        void WebGPU::AwaitAsync(const wgpu::Instance& instance, const wgpu::Future& future) {
 
+            while(true) {
+#ifdef __EMSCRIPTEN__
+                emscripten_sleep(10); 
+#endif
+                if(wgpu::WaitStatus s = instance.WaitAny(future, 0); s == wgpu::WaitStatus::Success)
+                    return;
+            }
+
+
+        }
+
+        wgpu::Limits WebGPU::CreateRequiredLimits() {
+            wgpu::Limits limits {
+                .maxVertexBuffers = 1,
+                .maxBufferSize = 6 * 2 * sizeof(float),
+                .maxVertexAttributes = 1,
+                .maxVertexBufferArrayStride = 2 * sizeof(float)
+            };
+
+            return limits;
+        }
+    } 
 }
