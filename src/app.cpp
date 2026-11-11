@@ -85,10 +85,10 @@ namespace Chemical {
         spdlog::trace("Requesting WebGPU device.");
 
         wgpu::DeviceDescriptor device_descriptor;
-        wgpu::Limits required_limits = Utils::WebGPU::CreateRequiredLimits();
+        wgpu::Limits& required_limits = *new wgpu::Limits(Utils::WebGPU::CreateRequiredLimits());
         device_descriptor.requiredLimits = &required_limits;
 
-        device_descriptor.SetDeviceLostCallback(wgpu::CallbackMode::WaitAnyOnly, [](const wgpu::Device&, wgpu::DeviceLostReason, wgpu::StringView message) {
+        device_descriptor.SetDeviceLostCallback(wgpu::CallbackMode::AllowProcessEvents, [](const wgpu::Device&, wgpu::DeviceLostReason, wgpu::StringView message) {
             spdlog::error("WebGPU device lost: {}", message.data);
         });
         device_descriptor.SetUncapturedErrorCallback([](const wgpu::Device&, wgpu::ErrorType type, wgpu::StringView message) {
@@ -183,81 +183,91 @@ namespace Chemical {
         webgpu_queue.Submit(1, &cmd);
     }
     void App::SetupRenderPipeline() {
-
-		std::ifstream shader_file("res/shaders/main.wgsl");
+        std::ifstream shader_file("res/shaders/main.wgsl");
         if (!shader_file.is_open())
             throw std::runtime_error("Failed to read file: res/shaders/main.wgsl");
+        
 
         std::string shader_source((std::istreambuf_iterator<char>(shader_file)),
             std::istreambuf_iterator<char>());
-
-        wgpu::ShaderSourceWGSL shader_code({nullptr, shader_source.data()});
-
-        wgpu::ShaderModuleDescriptor shader_desc;
-        shader_desc.nextInChain = &shader_code;
-
+        
+        wgpu::ShaderSourceWGSL shader_code({ .nextInChain = nullptr, .code = shader_source.data() });
+        
+        wgpu::ShaderModuleDescriptor shader_desc{
+            .nextInChain = &shader_code,
+        };
+        
         wgpu::ShaderModule shader_module = webgpu_device.CreateShaderModule(&shader_desc);
-
-        wgpu::VertexBufferLayout layout;        
-
-        wgpu::VertexAttribute attrib;
-
-        layout.attributeCount = 1;
-        layout.attributes = &attrib;
-        layout.arrayStride = 2 * sizeof(float);
-
-        attrib.format = wgpu::VertexFormat::Float32x2;
-        attrib.shaderLocation = 0;
-        attrib.offset = 0;
-
-        wgpu::RenderPipelineDescriptor rp_desc;
-
-        rp_desc.vertex.bufferCount = 1;
-        rp_desc.vertex.buffers = &layout;
-        rp_desc.vertex.module = shader_module;
-        rp_desc.vertex.entryPoint = "vs_main";
-        rp_desc.vertex.constantCount = 0;
-        rp_desc.vertex.constants = nullptr;
-
-        rp_desc.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
-        rp_desc.primitive.stripIndexFormat = wgpu::IndexFormat::Undefined;
-        rp_desc.primitive.frontFace = wgpu::FrontFace::CCW;
-        rp_desc.primitive.cullMode = wgpu::CullMode::None;
-
-        wgpu::FragmentState frag;
-        frag.module = shader_module;
-        frag.entryPoint = "fs_main";
-        frag.constantCount = 0;
-        frag.constants = nullptr;
-
-        rp_desc.fragment = &frag;
-
-        rp_desc.depthStencil = nullptr;
-
-        wgpu::BlendState blend;
-        blend.color.srcFactor = wgpu::BlendFactor::SrcAlpha;
-        blend.color.dstFactor = wgpu::BlendFactor::OneMinusSrcAlpha;
-        blend.color.operation = wgpu::BlendOperation::Add;
-        blend.alpha.srcFactor = wgpu::BlendFactor::Zero;
-        blend.alpha.dstFactor = wgpu::BlendFactor::One;
-        blend.alpha.operation = wgpu::BlendOperation::Add;
-
-        wgpu::ColorTargetState color_target;
-        color_target.format = webgpu_surface_format;
-        color_target.blend = &blend;
-        color_target.writeMask = wgpu::ColorWriteMask::All;
-
-        frag.targetCount = 1;
-        frag.targets= &color_target;
-
-        rp_desc.multisample.count = 1;
-        rp_desc.multisample.mask = ~0u;
-
-        rp_desc.multisample.alphaToCoverageEnabled = false;
-
-        rp_desc.layout = nullptr;
-
-        pipeline = webgpu_device.CreateRenderPipeline(&rp_desc);
+        
+        wgpu::VertexAttribute attrib[]{
+            {.format = wgpu::VertexFormat::Float32x2,
+            .offset = 0,
+            .shaderLocation = 0},
+            {.format = wgpu::VertexFormat::Float32x3,
+            .offset = 2 * sizeof(float),
+            .shaderLocation = 1},
+        };
+        
+        wgpu::VertexBufferLayout layout{
+            .arrayStride = 5 * sizeof(float),
+            .attributeCount = 2,
+            .attributes = &attrib[0],
+        };
+        
+        wgpu::BlendState blend{
+            .color = {
+                .operation = wgpu::BlendOperation::Add,
+                .srcFactor = wgpu::BlendFactor::SrcAlpha,
+                .dstFactor = wgpu::BlendFactor::OneMinusSrcAlpha,
+            },
+            .alpha = {
+                .operation = wgpu::BlendOperation::Add,
+                .srcFactor = wgpu::BlendFactor::Zero,
+                .dstFactor = wgpu::BlendFactor::One,
+            },
+        };
+        
+        wgpu::ColorTargetState color_target{
+            .format = webgpu_surface_format,
+            .blend = &blend,
+            .writeMask = wgpu::ColorWriteMask::All,
+        };
+        
+        wgpu::FragmentState frag{
+            .module = shader_module,
+            .entryPoint = "fs_main",
+            .constantCount = 0,
+            .constants = nullptr,
+            .targetCount = 1,
+            .targets = &color_target,
+        };
+        
+        wgpu::RenderPipelineDescriptor rp_desc{
+            .layout = nullptr,
+            .vertex = {
+                .module = shader_module,
+                .entryPoint = "vs_main",
+                .constantCount = 0,
+                .constants = nullptr,
+                .bufferCount = 1,
+                .buffers = &layout,
+            },
+            .primitive = {
+                .topology = wgpu::PrimitiveTopology::TriangleList,
+                .stripIndexFormat = wgpu::IndexFormat::Undefined,
+                .frontFace = wgpu::FrontFace::CCW,
+                .cullMode = wgpu::CullMode::None,
+            },
+            .depthStencil = nullptr,
+            .multisample = {
+                .count = 1,
+                .mask = ~0u,
+                .alphaToCoverageEnabled = false,
+            },
+            .fragment = &frag,
+        };
+        
+        pipeline = webgpu_device.CreateRenderPipeline(&rp_desc);    
     }
     void App::ReadBackBuffer() {
 
@@ -302,19 +312,18 @@ namespace Chemical {
 
     }
     void App::InitialiseBuffers() {
-        std::vector<float> vertex_data = {
-            // Define a first triangle:
-            -0.5, -0.5,
-            +0.5, -0.5,
-            +0.0, +0.5,
 
-            // Add a second triangle:
-            -0.55f, -0.5,
-            -0.05f, +0.5,
-            -0.55f, +0.5
+        std::vector<float> vertex_data = {
+            -0.5, -0.5,1.0, 0.0, 0.0,
+            +0.5, -0.5,0.0, 1.0, 0.0,
+            +0.0, +0.5,0.0, 0.0, 1.0,
+
+            -0.55f, -0.5,1.0, 0.0, 0.0,
+            -0.05f, +0.5,0.0, 1.0, 0.0,
+            -0.55f, +0.5,0.0, 0.0, 1.0,
         };
         
-        vertex_count = static_cast<uint32_t>(vertex_data.size() / 2);
+        vertex_count = static_cast<uint32_t>(vertex_data.size() / 5);
 
         wgpu::BufferDescriptor buffer_desc;
         buffer_desc.size = vertex_data.size() * sizeof(float);
