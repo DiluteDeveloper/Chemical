@@ -1,3 +1,4 @@
+#include "block/block.h"
 #include "glm/ext/matrix_clip_space.hpp"
 #include <tuple>
 #define GLM_ENABLE_EXPERIMENTAL
@@ -25,8 +26,9 @@ namespace Chemical {
             .wgpu = SetupWGPU(), 
             .window = SetupGLFW(),
             .buf = InitialiseBuffers(app.wgpu.queue, app.wgpu.device),
+            .block = Block::InitialiseBlockBuffer(app.wgpu.device),
             .surface = ConfigureSurface({app.wgpu.instance, app.wgpu.adapter, app.wgpu.device, app.window}),
-            .pipeline = SetupRenderPipeline({app.wgpu.device, app.surface.format, app.buf.view_projection_bind_group_layout}),
+            .pipeline = SetupRenderPipeline({app.wgpu.device, app.surface.format, app.buf.view_projection_bind_group_layout, app.block}),
             .depth = SetupDepthTexture(app.wgpu.device)
         };
 
@@ -51,7 +53,7 @@ namespace Chemical {
         auto[surface_texture, surface_view] = Utils::WebGPU::GetNextSurfaceViewData(app.surface.surface);
         if(!surface_view) return;
 
-        app.RenderPass({app.wgpu.device.CreateCommandEncoder(nullptr), app.wgpu.queue, app.pipeline, surface_view, app.depth.view, app.buf.vertex_buffer, app.buf.vertex_count, app.buf.view_projection_bind_group});
+        app.RenderPass({app.wgpu.device.CreateCommandEncoder(nullptr), app.wgpu.queue, app.pipeline, surface_view, app.depth.view, app.block, app.buf.vertex_buffer, app.buf.vertex_count, app.buf.view_projection_bind_group});
 
 #ifndef __EMSCRIPTEN__
         app.surface.surface.Present();
@@ -180,8 +182,6 @@ namespace Chemical {
 
     void App::RenderPass(const RenderPassParams& p) {
 
-
-
         wgpu::RenderPassColorAttachment color;
         color.view = p.surface_view;
         color.loadOp = wgpu::LoadOp::Clear;
@@ -206,9 +206,9 @@ namespace Chemical {
         wgpu::RenderPassEncoder render_pass = p.encoder.BeginRenderPass(&rp_desc);
     
         render_pass.SetPipeline(p.pipeline);
-        render_pass.SetVertexBuffer(0, p.vertex_buffer, 0, p.vertex_buffer.GetSize());
         render_pass.SetBindGroup(0, p.view_projection_bind_group, 0, nullptr);
-        render_pass.Draw(p.vertex_count, 1, 0, 0);
+        render_pass.SetBindGroup(1, p.block.group, 0, nullptr);
+        render_pass.Draw(p.block.vertex_count, 1, 0, 0);
         render_pass.End();
 
         wgpu::CommandBuffer cmd = p.encoder.Finish(nullptr);
@@ -233,20 +233,20 @@ namespace Chemical {
         
         wgpu::ShaderModule shader_module = p.device.CreateShaderModule(&shader_desc);
         
-        wgpu::VertexAttribute attrib[]{
-            {.format = wgpu::VertexFormat::Float32x3,
-            .offset = 0,
-            .shaderLocation = 0},
-            {.format = wgpu::VertexFormat::Float32x3,
-            .offset = 3 * sizeof(float),
-            .shaderLocation = 1},
-        };
-        
-        wgpu::VertexBufferLayout layout{
-            .arrayStride = 6 * sizeof(float),
-            .attributeCount = 2,
-            .attributes = &attrib[0],
-        };
+        // wgpu::VertexAttribute attrib[]{
+        //     {.format = wgpu::VertexFormat::Float32x3,
+        //     .offset = 0,
+        //     .shaderLocation = 0},
+        //     {.format = wgpu::VertexFormat::Float32x3,
+        //     .offset = 3 * sizeof(float),
+        //     .shaderLocation = 1},
+        // };
+        //
+        // wgpu::VertexBufferLayout layout{
+        //     .arrayStride = 6 * sizeof(float),
+        //     .attributeCount = 2,
+        //     .attributes = &attrib[0],
+        // };
         
         wgpu::BlendState blend{
             .color = {
@@ -276,9 +276,13 @@ namespace Chemical {
             .targets = &color_target,
         };
 
+        wgpu::BindGroupLayout layouts[] = {
+            p.view_projection_bind_group_layout, p.block.layout
+        };
+
         wgpu::PipelineLayoutDescriptor pld {
-            .bindGroupLayoutCount = 1,
-            .bindGroupLayouts = &p.view_projection_bind_group_layout
+            .bindGroupLayoutCount = 2,
+            .bindGroupLayouts = layouts,
         };
         
         wgpu::DepthStencilState dss {
@@ -293,8 +297,8 @@ namespace Chemical {
                 .entryPoint = "vs_main",
                 .constantCount = 0,
                 .constants = nullptr,
-                .bufferCount = 1,
-                .buffers = &layout,
+                .bufferCount = 0,
+                .buffers = nullptr,
             },
             .primitive = {
                 .topology = wgpu::PrimitiveTopology::TriangleList,
