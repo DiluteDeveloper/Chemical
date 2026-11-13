@@ -253,11 +253,12 @@ namespace Chemical {
         }
 
         wgpu::Limits WebGPU::CreateRequiredLimits() {
+            // I will probably not update this
             wgpu::Limits limits {
                 .maxVertexBuffers = 1,
-                .maxBufferSize = 6 * 5 * sizeof(float),
+                .maxBufferSize = 5000 * sizeof(float),
                 .maxVertexAttributes = 2,
-                .maxVertexBufferArrayStride = 5 * sizeof(float),
+                .maxVertexBufferArrayStride = 6 * sizeof(float),
                 .maxInterStageShaderVariables = 3
             };
 
