@@ -1,8 +1,8 @@
+#include "GLFW/glfw3.h"
 #include "block/block.h"
 #include "glm/ext/matrix_clip_space.hpp"
-#include <tuple>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/string_cast.hpp>
+// #define GLM_ENABLE_EXPERIMENTAL
+// #include <glm/gtx/string_cast.hpp>
 #include <cstdint>
 #include <glm/gtc/matrix_transform.hpp>
 #include <spdlog/spdlog.h>
@@ -16,6 +16,7 @@
 
 #include "app.h"
 
+#include "input.h"
 #include "utils/webgpu_utils.h"
 
 namespace Chemical {
@@ -29,8 +30,10 @@ namespace Chemical {
             .block = Block::InitialiseBlockBuffer(app.wgpu.device),
             .surface = ConfigureSurface({app.wgpu.instance, app.wgpu.adapter, app.wgpu.device, app.window}),
             .pipeline = SetupRenderPipeline({app.wgpu.device, app.surface.format, app.buf.view_projection_bind_group_layout, app.block}),
+            .camera = {},
             .depth = SetupDepthTexture(app.wgpu.device)
         };
+        Input::Initialise(app.window);
 
         Utils::WebGPU::PrintAdapterInfo(app.wgpu.adapter);
 
@@ -64,6 +67,7 @@ namespace Chemical {
         // pingpong = (pingpong + 1) % 2;
 
         glfwPollEvents();
+        app.camera.Update(app.wgpu.queue, app.buf.view_buffer);
         app.wgpu.instance.ProcessEvents();
     }
 
@@ -144,6 +148,7 @@ namespace Chemical {
             glfwTerminate();
             throw std::runtime_error("Failed to create GLFW window!");
         }
+        glfwSetInputMode(glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         return glfw_window;
     }
 
@@ -471,4 +476,5 @@ namespace Chemical {
         auto view = tex.CreateView();
         return Depth { tex, view };
     }
+
 }

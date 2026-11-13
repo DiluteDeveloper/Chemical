@@ -88,6 +88,8 @@ add_executable(${PROJECT_NAME}
     src/main.cpp 
     src/app.cpp
     src/utils/webgpu_utils.cpp
+    src/input.cpp
+    src/camera.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm spdlog::spdlog)
