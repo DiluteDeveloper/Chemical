@@ -16,7 +16,7 @@ namespace Chemical {
     void Camera::Update(wgpu::Queue queue, wgpu::Buffer view_buffer) {
 
 
-        if(direction != MoveDirection::None) {
+        if(direction_bitmask) {
             Move();
             queue.WriteBuffer(view_buffer, 0, &glm::inverse(transform.AsMat4())[0][0], sizeof(glm::mat4));
             mouse_moved_this_frame = false;
@@ -44,15 +44,10 @@ namespace Chemical {
         if(search == key_to_direction.end())
             return;
 
-        if(action == GLFW_RELEASE) {
-            if(camera.direction == search->second) {
-                spdlog::info("DIRECTION RELEASE: {}", (int)camera.direction);
-                camera.direction = MoveDirection::None;
-            }
+        if(action == GLFW_REPEAT)
             return;
-        }
 
-        camera.direction = search->second;
+        camera.direction_bitmask ^= (uint8_t)search->second;
 
     }
 
@@ -79,28 +74,18 @@ namespace Chemical {
         glm::fvec3 forward = matrix[2];
         glm::fvec3 front = glm::normalize(glm::fvec3(forward.x, 0, forward.z));
 
-        switch(direction) {
-            case MoveDirection::Forwards:
-                transform.position += front * speed;
-                break;
-            case MoveDirection::Backwards:
-                transform.position -= front * speed;
-                break;
-            case MoveDirection::Right:
-                transform.position += right * speed;
-                break;
-            case MoveDirection::Left:
-                transform.position -= right * speed;
-                break;
-            case MoveDirection::Up:
-                transform.position += up * speed;
-                break;
-            case MoveDirection::Down:
-                transform.position -= up * speed;
-                break;
-            default:
-                break;
-        }
+        if(direction_bitmask & (uint8_t)MoveDirection::Forwards)
+            transform.position += front * speed;
+        if(direction_bitmask & (uint8_t)MoveDirection::Backwards)
+            transform.position -= front * speed;
+        if(direction_bitmask & (uint8_t)MoveDirection::Right)
+            transform.position += right * speed;
+        if(direction_bitmask & (uint8_t)MoveDirection::Left)
+            transform.position -= right * speed;
+        if(direction_bitmask & (uint8_t)MoveDirection::Up)
+            transform.position += up * speed;
+        if(direction_bitmask & (uint8_t)MoveDirection::Down)
+            transform.position -= up * speed;
 
     }
 }

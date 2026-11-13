@@ -30,6 +30,8 @@
         # bear -- cmake --build . -j$(nproc) && mv compile_commands.json ../
     # Emscripten latest version
         # source ~/dev/emsdk/emsdk_env.sh
+    # Copy to windows build (personal)
+    # cp -r ../src /mnt/c/Users/Dilute/Documents/ChemicalMC_PK && cp -r ../res /mnt/c/Users/Dilute/Documents/ChemicalMC_PK/build/Debug
 
 cmake_minimum_required(VERSION 4.2.3)
 project(ChemicalMC_PK
@@ -45,10 +47,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -Wall -Wextra")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
+# Breaks MSVC as different flags exist ------
+if(NOT WIN32)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -Wall -Wextra")
+    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+endif()
 
 if(USE_MOLD)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread -fuse-ld=mold")

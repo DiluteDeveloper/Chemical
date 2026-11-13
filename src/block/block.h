@@ -1,6 +1,5 @@
 #pragma once
 
-#include <endian.h>
 #include <glm/glm.hpp>
 #include <webgpu/webgpu_cpp.h>
 

@@ -21,14 +21,20 @@ namespace Chemical {
         void Update(wgpu::Queue queue, wgpu::Buffer view_buffer);
 
         float speed = 0.01;
-        float sensitivity = 0.01;
+        float sensitivity = 0.1;
     private:
 
-        enum class MoveDirection {
-            None, Up, Down, Left, Right, Forwards, Backwards
+        enum class MoveDirection:uint8_t {
+            None = 0b00000000, 
+            Up = 0b00000001, 
+            Down = 0b00000010, 
+            Left = 0b00000100, 
+            Right = 0b00001000, 
+            Forwards = 0b00010000, 
+            Backwards = 0b00100000
         };
         Utils::Transform transform;
-        MoveDirection direction = MoveDirection::None;
+        uint8_t direction_bitmask = 0;
 
         double old_mouse_x = 0.0;
         double old_mouse_y = 0.0;
