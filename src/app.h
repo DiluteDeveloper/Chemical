@@ -9,14 +9,16 @@ namespace Chemical {
     class App {
 
     public:
-        App();
-        ~App();
+        static void Start();
 
-    private:
+        struct SetupWGPUResult {
+            wgpu::Instance instance;
+            wgpu::Adapter adapter;
+            wgpu::Device device;
+            wgpu::Queue queue;
+        } wgpu;
 
-        wgpu::Surface surface;
-        wgpu::TextureFormat surface_format;
-        wgpu::RenderPipeline pipeline;
+        GLFWwindow* window;
 
         struct BufferInit { 
             uint32_t vertex_count; 
@@ -27,16 +29,14 @@ namespace Chemical {
             wgpu::BindGroup view_projection_bind_group;
         } buf;
 
-        GLFWwindow* window;
-        
-        struct SetupWGPUResult {
-            wgpu::Instance instance;
-            wgpu::Adapter adapter;
-            wgpu::Device device;
-            wgpu::Queue queue;
-        } wgpu;
-        [[nodiscard]] static SetupWGPUResult SetupWGPU();
+        struct SurfaceConfig {
+            wgpu::Surface surface;
+            wgpu::TextureFormat format;
+        } surface;
 
+        wgpu::RenderPipeline pipeline;
+
+        [[nodiscard]] static SetupWGPUResult SetupWGPU();
         [[nodiscard]] static GLFWwindow* SetupGLFW();
 
         struct SetupRenderPipelineParam {
@@ -52,7 +52,7 @@ namespace Chemical {
             wgpu::Device device; 
             GLFWwindow* window;
         };
-        [[nodiscard]] static std::tuple<wgpu::Surface, wgpu::TextureFormat> ConfigureSurface(const ConfigureSurfaceParam& p);
+        [[nodiscard]] static SurfaceConfig ConfigureSurface(const ConfigureSurfaceParam& p);
 
         struct RenderPassParams {
             const wgpu::CommandEncoder encoder; 
@@ -78,7 +78,7 @@ namespace Chemical {
 
         static void ApplicationLoop(void* arg);
 
-        static glm::fmat4 GenerateProjectionMatrix(float width, float height, 
+        [[nodiscard]] static glm::fmat4 GenerateProjectionMatrix(float width, float height, 
                 float fov = 90, float near = 0.1f, float far = 1000.0f);
     };
 }

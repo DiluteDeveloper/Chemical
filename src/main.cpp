@@ -4,7 +4,7 @@
 
 int main() {
     try {
-        Chemical::App app;
+        Chemical::App::Start();
     } catch (const std::exception& e) {
         spdlog::critical("Application exception occurred: {}", e.what());
         return -1;

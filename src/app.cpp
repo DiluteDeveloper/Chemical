@@ -3,7 +3,6 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 #include <cstdint>
-#include <iterator>
 #include <glm/gtc/matrix_transform.hpp>
 #include <spdlog/spdlog.h>
 #include <webgpu/webgpu_cpp.h>
@@ -20,48 +19,42 @@
 
 namespace Chemical {
 
-    App::App() {
+    void App::Start() {
         spdlog::set_level(spdlog::level::trace);
-        wgpu = SetupWGPU();
-        window = SetupGLFW();
-        {
-            auto [s, sf] = ConfigureSurface({wgpu.instance, wgpu.adapter, wgpu.device, window});
-            surface = s; surface_format = sf; 
-        }
+        App app = {
+            .wgpu = SetupWGPU(), 
+            .window = SetupGLFW(),
+            .buf = InitialiseBuffers(app.wgpu.queue, app.wgpu.device),
+            .surface = ConfigureSurface({app.wgpu.instance, app.wgpu.adapter, app.wgpu.device, app.window}),
+            .pipeline = SetupRenderPipeline({app.wgpu.device, app.surface.format, app.buf.view_projection_bind_group_layout}),
+            .depth = SetupDepthTexture(app.wgpu.device)
+        };
 
-        depth = SetupDepthTexture(wgpu.device);
-        buf = InitialiseBuffers(wgpu.queue, wgpu.device);
-        pipeline = SetupRenderPipeline({wgpu.device, surface_format, buf.view_projection_bind_group_layout});
-
-        Utils::WebGPU::PrintAdapterInfo(wgpu.adapter);
+        Utils::WebGPU::PrintAdapterInfo(app.wgpu.adapter);
 
 
 #ifdef __EMSCRIPTEN__
-        emscripten_set_main_loop_arg(ApplicationLoop, this, 0, true);
+        emscripten_set_main_loop_arg(ApplicationLoop, &app, 1, true);
 #else
-        while(!glfwWindowShouldClose(window)) {
-            ApplicationLoop(this);
+        while(!glfwWindowShouldClose(app.window)) {
+            ApplicationLoop(&app);
         }
 #endif
 
-
-    }
-
-    App::~App() {
-        glfwDestroyWindow(window);
+        glfwDestroyWindow(app.window);
         glfwTerminate();
     }
 
     void App::ApplicationLoop(void* arg) {
         App& app = *reinterpret_cast<App*>(arg);
 
-        auto[surface_texture, surface_view] = Utils::WebGPU::GetNextSurfaceViewData(app.surface);
+        auto[surface_texture, surface_view] = Utils::WebGPU::GetNextSurfaceViewData(app.surface.surface);
         if(!surface_view) return;
 
         app.RenderPass({app.wgpu.device.CreateCommandEncoder(nullptr), app.wgpu.queue, app.pipeline, surface_view, app.depth.view, app.buf.vertex_buffer, app.buf.vertex_count, app.buf.view_projection_bind_group});
 
 #ifndef __EMSCRIPTEN__
-        app.surface.Present();
+        app.surface.surface.Present();
 #endif
         // wgpu::CommandBuffer commandBuffer =
         //     wgpu::CreateCommandBuffer(surfaceTexture.texture.CreateView(), pingpong);
@@ -152,19 +145,25 @@ namespace Chemical {
         return glfw_window;
     }
 
-    std::tuple<wgpu::Surface, wgpu::TextureFormat> App::ConfigureSurface(const ConfigureSurfaceParam& p) {
+    App::SurfaceConfig App::ConfigureSurface(const ConfigureSurfaceParam& p) {
 
 #ifdef __EMSCRIPTEN__
         wgpu::EmscriptenSurfaceSourceCanvasHTMLSelector src;
         src.selector = "#canvas";
         wgpu::SurfaceDescriptor desc;
         desc.nextInChain = &src;
-        webgpu_surface = webgpu_instance.CreateSurface(&desc);
+        App::SurfaceConfig sc = {
+            .surface = p.instance.CreateSurface(&desc),
+            .format = {}
+        };
 #else
-        wgpu::Surface surface = wgpu::glfw::CreateSurfaceForWindow(p.instance, p.window);
+        App::SurfaceConfig sc = {
+            .surface = wgpu::glfw::CreateSurfaceForWindow(p.instance, p.window),
+            .format = {}
+        };
 #endif
         wgpu::SurfaceCapabilities capabilities;
-        surface.GetCapabilities(p.adapter, &capabilities);
+        sc.surface.GetCapabilities(p.adapter, &capabilities);
         wgpu::SurfaceConfiguration config = {};
         config.device = p.device;
         config.format = capabilities.formats[0];
@@ -173,10 +172,10 @@ namespace Chemical {
         if(capabilities.presentModeCount == 0) throw std::exception();
         config.presentMode = capabilities.presentModes[0];
         config.alphaMode = wgpu::CompositeAlphaMode::Auto;
-        surface.Configure(&config);
-        wgpu::TextureFormat format = config.format;
+        sc.surface.Configure(&config);
+        sc.format = config.format;
 
-        return std::make_tuple(surface, format);
+        return sc;
     }
 
     void App::RenderPass(const RenderPassParams& p) {
