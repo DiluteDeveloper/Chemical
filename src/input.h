@@ -27,7 +27,7 @@ namespace Chemical {
         static std::unordered_map<void*, CursorPosCallback> cursor_pos_callbacks;
 
 
-        static void OnGLFWKeyCallback(GLFWwindow*, int key, int scancode, int action, int mods);
+        static void OnGLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
         static void OnGLFWCursorPosCallback(GLFWwindow*, double xpos, double ypos);
     };
 }
