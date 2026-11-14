@@ -4,7 +4,8 @@
 
 namespace Chemical {
 
-    Camera::Camera() {
+    Camera::Camera(float speed, float sensitivity) :
+        speed(speed), sensitivity(sensitivity) {
         Input::SubscribeToCursorPosCallback(Camera::OnCursorPosCallback, this);
         Input::SubscribeToKeyCallback(Camera::OnKeyCallback, this);
     }
@@ -70,7 +71,7 @@ namespace Chemical {
     void Camera::Move() {
         glm::fmat4 matrix = transform.AsMat4();
         glm::fvec3 right = matrix[0];
-        glm::fvec3 up = matrix[1];
+        glm::fvec3 up = glm::vec3(0.0, 1.0, 0.0);
         glm::fvec3 forward = matrix[2];
         glm::fvec3 front = glm::normalize(glm::fvec3(forward.x, 0, forward.z));
 

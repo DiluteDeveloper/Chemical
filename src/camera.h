@@ -11,7 +11,7 @@ namespace Chemical {
     public:
         typedef std::function<void(glm::mat4)> OnViewMatrixUpdated;
 
-        Camera();
+        Camera(float speed = 0.01, float sensitivity = 0.5);
         // Camera(const Camera&) = delete;
         // Camera(Camera&&) = delete;
         // Camera operator=(const Camera&) = delete;
@@ -21,7 +21,7 @@ namespace Chemical {
         void Update(wgpu::Queue queue, wgpu::Buffer view_buffer);
 
         float speed = 0.01;
-        float sensitivity = 0.1;
+        float sensitivity = 0.02;
     private:
 
         enum class MoveDirection:uint8_t {

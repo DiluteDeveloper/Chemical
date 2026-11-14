@@ -23,6 +23,12 @@ namespace Chemical {
 
     void App::Start() {
         spdlog::set_level(spdlog::level::trace);
+
+#ifdef WSL
+        float camera_sensitivity = 0.5;
+#else
+        float camera_sensitivity = 0.2;
+#endif
         App app = {
             .wgpu = SetupWGPU(), 
             .window = SetupGLFW(),
@@ -30,7 +36,7 @@ namespace Chemical {
             .block = Block::InitialiseBlockBuffer(app.wgpu.device),
             .surface = ConfigureSurface({app.wgpu.instance, app.wgpu.adapter, app.wgpu.device, app.window}),
             .pipeline = SetupRenderPipeline({app.wgpu.device, app.surface.format, app.buf.view_projection_bind_group_layout, app.block}),
-            .camera = {},
+            .camera = Camera(0.01, camera_sensitivity),
             .depth = SetupDepthTexture(app.wgpu.device)
         };
         Input::Initialise(app.window);
@@ -84,7 +90,9 @@ namespace Chemical {
         
         spdlog::trace("Requesting WebGPU adapter.");
 
-        wgpu::Future adapter_future = r.instance.RequestAdapter(nullptr, wgpu::CallbackMode::WaitAnyOnly, [&r](wgpu::RequestAdapterStatus status, wgpu::Adapter new_adapter, wgpu::StringView message) {
+        wgpu::RequestAdapterOptions adapter_opt;
+        // adapter_opt.backendType = wgpu::BackendType::Vulkan;
+        wgpu::Future adapter_future = r.instance.RequestAdapter(&adapter_opt, wgpu::CallbackMode::WaitAnyOnly, [&r](wgpu::RequestAdapterStatus status, wgpu::Adapter new_adapter, wgpu::StringView message) {
             if (status == wgpu::RequestAdapterStatus::Success)
                 r.adapter = new_adapter;
             else
@@ -148,7 +156,14 @@ namespace Chemical {
             glfwTerminate();
             throw std::runtime_error("Failed to create GLFW window!");
         }
+#ifdef WSL
+        glfwSetInputMode(glfw_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+#else
         glfwSetInputMode(glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+#endif
+        // if(glfwRawMouseMotionSupported())
+        //     glfwSetInputMode(glfw_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+
         return glfw_window;
     }
 
@@ -309,7 +324,7 @@ namespace Chemical {
                 .topology = wgpu::PrimitiveTopology::TriangleList,
                 .stripIndexFormat = wgpu::IndexFormat::Undefined,
                 .frontFace = wgpu::FrontFace::CCW,
-                .cullMode = wgpu::CullMode::None,
+                .cullMode = wgpu::CullMode::Back,
             },
             .depthStencil = &dss,
             .multisample = {

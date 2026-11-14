@@ -21,7 +21,7 @@
     # Configure (web)
     # emcmake cmake -S . -B build_es/ -G Ninja -DCMAKE_BUILD_TYPE=Debug -DUSE_MOLD=true
     # Configure (native)
-    # cmake -S . -B build/ -DCMAKE_CXX_FLAGS="-DFORCE_X11" -G Ninja -DCMAKE_BUILD_TYPE=Debug -DUSE_MOLD=true
+    # cmake -S . -B build/ -DWSL=true -DCMAKE_CXX_FLAGS="-DFORCE_X11" -G Ninja -DCMAKE_BUILD_TYPE=Debug -DUSE_MOLD=true
     # Build and Run (native)
         # bear -- cmake --build . -j$(nproc) && mv compile_commands.json ../ && ./ChemicalMC_PK
     # Build and Run (web)
@@ -35,7 +35,7 @@
 
 cmake_minimum_required(VERSION 4.2.3)
 project(ChemicalMC_PK
-    VERSION 0.1.1
+    VERSION 0.1.2
     LANGUAGES CXX C
 )
 if(NOT CMAKE_BUILD_TYPE)
@@ -123,7 +123,9 @@ else()
     FetchContent_MakeAvailable(dawn)
 
     target_link_libraries(${PROJECT_NAME} PRIVATE dawn::webgpu_dawn dawn_glfw glfw)
-
+    if(WSL)
+        target_compile_definitions(${PROJECT_NAME} PRIVATE WSL)
+    endif()
     # target_compile_definitions(${PROJECT_NAME} GLFW_INCLUDE_NONE)
 endif()
 
