@@ -14,17 +14,28 @@ struct BlockFace {
 };
 @group(1) @binding(0) var<storage, read> faces: array<BlockFace>;
 
-
+//fn RotateUVClockwise(uv: vec2u) -> vec2u {
+//    return vec2u(1 - uv.y, uv.x);
+//}
+//fn RotateUVAntiClockwise(uv: vec2u) -> vec2u {
+//    return vec2u(uv.y, 1 - uv.x);
+//}
+//fn GetRotatedUVs(uv: vec2u, orientation: u32) -> vec2u {
+//    switch(orientation) {
+//        case 0: return uv; // x - (0, 0)
+//        case 1: return vec2u(1 - uv.x, 1 - uv.y);// x - (1, 1)
+//        case 2: return RotateUVAntiClockwise(uv);
+//    }
+//}
 @vertex
 fn vs_main(@builtin(vertex_index) idx: u32) -> VertexOutput {
     var out: VertexOutput;
 
     let face_idx = idx / 6;
     let face = faces[face_idx];
-    let face_start_pos = vec3f(face.position.xyz);
-    let face_orientation = face.misc.x;
-    let second_vertex_offset_v = face.misc.y;
-    let third_vertex_offset_v = face.misc.z;
+    let v0_pos = face.position.xyz;
+    let orientation = face.misc.x;
+    let size = vec2u(face.misc.y, face.misc.z);
 
 //	const start_pos_first_offset_mask = vec4u(0x0, 0x0, 0x0, 0xFFFF0000);
 //	const start_pos_last_offset_mask = vec4u(0x0, 0x0, 0x0, 0x0000FFFF);
@@ -39,57 +50,69 @@ fn vs_main(@builtin(vertex_index) idx: u32) -> VertexOutput {
 //	let last_tri_pos = start_pos + vec4i(start_pos_last_offset);
 //	let end_pos = start_pos + vec4i(start_pos_first_offset) + vec4i(start_pos_last_offset);
 
+    const UV_TABLE = array<vec2u, 4*6>(
+        vec2u(1, 1), vec2u(0, 1), vec2u(1, 0), vec2u(0, 0),// Top face UV 1, UV 2, UV 3, UV 4
+        vec2u(1, 0), vec2u(1, 1), vec2u(0, 0), vec2u(0, 1),// Bottom face UV 1, UV 2, UV 3, UV 4
+        vec2u(1, 1), vec2u(0, 1), vec2u(1, 0), vec2u(0, 0),// Right face UV 1, UV 2, UV 3, UV 4
+        vec2u(0, 1), vec2u(0, 0), vec2u(1, 1), vec2u(1, 0),// Left face UV 1, UV 2, UV 3, UV 4
+        vec2u(1, 1), vec2u(0, 1), vec2u(1, 0), vec2u(0, 0),// Back face UV 1, UV 2, UV 3, UV 4
+        vec2u(0, 1), vec2u(0, 0), vec2u(1, 1), vec2u(1, 0),// Front face UV 1, UV 2, UV 3, UV 4
+    );
+
     const FACE_TABLE = array<vec3u, 12>(
         vec3u(1, 0, 0), // Second top vertex offset mask
         vec3u(0, 0, 1), // Third top vertex offset mask
         vec3u(0, 0, 1), // Second bottom vertex offset mask
         vec3u(1, 0, 0), // Third bottom vertex offset mask
 
-        vec3u(0, 1, 0), // Second left vertex offset mask
-        vec3u(0, 0, 1), // Third left vertex offset mask
         vec3u(0, 0, 1), // Second right vertex offset mask
         vec3u(0, 1, 0), // Third right vertex offset mask
+        vec3u(0, 1, 0), // Second left vertex offset mask
+        vec3u(0, 0, 1), // Third left vertex offset mask
 
-        vec3u(0, 1, 0), // Second front vertex offset mask
-        vec3u(1, 0, 0), // Third front verte offset mask
         vec3u(1, 0, 0), // Second back vertex offset mask
         vec3u(0, 1, 0), // Third back vertex offset mask
-
+        vec3u(0, 1, 0), // Second front vertex offset mask
+        vec3u(1, 0, 0), // Third front verte offset mask
 
     );
 
-    let second_vertex_offset = (FACE_TABLE[face_orientation * 2] * second_vertex_offset_v);
-    let second_vertex_pos = face_start_pos + vec3f(second_vertex_offset);
+    // When the UV table is used to rotate UVs the size may need to be flipped to account
+    let sized_uv = select(size.yx, size.xy, orientation % 2 == 0);
 
-    let third_vertex_offset = (FACE_TABLE[(face_orientation * 2) + 1] * third_vertex_offset_v);
-    let third_vertex_pos = face_start_pos + vec3f(third_vertex_offset);
+    let v1_dim_size = vec3i(FACE_TABLE[orientation * 2] * size.x);
+    let v1_pos = v0_pos + v1_dim_size;
 
-    let last_vertex_pos = face_start_pos + vec3f(second_vertex_offset) + vec3f(third_vertex_offset);
+    let v2_dim_size = vec3i(FACE_TABLE[(orientation * 2) + 1] * size.y);
+    let v2_pos = v0_pos + v2_dim_size;
+
+    let v3_pos = v0_pos + v1_dim_size + v2_dim_size;
 
     switch (idx % 6) {
         case 0: {
-            out.position = proj * view * vec4f(face_start_pos, 1);
-            out.uv = vec2f(0);
+            out.position = proj * view * vec4f(vec3f(v0_pos), 1);
+            out.uv = vec2f(UV_TABLE[orientation * 4] * sized_uv);
+            //out.uv = vec2f(RotateUVAntiClockwise(vec2u(0, 0)) * vec2u(third_vertex_offset_v, second_vertex_offset_v));
             break;
         }
         case 1, 3: {
-            out.position = proj * view * vec4f(second_vertex_pos, 1);
-            out.uv = vec2f(f32(second_vertex_offset_v), 0);
+            out.position = proj * view * vec4f(vec3f(v1_pos), 1);
+            out.uv = vec2f(UV_TABLE[(orientation * 4) + 1] * sized_uv);
             break;
         }
         case 2, 5: {
-            out.position = proj * view * vec4f(third_vertex_pos, 1);
-            out.uv = vec2f(0, f32(third_vertex_offset_v));
+            out.position = proj * view * vec4f(vec3f(v2_pos), 1);
+            out.uv = vec2f(UV_TABLE[(orientation * 4) + 2] * sized_uv);
             break;
         }
         case 4: {
-            out.position = proj * view * vec4f(last_vertex_pos, 1);
-            out.uv = vec2f(f32(second_vertex_offset_v), f32(third_vertex_offset_v));
+            out.position = proj * view * vec4f(vec3f(v3_pos), 1);
+            out.uv = vec2f(UV_TABLE[(orientation * 4) + 3] * sized_uv);
             break;
         }
         default: { break; }
     }
-    out.orientation = face_orientation;
+    out.orientation = orientation;
     out.block_type = u32(face.position.w);
     return out;
 }

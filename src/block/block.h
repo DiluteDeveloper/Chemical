@@ -15,14 +15,18 @@ namespace Chemical {
         enum class FaceOrientation:uint8_t { 
             Top = 0, 
             Bottom = 1, 
-            Left = 2, 
-            Right = 3, 
-            Front = 4, 
-            Back = 5
+            Right = 2, 
+            Left = 3, 
+            Back = 4,
+            Front = 5 
         };
         enum class Type:uint8_t {
-            Dirt,
-            Stone
+            Grass = 0,
+            Dirt = 1,
+            GrassDirt = 2,
+            Stone = 3,
+            StoneDirt = 4,
+            TEST_ARROW = 5
         };
         //
         // struct FaceGroup { 
@@ -43,10 +47,10 @@ namespace Chemical {
 			static constexpr std::array<std::array<uint8_t, 2>, 6> face_orientation_to_position_dimension_idx = {{
 				{0, 2}, // FaceOrientation::Top
 				{2, 0}, // FaceOrientation::Bottom
-				{1, 2}, // FaceOrientation::Left
 				{2, 1}, // FaceOrientation::Right
-				{1, 0}, // FaceOrientation::Front
-				{0, 1} // FaceOrientation::Back
+				{1, 2}, // FaceOrientation::Left
+				{0, 1}, // FaceOrientation::Back
+				{1, 0} // FaceOrientation::Front
 			}};
 
             std::vector<glm::ivec4> r;
@@ -73,12 +77,49 @@ namespace Chemical {
         inline BlockBuffer InitialiseBlockBuffer(wgpu::Device device, wgpu::Queue queue) {
 
             std::vector<BlockData> raw = {
-                {glm::ivec3(0, 0, 0), glm::ivec3(5, 0, 5), FaceOrientation::Bottom, Type::Dirt},
-                {glm::ivec3(0, 5, 0), glm::ivec3(5, 5, 5), FaceOrientation::Top, Type::Stone},
-                {glm::ivec3(0, 0, 0), glm::ivec3(0, 5, 5), FaceOrientation::Left, Type::Dirt},
-                {glm::ivec3(5, 0, 0), glm::ivec3(5, 5, 5), FaceOrientation::Right, Type::Stone},
-                {glm::ivec3(0, 0, 5), glm::ivec3(5, 5, 5), FaceOrientation::Front, Type::Dirt},
-                {glm::ivec3(0, 0, 0), glm::ivec3(5, 5, 0), FaceOrientation::Back, Type::Stone},
+                {glm::ivec3(0, 0, 0), glm::ivec3(5, 0, 5), FaceOrientation::Bottom, Type::Stone},
+                {glm::ivec3(0, 7, 0), glm::ivec3(5, 7, 5), FaceOrientation::Top, Type::Grass},
+
+                {glm::ivec3(0, 0, 0), glm::ivec3(0, 3, 5), FaceOrientation::Left, Type::Stone},
+                {glm::ivec3(0, 3, 0), glm::ivec3(0, 4, 5), FaceOrientation::Left, Type::StoneDirt},
+                {glm::ivec3(0, 4, 0), glm::ivec3(0, 6, 5), FaceOrientation::Left, Type::Dirt},
+                {glm::ivec3(0, 6, 0), glm::ivec3(0, 7, 5), FaceOrientation::Left, Type::GrassDirt},
+                {glm::ivec3(5, 0, 0), glm::ivec3(5, 3, 5), FaceOrientation::Right, Type::Stone},
+                {glm::ivec3(5, 3, 0), glm::ivec3(5, 4, 5), FaceOrientation::Right, Type::StoneDirt},
+                {glm::ivec3(5, 4, 0), glm::ivec3(5, 6, 5), FaceOrientation::Right, Type::Dirt},
+                {glm::ivec3(5, 6, 0), glm::ivec3(5, 7, 5), FaceOrientation::Right, Type::GrassDirt},
+
+                {glm::ivec3(0, 0, 5), glm::ivec3(5, 3, 5), FaceOrientation::Front, Type::Stone},
+                {glm::ivec3(0, 3, 5), glm::ivec3(5, 4, 5), FaceOrientation::Front, Type::StoneDirt},
+                {glm::ivec3(0, 4, 5), glm::ivec3(5, 6, 5), FaceOrientation::Front, Type::Dirt},
+                {glm::ivec3(0, 6, 5), glm::ivec3(5, 7, 5), FaceOrientation::Front, Type::GrassDirt},
+
+                {glm::ivec3(0, 0, 0), glm::ivec3(5, 3, 0), FaceOrientation::Back, Type::Stone},
+                {glm::ivec3(0, 3, 0), glm::ivec3(5, 4, 0), FaceOrientation::Back, Type::StoneDirt},
+                {glm::ivec3(0, 4, 0), glm::ivec3(5, 6, 0), FaceOrientation::Back, Type::Dirt},
+                {glm::ivec3(0, 6, 0), glm::ivec3(5, 7, 0), FaceOrientation::Back, Type::GrassDirt},
+
+                {glm::ivec3(0+8, 0+2, 0+2), glm::ivec3(5+8, 0+2, 5+2), FaceOrientation::Bottom, Type::Stone},
+                {glm::ivec3(0+8, 7+2, 0+2), glm::ivec3(5+8, 7+2, 5+2), FaceOrientation::Top, Type::Grass},
+
+                {glm::ivec3(0+8, 0+2, 0+2), glm::ivec3(0+8, 3+2, 5+2), FaceOrientation::Left, Type::Stone},
+                {glm::ivec3(0+8, 3+2, 0+2), glm::ivec3(0+8, 4+2, 5+2), FaceOrientation::Left, Type::StoneDirt},
+                {glm::ivec3(0+8, 4+2, 0+2), glm::ivec3(0+8, 6+2, 5+2), FaceOrientation::Left, Type::Dirt},
+                {glm::ivec3(0+8, 6+2, 0+2), glm::ivec3(0+8, 7+2, 5+2), FaceOrientation::Left, Type::GrassDirt},
+                {glm::ivec3(5+8, 0+2, 0+2), glm::ivec3(5+8, 3+2, 5+2), FaceOrientation::Right, Type::Stone},
+                {glm::ivec3(5+8, 3+2, 0+2), glm::ivec3(5+8, 4+2, 5+2), FaceOrientation::Right, Type::StoneDirt},
+                {glm::ivec3(5+8, 4+2, 0+2), glm::ivec3(5+8, 6+2, 5+2), FaceOrientation::Right, Type::Dirt},
+                {glm::ivec3(5+8, 6+2, 0+2), glm::ivec3(5+8, 7+2, 5+2), FaceOrientation::Right, Type::GrassDirt},
+
+                {glm::ivec3(0+8, 0+2, 5+2), glm::ivec3(5+8, 3+2, 5+2), FaceOrientation::Front, Type::Stone},
+                {glm::ivec3(0+8, 3+2, 5+2), glm::ivec3(5+8, 4+2, 5+2), FaceOrientation::Front, Type::StoneDirt},
+                {glm::ivec3(0+8, 4+2, 5+2), glm::ivec3(5+8, 6+2, 5+2), FaceOrientation::Front, Type::Dirt},
+                {glm::ivec3(0+8, 6+2, 5+2), glm::ivec3(5+8, 7+2, 5+2), FaceOrientation::Front, Type::GrassDirt},
+
+                {glm::ivec3(0+8, 0+2, 0+2), glm::ivec3(5+8, 3+2, 0+2), FaceOrientation::Back, Type::Stone},
+                {glm::ivec3(0+8, 3+2, 0+2), glm::ivec3(5+8, 4+2, 0+2), FaceOrientation::Back, Type::StoneDirt},
+                {glm::ivec3(0+8, 4+2, 0+2), glm::ivec3(5+8, 6+2, 0+2), FaceOrientation::Back, Type::Dirt},
+                {glm::ivec3(0+8, 6+2, 0+2), glm::ivec3(5+8, 7+2, 0+2), FaceOrientation::Back, Type::GrassDirt},
             };
             auto data = BlockFaceToShaderData(raw);
 
@@ -104,7 +145,7 @@ namespace Chemical {
                 .format = texture_desc.format,
                 .dimension = wgpu::TextureViewDimension::e2DArray,
                 .mipLevelCount = 1,
-                .arrayLayerCount = 2,
+                .arrayLayerCount = texture_desc.size.depthOrArrayLayers,
                 .aspect = wgpu::TextureAspect::All,
             };
             wgpu::TextureView tv = texture.CreateView(&texture_view_desc);
@@ -216,7 +257,7 @@ namespace Chemical {
             for(uint32_t iy = 0; iy < atlas_units_y; iy++) {
                 for(uint32_t ix = 0; ix < atlas_units_x; ix++) {
 
-                    layout.offset = ix*unit_byte_offset + (iy*atlas_units_x*unit_byte_offset);
+                    layout.offset = ix*unit_byte_offset + (iy*atlas_units_x*unit_byte_offset*ATLAS_UNIT_PIXEL_SIZE);
                     destination.origin.z = ix + (iy*atlas_units_x);
                     queue.WriteTexture(&destination, image->data, image_byte_size, &layout, &extent);
                 }
