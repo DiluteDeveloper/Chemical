@@ -1,6 +1,8 @@
 struct VertexOutput {
     @builtin(position) position: vec4f,
     @location(0) @interpolate(flat) orientation: u32,
+    @location(1) uv: vec2f,
+    @location(2) @interpolate(flat) block_type: u32,
 }
 
 @group(0) @binding(0) var<uniform> view: mat4x4<f32>;
@@ -67,25 +69,33 @@ fn vs_main(@builtin(vertex_index) idx: u32) -> VertexOutput {
     switch (idx % 6) {
         case 0: {
             out.position = proj * view * vec4f(face_start_pos, 1);
+            out.uv = vec2f(0);
             break;
         }
         case 1, 3: {
             out.position = proj * view * vec4f(second_vertex_pos, 1);
+            out.uv = vec2f(f32(second_vertex_offset_v), 0);
             break;
         }
         case 2, 5: {
             out.position = proj * view * vec4f(third_vertex_pos, 1);
+            out.uv = vec2f(0, f32(third_vertex_offset_v));
             break;
         }
         case 4: {
             out.position = proj * view * vec4f(last_vertex_pos, 1);
+            out.uv = vec2f(f32(second_vertex_offset_v), f32(third_vertex_offset_v));
             break;
         }
         default: { break; }
     }
     out.orientation = face_orientation;
+    out.block_type = u32(face.position.w);
     return out;
 }
+
+@group(1) @binding(1) var texture: texture_2d_array<f32>;
+@group(1) @binding(2) var texture_sampler: sampler;
 
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4f {
@@ -98,5 +108,6 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f {
         vec3f(0, 0, -1), // Third back vertex offset mask
 
     );
-    return vec4f(NORMAL_TABLE[in.orientation], 1.0);
+    //return vec4f(NORMAL_TABLE[in.orientation], 1.0);
+    return vec4f(textureSample(texture, texture_sampler, in.uv, in.block_type).rgb, 1.0);
 }

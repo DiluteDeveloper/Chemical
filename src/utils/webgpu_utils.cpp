@@ -114,6 +114,10 @@ namespace Chemical {
             view_descriptor.arrayLayerCount = 1;
             view_descriptor.aspect = wgpu::TextureAspect::All;
             wgpu::TextureView target_view = surface_texture.texture.CreateView(&view_descriptor);
+            if(!target_view) {
+                spdlog::warn("Surface texture view failed!");
+                return std::make_tuple(surface_texture, nullptr);
+            }
             
             return std::make_tuple(surface_texture, target_view);
         }

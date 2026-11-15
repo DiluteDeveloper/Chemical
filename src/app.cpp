@@ -33,7 +33,7 @@ namespace Chemical {
             .wgpu = SetupWGPU(), 
             .window = SetupGLFW(),
             .buf = InitialiseBuffers(app.wgpu.queue, app.wgpu.device),
-            .block = Block::InitialiseBlockBuffer(app.wgpu.device),
+            .block = Block::InitialiseBlockBuffer(app.wgpu.device, app.wgpu.queue),
             .surface = ConfigureSurface({app.wgpu.instance, app.wgpu.adapter, app.wgpu.device, app.window}),
             .pipeline = SetupRenderPipeline({app.wgpu.device, app.surface.format, app.buf.view_projection_bind_group_layout, app.block}),
             .camera = Camera(0.01, camera_sensitivity),
@@ -208,7 +208,7 @@ namespace Chemical {
         color.view = p.surface_view;
         color.loadOp = wgpu::LoadOp::Clear;
         color.storeOp = wgpu::StoreOp::Store;
-        color.clearValue = wgpu::Color{0.4,0.15,0.2,1.0};
+        color.clearValue = wgpu::Color{0.2,0.2,0.3,1.0};
 
         wgpu::RenderPassDepthStencilAttachment rpdsa {
             .view = p.depth_view,

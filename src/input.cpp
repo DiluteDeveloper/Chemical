@@ -32,10 +32,10 @@ namespace Chemical {
             cursor_pos_callbacks.erase(data_ptr); 
         }
 
-        void Input::OnGLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-#ifdef __EMSCRIPTEN__
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-#endif
+        void Input::OnGLFWKeyCallback(GLFWwindow*, int key, int scancode, int action, int mods) {
+// #ifdef __EMSCRIPTEN__
+//             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+// #endif
             for(auto [data, cb] : key_callbacks) {
                 cb(key, scancode, action, mods, data);
             }

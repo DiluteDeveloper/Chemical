@@ -35,7 +35,7 @@
 
 cmake_minimum_required(VERSION 4.2.3)
 project(ChemicalMC_PK
-    VERSION 0.1.2
+    VERSION 0.1.3
     LANGUAGES CXX C
 )
 if(NOT CMAKE_BUILD_TYPE)
@@ -67,14 +67,11 @@ set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 include(FetchContent)
 
-# if(NOT EMSCRIPTEN)
-#     FetchContent_Declare(glfw
-#         GIT_REPOSITORY https://github.com/glfw/glfw.git
-#         GIT_TAG        3.5.1
-#         GIT_SHALLOW    FALSE
-#     )
-# endif()
-
+FetchContent_Declare(stb
+    GIT_REPOSITORY https://github.com/nothings/stb.git
+    GIT_TAG        master
+    GIT_SHALLOW    TRUE
+)
 FetchContent_Declare(glm
     GIT_REPOSITORY https://github.com/g-truc/glm.git
     GIT_TAG        1.0.1
@@ -87,22 +84,28 @@ FetchContent_Declare(spdlog
     GIT_SHALLOW    TRUE
 )
 
-FetchContent_MakeAvailable(glm spdlog)
+FetchContent_MakeAvailable(glm spdlog stb)
 
 add_executable(${PROJECT_NAME} 
     src/main.cpp 
     src/app.cpp
-    src/utils/webgpu_utils.cpp
     src/input.cpp
     src/camera.cpp
+    src/utils/webgpu_utils.cpp
+    src/utils/image.cpp
 )
+
+add_library(stb INTERFACE)
+target_include_directories(stb INTERFACE ${stb_SOURCE_DIR})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm spdlog::spdlog)
 
 if(EMSCRIPTEN)
+    target_include_directories(${PROJECT_NAME} PRIVATE src/)
     target_compile_options(${PROJECT_NAME} PRIVATE --use-port=emdawnwebgpu)
     target_link_options(${PROJECT_NAME} PRIVATE --use-port=emdawnwebgpu --use-port=contrib.glfw3 -sASYNCIFY --preload-file ${CMAKE_SOURCE_DIR}/res@/res)
     set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".html")
+    target_link_libraries(${PROJECT_NAME} PRIVATE stb)
 else()
     FetchContent_Declare(dawn
         GIT_REPOSITORY https://github.com/google/dawn.git
@@ -122,7 +125,8 @@ else()
 
     FetchContent_MakeAvailable(dawn)
 
-    target_link_libraries(${PROJECT_NAME} PRIVATE dawn::webgpu_dawn dawn_glfw glfw)
+    target_include_directories(${PROJECT_NAME} PRIVATE src/)
+    target_link_libraries(${PROJECT_NAME} PRIVATE dawn::webgpu_dawn dawn_glfw glfw stb)
     if(WSL)
         target_compile_definitions(${PROJECT_NAME} PRIVATE WSL)
     endif()
