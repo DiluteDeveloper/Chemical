@@ -132,5 +132,5 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f {
 
     );
     //return vec4f(NORMAL_TABLE[in.orientation], 1.0);
-    return vec4f(textureSample(texture, texture_sampler, in.uv, in.block_type).rgb, 1.0);
+    return vec4f(textureSample(texture, texture_sampler, in.uv, in.block_type));
 }

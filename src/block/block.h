@@ -26,7 +26,8 @@ namespace Chemical {
             GrassDirt = 2,
             Stone = 3,
             StoneDirt = 4,
-            TEST_ARROW = 5
+            TEST_ARROW = 5,
+            Glass = 6
         };
         //
         // struct FaceGroup { 
@@ -120,6 +121,15 @@ namespace Chemical {
                 {glm::ivec3(0+8, 3+2, 0+2), glm::ivec3(5+8, 4+2, 0+2), FaceOrientation::Back, Type::StoneDirt},
                 {glm::ivec3(0+8, 4+2, 0+2), glm::ivec3(5+8, 6+2, 0+2), FaceOrientation::Back, Type::Dirt},
                 {glm::ivec3(0+8, 6+2, 0+2), glm::ivec3(5+8, 7+2, 0+2), FaceOrientation::Back, Type::GrassDirt},
+
+
+                {glm::ivec3(0+0, 0+8, 0+2), glm::ivec3(5+0, 0+8, 5+2), FaceOrientation::Bottom, Type::Glass},
+                {glm::ivec3(0+0, 7+8, 0+2), glm::ivec3(5+0, 7+8, 5+2), FaceOrientation::Top, Type::Glass},
+
+                {glm::ivec3(0+0, 0+8, 0+2), glm::ivec3(0+0, 7+8, 5+2), FaceOrientation::Left, Type::Glass},
+                {glm::ivec3(5+0, 0+8, 0+2), glm::ivec3(5+0, 7+8, 5+2), FaceOrientation::Right, Type::Glass},
+                {glm::ivec3(0+0, 0+8, 5+2), glm::ivec3(5+0, 7+8, 5+2), FaceOrientation::Front, Type::Glass},
+                {glm::ivec3(0+0, 0+8, 0+2), glm::ivec3(5+0, 7+8, 0+2), FaceOrientation::Back, Type::Glass},
             };
             auto data = BlockFaceToShaderData(raw);
 
