@@ -33,7 +33,7 @@ namespace Chemical {
             Forwards = 0b00010000, 
             Backwards = 0b00100000
         };
-        Utils::Transform transform;
+        Transform transform;
         uint8_t direction_bitmask = 0;
 
         double old_mouse_x = 0.0;

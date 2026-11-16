@@ -31,7 +31,7 @@ namespace Chemical {
             wgpu::BindGroup view_projection_bind_group;
         } buf;
 
-        Block::BlockBuffer block;
+        BlockBuffer block;
 
         struct SurfaceConfig {
             wgpu::Surface surface;
@@ -49,7 +49,7 @@ namespace Chemical {
             const wgpu::Device device; 
             const wgpu::TextureFormat surface_format; 
             const wgpu::BindGroupLayout view_projection_bind_group_layout;
-            const Block::BlockBuffer block;
+            const BlockBuffer block;
         };
         [[nodiscard]] static wgpu::RenderPipeline SetupRenderPipeline(const SetupRenderPipelineParam& p);
 
@@ -67,7 +67,7 @@ namespace Chemical {
             const wgpu::RenderPipeline pipeline; 
             const wgpu::TextureView surface_view;
             const wgpu::TextureView depth_view;
-            const Block::BlockBuffer block;
+            const BlockBuffer block;
 
             const wgpu::Buffer vertex_buffer;
             const uint32_t vertex_count;

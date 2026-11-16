@@ -33,7 +33,7 @@ namespace Chemical {
             .wgpu = SetupWGPU(), 
             .window = SetupGLFW(),
             .buf = InitialiseBuffers(app.wgpu.queue, app.wgpu.device),
-            .block = Block::InitialiseBlockBuffer(app.wgpu.device, app.wgpu.queue),
+            .block = InitialiseBlockBuffer(app.wgpu.device, app.wgpu.queue),
             .surface = ConfigureSurface({app.wgpu.instance, app.wgpu.adapter, app.wgpu.device, app.window}),
             .pipeline = SetupRenderPipeline({app.wgpu.device, app.surface.format, app.buf.view_projection_bind_group_layout, app.block}),
             .camera = Camera(0.01, camera_sensitivity),
@@ -41,7 +41,7 @@ namespace Chemical {
         };
         Input::Initialise(app.window);
 
-        Utils::WebGPU::PrintAdapterInfo(app.wgpu.adapter);
+        WebGPU::PrintAdapterInfo(app.wgpu.adapter);
 
 
 #ifdef __EMSCRIPTEN__
@@ -59,7 +59,7 @@ namespace Chemical {
     void App::ApplicationLoop(void* arg) {
         App& app = *reinterpret_cast<App*>(arg);
 
-        auto[surface_texture, surface_view] = Utils::WebGPU::GetNextSurfaceViewData(app.surface.surface);
+        auto[surface_texture, surface_view] = WebGPU::GetNextSurfaceViewData(app.surface.surface);
         if(!surface_view) return;
 
         app.RenderPass({app.wgpu.device.CreateCommandEncoder(nullptr), app.wgpu.queue, app.pipeline, surface_view, app.depth.view, app.block, app.buf.vertex_buffer, app.buf.vertex_count, app.buf.view_projection_bind_group});
@@ -99,14 +99,14 @@ namespace Chemical {
                 spdlog::error("WebGPU adapter request failed: {}", message.data);
         });
 
-        Utils::WebGPU::AwaitAsync(r.instance, adapter_future);
+        WebGPU::AwaitAsync(r.instance, adapter_future);
 
         // Device ----------------------------------------
         
         spdlog::trace("Requesting WebGPU device.");
 
         wgpu::DeviceDescriptor device_descriptor;
-        wgpu::Limits& required_limits = *new wgpu::Limits(Utils::WebGPU::CreateRequiredLimits());
+        wgpu::Limits& required_limits = *new wgpu::Limits(WebGPU::CreateRequiredLimits());
         device_descriptor.requiredLimits = &required_limits;
 
         device_descriptor.SetDeviceLostCallback(wgpu::CallbackMode::AllowProcessEvents, [](const wgpu::Device&, wgpu::DeviceLostReason, wgpu::StringView message) {
@@ -123,7 +123,7 @@ namespace Chemical {
               spdlog::error("WebGPU device request failed: {}", message.data);
         });
 
-        Utils::WebGPU::AwaitAsync(r.instance, device_future);
+        WebGPU::AwaitAsync(r.instance, device_future);
 
         r.queue = r.device.GetQueue();
 
