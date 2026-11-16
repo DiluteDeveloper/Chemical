@@ -42,40 +42,8 @@ namespace Chemical {
         Type type;
 
     };
-    inline std::vector<glm::ivec4> BlockFaceToShaderData(const std::vector<BlockData>& data) {
-        static constexpr std::array<std::array<uint8_t, 2>, 6> face_orientation_to_position_dimension_idx = {{
-            {0, 2}, // FaceOrientation::Top
-            {2, 0}, // FaceOrientation::Bottom
-            {2, 1}, // FaceOrientation::Right
-            {1, 2}, // FaceOrientation::Left
-            {0, 1}, // FaceOrientation::Back
-            {1, 0} // FaceOrientation::Front
-        }};
-
-        std::vector<glm::ivec4> r;
-        for(auto& d : data) {
-            auto& arr = face_orientation_to_position_dimension_idx[(uint8_t)d.orientation];
-
-            r.emplace_back(d.start_position.x, d.start_position.y, d.start_position.z, d.type);
-
-            r.emplace_back((uint32_t)d.orientation, 
-                    std::abs(d.end_position[arr[0]]) - std::abs(d.start_position[arr[0]]), 
-                    std::abs(d.end_position[arr[1]]) - std::abs(d.start_position[arr[1]]), 0);
-        }
-
-        return r;
-    }
-
-    std::tuple<wgpu::Texture, wgpu::TextureDescriptor> SetupTexture(wgpu::Device device, wgpu::Queue queue);
-    struct BlockBuffer {
-        wgpu::Buffer buf;
-        uint32_t vertex_count;
-        wgpu::BindGroupLayout layout;
-        wgpu::BindGroup group;
-    };
-    inline BlockBuffer InitialiseBlockBuffer(wgpu::Device device, wgpu::Queue queue) {
-
-        std::vector<BlockData> raw = {
+    inline std::vector<BlockData> GetTestBlockData() {
+        return {
             {glm::ivec3(0, 0, 0), glm::ivec3(5, 0, 5), FaceOrientation::Bottom, Type::Stone},
             {glm::ivec3(0, 7, 0), glm::ivec3(5, 7, 5), FaceOrientation::Top, Type::Grass},
 
@@ -128,8 +96,50 @@ namespace Chemical {
             {glm::ivec3(5+0, 0+8, 0+2), glm::ivec3(5+0, 7+8, 5+2), FaceOrientation::Right, Type::Glass},
             {glm::ivec3(0+0, 0+8, 5+2), glm::ivec3(5+0, 7+8, 5+2), FaceOrientation::Front, Type::Glass},
             {glm::ivec3(0+0, 0+8, 0+2), glm::ivec3(5+0, 7+8, 0+2), FaceOrientation::Back, Type::Glass},
+
+            {glm::ivec3(5, 5, 5), glm::ivec3(5, 20, 20), FaceOrientation::Left, Type::Glass},
+            {glm::ivec3(20, 5, 5), glm::ivec3(20, 20, 20), FaceOrientation::Right, Type::Glass},
+            {glm::ivec3(5, 5, 20), glm::ivec3(20, 20, 20), FaceOrientation::Front, Type::Glass},
+            {glm::ivec3(5, 5, 5), glm::ivec3(20, 20, 5), FaceOrientation::Back, Type::Glass},
+            {glm::ivec3(5, 20, 5), glm::ivec3(20, 20, 20), FaceOrientation::Top, Type::Glass},
+            {glm::ivec3(5, 5, 5), glm::ivec3(20, 5, 20), FaceOrientation::Bottom, Type::Glass},
         };
-        auto data = BlockFaceToShaderData(raw);
+    }
+    inline std::vector<glm::ivec4> BlockFaceToShaderData(const std::vector<BlockData>& data) {
+        static constexpr std::array<std::array<uint8_t, 2>, 6> face_orientation_to_position_dimension_idx = {{
+            {0, 2}, // FaceOrientation::Top
+            {2, 0}, // FaceOrientation::Bottom
+            {2, 1}, // FaceOrientation::Right
+            {1, 2}, // FaceOrientation::Left
+            {0, 1}, // FaceOrientation::Back
+            {1, 0} // FaceOrientation::Front
+        }};
+
+        std::vector<glm::ivec4> r;
+        for(auto& d : data) {
+            auto& arr = face_orientation_to_position_dimension_idx[(uint8_t)d.orientation];
+
+            r.emplace_back(d.start_position.x, d.start_position.y, d.start_position.z, d.type);
+
+            r.emplace_back((uint32_t)d.orientation, 
+                    std::abs(d.end_position[arr[0]]) - std::abs(d.start_position[arr[0]]), 
+                    std::abs(d.end_position[arr[1]]) - std::abs(d.start_position[arr[1]]), 0);
+        }
+
+        return r;
+    }
+
+    std::tuple<wgpu::Texture, wgpu::TextureDescriptor> SetupTexture(wgpu::Device device, wgpu::Queue queue);
+    struct BlockBuffer {
+        wgpu::Buffer buf;
+        uint32_t vertex_count;
+        wgpu::BindGroupLayout layout;
+        wgpu::BindGroup group;
+    };
+    inline BlockBuffer InitialiseBlockBuffer(wgpu::Device device, wgpu::Queue queue) {
+
+        
+        auto data = BlockFaceToShaderData(GetTestBlockData());
 
         wgpu::BufferDescriptor bd;
         bd.size = data.size() * sizeof(glm::ivec4);

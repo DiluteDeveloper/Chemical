@@ -1,7 +1,7 @@
 #pragma once
 
 #include "block/block.h"
-#include "camera.h"
+#include "player.h"
 #include <webgpu/webgpu_cpp.h>
 #include <glm/glm.hpp>
 #include <GLFW/glfw3.h>
@@ -40,7 +40,7 @@ namespace Chemical {
 
         wgpu::RenderPipeline pipeline;
 
-        Camera camera;
+        Player player;
 
         [[nodiscard]] static SetupWGPUResult SetupWGPU();
         [[nodiscard]] static GLFWwindow* SetupGLFW();
@@ -87,7 +87,7 @@ namespace Chemical {
         static void ApplicationLoop(void* arg);
 
         [[nodiscard]] static glm::fmat4 GenerateProjectionMatrix(float width, float height, 
-                float fov = 90, float near = 0.1f, float far = 1000.0f);
+                float fov = 90, float near = 0.01f, float far = 1000.0f);
 
     };
 }

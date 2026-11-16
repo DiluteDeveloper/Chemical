@@ -36,7 +36,7 @@ namespace Chemical {
             .block = InitialiseBlockBuffer(app.wgpu.device, app.wgpu.queue),
             .surface = ConfigureSurface({app.wgpu.instance, app.wgpu.adapter, app.wgpu.device, app.window}),
             .pipeline = SetupRenderPipeline({app.wgpu.device, app.surface.format, app.buf.view_projection_bind_group_layout, app.block}),
-            .camera = Camera(0.01, camera_sensitivity),
+            .player = Player(0.0002, 0.002, camera_sensitivity),
             .depth = SetupDepthTexture(app.wgpu.device)
         };
         Input::Initialise(app.window);
@@ -73,7 +73,7 @@ namespace Chemical {
         // pingpong = (pingpong + 1) % 2;
 
         glfwPollEvents();
-        app.camera.Update(app.wgpu.queue, app.buf.view_buffer);
+        app.player.Update(app.wgpu.queue, app.buf.view_buffer);
         app.wgpu.instance.ProcessEvents();
     }
 

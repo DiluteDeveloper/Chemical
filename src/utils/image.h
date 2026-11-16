@@ -11,12 +11,10 @@ namespace Chemical {
         Image(const Image&) = delete;
         Image(Image&& other) :
         x(other.x), y(other.y), num_channels(other.num_channels), data(other.data){
-            spdlog::info("MOVE");
             other.data = nullptr;
         }
         Image& operator=(const Image&) = delete;
         Image& operator=(Image&& other) {
-            spdlog::info("MOVE");
             other.data = nullptr;
             return *this;
         }
