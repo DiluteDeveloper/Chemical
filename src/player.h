@@ -20,6 +20,7 @@ namespace Chemical {
 
         ~Player();
         void Update(wgpu::Queue queue, wgpu::Buffer view_buffer, double _delta_time);
+        void ConfigurationWindow();
 
         float speed = 0.31;
         float vertical_speed = 0.05;
@@ -33,6 +34,7 @@ namespace Chemical {
         bool freecam = false;
     private:
         double delta_time = 0;
+        bool input_enabled = false;
 
         std::vector<Extent3D> other_colliders;
 

@@ -1,5 +1,6 @@
 #include <spdlog/spdlog.h>
 #include "player.h"
+#include <imgui.h>
 #include "input.h"
 #include "physics/physics.h"
 
@@ -26,15 +27,7 @@ namespace Chemical {
     void Player::Update(wgpu::Queue queue, wgpu::Buffer view_buffer, double _delta_time) {
 
         delta_time = _delta_time;
-        Extent3D collider = {
-            glm::vec3(transform.position.x - 0.5, transform.position.y - 1, transform.position.z - 0.5),
-            glm::vec3(transform.position.x + 0.5, transform.position.y, transform.position.z + 0.5)
-        };
-        auto offset = ApplyBoxCollisionResponse(body, collider, other_colliders);
-        transform.position += offset;
-        // body.ApplyVelocityForce(offset);
 
-        transform = body.ApplyVelocityToTransform(transform);
 
         // switch(body.grounded) {
         //     case Grounded::Locked:
@@ -48,8 +41,8 @@ namespace Chemical {
             if(body.grounded == Grounded::NotGrounded)
                 body.ApplyGravity(.140481f * delta_time); // pcam only
             Extent3D ground_collider = {
-                glm::vec3(transform.position.x - 0.3, transform.position.y - 1, transform.position.z - 0.3),
-                glm::vec3(transform.position.x + 0.3, transform.position.y - 1.2, transform.position.z + 0.3)
+                glm::vec3(transform.position.x - 0.3, transform.position.y - 2, transform.position.z - 0.3),
+                glm::vec3(transform.position.x + 0.3, transform.position.y - 2.2, transform.position.z + 0.3)
             };
             bool g = TestBoxCollision(ground_collider, other_colliders);
             if(body.grounded == Grounded::Locked)  {
@@ -59,6 +52,15 @@ namespace Chemical {
                 body.grounded = (Grounded)g;
             
         }
+        Extent3D collider = {
+            glm::vec3(transform.position.x - 0.5, transform.position.y - 1.5, transform.position.z - 0.5),
+            glm::vec3(transform.position.x + 0.5, transform.position.y + 0.5, transform.position.z + 0.5)
+        };
+        auto offset = ApplyBoxCollisionResponse(body, collider, other_colliders);
+        transform.position += offset;
+        // body.ApplyVelocityForce(offset);
+
+        transform = body.ApplyVelocityToTransform(transform);
 
         current_matrix = transform.AsMat4();
         if(direction_bitmask) {
@@ -70,13 +72,34 @@ namespace Chemical {
         queue.WriteBuffer(view_buffer, 0, &glm::inverse(current_matrix)[0][0], sizeof(glm::mat4));
 
 
+        ConfigurationWindow();
+    }
+    void Player::ConfigurationWindow() {
+        ImGui::Begin("Player Configuration");
+
+        ImGui::SliderFloat("Set Speed", &speed, 0, 5, "%.3f");
+        ImGui::SliderFloat("Set Vertical Speed", &vertical_speed, 0, 5, "%.3f");
+        ImGui::SliderFloat("Set Jump Force", &jump_force, 0, 5, "%.3f");
+        ImGui::SliderFloat3("Set Terminal Velocity", (float*)&body.terminal_velocity, 0, 5, "%.3f");
+        ImGui::End();
     }
 
     void Player::OnKeyCallback(int key, int, int action, int, void* data) {
         Player& player = *reinterpret_cast<Player*>(data);
 
+        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+            if(player.input_enabled)
+                Input::SetCursorEnabled();
+            else
+                Input::SetCursorDisabled();
+            player.input_enabled = !player.input_enabled;
+        }
+        if(!player.input_enabled)
+            return;
+
         if(key == GLFW_KEY_F && action == GLFW_PRESS)
             player.freecam = !player.freecam;
+
 
         static std::unordered_map<int, MoveDirection> key_to_direction = {
             {GLFW_KEY_W, MoveDirection::Forwards},
@@ -100,6 +123,9 @@ namespace Chemical {
 
     void Player::OnCursorPosCallback(double xpos, double ypos, void* data) {
         Player& player = *reinterpret_cast<Player*>(data);
+        if(!player.input_enabled)
+            return;
+
 
         player.transform.rotation.y += static_cast<float>(xpos - player.old_mouse_x) * player.sensitivity;
         player.transform.rotation.x += static_cast<float>(ypos - player.old_mouse_y) * player.sensitivity;
@@ -118,14 +144,20 @@ namespace Chemical {
         glm::fvec3 forward = current_matrix[2];
         glm::fvec3 front = glm::normalize(glm::fvec3(forward.x, 0, forward.z));
 
+        glm::fvec3 vel = glm::fvec3(0);
         if(direction_bitmask & (uint8_t)MoveDirection::Forwards)
-            body.AddVelocity(front * speed * (float)delta_time);
+            vel += front;
         if(direction_bitmask & (uint8_t)MoveDirection::Backwards)
-            body.AddVelocity(-front * speed * (float)delta_time);
+            vel += -front;
         if(direction_bitmask & (uint8_t)MoveDirection::Right)
-            body.AddVelocity(right * speed * (float)delta_time);
+            vel += right;
         if(direction_bitmask & (uint8_t)MoveDirection::Left)
-            body.AddVelocity(-right * speed * (float)delta_time);
+            vel += -right;
+        vel.x = std::min(vel.x, 1.0f);
+        vel.x = std::max(vel.x, -1.0f);
+        vel.z = std::min(vel.z, 1.0f);
+        vel.z = std::max(vel.z, -1.0f);
+        body.AddVelocity(vel * speed * (float)delta_time);
         if(freecam) {
             if(direction_bitmask & (uint8_t)MoveDirection::Up)
                 body.AddVelocity(up * vertical_speed * (float)delta_time);

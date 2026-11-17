@@ -6,7 +6,7 @@ namespace Chemical {
     Transform PhysicsBody::ApplyVelocityToTransform(const Transform& _transform) {
         Transform transform = _transform;    
         transform.position += velocity;
-        velocity = velocity * glm::vec3(0.97, 1, 0.97);
+        velocity = velocity * glm::vec3(0.95, 1, 0.95);
         return transform;
     }
     void PhysicsBody::ApplyGravity(float gravity, double delta_time) {
@@ -21,13 +21,14 @@ namespace Chemical {
             velocity.z = add_velocity.z;
     }
     void PhysicsBody::AddVelocity(glm::fvec3 add_velocity) {
-        glm::fvec3 add = add_velocity + velocity;
-        if(add.x <= terminal_velocity.x)
-            velocity.x = add.x;
-        if(add.y <= terminal_velocity.y)
-            velocity.y = add.y;
-        if(add.z <= terminal_velocity.z)
-            velocity.z = add.z;
+        velocity += add_velocity;
+        // glm::fvec3 add = add_velocity + velocity;
+        // if(add.x <= terminal_velocity.x && add.x >= -terminal_velocity.x)
+            // velocity.x = add.x;
+        // if(add.z <= terminal_velocity.z && add.z >= -terminal_velocity.z)
+            // velocity.z = add.z;
+        // if(add.y <= terminal_velocity.y && add.y >= -terminal_velocity.y)
+            // velocity.y = add.y;
     }
 
     glm::vec3 ApplyBoxCollisionResponse(PhysicsBody& body, const Extent3D& extent, const std::vector<Extent3D>& colliders) {

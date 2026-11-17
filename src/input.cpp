@@ -38,6 +38,16 @@ namespace Chemical {
         }
 #endif
 
+        void Input::SetCursorDisabled() {
+    #ifdef WSL
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+#else
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    #endif
+        } 
+        void Input::SetCursorEnabled() {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        }
         void OnGLFWKeyCallback(GLFWwindow*, int key, int scancode, int action, int mods) {
             for(auto [data, cb] : key_callbacks) {
                 cb(key, scancode, action, mods, data);

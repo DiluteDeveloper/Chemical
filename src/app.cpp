@@ -1,6 +1,10 @@
 #include "GLFW/glfw3.h"
 #include "block/block.h"
 #include "glm/ext/matrix_clip_space.hpp"
+#include "webgpu/webgpu.h"
+#include <imgui.h>
+#include <imgui_impl_wgpu.h>
+#include <imgui_impl_glfw.h>
 // #define GLM_ENABLE_EXPERIMENTAL
 // #include <glm/gtx/string_cast.hpp>
 #include <chrono>
@@ -41,6 +45,7 @@ namespace Chemical {
             .depth = SetupDepthTexture(app.wgpu.device)
         };
         Input::Initialise(app.window);
+        SetupImGui(app.window, app.wgpu, app.surface);
 
         WebGPU::PrintAdapterInfo(app.wgpu.adapter);
         old_time = clock::now();
@@ -54,6 +59,9 @@ namespace Chemical {
         }
 #endif
 
+        ImGui_ImplWGPU_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
         glfwDestroyWindow(app.window);
         glfwTerminate();
     }
@@ -64,9 +72,15 @@ namespace Chemical {
         clock::time_point new_time = clock::now();
         delta_time = duration<float>(new_time - old_time).count();
         old_time = new_time;
+        ImGui_ImplWGPU_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
 
         auto[surface_texture, surface_view] = WebGPU::GetNextSurfaceViewData(app.surface.surface);
         if(!surface_view) return;
+        app.player.Update(app.wgpu.queue, app.buf.view_buffer, delta_time);
+        ImGui::Render();
+
 
         app.RenderPass({app.wgpu.device.CreateCommandEncoder(nullptr), app.wgpu.queue, app.pipeline, surface_view, app.depth.view, app.block, app.buf.vertex_buffer, app.buf.vertex_count, app.buf.view_projection_bind_group});
 
@@ -75,10 +89,35 @@ namespace Chemical {
 #endif
 
         glfwPollEvents();
-        app.player.Update(app.wgpu.queue, app.buf.view_buffer, delta_time);
+
         app.wgpu.instance.ProcessEvents();
+
+
+#ifndef __EMSCRIPTEN__
+        // Tick needs to be called in Dawn to display validation errors
+        app.wgpu.device.Tick();
+#endif
     }
 
+    void App::SetupImGui(GLFWwindow* window, const SetupWGPUResult& wgpu, SurfaceConfig& surf) {
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        // ImGuiIO& io = ImGui::GetIO(); (void)io;
+        ImGui::StyleColorsDark();
+        ImGui_ImplGlfw_InitForOther(window, true);
+#ifdef __EMSCRIPTEN__
+        ImGui_ImplGlfw_InstallEmscriptenCallbacks(window, "#canvas");
+#endif
+        ImGui_ImplWGPU_InitInfo init_info;
+        init_info.Device = wgpu.device.Get();
+        init_info.NumFramesInFlight = 3;
+        init_info.RenderTargetFormat = (WGPUTextureFormat)surf.format;
+        init_info.DepthStencilFormat = WGPUTextureFormat_Undefined;
+        ImGui_ImplWGPU_Init(&init_info);
+#ifdef __EMSCRIPTEN__
+        io.IniFilename = nullptr;
+#endif
+    }
     App::SetupWGPUResult App::SetupWGPU() {
 
         SetupWGPUResult r {
@@ -225,17 +264,34 @@ namespace Chemical {
         };
 
 
-        
+        wgpu::RenderPassColorAttachment imgui_color = {
+            .view = p.surface_view,
+            .loadOp = wgpu::LoadOp::Load,
+            .storeOp = wgpu::StoreOp::Store,
+            .clearValue = wgpu::Color{0.0,0.0,0.0,0.0}
+        };
+        wgpu::RenderPassDescriptor imgui_rp_desc {
+            .colorAttachmentCount = 1,
+            .colorAttachments = &imgui_color
+        };
+
+
 
         wgpu::RenderPassEncoder render_pass = p.encoder.BeginRenderPass(&rp_desc);
-    
         render_pass.SetPipeline(p.pipeline);
         render_pass.SetBindGroup(0, p.view_projection_bind_group, 0, nullptr);
         render_pass.SetBindGroup(1, p.block.group, 0, nullptr);
         render_pass.Draw(p.block.vertex_count, 1, 0, 0);
+
         render_pass.End();
 
+        wgpu::RenderPassEncoder imgui_render_pass = p.encoder.BeginRenderPass(&imgui_rp_desc);
+        ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), imgui_render_pass.Get());
+        imgui_render_pass.End();
+
+
         wgpu::CommandBuffer cmd = p.encoder.Finish(nullptr);
+
 
         p.queue.Submit(1, &cmd);
     }

@@ -255,7 +255,11 @@ namespace Chemical {
             .usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst,
             .dimension = wgpu::TextureDimension::e2D,
             .size = { ATLAS_UNIT_PIXEL_SIZE, ATLAS_UNIT_PIXEL_SIZE, atlas_units_x * atlas_units_y},
+#ifdef WSL
             .format = wgpu::TextureFormat::RGBA8UnormSrgb,
+#else
+            .format = wgpu::TextureFormat::RGBA8Unorm,
+#endif
             .mipLevelCount = 1,
             .sampleCount = 1,
         };

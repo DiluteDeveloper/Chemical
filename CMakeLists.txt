@@ -84,7 +84,31 @@ FetchContent_Declare(spdlog
     GIT_SHALLOW    TRUE
 )
 
-FetchContent_MakeAvailable(glm spdlog stb)
+FetchContent_Declare(imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG        v1.91.9
+    GIT_SHALLOW    TRUE
+)
+FetchContent_MakeAvailable(glm spdlog stb imgui)
+
+# Dear ImGui: no CMake of its own, so build it with the GLFW + OpenGL3 backends.
+add_library(imgui STATIC
+    ${imgui_SOURCE_DIR}/imgui.cpp
+    ${imgui_SOURCE_DIR}/imgui_demo.cpp
+    ${imgui_SOURCE_DIR}/imgui_draw.cpp
+    ${imgui_SOURCE_DIR}/imgui_tables.cpp
+    ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+    ${imgui_SOURCE_DIR}/backends/imgui_impl_wgpu.cpp
+    ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+)
+target_compile_definitions(imgui PRIVATE IMGUI_IMPL_WEBGPU_BACKEND_DAWN)
+target_link_libraries(imgui PRIVATE dawn::webgpu_dawn dawn_glfw glfw)
+target_include_directories(imgui PUBLIC
+    ${imgui_SOURCE_DIR}
+    ${imgui_SOURCE_DIR}/backends
+)
+
+
 
 add_executable(${PROJECT_NAME} 
     src/main.cpp 
@@ -106,7 +130,7 @@ if(EMSCRIPTEN)
     target_compile_options(${PROJECT_NAME} PRIVATE --use-port=emdawnwebgpu)
     target_link_options(${PROJECT_NAME} PRIVATE --use-port=emdawnwebgpu --use-port=contrib.glfw3 -sASYNCIFY --preload-file ${CMAKE_SOURCE_DIR}/res@/res)
     set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".html")
-    target_link_libraries(${PROJECT_NAME} PRIVATE stb)
+    target_link_libraries(${PROJECT_NAME} PRIVATE stb imgui)
 else()
     FetchContent_Declare(dawn
         GIT_REPOSITORY https://github.com/google/dawn.git
@@ -127,7 +151,7 @@ else()
     FetchContent_MakeAvailable(dawn)
 
     target_include_directories(${PROJECT_NAME} PRIVATE src/)
-    target_link_libraries(${PROJECT_NAME} PRIVATE dawn::webgpu_dawn dawn_glfw glfw stb)
+    target_link_libraries(${PROJECT_NAME} PRIVATE dawn::webgpu_dawn dawn_glfw glfw stb imgui)
     if(WSL)
         target_compile_definitions(${PROJECT_NAME} PRIVATE WSL)
     endif()
@@ -180,11 +204,7 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 #     GIT_SHALLOW    TRUE
 # )
 #
-# FetchContent_Declare(imgui
-#     GIT_REPOSITORY https://github.com/ocornut/imgui.git
-#     GIT_TAG        v1.91.9
-#     GIT_SHALLOW    TRUE
-# )
+
 
 # if(DEFINED EMSCRIPTEN)
 #     set(OPENGL_MAJOR_VERSION 3)

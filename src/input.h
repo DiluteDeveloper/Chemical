@@ -5,10 +5,11 @@
 
 namespace Chemical {
 
-    class Input {
-    public:
+    struct Input {
         static void Initialise(GLFWwindow* _window);
 
+        static void SetCursorDisabled();
+        static void SetCursorEnabled();
         // The data pointer acts as an identifier to be able to unsubscribe from this callback later.
         typedef std::function<void(int key, int scancode, int action, int mods, void* data)> KeyCallback;
         static void SubscribeToKeyCallback(const KeyCallback cb, void* data);
@@ -20,7 +21,6 @@ namespace Chemical {
         static void UnsubscribeFromCursorPosCallback(void* data_ptr);
 
         static bool GetKey(int key);
-    private:
 
     };
 }

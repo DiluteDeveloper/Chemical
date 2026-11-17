@@ -32,7 +32,7 @@ namespace Chemical {
     extern bool TestBoxCollision(const Extent3D& extent, const std::vector<Extent3D>& colliders);
     inline std::vector<Extent3D> GetTestColliderData() {
         return {
-            {{0,0,0}, {5, 8, 5}},
+            {{0,0,0}, {5, 7, 5}},
             {{8,2,2}, {13, 9, 7}},
             {{0,8,2}, {5, 15, 7}},
             {{5,5,5}, {20, 20, 20}},

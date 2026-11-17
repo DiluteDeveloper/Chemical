@@ -43,6 +43,7 @@ namespace Chemical {
         Player player;
 
         [[nodiscard]] static SetupWGPUResult SetupWGPU();
+        static void SetupImGui(GLFWwindow* window, const SetupWGPUResult& wgpu, SurfaceConfig& surf);
         [[nodiscard]] static GLFWwindow* SetupGLFW();
 
         struct SetupRenderPipelineParam {
