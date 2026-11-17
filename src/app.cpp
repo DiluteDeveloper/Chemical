@@ -191,7 +191,7 @@ namespace Chemical {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-        GLFWwindow* glfw_window = glfwCreateWindow(1280, 720, "ChemicalMC_PK", nullptr, nullptr);
+        GLFWwindow* glfw_window = glfwCreateWindow(1920, 1080, "ChemicalMC_PK", nullptr, nullptr);
 
         if(!glfw_window) {
             glfwTerminate();
@@ -232,8 +232,8 @@ namespace Chemical {
         wgpu::SurfaceConfiguration config = {};
         config.device = p.device;
         config.format = capabilities.formats[0];
-        config.width = 1280;
-        config.height = 720;
+        config.width = 1920;
+        config.height = 1080;
         if(capabilities.presentModeCount == 0) throw std::exception();
         config.presentMode = capabilities.presentModes[0];
         config.alphaMode = wgpu::CompositeAlphaMode::Auto;
@@ -441,7 +441,7 @@ namespace Chemical {
         out.projection_buffer = device.CreateBuffer(&buffer_desc);
 
         glm::mat4& projection_matrix = *(glm::mat4*)out.projection_buffer.GetMappedRange();
-        projection_matrix = GenerateProjectionMatrix(1280, 720);
+        projection_matrix = GenerateProjectionMatrix(1920, 1080);
 
         out.projection_buffer.Unmap();
 
@@ -501,7 +501,7 @@ namespace Chemical {
         wgpu::TextureDescriptor desc = {
             .usage = wgpu::TextureUsage::RenderAttachment,
             .dimension = wgpu::TextureDimension::e2D,
-            .size = wgpu::Extent3D(1280, 720, 1),
+            .size = wgpu::Extent3D(1920, 1080, 1),
             .format = wgpu::TextureFormat::Depth32Float
         };
         auto tex = device.CreateTexture(&desc);

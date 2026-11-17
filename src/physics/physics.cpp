@@ -6,10 +6,25 @@ namespace Chemical {
     Transform PhysicsBody::ApplyVelocityToTransform(const Transform& _transform) {
         Transform transform = _transform;    
         transform.position += velocity;
-        velocity = velocity * glm::vec3(0.95, 1, 0.95);
+
         return transform;
     }
-    void PhysicsBody::ApplyGravity(float gravity, double delta_time) {
+    void PhysicsBody::ApplyNaturalForces(double delta_time) {
+        if(grounded == Grounded::Grounded)
+            velocity = velocity * glm::vec3(friction , 1, friction );
+        // else {
+        //     velocity = velocity * glm::vec3(air_resistance , 1, air_resistance);
+            // if(velocity.x > 0)
+            //     velocity.x -= velocair_resistance * delta_time;
+            // if(velocity.x < 0)
+            //     velocity.x += air_resistance * delta_time;
+            // if(velocity.z > 0)
+            //     velocity.z -= air_resistance * delta_time;
+            // if(velocity.z < 0)
+            //     velocity.z += air_resistance * delta_time;
+        // }
+    }
+    void PhysicsBody::ApplyGravity(double delta_time) {
         velocity.y -= gravity * delta_time;
     }
     void PhysicsBody::ApplyVelocityForce(glm::fvec3 add_velocity) {

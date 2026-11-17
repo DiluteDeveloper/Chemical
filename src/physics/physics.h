@@ -14,12 +14,16 @@ namespace Chemical {
     class PhysicsBody {
     public:
         Transform ApplyVelocityToTransform(const Transform& _transform);
-        void ApplyGravity(float gravity, double delta_time = 1.0);
+        void ApplyNaturalForces(double delta_time = 1.0);
+        void ApplyGravity(double delta_time = 1.0);
 
         void ApplyVelocityForce(glm::fvec3 add_velocity);
         void AddVelocity(glm::fvec3 add_velocity);
         glm::fvec3 velocity = glm::fvec3(0.0f);
         glm::fvec3 terminal_velocity = glm::fvec3(0.03f);
+        float gravity = 0.12f;
+        float friction = 0.96;
+        float air_speed_increase = 1.01;
 
         Grounded grounded = Grounded::NotGrounded;
     };
