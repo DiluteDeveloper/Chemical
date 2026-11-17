@@ -45,7 +45,7 @@ namespace Chemical {
 
 
 #ifdef __EMSCRIPTEN__
-        emscripten_set_main_loop_arg(ApplicationLoop, &app, 1, true);
+        emscripten_set_main_loop_arg(ApplicationLoop, &app, 0, true);
 #else
         while(!glfwWindowShouldClose(app.window)) {
             ApplicationLoop(&app);
@@ -59,6 +59,9 @@ namespace Chemical {
     void App::ApplicationLoop(void* arg) {
         App& app = *reinterpret_cast<App*>(arg);
 
+        // static uint32_t frame_idx = 0;
+        // frame_idx++;
+        // spdlog::info("Frame {}", frame_idx);
         auto[surface_texture, surface_view] = WebGPU::GetNextSurfaceViewData(app.surface.surface);
         if(!surface_view) return;
 
@@ -67,10 +70,6 @@ namespace Chemical {
 #ifndef __EMSCRIPTEN__
         app.surface.surface.Present();
 #endif
-        // wgpu::CommandBuffer commandBuffer =
-        //     wgpu::CreateCommandBuffer(surfaceTexture.texture.CreateView(), pingpong);
-        // queue.Submit(1, &commandBuffer);
-        // pingpong = (pingpong + 1) % 2;
 
         glfwPollEvents();
         app.player.Update(app.wgpu.queue, app.buf.view_buffer);
@@ -157,11 +156,11 @@ namespace Chemical {
             throw std::runtime_error("Failed to create GLFW window!");
         }
 #ifndef __EMSCRIPTEN__
-#ifdef WSL
+    #ifdef WSL
         glfwSetInputMode(glfw_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-#else
+    #else
         glfwSetInputMode(glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-#endif
+    #endif
 #endif
         // if(glfwRawMouseMotionSupported())
         //     glfwSetInputMode(glfw_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
@@ -340,49 +339,6 @@ namespace Chemical {
         
         return p.device.CreateRenderPipeline(&rp_desc);    
     }
-
-    // void App::ReadBackBuffer() {
-    //
-    //     wgpu::BufferDescriptor buffer_desc;
-    //     buffer_desc.label = "Some GPU-side data buffer";
-    //     buffer_desc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::CopySrc;
-    //     buffer_desc.size = 16;
-    //     buffer_desc.mappedAtCreation = false;
-    //     wgpu::Buffer buffer1 = webgpu_device.CreateBuffer(&buffer_desc);
-    //     buffer_desc.label = "Some GPU-side data buffer";
-    //     buffer_desc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::MapRead;
-    //     wgpu::Buffer& buffer2 = *new wgpu::Buffer(webgpu_device.CreateBuffer(&buffer_desc));
-    //
-    //     std::vector<uint8_t> numbers(16);
-    //     for (uint8_t i = 0; i < 16; ++i) numbers[i] = i;
-    //
-    //     webgpu_queue.WriteBuffer(buffer1, 0, numbers.data(), numbers.size());
-    //
-    //     wgpu::CommandEncoder encoder = webgpu_device.CreateCommandEncoder(nullptr);
-    //
-    //     encoder.CopyBufferToBuffer(buffer1, 0, buffer2, 0, 16);
-    //
-    //     wgpu::CommandBuffer cmd = encoder.Finish(nullptr);
-    //
-    //     webgpu_queue.Submit(1, &cmd);
-    //
-    //     buffer2.MapAsync(wgpu::MapMode::Read, 0, 16, wgpu::CallbackMode::AllowProcessEvents, [](wgpu::MapAsyncStatus status, wgpu::StringView, wgpu::Buffer* buffer) {
-    //         if(status == wgpu::MapAsyncStatus::Success)  {
-    //             spdlog::info("Buffer 2 mapped with status {}", (int)status);
-    //             uint8_t* buffer_data = (uint8_t*)buffer->GetConstMappedRange(0, 16);
-    //             spdlog::info("bufferData = [");
-    //             for (int i = 0; i < 16; ++i) {
-    //                 if (i > 0) spdlog::info(", ");
-    //                 spdlog::info("{}", (int)buffer_data[i]);
-    //             }
-    //             spdlog::info("]");
-    //             buffer->Unmap();
-    //         }
-    //         else
-    //             spdlog::error("Buffer 2 mapped with status {}", (int)status);
-    //     }, &buffer2);
-    //
-    // }
 
     App::BufferInit App::InitialiseBuffers(wgpu::Queue queue, wgpu::Device device) {
 

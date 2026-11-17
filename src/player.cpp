@@ -33,7 +33,7 @@ namespace Chemical {
         };
         auto offset = ApplyBoxCollisionResponseBounce(collider, body.velocity, 1.5, other_colliders);
         body.ApplyVelocityForce(offset);
-        // transform.position.y -= 0.0000981f;
+        transform.position.y -= 0.0000981f;
 
         body.ApplyGravity(0.000481f);
         transform = body.ApplyVelocityToTransform(transform);
