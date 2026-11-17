@@ -1,13 +1,11 @@
 #include <spdlog/spdlog.h>
 #include "player.h"
-#include "block/block.h"
 #include "input.h"
 #include "physics/physics.h"
 
 namespace Chemical {
 
-    Player::Player(float speed, float vertical_speed, float sensitivity) :
-        speed(speed), vertical_speed(vertical_speed), sensitivity(sensitivity) {
+    Player::Player() {
         Input::SubscribeToCursorPosCallback(Player::OnCursorPosCallback, this);
         Input::SubscribeToKeyCallback(Player::OnKeyCallback, this);
 
@@ -25,25 +23,41 @@ namespace Chemical {
         Input::UnsubscribeFromKeyCallback(this);
     }
 
-    void Player::Update(wgpu::Queue queue, wgpu::Buffer view_buffer) {
+    void Player::Update(wgpu::Queue queue, wgpu::Buffer view_buffer, double _delta_time) {
 
+        delta_time = _delta_time;
         Extent3D collider = {
             glm::vec3(transform.position.x - 0.5, transform.position.y - 1, transform.position.z - 0.5),
             glm::vec3(transform.position.x + 0.5, transform.position.y, transform.position.z + 0.5)
         };
-        auto offset = ApplyBoxCollisionResponse(collider, other_colliders);
-        body.ApplyVelocityForce(offset);
+        auto offset = ApplyBoxCollisionResponse(body, collider, other_colliders);
+        transform.position += offset;
+        // body.ApplyVelocityForce(offset);
 
         transform = body.ApplyVelocityToTransform(transform);
 
+        // switch(body.grounded) {
+        //     case Grounded::Locked:
+        //         spdlog::info("LOCKED!"); break;
+        //     case Grounded::NotGrounded:
+        //         spdlog::info("NOT!"); break;
+        //     case Grounded::Grounded:
+        //         spdlog::info("GROUNDED!"); break;
+        // }
         if(!freecam) {
-            body.ApplyGravity(0.000481f); // pcam only
+            if(body.grounded == Grounded::NotGrounded)
+                body.ApplyGravity(.140481f * delta_time); // pcam only
             Extent3D ground_collider = {
-                glm::vec3(transform.position.x - 0.4, transform.position.y - 1, transform.position.z - 0.4),
-                glm::vec3(transform.position.x + 0.4, transform.position.y - 1.2, transform.position.z + 0.4)
+                glm::vec3(transform.position.x - 0.3, transform.position.y - 1, transform.position.z - 0.3),
+                glm::vec3(transform.position.x + 0.3, transform.position.y - 1.2, transform.position.z + 0.3)
             };
-            is_grounded = TestBoxCollision(ground_collider, other_colliders);
-            spdlog::info("IsGrounded: {}", is_grounded);
+            bool g = TestBoxCollision(ground_collider, other_colliders);
+            if(body.grounded == Grounded::Locked)  {
+                if(!g)
+                    body.grounded = Grounded::NotGrounded;
+            } else
+                body.grounded = (Grounded)g;
+            
         }
 
         current_matrix = transform.AsMat4();
@@ -57,6 +71,7 @@ namespace Chemical {
 
 
     }
+
     void Player::OnKeyCallback(int key, int, int action, int, void* data) {
         Player& player = *reinterpret_cast<Player*>(data);
 
@@ -103,23 +118,25 @@ namespace Chemical {
         glm::fvec3 forward = current_matrix[2];
         glm::fvec3 front = glm::normalize(glm::fvec3(forward.x, 0, forward.z));
 
-        // spdlog::info("fwd: {}, {}, {}", forward.x,forward.y,forward.z);
         if(direction_bitmask & (uint8_t)MoveDirection::Forwards)
-            body.AddVelocity(front * speed);
+            body.AddVelocity(front * speed * (float)delta_time);
         if(direction_bitmask & (uint8_t)MoveDirection::Backwards)
-            body.AddVelocity(-front * speed);
+            body.AddVelocity(-front * speed * (float)delta_time);
         if(direction_bitmask & (uint8_t)MoveDirection::Right)
-            body.AddVelocity(right * speed);
+            body.AddVelocity(right * speed * (float)delta_time);
         if(direction_bitmask & (uint8_t)MoveDirection::Left)
-            body.AddVelocity(-right * speed);
+            body.AddVelocity(-right * speed * (float)delta_time);
         if(freecam) {
             if(direction_bitmask & (uint8_t)MoveDirection::Up)
-                body.AddVelocity(up * vertical_speed);
+                body.AddVelocity(up * vertical_speed * (float)delta_time);
             if(direction_bitmask & (uint8_t)MoveDirection::Down)
-                body.AddVelocity(-up * vertical_speed);
+                body.AddVelocity(-up * vertical_speed * (float)delta_time);
         } else {
-            if(direction_bitmask & (uint8_t)MoveDirection::Up && is_grounded)
-                body.ApplyVelocityForce(up * vertical_speed);
+            if(direction_bitmask & (uint8_t)MoveDirection::Up && body.grounded == Grounded::Grounded) {
+                body.ApplyVelocityForce(up * jump_force);
+                body.grounded = Grounded::Locked;
+            }
+
 
         }
 

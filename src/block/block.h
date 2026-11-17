@@ -88,7 +88,7 @@ namespace Chemical {
             {glm::ivec3(0+8, 4+2, 0+2), glm::ivec3(5+8, 6+2, 0+2), FaceOrientation::Back, Type::Dirt},
             {glm::ivec3(0+8, 6+2, 0+2), glm::ivec3(5+8, 7+2, 0+2), FaceOrientation::Back, Type::GrassDirt},
 
-
+            {glm::ivec3(-40, 1, -40), glm::ivec3(40, 1, 40), FaceOrientation::Top, Type::Dirt},
             {glm::ivec3(0+0, 0+8, 0+2), glm::ivec3(5+0, 0+8, 5+2), FaceOrientation::Bottom, Type::Glass},
             {glm::ivec3(0+0, 7+8, 0+2), glm::ivec3(5+0, 7+8, 5+2), FaceOrientation::Top, Type::Glass},
 
@@ -122,8 +122,11 @@ namespace Chemical {
             r.emplace_back(d.start_position.x, d.start_position.y, d.start_position.z, d.type);
 
             r.emplace_back((uint32_t)d.orientation, 
-                    std::abs(d.end_position[arr[0]]) - std::abs(d.start_position[arr[0]]), 
-                    std::abs(d.end_position[arr[1]]) - std::abs(d.start_position[arr[1]]), 0);
+                    std::abs(d.end_position[arr[0]] - d.start_position[arr[0]]), 
+                    std::abs(d.end_position[arr[1]] - d.start_position[arr[1]]), 0);
+            // static int i = 0;
+            // spdlog::info("{}, {}, {}, {}", r[i].x,r[i].y,r[i].z,r[i].w);
+            // i++;
         }
 
         return r;

@@ -6,7 +6,7 @@ namespace Chemical {
     Transform PhysicsBody::ApplyVelocityToTransform(const Transform& _transform) {
         Transform transform = _transform;    
         transform.position += velocity;
-        velocity = velocity * glm::vec3(0.99);
+        velocity = velocity * glm::vec3(0.97, 1, 0.97);
         return transform;
     }
     void PhysicsBody::ApplyGravity(float gravity, double delta_time) {
@@ -30,7 +30,9 @@ namespace Chemical {
             velocity.z = add.z;
     }
 
-    glm::vec3 ApplyBoxCollisionResponse(const Extent3D& extent, const std::vector<Extent3D>& colliders) {
+    glm::vec3 ApplyBoxCollisionResponse(PhysicsBody& body, const Extent3D& extent, const std::vector<Extent3D>& colliders) {
+
+        glm::vec3 offset = glm::vec3(0);
         for(auto& c : colliders) {
             // spdlog::info("ITERATION::");
             float x_min_max_diff =  c.min.x - extent.max.x;
@@ -67,18 +69,28 @@ namespace Chemical {
                 z_max_min_diff : z_min_max_diff;
 
             if(std::abs(x_offset) < std::abs(y_offset))
-                if(std::abs(x_offset) < std::abs(z_offset))
-                    return glm::vec3(x_offset, 0, 0);
-                else
-                    return glm::vec3(0, 0, z_offset);
-
+                if(std::abs(x_offset) < std::abs(z_offset)) {
+                    body.velocity.x = 0;
+                    offset.x = x_offset * 1.01;
+                }
+                else {
+                    body.velocity.z = 0;
+                    offset.z = z_offset * 1.01;
+                }
             else
-                if(std::abs(y_offset) < std::abs(z_offset))
-                    return glm::vec3(0, y_offset, 0);
-                else
-                    return glm::vec3(0, 0, z_offset);
+                if(std::abs(y_offset) < std::abs(z_offset)) {
+                    if(body.grounded != Grounded::Locked) {
+                        body.velocity.y = 0;
+                        offset.y = y_offset * 1.01;
+                    } 
+
+                }
+                else {
+                    body.velocity.z = 0;
+                    offset.z = z_offset * 1.01;
+                }
         }
-        return glm::vec3(0);
+        return offset;
     }
     bool TestBoxCollision(const Extent3D& extent, const std::vector<Extent3D>& colliders) {
         for(auto& c : colliders) {

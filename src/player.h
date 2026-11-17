@@ -12,21 +12,27 @@ namespace Chemical {
     public:
         typedef std::function<void(glm::mat4)> OnViewMatrixUpdated;
 
-        Player(float speed = 0.01, float vertical_speed = 0.05, float sensitivity = 0.5);
+        Player();
         // Camera(const Camera&) = delete;
         // Camera(Camera&&) = delete;
         // Camera operator=(const Camera&) = delete;
         // Camera operator=(Camera&&) = delete;
 
         ~Player();
-        void Update(wgpu::Queue queue, wgpu::Buffer view_buffer);
+        void Update(wgpu::Queue queue, wgpu::Buffer view_buffer, double _delta_time);
 
-        float speed = 0.01;
+        float speed = 0.31;
         float vertical_speed = 0.05;
-        float sensitivity = 0.02;
+        float jump_force = 0.05;
+#ifdef WSL
+        float sensitivity = 0.5;
+#else
+        float sensitivity = 0.2;
+#endif
+
         bool freecam = false;
     private:
-        bool is_grounded = false;
+        double delta_time = 0;
 
         std::vector<Extent3D> other_colliders;
 

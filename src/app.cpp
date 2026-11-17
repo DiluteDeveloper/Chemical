@@ -3,6 +3,7 @@
 #include "glm/ext/matrix_clip_space.hpp"
 // #define GLM_ENABLE_EXPERIMENTAL
 // #include <glm/gtx/string_cast.hpp>
+#include <chrono>
 #include <cstdint>
 #include <glm/gtc/matrix_transform.hpp>
 #include <spdlog/spdlog.h>
@@ -21,14 +22,14 @@
 
 namespace Chemical {
 
+    using namespace std::chrono;
+    using clock = high_resolution_clock;
+    double delta_time = 0.0;
+    clock::time_point old_time;
+
     void App::Start() {
         spdlog::set_level(spdlog::level::trace);
 
-#ifdef WSL
-        float camera_sensitivity = 0.5;
-#else
-        float camera_sensitivity = 0.2;
-#endif
         App app = {
             .wgpu = SetupWGPU(), 
             .window = SetupGLFW(),
@@ -36,12 +37,13 @@ namespace Chemical {
             .block = InitialiseBlockBuffer(app.wgpu.device, app.wgpu.queue),
             .surface = ConfigureSurface({app.wgpu.instance, app.wgpu.adapter, app.wgpu.device, app.window}),
             .pipeline = SetupRenderPipeline({app.wgpu.device, app.surface.format, app.buf.view_projection_bind_group_layout, app.block}),
-            .player = Player(0.0002, 0.02, camera_sensitivity),
+            .player = {},
             .depth = SetupDepthTexture(app.wgpu.device)
         };
         Input::Initialise(app.window);
 
         WebGPU::PrintAdapterInfo(app.wgpu.adapter);
+        old_time = clock::now();
 
 
 #ifdef __EMSCRIPTEN__
@@ -59,9 +61,10 @@ namespace Chemical {
     void App::ApplicationLoop(void* arg) {
         App& app = *reinterpret_cast<App*>(arg);
 
-        // static uint32_t frame_idx = 0;
-        // frame_idx++;
-        // spdlog::info("Frame {}", frame_idx);
+        clock::time_point new_time = clock::now();
+        delta_time = duration<float>(new_time - old_time).count();
+        old_time = new_time;
+
         auto[surface_texture, surface_view] = WebGPU::GetNextSurfaceViewData(app.surface.surface);
         if(!surface_view) return;
 
@@ -72,7 +75,7 @@ namespace Chemical {
 #endif
 
         glfwPollEvents();
-        app.player.Update(app.wgpu.queue, app.buf.view_buffer);
+        app.player.Update(app.wgpu.queue, app.buf.view_buffer, delta_time);
         app.wgpu.instance.ProcessEvents();
     }
 
