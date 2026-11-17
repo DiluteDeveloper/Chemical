@@ -80,6 +80,30 @@ namespace Chemical {
         }
         return glm::vec3(0);
     }
+    bool TestBoxCollision(const Extent3D& extent, const std::vector<Extent3D>& colliders) {
+        for(auto& c : colliders) {
+            float x_min_max_diff =  c.min.x - extent.max.x;
+            float x_max_min_diff =  c.max.x - extent.min.x;
+
+            if(x_min_max_diff > 0 || x_max_min_diff < 0)
+                continue;
+
+            float y_min_max_diff =  c.min.y - extent.max.y;
+            float y_max_min_diff =  c.max.y - extent.min.y;
+
+            if(y_min_max_diff > 0 || y_max_min_diff < 0)
+                continue;
+
+            float z_min_max_diff =  c.min.z - extent.max.z;
+            float z_max_min_diff =  c.max.z - extent.min.z;
+
+            if(z_min_max_diff > 0 || z_max_min_diff < 0)
+                continue;
+
+            return true;
+        }
+        return false;
+    }
     glm::vec3 ApplyBoxCollisionResponseBounce(const Extent3D& extent, const glm::vec3& velocity, float bounciness, const std::vector<Extent3D>& colliders) {
         for(auto& c : colliders) {
             // spdlog::info("ITERATION::");

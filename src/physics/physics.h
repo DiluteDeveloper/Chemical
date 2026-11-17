@@ -22,6 +22,7 @@ namespace Chemical {
         glm::vec3 max;
     };
     extern glm::vec3 ApplyBoxCollisionResponse(const Extent3D& extent, const std::vector<Extent3D>& colliders);
+    extern bool TestBoxCollision(const Extent3D& extent, const std::vector<Extent3D>& colliders);
     inline std::vector<Extent3D> GetTestColliderData() {
         return {
             {{0,0,0}, {5, 8, 5}},

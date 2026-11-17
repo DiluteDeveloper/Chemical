@@ -31,12 +31,21 @@ namespace Chemical {
             glm::vec3(transform.position.x - 0.5, transform.position.y - 1, transform.position.z - 0.5),
             glm::vec3(transform.position.x + 0.5, transform.position.y, transform.position.z + 0.5)
         };
-        auto offset = ApplyBoxCollisionResponseBounce(collider, body.velocity, 1.5, other_colliders);
+        auto offset = ApplyBoxCollisionResponse(collider, other_colliders);
         body.ApplyVelocityForce(offset);
-        transform.position.y -= 0.0000981f;
 
-        body.ApplyGravity(0.000481f);
         transform = body.ApplyVelocityToTransform(transform);
+
+        if(!freecam) {
+            body.ApplyGravity(0.000481f); // pcam only
+            Extent3D ground_collider = {
+                glm::vec3(transform.position.x - 0.4, transform.position.y - 1, transform.position.z - 0.4),
+                glm::vec3(transform.position.x + 0.4, transform.position.y - 1.2, transform.position.z + 0.4)
+            };
+            is_grounded = TestBoxCollision(ground_collider, other_colliders);
+            spdlog::info("IsGrounded: {}", is_grounded);
+        }
+
         current_matrix = transform.AsMat4();
         if(direction_bitmask) {
             Move();
@@ -50,6 +59,9 @@ namespace Chemical {
     }
     void Player::OnKeyCallback(int key, int, int action, int, void* data) {
         Player& player = *reinterpret_cast<Player*>(data);
+
+        if(key == GLFW_KEY_F && action == GLFW_PRESS)
+            player.freecam = !player.freecam;
 
         static std::unordered_map<int, MoveDirection> key_to_direction = {
             {GLFW_KEY_W, MoveDirection::Forwards},
@@ -100,10 +112,17 @@ namespace Chemical {
             body.AddVelocity(right * speed);
         if(direction_bitmask & (uint8_t)MoveDirection::Left)
             body.AddVelocity(-right * speed);
-        if(direction_bitmask & (uint8_t)MoveDirection::Up)
-            body.AddVelocity(up * vertical_speed);
-        if(direction_bitmask & (uint8_t)MoveDirection::Down)
-            body.AddVelocity(-up * vertical_speed);
+        if(freecam) {
+            if(direction_bitmask & (uint8_t)MoveDirection::Up)
+                body.AddVelocity(up * vertical_speed);
+            if(direction_bitmask & (uint8_t)MoveDirection::Down)
+                body.AddVelocity(-up * vertical_speed);
+        } else {
+            if(direction_bitmask & (uint8_t)MoveDirection::Up && is_grounded)
+                body.ApplyVelocityForce(up * vertical_speed);
+
+        }
+
 
     }
 }

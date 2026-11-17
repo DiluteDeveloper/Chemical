@@ -24,7 +24,9 @@ namespace Chemical {
         float speed = 0.01;
         float vertical_speed = 0.05;
         float sensitivity = 0.02;
+        bool freecam = false;
     private:
+        bool is_grounded = false;
 
         std::vector<Extent3D> other_colliders;
 
