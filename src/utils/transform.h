@@ -7,6 +7,7 @@ namespace Chemical {
 
 
     struct Transform {
+
         glm::fvec3 position = glm::fvec3(0.0f);
         glm::fvec3 rotation = glm::fvec3(0.0f);
         glm::fvec3 scale = glm::fvec3(1.0f);

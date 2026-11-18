@@ -14,6 +14,7 @@
 #include <webgpu/webgpu_cpp.h>
 #include <webgpu/webgpu_glfw.h>
 #include <fstream>
+#include "freecam.h"
 
 #ifdef __EMSCRIPTEN__
     #include <emscripten.h>
@@ -41,7 +42,8 @@ namespace Chemical {
             .block = InitialiseBlockBuffer(app.wgpu.device, app.wgpu.queue),
             .surface = ConfigureSurface({app.wgpu.instance, app.wgpu.adapter, app.wgpu.device, app.window}),
             .pipeline = SetupRenderPipeline({app.wgpu.device, app.surface.format, app.buf.view_projection_bind_group_layout, app.block}),
-            .player = {},
+            .bodies = {},
+            .colliders = {},
             .depth = SetupDepthTexture(app.wgpu.device)
         };
         Input::Initialise(app.window);
@@ -49,6 +51,12 @@ namespace Chemical {
 
         WebGPU::PrintAdapterInfo(app.wgpu.adapter);
         old_time = clock::now();
+
+        Freecam::speed = 0.51f;
+        app.colliders = BoxCollider::BoxColliders();
+        app.bodies.emplace_back(PhysicsBody{.transform = {.position = {3, 10, 3}}, .friction = 0.93 });
+
+        Freecam::Initialise(app.bodies[0]);
 
 
 #ifdef __EMSCRIPTEN__
@@ -78,7 +86,9 @@ namespace Chemical {
 
         auto[surface_texture, surface_view] = WebGPU::GetNextSurfaceViewData(app.surface.surface);
         if(!surface_view) return;
-        app.player.Update(app.wgpu.queue, app.buf.view_buffer, delta_time);
+        PhysicsBody::UpdatePhysicsBodies(app.bodies, app.colliders);
+        Freecam::Update(delta_time);
+        Freecam::WriteViewMatrix(app.wgpu.queue, app.buf.view_buffer);
         ImGui::Render();
 
 

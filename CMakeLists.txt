@@ -114,7 +114,7 @@ add_executable(${PROJECT_NAME}
     src/main.cpp 
     src/app.cpp
     src/input.cpp
-    src/player.cpp
+    src/freecam.cpp
     src/physics/physics.cpp
     src/utils/webgpu_utils.cpp
     src/utils/image.cpp

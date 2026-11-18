@@ -1,7 +1,7 @@
 #pragma once
 
 #include "block/block.h"
-#include "player.h"
+#include "physics/physics.h"
 #include <webgpu/webgpu_cpp.h>
 #include <glm/glm.hpp>
 #include <GLFW/glfw3.h>
@@ -40,7 +40,8 @@ namespace Chemical {
 
         wgpu::RenderPipeline pipeline;
 
-        Player player;
+        std::vector<PhysicsBody> bodies;
+        std::vector<BoxCollider> colliders;
 
         [[nodiscard]] static SetupWGPUResult SetupWGPU();
         static void SetupImGui(GLFWwindow* window, const SetupWGPUResult& wgpu, SurfaceConfig& surf);
