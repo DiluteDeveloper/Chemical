@@ -57,6 +57,8 @@ namespace Chemical {
             glm::vec3(transform.position.x + 0.5, transform.position.y + 0.5, transform.position.z + 0.5)
         };
         auto offset = ApplyBoxCollisionResponse(body, collider, other_colliders);
+        if(offset.x != 0 || offset.z != 0)
+            jumping = false;
         transform.position += offset;
         // body.ApplyVelocityForce(offset);
 
@@ -96,6 +98,8 @@ namespace Chemical {
          ImGui::InputFloat("Set Gravity", &body.gravity, 0, 5, "%.5f");
         ImGui::InputFloat("Set Jump Force", &jump_force, 0, 50, "%.5f");
          ImGui::InputFloat("Set Friction", &body.friction, 0, 1, "%.5f");
+        ImGui::InputFloat("Set Acceleration Speed", &acceleration_speed, 0, 1, "%.5f");
+        ImGui::InputFloat("Set Deceleration Speed", &deceleration_speed, 0, 1, "%.5f");
          // ImGui::InputFloat("Set Air Speed Increase", &body.air_speed_increase, 0, 2, "%.5f");
         //ImGui::SliderFloat3("Set Terminal Velocity", (float*)&body.terminal_velocity, 0, 5, "%.3f");
 
@@ -188,10 +192,9 @@ namespace Chemical {
                    jumpdir ^= 0b1000;
                 if(direction_bitmask & (uint8_t)MoveDirection::Left)
                    jumpdir ^= 0b0010;
-                if(!jumpdir)
-                    jumping = false;
-                spdlog::info("Jumped, jumping={}, mask={:b}, dirmask={:b}", jumping, jumpdir, direction_bitmask);
-                mag = std::abs(body.velocity.x) + std::abs(body.velocity.z);
+                // if(!jumpdir)
+                //     jumping = false;
+                // spdlog::info("Jumped, jumping={}, mask={:b}, dirmask={:b}", jumping, jumpdir, direction_bitmask);
             }
 
 
@@ -199,21 +202,18 @@ namespace Chemical {
         // spdlog::info("MAG: {}", mag);
         // spdlog::info("jumpdir: {}", jumpdir);
 
-        glm::fvec3 vel = glm::fvec3(0);
+        glm::vec3 vel = glm::vec3(0);
         if(jumping) {
-            if(jumpdir & 0b1000)
-                vel += right;
-            if(jumpdir & 0b0100)
-                vel += front;
-            if(jumpdir & 0b0010)
-                vel += -right;
-            if(jumpdir & 0b0001)
-                vel += -front;
-            vel.x = std::min(vel.x, 1.0f);
-            vel.x = std::max(vel.x, -1.0f);
-            vel.z = std::min(vel.z, 1.0f);
-            vel.z = std::max(vel.z, -1.0f);
-            body.velocity = glm::vec3(mag * vel.x, body.velocity.y, mag * vel.z);
+            mag = std::sqrt(std::pow(body.velocity.x, 2) + std::pow(body.velocity.z, 2));
+            if(direction_bitmask & (uint8_t)MoveDirection::Forwards)
+                mag += acceleration_speed * delta_time;
+            if(direction_bitmask & (uint8_t)MoveDirection::Backwards)
+                mag -= deceleration_speed * delta_time;
+            // spdlog::info("MAG: {}", mag);
+            body.velocity = glm::vec3(mag * front.x, body.velocity.y, mag * front.z);
+
+            // spdlog::info("VELA {}, {}, {}", body.velocity.x, body.velocity.y, body.velocity.z);
+            // spdlog::info("mag {}", mag);
             return;
         }
 

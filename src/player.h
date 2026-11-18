@@ -24,7 +24,9 @@ namespace Chemical {
 
         float speed = 0.31;
         float vertical_speed = 0.05;
-        float jump_force = 10.00;
+        float jump_force = 11.00;
+        float acceleration_speed = 0.01;
+        float deceleration_speed = 0.04;
 #ifdef WSL
         float sensitivity = 0.5;
 #else

@@ -88,14 +88,14 @@ namespace Chemical {
             {glm::ivec3(0+8, 4+2, 0+2), glm::ivec3(5+8, 6+2, 0+2), FaceOrientation::Back, Type::Dirt},
             {glm::ivec3(0+8, 6+2, 0+2), glm::ivec3(5+8, 7+2, 0+2), FaceOrientation::Back, Type::GrassDirt},
 
-            {glm::ivec3(-40, 1, -40), glm::ivec3(40, 1, 40), FaceOrientation::Top, Type::Dirt},
-            {glm::ivec3(0+0, 0+8, 0+2), glm::ivec3(5+0, 0+8, 5+2), FaceOrientation::Bottom, Type::Glass},
-            {glm::ivec3(0+0, 7+8, 0+2), glm::ivec3(5+0, 7+8, 5+2), FaceOrientation::Top, Type::Glass},
-
-            {glm::ivec3(0+0, 0+8, 0+2), glm::ivec3(0+0, 7+8, 5+2), FaceOrientation::Left, Type::Glass},
-            {glm::ivec3(5+0, 0+8, 0+2), glm::ivec3(5+0, 7+8, 5+2), FaceOrientation::Right, Type::Glass},
-            {glm::ivec3(0+0, 0+8, 5+2), glm::ivec3(5+0, 7+8, 5+2), FaceOrientation::Front, Type::Glass},
-            {glm::ivec3(0+0, 0+8, 0+2), glm::ivec3(5+0, 7+8, 0+2), FaceOrientation::Back, Type::Glass},
+            {glm::ivec3(-40, 4, -40), glm::ivec3(40, 4, 40), FaceOrientation::Top, Type::Dirt},
+            // {glm::ivec3(0+0, 0+8, 0+2), glm::ivec3(5+0, 0+8, 5+2), FaceOrientation::Bottom, Type::Glass},
+            // {glm::ivec3(0+0, 7+8, 0+2), glm::ivec3(5+0, 7+8, 5+2), FaceOrientation::Top, Type::Glass},
+            //
+            // {glm::ivec3(0+0, 0+8, 0+2), glm::ivec3(0+0, 7+8, 5+2), FaceOrientation::Left, Type::Glass},
+            // {glm::ivec3(5+0, 0+8, 0+2), glm::ivec3(5+0, 7+8, 5+2), FaceOrientation::Right, Type::Glass},
+            // {glm::ivec3(0+0, 0+8, 5+2), glm::ivec3(5+0, 7+8, 5+2), FaceOrientation::Front, Type::Glass},
+            // {glm::ivec3(0+0, 0+8, 0+2), glm::ivec3(5+0, 7+8, 0+2), FaceOrientation::Back, Type::Glass},
 
             {glm::ivec3(5, 5, 5), glm::ivec3(5, 20, 20), FaceOrientation::Left, Type::Glass},
             {glm::ivec3(20, 5, 5), glm::ivec3(20, 20, 20), FaceOrientation::Right, Type::Glass},
