@@ -54,6 +54,11 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
+  include("/home/dilute/dev/ChemicalMCPK/build/_deps/entt-build/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
   include("/home/dilute/dev/ChemicalMCPK/build/_deps/dawn-build/cmake_install.cmake")
 endif()
 

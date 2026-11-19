@@ -114,14 +114,13 @@ target_include_directories(imgui PUBLIC
     ${imgui_SOURCE_DIR}/backends
 )
 
-
-
 add_executable(${PROJECT_NAME} 
     src/main.cpp 
     src/app.cpp
     src/input.cpp
     src/freecam.cpp
-    src/physics/physics.cpp
+    src/character_controller.cpp
+    src/physics.cpp
     src/utils/webgpu_utils.cpp
     src/utils/image.cpp
 )

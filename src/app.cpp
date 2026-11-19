@@ -1,7 +1,7 @@
 #include "GLFW/glfw3.h"
 #include "block/block.h"
+#include "components.h"
 #include "glm/ext/matrix_clip_space.hpp"
-#include "physics/physics.h"
 #include "webgpu/webgpu.h"
 #include <imgui.h>
 #include <imgui_impl_wgpu.h>
@@ -15,7 +15,6 @@
 #include <webgpu/webgpu_cpp.h>
 #include <webgpu/webgpu_glfw.h>
 #include <fstream>
-#include "freecam.h"
 
 #ifdef __EMSCRIPTEN__
     #include <emscripten.h>
@@ -53,7 +52,7 @@ namespace Chemical {
         old_time = clock::now();
 
         BoxColliders::AddTestCollidersToRegistry(app.registry);
-        Freecam::Initialise(app.registry);
+        CharacterControllers::AddTestControllerToRegistry(app.registry);
 
 #ifdef __EMSCRIPTEN__
         emscripten_set_main_loop_arg(ApplicationLoop, &app, 0, true);
@@ -82,9 +81,7 @@ namespace Chemical {
 
         auto[surface_texture, surface_view] = WebGPU::GetNextSurfaceViewData(app.surface.surface);
         if(!surface_view) return;
-        PhysicsBodies::Update(app.registry.view<PhysicsBodyComponent>(), app.registry.view<BoxColliderComponent>());
-        Freecam::Update(app.registry, delta_time);
-        Freecam::WriteViewMatrix(app.wgpu.queue, app.buf.view_buffer);
+        CharacterControllers::Update(app.registry.view<PhysicsBodyComponent, CharacterControllerComponent>(), app.registry.view<const BoxColliderComponent>(), delta_time, app.wgpu.queue, app.buf.view_buffer);
         ImGui::Render();
 
 
