@@ -32,8 +32,9 @@ namespace Chemical {
         return false;
     }
 
-    glm::fvec3 TriggerBoxColliders::GetCollisionResponse(const TriggerBoxColliderComponent& col, BoxColliders::ConstView other_cols) {
+    glm::fvec3 TriggerBoxColliders::GetCollisionResponse(const TriggerBoxColliderComponent& col, BoxColliders::ConstView other_cols, bool& collided) {
 
+        collided = false;
         glm::fvec3 offset = glm::fvec3(0);
         for(auto [entity, test] : other_cols.each()) {
 
@@ -58,6 +59,7 @@ namespace Chemical {
             if(diffs[5] < 0)
                 continue;
 
+            collided = true;
             float v = 99999.0f;
             int idx = -1;
             for(size_t i = 0; i < diffs.size(); i++) {

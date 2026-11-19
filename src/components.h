@@ -24,9 +24,14 @@ namespace Chemical {
     };
 
     struct CharacterControllerComponent {
+        static constexpr uint32_t PHYSICS_FRAME_RATE = 60;
+
         float speed = 0.31f;
+        float jump_force = 5.5f;
         float sensitivity = 0.5f;
-        bool grounded = false;
+        bool is_grounded = false;
+        double delta_accumulator = 0.0f;
+
         glm::fvec3 controller_friction = glm::fvec3(0.0f);
         glm::fvec3 freecam_friction = glm::fvec3(0.0f);
         float gravity = 0.0f;
@@ -43,7 +48,7 @@ namespace Chemical {
 
     namespace TriggerBoxColliders {
         extern bool IsColliding(const TriggerBoxColliderComponent& col, BoxColliders::ConstView other_cols);
-        extern glm::fvec3 GetCollisionResponse(const TriggerBoxColliderComponent& col, BoxColliders::ConstView other_cols);
+        extern glm::fvec3 GetCollisionResponse(const TriggerBoxColliderComponent& col, BoxColliders::ConstView other_cols, bool& collided);
     }
 
     // namespace PhysicsBodies {

@@ -1,6 +1,7 @@
 #include <imgui.h>
 #include "input.h"
 #include "components.h"
+#include "spdlog/spdlog.h"
 
 namespace Chemical {
 
@@ -112,21 +113,26 @@ namespace {
 
         body.velocity += velocity * controller.speed * (float)delta_time;
 
-        body.velocity *= glm::fvec3(1.0f) - controller.freecam_friction; 
+        body.velocity *= glm::fvec3(1.0f) - (controller.controller_friction * (float)delta_time);
 
-        glm::fvec3 offset = TriggerBoxColliders::GetCollisionResponse(TriggerBoxColliderComponent{
-            body.transform.position + controller.main_collider_offset.min,
-            body.transform.position + controller.main_collider_offset.max
-        }, colliders);
+        body.transform.position += body.velocity * (float)delta_time;
 
-        body.transform.position += offset;
-        if(offset.x != 0)
-            body.velocity.x = 0;
-        if(offset.y != 0)
-            body.velocity.y = 0;
-        if(offset.z != 0)
-            body.velocity.z = 0;
-        body.transform.position += body.velocity;
+        controller.delta_accumulator += delta_time;
+        if(controller.delta_accumulator >= 1.0f / controller.PHYSICS_FRAME_RATE) {
+            glm::fvec3 offset = TriggerBoxColliders::GetCollisionResponse(TriggerBoxColliderComponent{
+                body.transform.position + controller.main_collider_offset.min,
+                body.transform.position + controller.main_collider_offset.max
+            }, colliders, controller.is_grounded);
+
+            body.transform.position += offset;
+            if(offset.x != 0)
+                body.velocity.x = 0;
+            if(offset.y != 0)
+                body.velocity.y = 0;
+            if(offset.z != 0)
+                body.velocity.z = 0;
+            controller.delta_accumulator = 0.0f;
+        }
 
         queue.WriteBuffer(buffer, 0, &glm::inverse(body.transform.AsMat4())[0][0], sizeof(glm::mat4));
     }
@@ -140,7 +146,6 @@ namespace {
 
         glm::mat4 matrix = body.transform.AsMat4();
         glm::fvec3 right = matrix[0];
-        glm::fvec3 up = glm::vec3(0.0, 1.0, 0.0);
         glm::fvec3 forward = matrix[2];
         glm::fvec3 front = glm::normalize(glm::fvec3(forward.x, 0, forward.z));
 
@@ -153,36 +158,37 @@ namespace {
             velocity += right;
         if(direction_flags & (uint8_t)MoveDirection::Left)
             velocity += -right;
-        if(direction_flags & (uint8_t)MoveDirection::Up)
-            velocity += up;
-        if(direction_flags & (uint8_t)MoveDirection::Down)
-            velocity += -up;
+        if(direction_flags & (uint8_t)MoveDirection::Up && controller.is_grounded)
+            body.velocity.y = controller.jump_force;
 
         velocity.x = std::min(velocity.x, 1.0f);
         velocity.x = std::max(velocity.x, -1.0f);
-        velocity.y = std::min(velocity.y, 1.0f);
-        velocity.y = std::max(velocity.y, -1.0f);
         velocity.z = std::min(velocity.z, 1.0f);
         velocity.z = std::max(velocity.z, -1.0f);
 
         body.velocity += velocity * controller.speed * (float)delta_time;
 
-        body.velocity *= glm::fvec3(1.0f) - controller.controller_friction;
-        body.velocity.y -= controller.gravity; 
+        body.velocity *= glm::fvec3(1.0f) - (controller.controller_friction * (float)delta_time);
+        body.velocity.y -= controller.gravity * delta_time; 
 
-        body.transform.position += body.velocity;
-        glm::fvec3 offset = TriggerBoxColliders::GetCollisionResponse(TriggerBoxColliderComponent{
-            body.transform.position + controller.main_collider_offset.min,
-            body.transform.position + controller.main_collider_offset.max
-        }, colliders);
+        body.transform.position += body.velocity * (float)delta_time;
+        controller.delta_accumulator += delta_time;
+        if(controller.delta_accumulator >= 1.0f / controller.PHYSICS_FRAME_RATE) {
+            glm::fvec3 offset = TriggerBoxColliders::GetCollisionResponse(TriggerBoxColliderComponent{
+                body.transform.position + controller.main_collider_offset.min,
+                body.transform.position + controller.main_collider_offset.max
+            }, colliders, controller.is_grounded);
 
-        body.transform.position += offset;
-        if(offset.x != 0)
-            body.velocity.x = 0;
-        if(offset.y != 0)
-            body.velocity.y = 0;
-        if(offset.z != 0)
-            body.velocity.z = 0;
+            body.transform.position += offset;
+            if(offset.x != 0)
+                body.velocity.x = 0;
+            if(offset.y != 0)
+                body.velocity.y = 0;
+            if(offset.z != 0)
+                body.velocity.z = 0;
+            controller.delta_accumulator = 0.0f;
+        }
+
 
         queue.WriteBuffer(buffer, 0, &glm::inverse(body.transform.AsMat4())[0][0], sizeof(glm::mat4));
     }
@@ -204,6 +210,7 @@ namespace {
             ImGui::Begin("Player Configuration");
 
             ImGui::InputFloat("Set Speed", &controller.speed, 0, 5, "%.5f");
+            ImGui::InputFloat("Set Jump Force", &controller.jump_force, 0, 5, "%.5f");
             ImGui::InputFloat("Set Gravity", &controller.gravity, 0, 5, "%.5f");
             ImGui::InputFloat("Set Sensitivity", &controller.sensitivity, 0, 5, "%.5f");
             // ImGui::InputFloat("Set Jump Force", &jump_force, 0, 50, "%.5f");
@@ -223,10 +230,11 @@ namespace {
         r.emplace<PhysicsBodyComponent>(entity, PhysicsBodyComponent{
             .transform = { .position = {0, 5, 0}}});
         auto& c = r.emplace<CharacterControllerComponent>(entity, CharacterControllerComponent{
-            .speed = 3.0f,
-            .controller_friction = glm::fvec3(0.11f, 0.0f, 0.11f),
-            .freecam_friction = glm::fvec3(0.11f),
-            .gravity = 0.11f,
+            .speed = 100.0f,
+            .jump_force = 14.2f,
+            .controller_friction = glm::fvec3(8.11f, 0.0f, 8.00f),
+            .freecam_friction = glm::fvec3(8.0f),
+            .gravity = 20.00f,
             .main_collider_offset = {{-0.5f, -2.0f, -0.5f}, {0.5, 0.5, 0.5}},
             .ground_collider_offset = {{-0.5f, -2.0f, -0.5f}, {0.5, 0.5, 0.5}}
             });
