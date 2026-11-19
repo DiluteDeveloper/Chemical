@@ -1,21 +1,12 @@
 #include <imgui.h>
 #include "input.h"
 #include "components.h"
-#include "spdlog/spdlog.h"
 
 namespace Chemical {
 
 namespace {
 
-    enum class MoveDirection:uint8_t {
-        None = 0b00000000, 
-        Up = 0b00000001, 
-        Down = 0b00000010, 
-        Left = 0b00000100, 
-        Right = 0b00001000, 
-        Forwards = 0b00010000, 
-        Backwards = 0b00100000
-    };
+
     glm::dvec2 mouse_offset_since_last_update = glm::vec2(0.0f);
     glm::dvec2 last_mouse_pos = glm::vec2(0.0f);
     bool input_enabled = true;
@@ -41,13 +32,13 @@ namespace {
         if(!input_enabled)
             return;
 
-        static std::unordered_map<int, MoveDirection> key_to_direction = {
-            {GLFW_KEY_W, MoveDirection::Forwards},
-            {GLFW_KEY_S, MoveDirection::Backwards},
-            {GLFW_KEY_D, MoveDirection::Right},
-            {GLFW_KEY_A, MoveDirection::Left},
-            {GLFW_KEY_SPACE, MoveDirection::Up},
-            {GLFW_KEY_LEFT_CONTROL, MoveDirection::Down},
+        static std::unordered_map<int, Direction> key_to_direction = {
+            {GLFW_KEY_W, Direction::Forwards},
+            {GLFW_KEY_S, Direction::Backwards},
+            {GLFW_KEY_D, Direction::Right},
+            {GLFW_KEY_A, Direction::Left},
+            {GLFW_KEY_SPACE, Direction::Up},
+            {GLFW_KEY_LEFT_CONTROL, Direction::Down},
         };
 
         auto search = key_to_direction.find(key);
@@ -90,18 +81,19 @@ namespace {
         glm::fvec3 forward = matrix[2];
         glm::fvec3 front = glm::normalize(glm::fvec3(forward.x, 0, forward.z));
 
+
         glm::fvec3 velocity = glm::fvec3(0);
-        if(direction_flags & (uint8_t)MoveDirection::Forwards)
+        if(direction_flags & (uint8_t)Direction::Forwards)
             velocity = front;
-        if(direction_flags & (uint8_t)MoveDirection::Backwards)
+        if(direction_flags & (uint8_t)Direction::Backwards)
             velocity += -front;
-        if(direction_flags & (uint8_t)MoveDirection::Right)
+        if(direction_flags & (uint8_t)Direction::Right)
             velocity += right;
-        if(direction_flags & (uint8_t)MoveDirection::Left)
+        if(direction_flags & (uint8_t)Direction::Left)
             velocity += -right;
-        if(direction_flags & (uint8_t)MoveDirection::Up)
+        if(direction_flags & (uint8_t)Direction::Up)
             velocity += up;
-        if(direction_flags & (uint8_t)MoveDirection::Down)
+        if(direction_flags & (uint8_t)Direction::Down)
             velocity += -up;
 
         velocity.x = std::min(velocity.x, 1.0f);
@@ -111,26 +103,38 @@ namespace {
         velocity.z = std::min(velocity.z, 1.0f);
         velocity.z = std::max(velocity.z, -1.0f);
 
-        body.velocity += velocity * controller.speed * (float)delta_time;
 
-        body.velocity *= glm::fvec3(1.0f) - (controller.controller_friction * (float)delta_time);
+
+        body.velocity += velocity * controller.base_speed * (float)delta_time;
+
+        body.velocity *= glm::fvec3(1.0f) - (controller.freecam_friction * (float)delta_time);
+
+        if(controller.last_collision_direction_flags & (uint8_t)Direction::Left)
+            body.velocity.x = std::max(0.0f, body.velocity.x);
+        if(controller.last_collision_direction_flags & (uint8_t)Direction::Right)
+            body.velocity.x = std::min(0.0f, body.velocity.x);
+
+        if(controller.last_collision_direction_flags & (uint8_t)Direction::Down)
+            body.velocity.y = std::max(0.0f, body.velocity.y);
+        if(controller.last_collision_direction_flags & (uint8_t)Direction::Up)
+            body.velocity.y = std::min(0.0f, body.velocity.y);
+
+        if(controller.last_collision_direction_flags & (uint8_t)Direction::Backwards)
+            body.velocity.z = std::max(0.0f, body.velocity.z);
+        if(controller.last_collision_direction_flags & (uint8_t)Direction::Forwards)
+            body.velocity.z = std::min(0.0f, body.velocity.z);
 
         body.transform.position += body.velocity * (float)delta_time;
 
         controller.delta_accumulator += delta_time;
         if(controller.delta_accumulator >= 1.0f / controller.PHYSICS_FRAME_RATE) {
-            glm::fvec3 offset = TriggerBoxColliders::GetCollisionResponse(TriggerBoxColliderComponent{
+            CollisionResponse response = TriggerBoxColliders::GetCollisionResponse(TriggerBoxColliderComponent{
                 body.transform.position + controller.main_collider_offset.min,
                 body.transform.position + controller.main_collider_offset.max
-            }, colliders, controller.is_grounded);
+            }, colliders);
 
-            body.transform.position += offset;
-            if(offset.x != 0)
-                body.velocity.x = 0;
-            if(offset.y != 0)
-                body.velocity.y = 0;
-            if(offset.z != 0)
-                body.velocity.z = 0;
+            body.transform.position += response.offset;
+            controller.last_collision_direction_flags = response.direction_flags;
             controller.delta_accumulator = 0.0f;
         }
 
@@ -150,15 +154,15 @@ namespace {
         glm::fvec3 front = glm::normalize(glm::fvec3(forward.x, 0, forward.z));
 
         glm::fvec3 velocity = glm::fvec3(0);
-        if(direction_flags & (uint8_t)MoveDirection::Forwards)
+        if(direction_flags & (uint8_t)Direction::Forwards)
             velocity = front;
-        if(direction_flags & (uint8_t)MoveDirection::Backwards)
+        if(direction_flags & (uint8_t)Direction::Backwards)
             velocity += -front;
-        if(direction_flags & (uint8_t)MoveDirection::Right)
+        if(direction_flags & (uint8_t)Direction::Right)
             velocity += right;
-        if(direction_flags & (uint8_t)MoveDirection::Left)
+        if(direction_flags & (uint8_t)Direction::Left)
             velocity += -right;
-        if(direction_flags & (uint8_t)MoveDirection::Up && controller.is_grounded)
+        if(direction_flags & (uint8_t)Direction::Up && controller.is_grounded)
             body.velocity.y = controller.jump_force;
 
         velocity.x = std::min(velocity.x, 1.0f);
@@ -166,29 +170,48 @@ namespace {
         velocity.z = std::min(velocity.z, 1.0f);
         velocity.z = std::max(velocity.z, -1.0f);
 
-        body.velocity += velocity * controller.speed * (float)delta_time;
+        body.velocity += velocity * (controller.base_speed + controller.bhop_speed) * (float)delta_time;
 
         body.velocity *= glm::fvec3(1.0f) - (controller.controller_friction * (float)delta_time);
         body.velocity.y -= controller.gravity * delta_time; 
 
+        if(controller.last_collision_direction_flags & (uint8_t)Direction::Left)
+            body.velocity.x = std::max(0.0f, body.velocity.x);
+        if(controller.last_collision_direction_flags & (uint8_t)Direction::Right)
+            body.velocity.x = std::min(0.0f, body.velocity.x);
+
+        if(controller.last_collision_direction_flags & (uint8_t)Direction::Down)
+            body.velocity.y = std::max(0.0f, body.velocity.y);
+        if(controller.last_collision_direction_flags & (uint8_t)Direction::Up)
+            body.velocity.y = std::min(0.0f, body.velocity.y);
+
+        if(controller.last_collision_direction_flags & (uint8_t)Direction::Backwards)
+            body.velocity.z = std::max(0.0f, body.velocity.z);
+        if(controller.last_collision_direction_flags & (uint8_t)Direction::Forwards)
+            body.velocity.z = std::min(0.0f, body.velocity.z);
+
+
         body.transform.position += body.velocity * (float)delta_time;
         controller.delta_accumulator += delta_time;
         if(controller.delta_accumulator >= 1.0f / controller.PHYSICS_FRAME_RATE) {
-            glm::fvec3 offset = TriggerBoxColliders::GetCollisionResponse(TriggerBoxColliderComponent{
+            CollisionResponse response = TriggerBoxColliders::GetCollisionResponse(TriggerBoxColliderComponent{
                 body.transform.position + controller.main_collider_offset.min,
                 body.transform.position + controller.main_collider_offset.max
-            }, colliders, controller.is_grounded);
+            }, colliders);
+            controller.is_grounded = TriggerBoxColliders::IsColliding(TriggerBoxColliderComponent{
+                body.transform.position + controller.ground_collider_offset.min,
+                body.transform.position + controller.ground_collider_offset.max
+            }, colliders);
 
-            body.transform.position += offset;
-            if(offset.x != 0)
-                body.velocity.x = 0;
-            if(offset.y != 0)
-                body.velocity.y = 0;
-            if(offset.z != 0)
-                body.velocity.z = 0;
+            body.transform.position += response.offset;
+            controller.last_collision_direction_flags = response.direction_flags;
             controller.delta_accumulator = 0.0f;
         }
 
+        if(controller.last_collision_direction_flags & 0b11111111)
+            controller.bhop_speed = std::max(0.0, controller.bhop_speed - (controller.bhop_speed * controller.bhop_speed_decrease_rate * delta_time));
+        else
+            controller.bhop_speed += controller.bhop_speed_increase_rate * delta_time;
 
         queue.WriteBuffer(buffer, 0, &glm::inverse(body.transform.AsMat4())[0][0], sizeof(glm::mat4));
     }
@@ -209,7 +232,10 @@ namespace {
 
             ImGui::Begin("Player Configuration");
 
-            ImGui::InputFloat("Set Speed", &controller.speed, 0, 5, "%.5f");
+            ImGui::InputFloat("Set Speed", &controller.base_speed, 0, 5, "%.5f");
+            ImGui::InputFloat("Set Bhop Speed Increase Rate", &controller.bhop_speed_increase_rate, 0, 5, "%.5f");
+            ImGui::InputFloat("Set Bhop Speed Decrease Rate", &controller.bhop_speed_decrease_rate, 0, 5, "%.5f");
+            ImGui::Text("Bhop speed: %.2f", controller.bhop_speed);
             ImGui::InputFloat("Set Jump Force", &controller.jump_force, 0, 5, "%.5f");
             ImGui::InputFloat("Set Gravity", &controller.gravity, 0, 5, "%.5f");
             ImGui::InputFloat("Set Sensitivity", &controller.sensitivity, 0, 5, "%.5f");
@@ -230,13 +256,20 @@ namespace {
         r.emplace<PhysicsBodyComponent>(entity, PhysicsBodyComponent{
             .transform = { .position = {0, 5, 0}}});
         auto& c = r.emplace<CharacterControllerComponent>(entity, CharacterControllerComponent{
-            .speed = 100.0f,
-            .jump_force = 14.2f,
-            .controller_friction = glm::fvec3(8.11f, 0.0f, 8.00f),
+            .base_speed = 80.0f,
+            .bhop_speed_decrease_rate = 8.0f,
+            .bhop_speed_increase_rate = 13.0f,
+            .jump_force = 12.2f,
+#ifdef WSL
+            .sensitivity = 0.5,
+#else
+            .sensitivity = 0.1,
+#endif
+            .controller_friction = glm::fvec3(10.0f, 0.0f, 10.00f),
             .freecam_friction = glm::fvec3(8.0f),
-            .gravity = 20.00f,
-            .main_collider_offset = {{-0.5f, -2.0f, -0.5f}, {0.5, 0.5, 0.5}},
-            .ground_collider_offset = {{-0.5f, -2.0f, -0.5f}, {0.5, 0.5, 0.5}}
+            .gravity = 35.00f,
+            .main_collider_offset = {{-0.5f, -2.0f, -0.5f}, {0.5f, 0.5f, 0.5f}},
+            .ground_collider_offset = {{-0.2f, -2.2f, -0.2f}, {0.2f, -2.0f, 0.2f}}
             });
         freecam_enabled = &c.freecam_enabled;
     }

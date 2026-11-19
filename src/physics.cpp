@@ -1,5 +1,5 @@
 #include "components.h"
-#include <spdlog/spdlog.h>
+#include <cmath>
 
 namespace Chemical {
     
@@ -32,10 +32,9 @@ namespace Chemical {
         return false;
     }
 
-    glm::fvec3 TriggerBoxColliders::GetCollisionResponse(const TriggerBoxColliderComponent& col, BoxColliders::ConstView other_cols, bool& collided) {
+    CollisionResponse TriggerBoxColliders::GetCollisionResponse(const TriggerBoxColliderComponent& col, BoxColliders::ConstView other_cols) {
 
-        collided = false;
-        glm::fvec3 offset = glm::fvec3(0);
+        CollisionResponse response;
         for(auto [entity, test] : other_cols.each()) {
 
             std::array<float, 6> diffs;
@@ -59,7 +58,6 @@ namespace Chemical {
             if(diffs[5] < 0)
                 continue;
 
-            collided = true;
             float v = 99999.0f;
             int idx = -1;
             for(size_t i = 0; i < diffs.size(); i++) {
@@ -69,10 +67,12 @@ namespace Chemical {
                     v = abs_diff;
                 }
             }
-            if(idx != -1)
-                offset[idx % 3] = diffs[idx];
+            if(idx != -1) {
+                response.offset[idx % 3] = diffs[idx] - std::copysign(TriggerBoxColliderComponent::COLLISION_RESPONSE_MARGIN, diffs[idx]);
+                response.direction_flags |= 1 << idx;
+            }
         }
-        return offset;
+        return response;
     }
     void BoxColliders::AddTestCollidersToRegistry(entt::registry& r) {
         r.emplace<BoxColliderComponent>(r.create(), BoxColliderComponent{{0, 0, 0}, {5, 7, 5}});
