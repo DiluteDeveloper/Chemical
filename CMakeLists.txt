@@ -35,7 +35,7 @@
 
 cmake_minimum_required(VERSION 4.2.3)
 project(ChemicalMC_PK
-    VERSION 0.1.4
+    VERSION 0.1.5
     LANGUAGES CXX C
 )
 if(NOT CMAKE_BUILD_TYPE)
@@ -67,6 +67,12 @@ set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 include(FetchContent)
 
+FetchContent_Declare(entt
+    GIT_REPOSITORY https://github.com/skypjack/entt.git
+    GIT_TAG        v4.0.0
+    GIT_SHALLOW    TRUE
+    CMAKE_ARGS     -DENTT_BUILD_DOCS=ON
+)
 FetchContent_Declare(stb
     GIT_REPOSITORY https://github.com/nothings/stb.git
     GIT_TAG        master
@@ -89,7 +95,7 @@ FetchContent_Declare(imgui
     GIT_TAG        v1.91.9
     GIT_SHALLOW    TRUE
 )
-FetchContent_MakeAvailable(glm spdlog stb imgui)
+FetchContent_MakeAvailable(glm spdlog stb imgui entt)
 
 # Dear ImGui: no CMake of its own, so build it with the GLFW + OpenGL3 backends.
 add_library(imgui STATIC
@@ -123,14 +129,14 @@ add_executable(${PROJECT_NAME}
 add_library(stb INTERFACE)
 target_include_directories(stb INTERFACE ${stb_SOURCE_DIR})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm spdlog::spdlog)
+target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm spdlog::spdlog imgui EnTT stb)
 
 if(EMSCRIPTEN)
     target_include_directories(${PROJECT_NAME} PRIVATE src/)
     target_compile_options(${PROJECT_NAME} PRIVATE --use-port=emdawnwebgpu)
     target_link_options(${PROJECT_NAME} PRIVATE --use-port=emdawnwebgpu --use-port=contrib.glfw3 -sASYNCIFY --preload-file ${CMAKE_SOURCE_DIR}/res@/res)
     set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".html")
-    target_link_libraries(${PROJECT_NAME} PRIVATE stb imgui)
+    #target_link_libraries(${PROJECT_NAME} PRIVATE )
 else()
     FetchContent_Declare(dawn
         GIT_REPOSITORY https://github.com/google/dawn.git
@@ -151,7 +157,7 @@ else()
     FetchContent_MakeAvailable(dawn)
 
     target_include_directories(${PROJECT_NAME} PRIVATE src/)
-    target_link_libraries(${PROJECT_NAME} PRIVATE dawn::webgpu_dawn dawn_glfw glfw stb imgui)
+    target_link_libraries(${PROJECT_NAME} PRIVATE dawn::webgpu_dawn dawn_glfw glfw)
     if(WSL)
         target_compile_definitions(${PROJECT_NAME} PRIVATE WSL)
     endif()

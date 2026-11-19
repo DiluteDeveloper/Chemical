@@ -1,10 +1,10 @@
 #pragma once
 
-#include "block/block.h"
-#include "physics/physics.h"
 #include <webgpu/webgpu_cpp.h>
 #include <glm/glm.hpp>
 #include <GLFW/glfw3.h>
+#include <entt/entity/registry.hpp>
+#include "block/block.h"
 
 namespace Chemical {
 
@@ -40,8 +40,7 @@ namespace Chemical {
 
         wgpu::RenderPipeline pipeline;
 
-        std::vector<PhysicsBody> bodies;
-        std::vector<BoxCollider> colliders;
+        entt::registry registry;
 
         [[nodiscard]] static SetupWGPUResult SetupWGPU();
         static void SetupImGui(GLFWwindow* window, const SetupWGPUResult& wgpu, SurfaceConfig& surf);

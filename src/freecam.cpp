@@ -25,11 +25,11 @@ namespace Chemical {
 
     bool input_enabled = true;
 
-    PhysicsBody* body;
+    entt::entity entity;
     glm::mat4 matrix = glm::mat4(1.0f);
 
-    double old_mouse_x = 0.0;
-    double old_mouse_y = 0.0;
+    glm::dvec2 mouse_offset_since_last_update = glm::vec2(0.0f);
+    glm::dvec2 last_mouse_pos = glm::vec2(0.0f);
 
     void OnKeyCallback(int key, int, int action, int, void*) {
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
@@ -66,24 +66,40 @@ namespace Chemical {
         if(!input_enabled)
             return;
 
+        mouse_offset_since_last_update.x += xpos - last_mouse_pos.x;
+        mouse_offset_since_last_update.y += ypos - last_mouse_pos.y;
+        // body.transform.rotation.y += static_cast<float>(xpos - last_mouse_pos.x) * Freecam::sensitivity;
+        // body.transform.rotation.x += static_cast<float>(ypos - last_mouse_pos.y) * Freecam::sensitivity;
 
-        body->transform.rotation.y += static_cast<float>(xpos - old_mouse_x) * Freecam::sensitivity;
-        body->transform.rotation.x += static_cast<float>(ypos - old_mouse_y) * Freecam::sensitivity;
+        // body.transform.rotation.x = glm::clamp(body.transform.rotation.x, -85.0f, 85.0f);
 
-        body->transform.rotation.x = glm::clamp(body->transform.rotation.x, -85.0f, 85.0f);
-
-        old_mouse_x = xpos;
-        old_mouse_y = ypos;
+        last_mouse_pos.x = xpos;
+        last_mouse_pos.y = ypos;
     }
-    void Freecam::Initialise(PhysicsBody& _body) {
-        body = &_body;
+
+    void Freecam::Initialise(entt::registry& registry) {
+        entity = registry.create();
+        registry.emplace<PhysicsBodyComponent>(entity, PhysicsBodyComponent{
+            .transform = { .position = {0, 5, 0}},
+            .friction = 0.97f,
+            .collider_min_extent = {-0.5f, -2.0f, -0.5f},
+            .collider_max_extent = {0.5f, 0.5f, 0.5f}
+        });
 
         Input::SubscribeToCursorPosCallback(OnCursorPosCallback, nullptr);
         Input::SubscribeToKeyCallback(OnKeyCallback, nullptr);
     }
 
-    void Freecam::Update(double delta_time) {
-        matrix = body->transform.AsMat4();
+    void Freecam::Update(entt::registry& registry, double delta_time) {
+        auto& body = registry.get<PhysicsBodyComponent>(entity);
+
+        body.transform.rotation.y += static_cast<float>(mouse_offset_since_last_update.x) * Freecam::sensitivity;
+        body.transform.rotation.x += static_cast<float>(mouse_offset_since_last_update.y) * Freecam::sensitivity;
+        mouse_offset_since_last_update = glm::dvec2(0);
+
+        body.transform.rotation.x = glm::clamp(body.transform.rotation.x, -85.0f, 85.0f);
+
+        matrix = body.transform.AsMat4();
 
         glm::fvec3 right = matrix[0];
         glm::fvec3 up = glm::vec3(0.0, 1.0, 0.0);
@@ -111,7 +127,7 @@ namespace Chemical {
         velocity.z = std::min(velocity.z, 1.0f);
         velocity.z = std::max(velocity.z, -1.0f);
 
-        body->velocity += velocity * speed * (float)delta_time;
+        body.velocity += velocity * speed * (float)delta_time;
     }
     void Freecam::WriteViewMatrix(wgpu::Queue queue, wgpu::Buffer view_buffer) {
         queue.WriteBuffer(view_buffer, 0, &glm::inverse(matrix)[0][0], sizeof(glm::mat4));

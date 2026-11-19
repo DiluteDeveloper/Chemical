@@ -1,30 +1,36 @@
 #pragma once
 
-#include <vector>
+#include <entt/entt.hpp>
 #include "utils/transform.h"
 
 namespace Chemical {
 
-    struct BoxCollider {
+    struct BoxColliderComponent {
         glm::fvec3 min;
         glm::fvec3 max;
-
-        static std::vector<BoxCollider> BoxColliders();
-        static glm::fvec3 TestCollisionOffsetsAgainstFirstBoxCollider(const std::vector<BoxCollider>& colliders);
     };
 
-
-
-
-    struct PhysicsBody {
+    struct PhysicsBodyComponent {
         Transform transform = Transform();
         glm::fvec3 velocity = glm::fvec3(0);
         const float friction = 1.0f;
-        const float gravity = 0.0f;
-        bool pause_collision_response = false;
 
-        static void UpdatePhysicsBodies(std::vector<PhysicsBody>& bodies, std::vector<BoxCollider>& colliders);
+        const glm::fvec3 collider_min_extent = glm::vec3(1.0f);
+        const glm::fvec3 collider_max_extent = glm::vec3(1.0f);
+        const float gravity = 0.0f;
     };
+
+    namespace BoxColliders {
+        using ConstView = entt::view<entt::get_t<const BoxColliderComponent>>;
+        extern void AddTestCollidersToRegistry(entt::registry& r);
+    }
+
+    namespace PhysicsBodies {
+        using View = entt::view<entt::get_t<PhysicsBodyComponent>>;
+
+        extern void Update(View bodies, BoxColliders::ConstView colliders);
+    }
+
 
     // Only does physicsbody 0 for now, assuming extent3d 0 is also for physicsbody 0
 

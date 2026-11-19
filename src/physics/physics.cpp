@@ -2,88 +2,69 @@
 #include <spdlog/spdlog.h>
 
 namespace Chemical {
-
-    std::vector<BoxCollider> BoxCollider::BoxColliders() {
-        return {
-            {{0, 0, 0}, {5, 7, 5}},
-            {{0, 0, 0}, {5, 7, 5}},
-            {{8, 2, 2}, {13, 9, 7}},
-            // {{0, 8, 2}, {5, 15, 7}},
-            {{5, 5, 5}, {20, 20, 20}},
-            {{-40, 3, -40}, {40, 4, 40}},
-        };
+    
+    void BoxColliders::AddTestCollidersToRegistry(entt::registry& r) {
+        r.emplace<BoxColliderComponent>(r.create(), BoxColliderComponent{{0, 0, 0}, {5, 7, 5}});
+        r.emplace<BoxColliderComponent>(r.create(), BoxColliderComponent{{8, 2, 2}, {13, 9, 7}});
+        r.emplace<BoxColliderComponent>(r.create(), BoxColliderComponent{{5, 5, 5}, {20, 20, 20}});
+        r.emplace<BoxColliderComponent>(r.create(), BoxColliderComponent{{-40, 3, -40}, {40, 4, 40}});
     };
 
-    glm::fvec3 BoxCollider::TestCollisionOffsetsAgainstFirstBoxCollider(const std::vector<BoxCollider>& colliders) {
-        glm::fvec3 min = colliders[0].min;
-        glm::fvec3 max = colliders[0].max;
+    void PhysicsBodies::Update(View bodies, BoxColliders::ConstView colliders) {
 
-        glm::fvec3 offset = glm::fvec3(0);
-        int i = 0;
-        for(auto& col : colliders) {
-            i++;
-            if(i == 1)
-                continue;
-
-            std::array<float, 6> diffs;
-
-            diffs[0] = col.min.x - max.x;
-            if(diffs[0] > 0)
-                continue;
-            diffs[3] = col.max.x - min.x;
-            if(diffs[3]< 0)
-                continue;
-            diffs[1] = col.min.y - max.y;
-            if(diffs[1] > 0)
-                continue;
-            diffs[4] = col.max.y - min.y;
-            if(diffs[4] < 0)
-                continue;
-            diffs[2] = col.min.z - max.z;
-            if(diffs[2] > 0)
-                continue;
-            diffs[5] = col.max.z - min.z;
-            if(diffs[5] < 0)
-                continue;
-
-            float v = 99999.0f;
-            int idx = -1;
-            for(size_t i = 0; i < diffs.size(); i++) {
-                float abs_diff = std::abs(diffs[i]);
-                if(abs_diff < v) {
-                    idx = i;
-                    v = abs_diff;
-                }
-            }
-            constexpr float COLLISION_OFFSET_MARGIN = 1.0000f;
-            if(idx != -1)
-                offset[idx % 3] = diffs[idx] * COLLISION_OFFSET_MARGIN;
-        }
-        return offset;
-    }
-    void PhysicsBody::UpdatePhysicsBodies(std::vector<PhysicsBody>& bodies, std::vector<BoxCollider>& colliders) {
-
-        for(auto& body : bodies) {
+        for(auto [entity, body]: bodies.each()) {
             body.velocity *= body.friction; 
             body.velocity.y -= body.gravity; 
 
-            glm::fvec3 collision_response = BoxCollider::TestCollisionOffsetsAgainstFirstBoxCollider(colliders);
-            body.transform.position += collision_response;
-            if(collision_response.x != 0)
+            glm::fvec3 body_min = body.transform.position + body.collider_min_extent;
+            glm::fvec3 body_max = body.transform.position + body.collider_max_extent;
+
+            glm::fvec3 offset = glm::fvec3(0);
+            for(auto [entity, test] : colliders.each()) {
+
+                std::array<float, 6> diffs;
+
+                diffs[0] = test.min.x - body_max.x;
+                if(diffs[0] > 0)
+                    continue;
+                diffs[3] = test.max.x - body_min.x;
+                if(diffs[3]< 0)
+                    continue;
+                diffs[1] = test.min.y - body_max.y;
+                if(diffs[1] > 0)
+                    continue;
+                diffs[4] = test.max.y - body_min.y;
+                if(diffs[4] < 0)
+                    continue;
+                diffs[2] = test.min.z - body_max.z;
+                if(diffs[2] > 0)
+                    continue;
+                diffs[5] = test.max.z - body_min.z;
+                if(diffs[5] < 0)
+                    continue;
+
+                float v = 99999.0f;
+                int idx = -1;
+                for(size_t i = 0; i < diffs.size(); i++) {
+                    float abs_diff = std::abs(diffs[i]);
+                    if(abs_diff < v) {
+                        idx = i;
+                        v = abs_diff;
+                    }
+                }
+                if(idx != -1)
+                    offset[idx % 3] = diffs[idx];
+            }
+            body.transform.position += offset;
+            if(offset.x != 0)
                 body.velocity.x = 0;
-            if(collision_response.y != 0)
+            if(offset.y != 0)
                 body.velocity.y = 0;
-            if(collision_response.z != 0)
+            if(offset.z != 0)
                 body.velocity.z = 0;
 
+            body.transform.position += body.velocity;
         }
-        bodies[0].transform.position += bodies[0].velocity;
-        glm::fvec3 pos = bodies[0].transform.position;
-        colliders[0].min = glm::fvec3(pos.x - .5, pos.y - 1.5, pos.z - .5);
-        colliders[0].max = glm::fvec3(pos.x + .5, pos.y + .5, pos.z + .5);
-
-
-
     }
 
 }
