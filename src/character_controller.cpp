@@ -1,6 +1,7 @@
 #include <imgui.h>
 #include "input.h"
 #include "components.h"
+#include "spdlog/spdlog.h"
 
 namespace Chemical {
 

@@ -122,15 +122,16 @@ fn vs_main(@builtin(vertex_index) idx: u32) -> VertexOutput {
 
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4f {
-    const NORMAL_TABLE = array<vec3f, 6>(
-        vec3f(0, 1, 0), // Second top vertex offset mask
-        vec3f(0, -1, 0), // Third bottom vertex offset mask
-        vec3f(-1, 0, 0), // Third left vertex offset mask
-        vec3f(1, 0, 0), // Third right vertex offset mask
-        vec3f(0, 0, 1), // Third front verte offset mask
-        vec3f(0, 0, -1), // Third back vertex offset mask
+    const SHADING_TABLE = array<vec4f, 6>(
+        vec4f(1, 1, 1, 1),
+        vec4f(0.2, 0.2, 0.2, 1),
+        vec4f(0.8, 0.8, 0.8, 1),
+        vec4f(0.6, 0.6, 0.6, 1),
+        vec4f(0.4, 0.4, 0.4, 1),
+        vec4f(0.8, 0.8, 0.8, 1),
 
     );
+    const SUNLIGHT_COLOUR = vec4f(1.0f, 0.9f, 0.8f, 1.0f);
     //return vec4f(NORMAL_TABLE[in.orientation], 1.0);
-    return vec4f(textureSample(texture, texture_sampler, in.uv, in.block_type));
+    return vec4f(textureSample(texture, texture_sampler, in.uv, in.block_type) * SHADING_TABLE[in.orientation] * SUNLIGHT_COLOUR);
 }

@@ -2,7 +2,6 @@
 
 #include <GLFW/glfw3.h>
 #include <entt/entity/registry.hpp>
-#include "renderers/renderer.h"
 
 namespace Chemical {
 
@@ -11,7 +10,6 @@ namespace Chemical {
     public:
         static void Start();
         GLFWwindow* window;
-        Renderer renderer;
 
         entt::registry registry;
 

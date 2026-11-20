@@ -13,8 +13,11 @@
 
 #include "app.h"
 
+#include "renderers/renderer.h"
+#include "level_editor.h"
 #include "input.h"
 #include "utils/webgpu_utils.h"
+#include "block/block.h"
 
 namespace {
 
@@ -32,15 +35,20 @@ namespace Chemical {
 
         App app = {
             .window = SetupGLFW(),
-            .renderer = {},
             .registry = {},
         };
-        app.renderer.Initialise(app.window);
         Input::Initialise(app.window);
-        old_time = clock::now();
 
+        AddTestBlocksToRegistry(app.registry);
         BoxColliders::AddTestCollidersToRegistry(app.registry);
         CharacterControllers::AddTestControllerToRegistry(app.registry);
+
+        Renderer::Initialise(app.window, app.registry);
+
+        LevelEditor::Initialise(app.registry);
+        old_time = clock::now();
+
+
 
 #ifdef __EMSCRIPTEN__
         emscripten_set_main_loop_arg(ApplicationLoop, &app, 0, true);
@@ -50,7 +58,7 @@ namespace Chemical {
         }
 #endif
 
-        app.renderer.Shutdown();
+        Renderer::Shutdown();
         glfwDestroyWindow(app.window);
         glfwTerminate();
     }
@@ -62,8 +70,8 @@ namespace Chemical {
         delta_time = duration<float>(new_time - old_time).count();
         old_time = new_time;
 
-        CharacterControllers::Update(app.registry.view<PhysicsBodyComponent, CharacterControllerComponent>(), app.registry.view<const BoxColliderComponent>(), delta_time, app.renderer.init.queue, app.renderer.view_buffer);
-        app.renderer.Render();
+        CharacterControllers::Update(app.registry.view<PhysicsBodyComponent, CharacterControllerComponent>(), app.registry.view<const BoxColliderComponent>(), delta_time, Renderer::init.queue, Renderer::view_buffer);
+        Renderer::Render();
 
         glfwPollEvents();
 

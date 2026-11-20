@@ -1,13 +1,13 @@
 #include "renderer.h"
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
-#include "renderers/renderer_data.h"
 #include "webgpu/webgpu_cpp.h"
 #include <spdlog/spdlog.h>
 #include <webgpu/webgpu_glfw.h>
 #include <imgui.h>
 #include <imgui_impl_wgpu.h>
 #include <imgui_impl_glfw.h>
+#include <entt/entity/registry.hpp>
 
 namespace {
 
@@ -18,18 +18,36 @@ namespace {
 
     std::tuple<wgpu::Texture, wgpu::TextureView> CreateDepthTexture(const RendererInitData& init);
     void InitialiseImgui(GLFWwindow* window, const RendererInitData& init);
+
+    void ExecutePrimaryRenderPass(wgpu::CommandEncoder encoder, wgpu::TextureView surface_view);
+    void ExecuteImguiRenderPass(wgpu::CommandEncoder encoder, wgpu::TextureView surface_view);
+
+    void InitialisePrimaryRenderPass(wgpu::TextureView depth_texture_view);
+    void InitialiseImguiRenderPass();
+
+
+    PrimaryRenderPass primary_pass;
+    ImguiRenderPass imgui_pass;
+
+    wgpu::BindGroup camera_group;
 }
+namespace Chemical::StaticBlockRenderer {
+    void Initialise(const RendererInitData& init, entt::registry& _registry);
+    void Render(wgpu::RenderPassEncoder render_pass);
+};
 
-namespace Chemical {
+namespace Chemical::Renderer {
+    RendererInitData init;
+    wgpu::Buffer view_buffer;
 
-    void Renderer::Initialise(GLFWwindow* window) {
+    void Initialise(GLFWwindow* window, entt::registry& registry) {
         init = InitialiseWebGPU(window);
-        auto [view_buffer, camera_group, layout] = SetupViewProjection(init);
-        this->camera_group = camera_group;
-        this->view_buffer = view_buffer;
-        init.view_projection_layout = layout;
+        auto [_view_buffer, _camera_group, _layout] = SetupViewProjection(init);
+        camera_group = _camera_group;
+        view_buffer = _view_buffer;
+        init.view_projection_layout = _layout;
 
-        static_block_renderer.Initialise(init);
+        StaticBlockRenderer::Initialise(init, registry);
 
         InitialiseImgui(window, init);
 
@@ -37,12 +55,12 @@ namespace Chemical {
         InitialisePrimaryRenderPass(surface_depth_texture_view);
         InitialiseImguiRenderPass();
     }
-    void Renderer::Shutdown() {
+    void Shutdown() {
         ImGui_ImplWGPU_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
     }
-    void Renderer::Render() {
+    void Render() {
         ImGui_ImplWGPU_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -67,22 +85,25 @@ namespace Chemical {
         init.instance.ProcessEvents();
     }
 
-    void Renderer::ExecutePrimaryRenderPass(wgpu::CommandEncoder encoder, wgpu::TextureView surface_view) {
+}
+namespace {
+
+    void ExecutePrimaryRenderPass(wgpu::CommandEncoder encoder, wgpu::TextureView surface_view) {
         primary_pass.color.view = surface_view;
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&primary_pass.descriptor);
         pass.SetBindGroup(0, camera_group, 0, nullptr);
-        static_block_renderer.Render(pass);
+        StaticBlockRenderer::Render(pass);
         pass.End();
     }
 
-    void Renderer::ExecuteImguiRenderPass(wgpu::CommandEncoder encoder, wgpu::TextureView surface_view) {
+    void ExecuteImguiRenderPass(wgpu::CommandEncoder encoder, wgpu::TextureView surface_view) {
         imgui_pass.color.view = surface_view;
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&imgui_pass.descriptor);
         ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), pass.Get());
         pass.End();
     }
 
-    void Renderer::InitialisePrimaryRenderPass(wgpu::TextureView depth_texture_view) {
+    void InitialisePrimaryRenderPass(wgpu::TextureView depth_texture_view) {
         primary_pass.color = {
             .loadOp = wgpu::LoadOp::Clear,
             .storeOp = wgpu::StoreOp::Store,
@@ -102,7 +123,7 @@ namespace Chemical {
         };
     }
 
-    void Renderer::InitialiseImguiRenderPass() {
+    void InitialiseImguiRenderPass() {
 
         imgui_pass.color = {
             .loadOp = wgpu::LoadOp::Load,
@@ -114,8 +135,6 @@ namespace Chemical {
             .colorAttachments = &imgui_pass.color,
         };
     }
-}
-namespace {
 
     void AwaitAsync(const wgpu::Instance& instance, const wgpu::Future& future) {
         while(true) {
@@ -302,7 +321,6 @@ namespace {
         return {tex, view};
     }
 
-
     void InitialiseImgui(GLFWwindow* window, const RendererInitData& init) {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -322,4 +340,5 @@ namespace {
         io.IniFilename = nullptr;
 #endif
     }
+
 }

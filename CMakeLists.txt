@@ -118,6 +118,7 @@ add_executable(${PROJECT_NAME}
     src/main.cpp 
     src/renderers/renderer.cpp 
     src/renderers/static_block_renderer.cpp 
+    src/block/block.cpp 
     src/app.cpp
     src/input.cpp
     src/freecam.cpp

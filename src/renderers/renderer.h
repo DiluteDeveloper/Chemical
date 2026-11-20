@@ -1,10 +1,20 @@
 #pragma once
-#include "static_block_renderer.h"
-#include "renderer_data.h"
+
 #include <GLFW/glfw3.h>
 #include <webgpu/webgpu_cpp.h>
+#include <entt/entity/fwd.hpp>
+
 namespace Chemical {
 
+    struct RendererInitData {
+        wgpu::Instance instance;
+        wgpu::Adapter adapter;
+        wgpu::Device device;
+        wgpu::Queue queue;
+        wgpu::TextureFormat surface_format;
+        wgpu::Surface surface;
+        wgpu::BindGroupLayout view_projection_layout;
+    };
     struct PrimaryRenderPass {
         wgpu::RenderPassColorAttachment color;
         wgpu::RenderPassDepthStencilAttachment depth;
@@ -15,29 +25,15 @@ namespace Chemical {
         wgpu::RenderPassDescriptor descriptor;
 
     };
+    namespace Renderer {
+        extern void Initialise(GLFWwindow* window, entt::registry& registry);
+        extern void Shutdown();
+        extern void Render();
 
-    class Renderer {
-    public:
-
-        void Initialise(GLFWwindow* window);
-        void Shutdown();
-        void Render();
-
-        RendererInitData init;
-        wgpu::Buffer view_buffer;
-    private:
-
-        void ExecutePrimaryRenderPass(wgpu::CommandEncoder encoder, wgpu::TextureView surface_view);
-        void ExecuteImguiRenderPass(wgpu::CommandEncoder encoder, wgpu::TextureView surface_view);
-
-        void InitialisePrimaryRenderPass(wgpu::TextureView depth_texture_view);
-        void InitialiseImguiRenderPass();
-
-        PrimaryRenderPass primary_pass;
-        ImguiRenderPass imgui_pass;
-
-        wgpu::BindGroup camera_group;
-
-        StaticBlockRenderer static_block_renderer;
+        // This is a temporary solution until I update the renderer
+        // to be responsible for updating the view matrix buffer
+        extern RendererInitData init;
+        extern wgpu::Buffer view_buffer;
     };
+
 }
