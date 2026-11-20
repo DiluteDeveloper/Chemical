@@ -45,6 +45,7 @@ namespace Chemical {
         float sensitivity = 0.5f;
         bool is_grounded = false;
         double delta_accumulator = 0.0f;
+        glm::fvec3 forward = glm::fvec3(1.0f);
 
         uint8_t last_collision_direction_flags = 0;
         glm::fvec3 controller_friction = glm::fvec3(0.0f);

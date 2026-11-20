@@ -116,12 +116,15 @@ target_include_directories(imgui PUBLIC
 
 add_executable(${PROJECT_NAME} 
     src/main.cpp 
+    src/renderers/renderer.cpp 
+    src/renderers/static_block_renderer.cpp 
     src/app.cpp
     src/input.cpp
     src/freecam.cpp
+    src/level_editor.cpp 
     src/character_controller.cpp
     src/physics.cpp
-    src/utils/webgpu_utils.cpp
+    # src/utils/webgpu_utils.cpp
     src/utils/image.cpp
 )
 

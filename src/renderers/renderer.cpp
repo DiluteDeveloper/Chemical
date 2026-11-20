@@ -1,0 +1,325 @@
+#include "renderer.h"
+#include <glm/glm.hpp>
+#include <glm/ext/matrix_clip_space.hpp>
+#include "renderers/renderer_data.h"
+#include "webgpu/webgpu_cpp.h"
+#include <spdlog/spdlog.h>
+#include <webgpu/webgpu_glfw.h>
+#include <imgui.h>
+#include <imgui_impl_wgpu.h>
+#include <imgui_impl_glfw.h>
+
+namespace {
+
+    using namespace Chemical;
+    RendererInitData InitialiseWebGPU(GLFWwindow* window);
+    std::tuple<wgpu::Buffer, wgpu::BindGroup, wgpu::BindGroupLayout> SetupViewProjection(const RendererInitData& init);
+    std::tuple<wgpu::SurfaceTexture, wgpu::TextureView> GetNextSurfaceViewData(const wgpu::Surface& surface);
+
+    std::tuple<wgpu::Texture, wgpu::TextureView> CreateDepthTexture(const RendererInitData& init);
+    void InitialiseImgui(GLFWwindow* window, const RendererInitData& init);
+}
+
+namespace Chemical {
+
+    void Renderer::Initialise(GLFWwindow* window) {
+        init = InitialiseWebGPU(window);
+        auto [view_buffer, camera_group, layout] = SetupViewProjection(init);
+        this->camera_group = camera_group;
+        this->view_buffer = view_buffer;
+        init.view_projection_layout = layout;
+
+        static_block_renderer.Initialise(init);
+
+        InitialiseImgui(window, init);
+
+        auto [surface_depth_texture, surface_depth_texture_view] = CreateDepthTexture(init);
+        InitialisePrimaryRenderPass(surface_depth_texture_view);
+        InitialiseImguiRenderPass();
+    }
+    void Renderer::Shutdown() {
+        ImGui_ImplWGPU_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+    }
+    void Renderer::Render() {
+        ImGui_ImplWGPU_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::Render();
+
+        auto[surface_texture, surface_view] = GetNextSurfaceViewData(init.surface);
+        if(!surface_view) return;
+
+        wgpu::CommandEncoder encoder = init.device.CreateCommandEncoder();
+        ExecutePrimaryRenderPass(encoder, surface_view);
+        ExecuteImguiRenderPass(encoder, surface_view);
+
+        wgpu::CommandBuffer cmd = encoder.Finish(nullptr);
+        init.queue.Submit(1, &cmd);
+
+#ifndef __EMSCRIPTEN__
+        init.surface.Present();
+        init.device.Tick();
+#endif
+
+        init.instance.ProcessEvents();
+    }
+
+    void Renderer::ExecutePrimaryRenderPass(wgpu::CommandEncoder encoder, wgpu::TextureView surface_view) {
+        primary_pass.color.view = surface_view;
+        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&primary_pass.descriptor);
+        pass.SetBindGroup(0, camera_group, 0, nullptr);
+        static_block_renderer.Render(pass);
+        pass.End();
+    }
+
+    void Renderer::ExecuteImguiRenderPass(wgpu::CommandEncoder encoder, wgpu::TextureView surface_view) {
+        imgui_pass.color.view = surface_view;
+        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&imgui_pass.descriptor);
+        ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), pass.Get());
+        pass.End();
+    }
+
+    void Renderer::InitialisePrimaryRenderPass(wgpu::TextureView depth_texture_view) {
+        primary_pass.color = {
+            .loadOp = wgpu::LoadOp::Clear,
+            .storeOp = wgpu::StoreOp::Store,
+            .clearValue = wgpu::Color{0.2,0.2,0.3,1.0}
+        };
+        primary_pass.depth = {
+            .view = depth_texture_view,
+            .depthLoadOp = wgpu::LoadOp::Clear,
+            .depthStoreOp = wgpu::StoreOp::Store,
+            .depthClearValue = 1.0
+        };
+        primary_pass.descriptor = {
+            .label = "PrimaryRenderPass",
+            .colorAttachmentCount = 1,
+            .colorAttachments = &primary_pass.color,
+            .depthStencilAttachment = &primary_pass.depth
+        };
+    }
+
+    void Renderer::InitialiseImguiRenderPass() {
+
+        imgui_pass.color = {
+            .loadOp = wgpu::LoadOp::Load,
+            .storeOp = wgpu::StoreOp::Store,
+            .clearValue = wgpu::Color{0.0,0.0,0.0,0.0}
+        };
+        imgui_pass.descriptor = {
+            .colorAttachmentCount = 1,
+            .colorAttachments = &imgui_pass.color,
+        };
+    }
+}
+namespace {
+
+    void AwaitAsync(const wgpu::Instance& instance, const wgpu::Future& future) {
+        while(true) {
+#ifdef __EMSCRIPTEN__
+            emscripten_sleep(10); 
+#endif
+            if(wgpu::WaitStatus s = instance.WaitAny(future, 0); s == wgpu::WaitStatus::Success)
+                return;
+        }
+    }
+
+    RendererInitData InitialiseWebGPU(GLFWwindow* window) {
+
+        RendererInitData init;
+
+        init.instance = wgpu::CreateInstance(nullptr),
+        
+        // Adapter ----------------------------------------
+        
+        spdlog::trace("Requesting WebGPU adapter.");
+
+        wgpu::RequestAdapterOptions adapter_opt;
+        // adapter_opt.backendType = wgpu::BackendType::Vulkan;
+        wgpu::Future adapter_future = init.instance.RequestAdapter(&adapter_opt, wgpu::CallbackMode::WaitAnyOnly, [&init](wgpu::RequestAdapterStatus status, wgpu::Adapter new_adapter, wgpu::StringView message) {
+            if (status == wgpu::RequestAdapterStatus::Success)
+                init.adapter = new_adapter;
+            else
+                spdlog::error("WebGPU adapter request failed: {}", message.data);
+        });
+
+        AwaitAsync(init.instance, adapter_future);
+
+        // Device ----------------------------------------
+        
+        spdlog::trace("Requesting WebGPU device.");
+
+        wgpu::DeviceDescriptor device_descriptor;
+        wgpu::Limits required_limits = {
+            // .maxVertexBuffers = 1,
+            // .maxBufferSize = 5000 * sizeof(float),
+            // .maxVertexAttributes = 2,
+            // .maxVertexBufferArrayStride = 6 * sizeof(float),
+            // .maxInterStageShaderVariables = 3
+        };
+        device_descriptor.requiredLimits = &required_limits;
+
+        device_descriptor.SetDeviceLostCallback(wgpu::CallbackMode::AllowProcessEvents, [](const wgpu::Device&, wgpu::DeviceLostReason, wgpu::StringView message) { throw std::runtime_error(std::format("WebGPU device lost: {}", message.data)); });
+
+        device_descriptor.SetUncapturedErrorCallback([](const wgpu::Device&, wgpu::ErrorType type, wgpu::StringView message) {
+            throw std::runtime_error(std::format("WebGPU device uncaptured error: {} with error type: ", message.data, ((int)type)));
+        });
+
+        wgpu::Future device_future = init.adapter.RequestDevice(&device_descriptor, wgpu::CallbackMode::WaitAnyOnly, [&init](wgpu::RequestDeviceStatus status, wgpu::Device new_device, wgpu::StringView message) {
+          if (status == wgpu::RequestDeviceStatus::Success)
+                init.device = new_device;
+          else
+              throw std::runtime_error(std::format("WebGPU device request failed: {}", message.data));
+        });
+
+        AwaitAsync(init.instance, device_future);
+
+        init.queue = init.device.GetQueue();
+        
+#ifdef __EMSCRIPTEN__
+        wgpu::EmscriptenSurfaceSourceCanvasHTMLSelector src;
+        src.selector = "#canvas";
+        wgpu::SurfaceDescriptor desc;
+        desc.nextInChain = &src;
+        init.surface = wgpu.instance.CreateSurface(&desc),
+#else
+        init.surface = wgpu::glfw::CreateSurfaceForWindow(init.instance, window);
+#endif
+        wgpu::SurfaceCapabilities capabilities;
+        init.surface.GetCapabilities(init.adapter, &capabilities);
+        if(capabilities.presentModeCount == 0) 
+            throw std::runtime_error("WebGPU surface has no present modes!");
+
+        wgpu::SurfaceConfiguration config = {
+            .device = init.device,
+            .format = capabilities.formats[0],
+            .width = 1920,
+            .height = 1080,
+            .alphaMode = wgpu::CompositeAlphaMode::Auto,
+            .presentMode = capabilities.presentModes[0]
+        };
+        init.surface.Configure(&config);
+        init.surface_format = config.format;
+        return init;
+    }
+
+
+    std::tuple<wgpu::Buffer, wgpu::BindGroup, wgpu::BindGroupLayout> SetupViewProjection(const RendererInitData& init) {
+        
+        wgpu::BufferDescriptor bd = {
+            .usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform,
+            .size = sizeof(float) * 4 * 4,
+            .mappedAtCreation = true
+        };
+        wgpu::Buffer view_buffer = init.device.CreateBuffer(&bd);
+
+        glm::mat4 matrix = glm::mat4(1.0f);
+        view_buffer.WriteMappedRange(0, &matrix, bd.size);
+        view_buffer.Unmap();
+
+        wgpu::Buffer projection_buffer = init.device.CreateBuffer(&bd);
+
+        matrix = glm::perspectiveFovLH(glm::radians(90.0f), 1920.0f, 1080.0f, 0.01f, 1000.0f);
+        projection_buffer.WriteMappedRange(0, &matrix, bd.size);
+        projection_buffer.Unmap();
+
+        wgpu::BindGroupEntry view_bge[] {
+            {
+                .binding = 0,
+                .buffer = view_buffer,
+                .offset = 0,
+                .size = bd.size
+            },
+            {
+                .binding = 1,
+                .buffer = projection_buffer,
+                .offset = 0,
+                .size = bd.size
+            }
+
+        };
+        wgpu::BindGroupLayoutEntry view_bgle[] {
+            {
+                .binding = 0,
+                .visibility = wgpu::ShaderStage::Vertex,
+                .buffer = { nullptr, wgpu::BufferBindingType::Uniform, false, 0}
+            },
+            {
+                .binding = 1,
+                .visibility = wgpu::ShaderStage::Vertex,
+                .buffer = { nullptr, wgpu::BufferBindingType::Uniform, false, 0}
+            }
+
+        };
+        wgpu::BindGroupLayoutDescriptor bgld {
+            .entryCount = 2,
+            .entries = &view_bgle[0]
+        };
+        wgpu::BindGroupLayout layout = init.device.CreateBindGroupLayout(&bgld);
+        wgpu::BindGroupDescriptor bind_group_descriptor {
+            .layout = layout,
+            .entryCount = 2,
+            .entries = &view_bge[0]
+        };
+        return {view_buffer, init.device.CreateBindGroup(&bind_group_descriptor), layout};
+    };
+
+    std::tuple<wgpu::SurfaceTexture, wgpu::TextureView> GetNextSurfaceViewData(const wgpu::Surface& surface) {
+        wgpu::SurfaceTexture surface_texture;
+        surface.GetCurrentTexture(&surface_texture);
+        if(surface_texture.status != wgpu::SurfaceGetCurrentTextureStatus::SuccessOptimal) {
+            spdlog::warn("Surface texture status is not success optimal");
+            return std::make_tuple(surface_texture, nullptr);
+        }
+
+        wgpu::TextureViewDescriptor view_descriptor;
+        view_descriptor.format = surface_texture.texture.GetFormat();
+        view_descriptor.dimension = wgpu::TextureViewDimension::e2D;
+        view_descriptor.mipLevelCount = 1;
+        view_descriptor.arrayLayerCount = 1;
+        view_descriptor.aspect = wgpu::TextureAspect::All;
+        wgpu::TextureView target_view = surface_texture.texture.CreateView(&view_descriptor);
+        if(!target_view) {
+            spdlog::warn("Surface texture view failed!");
+            return std::make_tuple(surface_texture, nullptr);
+        }
+        
+        return std::make_tuple(surface_texture, target_view);
+    }
+
+    std::tuple<wgpu::Texture, wgpu::TextureView> CreateDepthTexture(const RendererInitData& init) {
+        wgpu::TextureDescriptor desc = {
+            .usage = wgpu::TextureUsage::RenderAttachment,
+            .dimension = wgpu::TextureDimension::e2D,
+            .size = wgpu::Extent3D(1920, 1080, 1),
+            .format = wgpu::TextureFormat::Depth32Float
+        };
+        auto tex = init.device.CreateTexture(&desc);
+        auto view = tex.CreateView();
+        return {tex, view};
+    }
+
+
+    void InitialiseImgui(GLFWwindow* window, const RendererInitData& init) {
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        // ImGuiIO& io = ImGui::GetIO(); (void)io;
+        ImGui::StyleColorsDark();
+        ImGui_ImplGlfw_InitForOther(window, true);
+#ifdef __EMSCRIPTEN__
+        ImGui_ImplGlfw_InstallEmscriptenCallbacks(window, "#canvas");
+#endif
+        ImGui_ImplWGPU_InitInfo init_info;
+        init_info.Device = init.device.Get();
+        init_info.NumFramesInFlight = 3;
+        init_info.RenderTargetFormat = (WGPUTextureFormat)init.surface_format;
+        init_info.DepthStencilFormat = WGPUTextureFormat_Undefined;
+        ImGui_ImplWGPU_Init(&init_info);
+#ifdef __EMSCRIPTEN__
+        io.IniFilename = nullptr;
+#endif
+    }
+}
