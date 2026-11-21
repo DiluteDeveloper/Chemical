@@ -5,7 +5,7 @@
 
 namespace Chemical {
     
-    const std::array<uint8_t, 2>& FaceOrientationToVaryingDimensionsIdx(FaceOrientation orientation) {
+    std::array<uint8_t, 2> FaceOrientationToVaryingDimensionsIdx(FaceOrientation orientation) {
         static constexpr std::array<std::array<uint8_t, 2>, 6> face_orientation_to_position_dimension_idx = {{
             {0, 2}, // FaceOrientation::Top
             {2, 0}, // FaceOrientation::Bottom
@@ -16,13 +16,42 @@ namespace Chemical {
         }};
         return face_orientation_to_position_dimension_idx[(uint8_t)orientation];
     }
+    uint8_t FaceOrientationToLockedDimensionIdx(FaceOrientation orientation) {
+        static constexpr std::array<uint8_t, 6> face_orientation_to_position_dimension_idx = {{
+            1, // FaceOrientation::Top
+            1, // FaceOrientation::Bottom
+            0, // FaceOrientation::Right
+            0, // FaceOrientation::Left
+            2, // FaceOrientation::Back
+            2 // FaceOrientation::Front
+        }};
+        return face_orientation_to_position_dimension_idx[(uint8_t)orientation];
+    }
+    extern bool IsFaceOrientationOnPositiveDimension(FaceOrientation orientation) {
+        static constexpr std::array<bool, 6> face_orientation_to_positive_dimension = {{
+            true, // FaceOrientation::Top
+            false, // FaceOrientation::Bottom
+            true, // FaceOrientation::Right
+            false, // FaceOrientation::Left
+            false, // FaceOrientation::Back
+            true // FaceOrientation::Front
+        }};
+        return face_orientation_to_positive_dimension[(uint8_t)orientation];
+    }
 
     void BlockData::on_construct(entt::registry& registry, const entt::entity e) {
         BlockData& bd = registry.get<BlockData>(e);
         if(bd.end_position.x < bd.start_position.x || bd.end_position.y < bd.start_position.y || bd.end_position.z < bd.start_position.z)
             spdlog::warn("Block with entity ID {} will not be rendered properly because the start position is less than the end position.", entt::to_integral(e));
 
-        registry.emplace<BoxCollider>(e, (glm::fvec3)bd.start_position, (glm::fvec3)bd.end_position);
+        glm::fvec3 start_pos = bd.start_position;
+        glm::fvec3 end_pos = bd.end_position;
+        uint8_t locked_idx = FaceOrientationToLockedDimensionIdx(bd.orientation);
+        if(IsFaceOrientationOnPositiveDimension(bd.orientation))
+            start_pos[locked_idx] = bd.start_position[locked_idx] - 1;
+        else
+            end_pos[locked_idx] = bd.start_position[locked_idx] + 1;
+        registry.emplace<BoxCollider>(e, start_pos, end_pos);
     }
     void BlockData::on_update(entt::registry& registry, const entt::entity e) {
         BlockData& bd = registry.get<BlockData>(e);
@@ -40,8 +69,15 @@ namespace Chemical {
         //     swap(bd.end_position.z, bd.start_position.z);
 
         BoxCollider& bc = registry.get<BoxCollider>(e);
-        bc.min = bd.start_position;
-        bc.max = bd.end_position;
+        glm::fvec3 start_pos = bd.start_position;
+        glm::fvec3 end_pos = bd.end_position;
+        uint8_t locked_idx = FaceOrientationToLockedDimensionIdx(bd.orientation);
+        if(IsFaceOrientationOnPositiveDimension(bd.orientation))
+            start_pos[locked_idx] = bd.start_position[locked_idx] - 1;
+        else
+            end_pos[locked_idx] = bd.start_position[locked_idx] + 1;
+        bc.min = start_pos;
+        bc.max = end_pos;
     }
 
     void BlockData::AddTestDataToRegistry(entt::registry& registry) {

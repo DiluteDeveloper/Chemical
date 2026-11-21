@@ -73,11 +73,11 @@ namespace Chemical {
         }
         return response;
     }
-    void BoxCollider::AddTestCollidersToRegistry(entt::registry& r) {
-        r.emplace<BoxCollider>(r.create(), BoxCollider{{0, 0, 0}, {5, 7, 5}});
-        r.emplace<BoxCollider>(r.create(), BoxCollider{{8, 2, 2}, {13, 9, 7}});
-        r.emplace<BoxCollider>(r.create(), BoxCollider{{5, 5, 5}, {20, 20, 20}});
-        r.emplace<BoxCollider>(r.create(), BoxCollider{{-40, 3, -40}, {40, 4, 40}});
-    };
+    // void BoxCollider::AddTestCollidersToRegistry(entt::registry& r) {
+    //     r.emplace<BoxCollider>(r.create(), BoxCollider{{0, 0, 0}, {5, 7, 5}});
+    //     r.emplace<BoxCollider>(r.create(), BoxCollider{{8, 2, 2}, {13, 9, 7}});
+    //     r.emplace<BoxCollider>(r.create(), BoxCollider{{5, 5, 5}, {20, 20, 20}});
+    //     r.emplace<BoxCollider>(r.create(), BoxCollider{{-40, 3, -40}, {40, 4, 40}});
+    // };
 
 }

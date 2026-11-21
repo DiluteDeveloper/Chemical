@@ -8,6 +8,7 @@ namespace Chemical {
     StaticBlockRenderer::StaticBlockRenderer(const Renderer& renderer) : renderer(&renderer){
 
         renderer.registry->on_construct<BlockData>().connect<&StaticBlockRenderer::ReloadBlockData>(this);
+        renderer.registry->on_destroy<BlockData>().connect<&StaticBlockRenderer::ReloadBlockData>(this);
         renderer.registry->on_update<BlockData>().connect<&StaticBlockRenderer::ReloadBlockData>(this);
 
 
@@ -124,7 +125,7 @@ namespace Chemical {
 
             std::vector<glm::ivec4> r;
             for(auto d : data) {
-                auto& arr = FaceOrientationToVaryingDimensionsIdx(d.orientation);
+                auto arr = FaceOrientationToVaryingDimensionsIdx(d.orientation);
 
                 r.emplace_back(d.start_position.x, d.start_position.y, d.start_position.z, d.type);
 

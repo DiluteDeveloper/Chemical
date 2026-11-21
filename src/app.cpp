@@ -29,7 +29,6 @@ namespace Chemical {
         spdlog::set_level(spdlog::level::trace);
 
         BlockData::AddTestDataToRegistry(registry);
-        BoxCollider::AddTestCollidersToRegistry(registry);
 
         Input& input = registry.ctx().emplace<Input>(window);
         registry.ctx().emplace<CharacterController>(input);

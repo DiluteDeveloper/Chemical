@@ -17,7 +17,9 @@ namespace Chemical {
         Back = 4,
         Front = 5 
     };
-    extern const std::array<uint8_t, 2>& FaceOrientationToVaryingDimensionsIdx(FaceOrientation orientation);
+    extern std::array<uint8_t, 2> FaceOrientationToVaryingDimensionsIdx(FaceOrientation orientation);
+    extern uint8_t FaceOrientationToLockedDimensionIdx(FaceOrientation orientation);
+    extern bool IsFaceOrientationOnPositiveDimension(FaceOrientation orientation);
     enum class BlockType:uint8_t {
         Grass = 0,
         Dirt = 1,
@@ -29,6 +31,7 @@ namespace Chemical {
     };
     struct BlockData {
         static void on_construct(entt::registry&, const entt::entity);
+        static void on_destroy(entt::registry&, const entt::entity) {};
         static void on_update(entt::registry&, const entt::entity);
 
         glm::ivec3 start_position; 

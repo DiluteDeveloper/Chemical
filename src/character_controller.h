@@ -20,7 +20,7 @@ namespace Chemical {
         static constexpr uint32_t PHYSICS_FRAME_RATE = 60;
         static constexpr std::bitset<8> MOVEMENT_DIRECTIONS = std::bitset<8>().set((uint8_t)Direction::Forwards).set((uint8_t)Direction::Backwards).set((uint8_t)Direction::Left).set((uint8_t)Direction::Right);
 
-        Transform transform = { .position = {0.0f, 5.0f, 0.0f}};
+        Transform transform = { .position = {0.0f, 20.0f, 0.0f}};
         glm::fvec3 velocity = glm::fvec3(0);
 
         float base_speed = 80.0f;

@@ -20,7 +20,7 @@ namespace Chemical {
     struct BoxCollider {
         glm::fvec3 min;
         glm::fvec3 max;
-        static void AddTestCollidersToRegistry(entt::registry& r);
+        // static void AddTestCollidersToRegistry(entt::registry& r);
     };
 
     struct CollisionResponse {
