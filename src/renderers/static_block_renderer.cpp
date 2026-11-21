@@ -121,30 +121,10 @@ namespace Chemical {
     namespace {
 
         std::vector<glm::ivec4> BlockFaceToShaderData(const std::span<BlockData> data) {
-            static constexpr std::array<std::array<uint8_t, 2>, 6> face_orientation_to_position_dimension_idx = {{
-                {0, 2}, // FaceOrientation::Top
-                {2, 0}, // FaceOrientation::Bottom
-                {2, 1}, // FaceOrientation::Right
-                {1, 2}, // FaceOrientation::Left
-                {0, 1}, // FaceOrientation::Back
-                {1, 0} // FaceOrientation::Front
-            }};
 
             std::vector<glm::ivec4> r;
             for(auto d : data) {
-                auto& arr = face_orientation_to_position_dimension_idx[(uint8_t)d.orientation];
-
-                auto swap = [](int32_t& a, int32_t& b) {
-                    int32_t v = a;
-                    a = b;
-                    b = v;
-                };
-                if(d.end_position.x < d.start_position.x)
-                    swap(d.end_position.x, d.start_position.x);
-                if(d.end_position.y < d.start_position.y)
-                    swap(d.end_position.y, d.start_position.y);
-                if(d.end_position.z < d.start_position.z)
-                    swap(d.end_position.z, d.start_position.z);
+                auto& arr = FaceOrientationToVaryingDimensionsIdx(d.orientation);
 
                 r.emplace_back(d.start_position.x, d.start_position.y, d.start_position.z, d.type);
 

@@ -15,8 +15,19 @@ namespace Chemical {
         void OnCursorPosCallback(double, double);
         void OnScrollCallback(double, double yoffset);
 
-        entt::entity current_drag_block;
+        struct DragBlock {
+            entt::entity entity;
+            std::array<int32_t*, 2> drag_pos_ptr;
+            std::array<uint8_t, 2> dimension_idx;
+            std::array<bool, 2> start_and_end_swapped;
+            std::array<std::function<float(float)>, 2> ceil_or_floor;
+        } drag_block;
+
         bool dragging = false;
-        BlockType type = BlockType::Grass;
+
+        [[nodiscard]] static float CeilNotStupidSTDTemplates(float);
+        [[nodiscard]] static float FloorNotStupidSTDTemplates(float);
+
+        void CreateNewDragBlock(const BlockData& previous);
     };
 }
