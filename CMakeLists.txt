@@ -35,7 +35,7 @@
 
 cmake_minimum_required(VERSION 4.2.3)
 project(ChemicalMC_PK
-    VERSION 0.1.8
+    VERSION 0.2.0
     LANGUAGES CXX C
 )
 if(NOT CMAKE_BUILD_TYPE)
