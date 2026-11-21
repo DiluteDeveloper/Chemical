@@ -1,17 +1,17 @@
 #include <spdlog/spdlog.h>
 #include "level_editor.h"
-#include "components.h"
+#include "character_controller.h"
 #include "input.h"
-#include "block/block.h"
+#include "block.h"
 
 namespace {
 
     using namespace Chemical;
 
     entt::registry* registry = nullptr;
-    void OnMouseButtonCallback(int button, int action, int mods, void* data);
-    void OnCursorPosCallback(double, double, void*);
-    void OnScrollCallback(double, double yoffset, void*);
+    void OnMouseButtonCallback(int button, int action, int mods);
+    void OnCursorPosCallback(double, double);
+    void OnScrollCallback(double, double yoffset);
 }
 namespace Chemical::LevelEditor {
 
@@ -31,50 +31,48 @@ namespace {
     bool dragging = false;
     Type type = Type::Grass;
 
-    void OnScrollCallback(double, double yoffset, void*) {
+    void OnScrollCallback(double, double yoffset) {
         type = (Type)(((uint8_t)type + (uint8_t)yoffset) % 5);
     }
-    void OnCursorPosCallback(double, double, void*) {
+    void OnCursorPosCallback(double, double) {
         if(!dragging)
             return;
 
-        auto view = registry->view<CharacterControllerComponent, PhysicsBodyComponent>();
+        auto controller = registry->ctx().get<CharacterController>();
 
-        for(auto [entity, c, p] : view.each()) {
-            registry->patch<BlockData>(current_drag_block, [&](BlockData& bd) {
-                float distance_along_ray = (bd.start_position.z - p.transform.position.z) / c.forward.z;
-                glm::fvec3 v = p.transform.position + (c.forward * distance_along_ray);
-                v.x = std::round(v.x);
-                v.y = std::round(v.y);
-                v.z = std::round(v.z);
-                bd.end_position = v;
-                bd.type = type;
-            });
-        }
+        registry->patch<BlockData>(current_drag_block, [&](BlockData& bd) {
+            float distance_along_ray = (bd.start_position.z - controller.transform.position.z) / controller.forward.z;
+            glm::fvec3 v = controller.transform.position + (controller.forward * distance_along_ray);
+            v.x = std::ceil(v.x);
+            v.y = std::ceil(v.y);
+            v.z = std::ceil(v.z);
+            bd.end_position = v;
+            bd.type = type;
+        });
 
     }
 
-    void OnMouseButtonCallback(int button, int action, int, void*) {
+    void OnMouseButtonCallback(int button, int action, int) {
         if(button == GLFW_MOUSE_BUTTON_LEFT) {
             if(action == GLFW_PRESS) {
-                auto view = registry->view<CharacterControllerComponent, PhysicsBodyComponent>();
+                auto controller = registry->ctx().get<CharacterController>();
 
-                for(auto [entity, c, p] : view.each()) {
-                    glm::fvec3 origin = p.transform.position + (c.forward * 3.0f);
-                    origin.x = std::round(origin.x);
-                    origin.y = std::round(origin.y);
-                    origin.z = std::round(origin.z);
+                glm::fvec3 origin = controller.transform.position + (controller.forward * 3.0f);
+                
+                // Ceil or floor depending on the orientation, and flipped for the end position
+                origin.x = std::floor(origin.x);
+                origin.y = std::floor(origin.y);
+                origin.z = std::floor(origin.z);
 
-                    current_drag_block = registry->create();
-                    registry->emplace<BlockData>(current_drag_block, BlockData{
-                        .start_position = origin,
-                        .end_position = origin + 1.0f,
-                        .orientation = FaceOrientation::Back,
-                        .type = type
-                    });
+                current_drag_block = registry->create();
+                registry->emplace<BlockData>(current_drag_block, BlockData{
+                    .start_position = origin,
+                    .end_position = origin + 1.0f,
+                    .orientation = FaceOrientation::Back,
+                    .type = type
+                });
 
-                    dragging = true;
-                }
+                dragging = true;
 
             } else {
                 dragging = false;

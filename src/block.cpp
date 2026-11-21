@@ -4,7 +4,7 @@
 
 namespace Chemical {
 
-    void AddTestBlocksToRegistry(entt::registry& registry) {
+    void BlockData::AddTestDataToRegistry(entt::registry& registry) {
 		registry.emplace<BlockData>(registry.create(), glm::ivec3(0, 0, 0), glm::ivec3(5, 0, 5), FaceOrientation::Bottom, Type::Stone);
 		registry.emplace<BlockData>(registry.create(), glm::ivec3(0, 7, 0), glm::ivec3(5, 7, 5), FaceOrientation::Top, Type::Grass);
 

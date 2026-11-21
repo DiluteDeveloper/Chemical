@@ -35,14 +35,14 @@
 
 cmake_minimum_required(VERSION 4.2.3)
 project(ChemicalMC_PK
-    VERSION 0.1.6
+    VERSION 0.1.7
     LANGUAGES CXX C
 )
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "" FORCE)
 endif()
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -118,14 +118,13 @@ add_executable(${PROJECT_NAME}
     src/main.cpp 
     src/renderers/renderer.cpp 
     src/renderers/static_block_renderer.cpp 
-    src/block/block.cpp 
+    src/block.cpp 
     src/app.cpp
     src/input.cpp
     src/freecam.cpp
     src/level_editor.cpp 
     src/character_controller.cpp
     src/physics.cpp
-    # src/utils/webgpu_utils.cpp
     src/utils/image.cpp
 )
 

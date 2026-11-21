@@ -28,7 +28,7 @@ namespace Chemical {
     namespace Renderer {
         extern void Initialise(GLFWwindow* window, entt::registry& registry);
         extern void Shutdown();
-        extern void Render();
+        extern void Render(entt::registry& registry);
 
         // This is a temporary solution until I update the renderer
         // to be responsible for updating the view matrix buffer

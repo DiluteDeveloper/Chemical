@@ -14,25 +14,25 @@ namespace {
     GLFWwindow* window;
 
     void OnGLFWKeyCallback(GLFWwindow*, int key, int scancode, int action, int mods) {
-        for(auto [data, cb] : key_callbacks) {
-            cb(key, scancode, action, mods, data);
+        for(auto [_, cb] : key_callbacks) {
+            cb(key, scancode, action, mods);
         }
     }
     void OnGLFWCursorPosCallback(GLFWwindow*, double xpos, double ypos) {
-        for(auto [data, cb] : cursor_pos_callbacks) {
-            cb(xpos, ypos, data);
+        for(auto [_, cb] : cursor_pos_callbacks) {
+            cb(xpos, ypos);
         }
     }
     void OnGLFWMouseButtonCallback(GLFWwindow*, int button, int action, int mods) {
 
-        for(auto [data, cb] : mouse_button_callbacks) {
-            cb(button, action, mods, data);
+        for(auto [_, cb] : mouse_button_callbacks) {
+            cb(button, action, mods);
         }
     }
     void OnGLFWScrollCallback(GLFWwindow*, double xoffset, double yoffset) {
 
-        for(auto [data, cb] : scroll_callbacks) {
-            cb(xoffset, yoffset, data);
+        for(auto [_, cb] : scroll_callbacks) {
+            cb(xoffset, yoffset);
         }
     }
 }
@@ -42,47 +42,39 @@ namespace Chemical::Input {
             return glfwGetKey(window, key);
         }
 
-        void SubscribeToKeyCallback(const KeyCallback cb, void* data) {
-            if(data == nullptr) 
-                data = (void*)&cb;
-            auto [it, inserted] = key_callbacks.emplace(data, cb);
+        void SubscribeToKeyCallback(const KeyCallback cb, void* identifier) {
+            auto [it, inserted] = key_callbacks.emplace(identifier, cb);
             if(!inserted)
-                spdlog::error("Failed to add callback: data pointer conflicts with existing callback subscriber data pointer!");
+                spdlog::error("Failed to add input callback: identifier is not unique");
         }
-        void UnsubscribeFromKeyCallback(void* data_ptr) {
-            key_callbacks.erase(data_ptr); 
+        void UnsubscribeFromKeyCallback(void* identifier) {
+            key_callbacks.erase(identifier); 
         }
 
-        void SubscribeToCursorPosCallback(const CursorPosCallback cb, void* data) {
-            if(data == nullptr) 
-                data = (void*)&cb;
-            auto [it, inserted] = cursor_pos_callbacks.emplace(data, cb);
+        void SubscribeToCursorPosCallback(const CursorPosCallback cb, void* identifier) {
+            auto [it, inserted] = cursor_pos_callbacks.emplace(identifier, cb);
             if(!inserted)
-                spdlog::error("Failed to add callback: data pointer conflicts with existing callback subscriber data pointer!");
+                spdlog::error("Failed to add input callback: identifier is not unique");
         }
-        void UnsubscribeFromCursorPosCallback(void* data_ptr) {
-            cursor_pos_callbacks.erase(data_ptr); 
+        void UnsubscribeFromCursorPosCallback(void* identifier) {
+            cursor_pos_callbacks.erase(identifier); 
         }
 
-        void SubscribeToMouseButtonCallback(const MouseButtonCallback cb, void* data) {
-            if(data == nullptr) 
-                data = (void*)&cb;
-            auto [it, inserted] = mouse_button_callbacks.emplace(data, cb);
+        void SubscribeToMouseButtonCallback(const MouseButtonCallback cb, void* identifier) {
+            auto [it, inserted] = mouse_button_callbacks.emplace(identifier, cb);
             if(!inserted)
-                spdlog::error("Failed to add callback: data pointer conflicts with existing callback subscriber data pointer!");
+                spdlog::error("Failed to add input callback: identifier is not unique");
         }
-        void UnsubscribeFromMouseButtonCallback(void* data_ptr) {
-            mouse_button_callbacks.erase(data_ptr); 
+        void UnsubscribeFromMouseButtonCallback(void* identifier) {
+            mouse_button_callbacks.erase(identifier); 
         }
-        void SubscribeToScrollCallback(const ScrollCallback cb, void* data) {
-            if(data == nullptr) 
-                data = (void*)&cb;
-            auto [it, inserted] = scroll_callbacks.emplace(data, cb);
+        void SubscribeToScrollCallback(const ScrollCallback cb, void* identifier) {
+            auto [it, inserted] = scroll_callbacks.emplace(identifier, cb);
             if(!inserted)
-                spdlog::error("Failed to add callback: data pointer conflicts with existing callback subscriber data pointer!");
+                spdlog::error("Failed to add input callback: identifier is not unique");
         }
-        void UnsubscribeFromScrollCallback(void* data_ptr) {
-            scroll_callbacks.erase(data_ptr); 
+        void UnsubscribeFromScrollCallback(void* identifier) {
+            scroll_callbacks.erase(identifier); 
         }
 #ifdef __EMSCRIPTEN__
         void EmscriptenActivateMouseOnGLFWMouseButtonCallback(GLFWwindow*, int, int, int) {

@@ -1,9 +1,8 @@
-#include "components.h"
-#include <cmath>
+#include "physics.h"
 
 namespace Chemical {
     
-    bool TriggerBoxColliders::IsColliding(const TriggerBoxColliderComponent& col, BoxColliders::ConstView other_cols) {
+    bool TriggerBoxCollider::IsColliding(const TriggerBoxCollider& col, BoxColliderConstView other_cols) {
         for(auto [entity, test] : other_cols.each()) {
 
             std::array<float, 6> diffs;
@@ -32,7 +31,7 @@ namespace Chemical {
         return false;
     }
 
-    CollisionResponse TriggerBoxColliders::GetCollisionResponse(const TriggerBoxColliderComponent& col, BoxColliders::ConstView other_cols) {
+    CollisionResponse TriggerBoxCollider::GetCollisionResponse(const TriggerBoxCollider& col, BoxColliderConstView other_cols) {
 
         CollisionResponse response;
         for(auto [entity, test] : other_cols.each()) {
@@ -68,222 +67,17 @@ namespace Chemical {
                 }
             }
             if(idx != -1) {
-                response.offset[idx % 3] = diffs[idx] - std::copysign(TriggerBoxColliderComponent::COLLISION_RESPONSE_MARGIN, diffs[idx]);
-                response.direction_flags |= 1 << idx;
+                response.offset[idx % 3] = diffs[idx] - std::copysign(TriggerBoxCollider::COLLISION_RESPONSE_MARGIN, diffs[idx]);
+                response.direction_flags.set(idx + 1);
             }
         }
         return response;
     }
-    void BoxColliders::AddTestCollidersToRegistry(entt::registry& r) {
-        r.emplace<BoxColliderComponent>(r.create(), BoxColliderComponent{{0, 0, 0}, {5, 7, 5}});
-        r.emplace<BoxColliderComponent>(r.create(), BoxColliderComponent{{8, 2, 2}, {13, 9, 7}});
-        r.emplace<BoxColliderComponent>(r.create(), BoxColliderComponent{{5, 5, 5}, {20, 20, 20}});
-        r.emplace<BoxColliderComponent>(r.create(), BoxColliderComponent{{-40, 3, -40}, {40, 4, 40}});
+    void BoxCollider::AddTestCollidersToRegistry(entt::registry& r) {
+        r.emplace<BoxCollider>(r.create(), BoxCollider{{0, 0, 0}, {5, 7, 5}});
+        r.emplace<BoxCollider>(r.create(), BoxCollider{{8, 2, 2}, {13, 9, 7}});
+        r.emplace<BoxCollider>(r.create(), BoxCollider{{5, 5, 5}, {20, 20, 20}});
+        r.emplace<BoxCollider>(r.create(), BoxCollider{{-40, 3, -40}, {40, 4, 40}});
     };
 
-    // void PhysicsBodies::Update(View bodies, BoxColliders::ConstView colliders) {
-    //
-    //     for(auto [entity, body, trigger_col]: bodies.each()) {
-    //         body.velocity *= glm::fvec3(1.0f) - body.friction; 
-    //         body.velocity.y -= body.gravity; 
-    //
-    //         glm::fvec3 offset = TriggerBoxColliders::GetCollisionResponse(trigger_col, colliders);
-    //
-    //         body.transform.position += offset;
-    //         if(offset.x != 0)
-    //             body.velocity.x = 0;
-    //         if(offset.y != 0)
-    //             body.velocity.y = 0;
-    //         if(offset.z != 0)
-    //             body.velocity.z = 0;
-    //
-    //         body.transform.position += body.velocity;
-    //     }
-    // }
-
 }
-// #include "physics.h"
-// // #include "spdlog/spdlog.h"
-//
-// namespace Chemical {
-//
-//     Transform PhysicsBody::ApplyVelocityToTransform(const Transform& _transform) {
-//         Transform transform = _transform;    
-//         transform.position += velocity;
-//
-//         return transform;
-//     }
-//     void PhysicsBody::ApplyNaturalForces(double delta_time) {
-//         if(grounded == Grounded::Grounded)
-//             velocity = velocity * glm::vec3(friction , 1, friction );
-//         // else {
-//         //     velocity = velocity * glm::vec3(air_resistance , 1, air_resistance);
-//             // if(velocity.x > 0)
-//             //     velocity.x -= velocair_resistance * delta_time;
-//             // if(velocity.x < 0)
-//             //     velocity.x += air_resistance * delta_time;
-//             // if(velocity.z > 0)
-//             //     velocity.z -= air_resistance * delta_time;
-//             // if(velocity.z < 0)
-//             //     velocity.z += air_resistance * delta_time;
-//         // }
-//     }
-//     void PhysicsBody::ApplyGravity(double delta_time) {
-//         velocity.y -= gravity * delta_time;
-//     }
-//     void PhysicsBody::ApplyVelocityForce(glm::fvec3 add_velocity) {
-//         if(add_velocity.x > 0)
-//             velocity.x = add_velocity.x;
-//         if(add_velocity.y > 0)
-//             velocity.y = add_velocity.y;
-//         if(add_velocity.z > 0)
-//             velocity.z = add_velocity.z;
-//     }
-//     void PhysicsBody::AddVelocity(glm::fvec3 add_velocity) {
-//         velocity += add_velocity;
-//         // glm::fvec3 add = add_velocity + velocity;
-//         // if(add.x <= terminal_velocity.x && add.x >= -terminal_velocity.x)
-//             // velocity.x = add.x;
-//         // if(add.z <= terminal_velocity.z && add.z >= -terminal_velocity.z)
-//             // velocity.z = add.z;
-//         // if(add.y <= terminal_velocity.y && add.y >= -terminal_velocity.y)
-//             // velocity.y = add.y;
-//     }
-//
-//     glm::vec3 ApplyBoxCollisionResponse(PhysicsBody& body, const Extent3D& extent, const std::vector<Extent3D>& colliders) {
-//
-//         glm::vec3 offset = glm::vec3(0);
-//         for(auto& c : colliders) {
-//             // spdlog::info("ITERATION::");
-//             float x_min_max_diff =  c.min.x - extent.max.x;
-//             float x_max_min_diff =  c.max.x - extent.min.x;
-//             // spdlog::info("x_min_max_diff: {}", x_min_max_diff);
-//             // spdlog::info("x_max_min_diff: {}", x_max_min_diff);
-//
-//             if(x_min_max_diff > 0 || x_max_min_diff < 0)
-//                 continue;
-//
-//             float x_offset = (std::abs(x_min_max_diff) > std::abs(x_max_min_diff)) ? 
-//                 x_max_min_diff : x_min_max_diff;
-//
-//             float y_min_max_diff =  c.min.y - extent.max.y;
-//             float y_max_min_diff =  c.max.y - extent.min.y;
-//
-//             // spdlog::info("y_min_max_diff: {}", y_min_max_diff);
-//             // spdlog::info("y_max_min_diff: {}", y_max_min_diff);
-//             if(y_min_max_diff > 0 || y_max_min_diff < 0)
-//                 continue;
-//
-//             float y_offset = (std::abs(y_min_max_diff) > std::abs(y_max_min_diff)) ? 
-//                 y_max_min_diff : y_min_max_diff;
-//
-//             float z_min_max_diff =  c.min.z - extent.max.z;
-//             float z_max_min_diff =  c.max.z - extent.min.z;
-//
-//             // spdlog::info("z_min_max_diff: {}", z_min_max_diff);
-//             // spdlog::info("z_max_min_diff: {}", z_max_min_diff);
-//             if(z_min_max_diff > 0 || z_max_min_diff < 0)
-//                 continue;
-//
-//             float z_offset = (std::abs(z_min_max_diff) > std::abs(z_max_min_diff)) ? 
-//                 z_max_min_diff : z_min_max_diff;
-//
-//             if(std::abs(x_offset) < std::abs(y_offset))
-//                 if(std::abs(x_offset) < std::abs(z_offset)) {
-//                     body.velocity.x = 0;
-//                     offset.x = x_offset * 1.01;
-//                 }
-//                 else {
-//                     body.velocity.z = 0;
-//                     offset.z = z_offset * 1.01;
-//                 }
-//             else
-//                 if(std::abs(y_offset) < std::abs(z_offset)) {
-//                     if(body.grounded != Grounded::Locked) {
-//                         body.velocity.y = 0;
-//                         offset.y = y_offset * 1.01;
-//                     } 
-//
-//                 }
-//                 else {
-//                     body.velocity.z = 0;
-//                     offset.z = z_offset * 1.01;
-//                 }
-//         }
-//         return offset;
-//     }
-//     bool TestBoxCollision(const Extent3D& extent, const std::vector<Extent3D>& colliders) {
-//         for(auto& c : colliders) {
-//             float x_min_max_diff =  c.min.x - extent.max.x;
-//             float x_max_min_diff =  c.max.x - extent.min.x;
-//
-//             if(x_min_max_diff > 0 || x_max_min_diff < 0)
-//                 continue;
-//
-//             float y_min_max_diff =  c.min.y - extent.max.y;
-//             float y_max_min_diff =  c.max.y - extent.min.y;
-//
-//             if(y_min_max_diff > 0 || y_max_min_diff < 0)
-//                 continue;
-//
-//             float z_min_max_diff =  c.min.z - extent.max.z;
-//             float z_max_min_diff =  c.max.z - extent.min.z;
-//
-//             if(z_min_max_diff > 0 || z_max_min_diff < 0)
-//                 continue;
-//
-//             return true;
-//         }
-//         return false;
-//     }
-//     glm::vec3 ApplyBoxCollisionResponseBounce(const Extent3D& extent, const glm::vec3& velocity, float bounciness, const std::vector<Extent3D>& colliders) {
-//         for(auto& c : colliders) {
-//             // spdlog::info("ITERATION::");
-//             float x_min_max_diff =  c.min.x - extent.max.x;
-//             float x_max_min_diff =  c.max.x - extent.min.x;
-//             // spdlog::info("x_min_max_diff: {}", x_min_max_diff);
-//             // spdlog::info("x_max_min_diff: {}", x_max_min_diff);
-//
-//             if(x_min_max_diff > 0 || x_max_min_diff < 0)
-//                 continue;
-//
-//             float x_offset = (std::abs(x_min_max_diff) > std::abs(x_max_min_diff)) ? 
-//                 x_max_min_diff : x_min_max_diff;
-//
-//             float y_min_max_diff =  c.min.y - extent.max.y;
-//             float y_max_min_diff =  c.max.y - extent.min.y;
-//
-//             // spdlog::info("y_min_max_diff: {}", y_min_max_diff);
-//             // spdlog::info("y_max_min_diff: {}", y_max_min_diff);
-//             if(y_min_max_diff > 0 || y_max_min_diff < 0)
-//                 continue;
-//
-//             float y_offset = (std::abs(y_min_max_diff) > std::abs(y_max_min_diff)) ? 
-//                 y_max_min_diff : y_min_max_diff;
-//
-//             float z_min_max_diff =  c.min.z - extent.max.z;
-//             float z_max_min_diff =  c.max.z - extent.min.z;
-//
-//             // spdlog::info("z_min_max_diff: {}", z_min_max_diff);
-//             // spdlog::info("z_max_min_diff: {}", z_max_min_diff);
-//             if(z_min_max_diff > 0 || z_max_min_diff < 0)
-//                 continue;
-//
-//             float z_offset = (std::abs(z_min_max_diff) > std::abs(z_max_min_diff)) ? 
-//                 z_max_min_diff : z_min_max_diff;
-//
-//             if(std::abs(x_offset) < std::abs(y_offset))
-//                 if(std::abs(x_offset) < std::abs(z_offset))
-//                     return glm::vec3(-velocity.x * bounciness, 0, 0);
-//                 else
-//                     return glm::vec3(0, 0, -velocity.z * bounciness);
-//
-//             else
-//                 if(std::abs(y_offset) < std::abs(z_offset))
-//                     return glm::vec3(0, -velocity.y * bounciness, 0);
-//                 else
-//                     return glm::vec3(0, 0, -velocity.z * bounciness);
-//         }
-//         return glm::vec3(0);
-//     }
-// }

@@ -4,10 +4,10 @@
 
 int main() {
     try {
-        Chemical::App::Start();
+        Chemical::App app;
     } catch (const std::exception& e) {
         spdlog::critical("Application exception occurred: {}", e.what());
-        return -1;
+        throw e;
     }
     return 0; 
 }

@@ -1,7 +1,9 @@
-#include "GLFW/glfw3.h"
-#include "components.h"
 
-#include <chrono>
+#include "character_controller.h"
+#include "input.h"
+#include "block.h"
+#include "level_editor.h"
+
 #include <glm/gtc/matrix_transform.hpp>
 #include <spdlog/spdlog.h>
 #include <webgpu/webgpu_cpp.h>
@@ -14,10 +16,7 @@
 #include "app.h"
 
 #include "renderers/renderer.h"
-#include "level_editor.h"
-#include "input.h"
 #include "utils/webgpu_utils.h"
-#include "block/block.h"
 
 namespace {
 
@@ -25,53 +24,46 @@ namespace {
 }
 namespace Chemical {
 
-    using namespace std::chrono;
-    using clock = high_resolution_clock;
-    double delta_time = 0.0;
-    clock::time_point old_time;
-
-    void App::Start() {
+    App::App() : window(SetupGLFW()) {
         spdlog::set_level(spdlog::level::trace);
 
-        App app = {
-            .window = SetupGLFW(),
-            .registry = {},
-        };
-        Input::Initialise(app.window);
+        Input::Initialise(window);
 
-        AddTestBlocksToRegistry(app.registry);
-        BoxColliders::AddTestCollidersToRegistry(app.registry);
-        CharacterControllers::AddTestControllerToRegistry(app.registry);
+        registry.ctx().emplace<CharacterController>();
 
-        Renderer::Initialise(app.window, app.registry);
+        BlockData::AddTestDataToRegistry(registry);
+        BoxCollider::AddTestCollidersToRegistry(registry);
 
-        LevelEditor::Initialise(app.registry);
+        Renderer::Initialise(window, registry);
+
+        LevelEditor::Initialise(registry);
         old_time = clock::now();
 
 
 
 #ifdef __EMSCRIPTEN__
-        emscripten_set_main_loop_arg(ApplicationLoop, &app, 0, true);
+        emscripten_set_main_loop_arg(std::bind_front(&App::Loop, this), nullptr, 0, true);
 #else
-        while(!glfwWindowShouldClose(app.window)) {
-            ApplicationLoop(&app);
+        while(!glfwWindowShouldClose(window)) {
+            Loop();
         }
 #endif
-
+    }
+    App::~App() {
         Renderer::Shutdown();
-        glfwDestroyWindow(app.window);
+        glfwDestroyWindow(window);
         glfwTerminate();
     }
 
-    void App::ApplicationLoop(void* arg) {
-        App& app = *reinterpret_cast<App*>(arg);
+    void App::Loop() {
 
+        using namespace std::chrono;
         clock::time_point new_time = clock::now();
-        delta_time = duration<float>(new_time - old_time).count();
+        delta_time = std::chrono::duration<float>(new_time - old_time).count();
         old_time = new_time;
 
-        CharacterControllers::Update(app.registry.view<PhysicsBodyComponent, CharacterControllerComponent>(), app.registry.view<const BoxColliderComponent>(), delta_time, Renderer::init.queue, Renderer::view_buffer);
-        Renderer::Render();
+        registry.ctx().get<CharacterController>().Update(registry.view<BoxCollider>(), delta_time, Renderer::init.queue, Renderer::view_buffer);
+        Renderer::Render(registry);
 
         glfwPollEvents();
 
@@ -113,7 +105,6 @@ namespace {
 #endif
         // if(glfwRawMouseMotionSupported())
         //     glfwSetInputMode(glfw_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-
         return glfw_window;
     }
 

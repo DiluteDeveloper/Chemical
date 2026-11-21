@@ -35,7 +35,7 @@ namespace Chemical {
         FaceOrientation orientation;
         Type type;
 
+        static void AddTestDataToRegistry(entt::registry&);
     };
-    extern void AddTestBlocksToRegistry(entt::registry&);
 
 }
