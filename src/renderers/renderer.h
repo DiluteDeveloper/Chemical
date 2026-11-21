@@ -6,15 +6,6 @@
 
 namespace Chemical {
 
-    struct RendererInitData {
-        wgpu::Instance instance;
-        wgpu::Adapter adapter;
-        wgpu::Device device;
-        wgpu::Queue queue;
-        wgpu::TextureFormat surface_format;
-        wgpu::Surface surface;
-        wgpu::BindGroupLayout view_projection_layout;
-    };
     struct PrimaryRenderPass {
         wgpu::RenderPassColorAttachment color;
         wgpu::RenderPassDepthStencilAttachment depth;
@@ -25,15 +16,42 @@ namespace Chemical {
         wgpu::RenderPassDescriptor descriptor;
 
     };
-    namespace Renderer {
-        extern void Initialise(GLFWwindow* window, entt::registry& registry);
-        extern void Shutdown();
-        extern void Render(entt::registry& registry);
+    class Renderer {
+    public:
+        friend class StaticBlockRenderer;
+        Renderer(GLFWwindow* window, entt::registry& registry);
+        ~Renderer();
+        void Render();
 
-        // This is a temporary solution until I update the renderer
-        // to be responsible for updating the view matrix buffer
-        extern RendererInitData init;
-        extern wgpu::Buffer view_buffer;
+    private:
+
+        wgpu::Buffer view_buffer;
+        wgpu::Instance instance;
+        wgpu::Adapter adapter;
+        wgpu::Device device;
+        wgpu::Queue queue;
+        wgpu::TextureFormat surface_format;
+        wgpu::Surface surface;
+        wgpu::BindGroupLayout view_projection_layout;
+
+        PrimaryRenderPass primary_pass;
+        ImguiRenderPass imgui_pass;
+
+        wgpu::BindGroup camera_group;
+        entt::registry* registry;
+
+        void InitialiseWebGPU(GLFWwindow* window);
+
+        std::tuple<wgpu::Buffer, wgpu::BindGroup, wgpu::BindGroupLayout> InitialiseViewProjection();
+        std::tuple<wgpu::Texture, wgpu::TextureView> CreateDepthTexture();
+
+        std::tuple<wgpu::SurfaceTexture, wgpu::TextureView> GetNextSurfaceViewData();
+        void InitialisePrimaryRenderPass(wgpu::TextureView depth_texture_view);
+        void InitialiseImguiRenderPass();
+        void ExecuteImguiRenderPass(wgpu::CommandEncoder encoder, wgpu::TextureView surface_view);
+        void ExecutePrimaryRenderPass(wgpu::CommandEncoder encoder, wgpu::TextureView surface_view);
+        void InitialiseImgui(GLFWwindow* window);
+        void AwaitAsync(const wgpu::Future& future);
     };
 
 }

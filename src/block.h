@@ -17,7 +17,7 @@ namespace Chemical {
         Back = 4,
         Front = 5 
     };
-    enum class Type:uint8_t {
+    enum class BlockType:uint8_t {
         Grass = 0,
         Dirt = 1,
         GrassDirt = 2,
@@ -27,13 +27,13 @@ namespace Chemical {
         Glass = 6
     };
     struct BlockData {
-        static void on_construct(entt::registry&, const entt::entity);
-        static void on_update(entt::registry&, const entt::entity);
+        static void on_construct(entt::registry&, const entt::entity) {}
+        static void on_update(entt::registry&, const entt::entity) {}
 
         glm::ivec3 start_position; 
         glm::ivec3 end_position; 
         FaceOrientation orientation;
-        Type type;
+        BlockType type;
 
         static void AddTestDataToRegistry(entt::registry&);
     };

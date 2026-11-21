@@ -1,73 +1,39 @@
-#include "renderer.h"
-#include "block.h"
+#include "renderers/static_block_renderer.h"
 #include "utils/image.h"
 #include <entt/entity/registry.hpp>
 #include <spdlog/spdlog.h>
 #include <fstream>
+namespace Chemical {
 
-namespace {
+    StaticBlockRenderer::StaticBlockRenderer(const Renderer& renderer) : renderer(&renderer){
 
-    using namespace Chemical;
-    wgpu::RenderPipeline CreateRenderPipeline(const RendererInitData& init, const wgpu::BindGroupLayout layout);
-    std::tuple<uint32_t, wgpu::BindGroup, wgpu::Buffer> CreateBufferAndBindGroup(const RendererInitData& init, std::span<BlockData> block_data, wgpu::BindGroupLayout layout);
-    wgpu::BindGroupLayout CreateBindGroupLayout(const RendererInitData& init);
-    std::span<BlockData> GetRegistryBlockData();
+        renderer.registry->on_construct<BlockData>().connect<&StaticBlockRenderer::ReloadBlockData>(this);
+        renderer.registry->on_update<BlockData>().connect<&StaticBlockRenderer::ReloadBlockData>(this);
 
-    wgpu::RenderPipeline pipeline;
-    wgpu::BindGroup group;
-    wgpu::BindGroupLayout layout;
-    wgpu::Buffer block_data_buffer;
-    uint32_t vertex_count;
 
-    bool renderer_initialised = false;
-    entt::registry* registry;
-}
-namespace Chemical::StaticBlockRenderer {
-
-    void Initialise(const RendererInitData& init, entt::registry& _registry) {
-
-        registry = &_registry;
-        layout = CreateBindGroupLayout(init);
-        std::span<BlockData> bd = GetRegistryBlockData();
-        auto [_vertex_count, _group, _block_data_buffer] = CreateBufferAndBindGroup(Renderer::init, bd, layout);
+        layout = CreateBindGroupLayout(renderer);
+        auto [_vertex_count, _group, _block_data_buffer] = CreateBufferAndBindGroup(renderer, GetRegistryBlockData(*renderer.registry), layout);
         
-        pipeline = CreateRenderPipeline(init, layout);
+        pipeline = CreateRenderPipeline(renderer, layout);
         vertex_count = _vertex_count;
         group = _group;
         block_data_buffer = _block_data_buffer;
-
-        renderer_initialised = true;
-
     }
-    void Render(wgpu::RenderPassEncoder render_pass) {
+    void StaticBlockRenderer::Render(wgpu::RenderPassEncoder render_pass) {
         render_pass.SetPipeline(pipeline);
         render_pass.SetBindGroup(1, group, 0, nullptr);
         render_pass.Draw(vertex_count, 1, 0, 0);
     }
-}
 
-void BlockData::on_construct(entt::registry&, const entt::entity) {
-    if(!renderer_initialised)
-        return;
-    std::span<BlockData> bd = GetRegistryBlockData();
-    auto [_vertex_count, _group, _block_data_buffer] = CreateBufferAndBindGroup(Renderer::init, bd, layout);
-    vertex_count = _vertex_count;
-    group = _group;
-    block_data_buffer = _block_data_buffer;
-}
-void BlockData::on_update(entt::registry &, const entt::entity) {
-    if(!renderer_initialised)
-        return;
-    std::span<BlockData> bd = GetRegistryBlockData();
-    auto [_vertex_count, _group, _block_data_buffer] = CreateBufferAndBindGroup(Renderer::init, bd, layout);
-    vertex_count = _vertex_count;
-    group = _group;
-    block_data_buffer = _block_data_buffer;
-}
+    void StaticBlockRenderer::ReloadBlockData(entt::registry& registry, const entt::entity) {
+        std::span<BlockData> bd = GetRegistryBlockData(registry);
+        auto [_vertex_count, _group, _block_data_buffer] = CreateBufferAndBindGroup(*renderer, bd, layout);
+        vertex_count = _vertex_count;
+        group = _group;
+        block_data_buffer = _block_data_buffer;
+    }
 
-namespace {
-
-    wgpu::RenderPipeline CreateRenderPipeline(const RendererInitData& init, const wgpu::BindGroupLayout layout) {
+    wgpu::RenderPipeline StaticBlockRenderer::CreateRenderPipeline(const Renderer& renderer, const wgpu::BindGroupLayout layout) {
         std::ifstream shader_file("res/shaders/main.wgsl");
         if (!shader_file.is_open())
             throw std::runtime_error("Failed to read file: res/shaders/main.wgsl");
@@ -81,7 +47,7 @@ namespace {
             .nextInChain = &shader_code,
         };
         
-        wgpu::ShaderModule shader_module = init.device.CreateShaderModule(&shader_desc);
+        wgpu::ShaderModule shader_module = renderer.device.CreateShaderModule(&shader_desc);
         
         wgpu::BlendState blend{
             .color = {
@@ -97,7 +63,7 @@ namespace {
         };
         
         wgpu::ColorTargetState color_target{
-            .format = init.surface_format,
+            .format = renderer.surface_format,
             .blend = &blend,
             .writeMask = wgpu::ColorWriteMask::All,
         };
@@ -112,7 +78,7 @@ namespace {
         };
 
         std::array<wgpu::BindGroupLayout, 2> bind_group_layouts = {
-                init.view_projection_layout, layout
+                renderer.view_projection_layout, layout
         };
         wgpu::PipelineLayoutDescriptor pld {
             .bindGroupLayoutCount = 2,
@@ -124,7 +90,7 @@ namespace {
             .depthCompare = wgpu::CompareFunction::Less
         };
         wgpu::RenderPipelineDescriptor rp_desc{
-            .layout = init.device.CreatePipelineLayout(&pld),
+            .layout = renderer.device.CreatePipelineLayout(&pld),
             .vertex = {
                 .module = shader_module,
                 .entryPoint = "vs_main",
@@ -149,102 +115,105 @@ namespace {
 
         };
         
-        return init.device.CreateRenderPipeline(&rp_desc);    
+        return renderer.device.CreateRenderPipeline(&rp_desc);    
     }
 
-    std::vector<glm::ivec4> BlockFaceToShaderData(const std::span<BlockData> data) {
-        static constexpr std::array<std::array<uint8_t, 2>, 6> face_orientation_to_position_dimension_idx = {{
-            {0, 2}, // FaceOrientation::Top
-            {2, 0}, // FaceOrientation::Bottom
-            {2, 1}, // FaceOrientation::Right
-            {1, 2}, // FaceOrientation::Left
-            {0, 1}, // FaceOrientation::Back
-            {1, 0} // FaceOrientation::Front
-        }};
+    namespace {
 
-        std::vector<glm::ivec4> r;
-        for(auto d : data) {
-            auto& arr = face_orientation_to_position_dimension_idx[(uint8_t)d.orientation];
+        std::vector<glm::ivec4> BlockFaceToShaderData(const std::span<BlockData> data) {
+            static constexpr std::array<std::array<uint8_t, 2>, 6> face_orientation_to_position_dimension_idx = {{
+                {0, 2}, // FaceOrientation::Top
+                {2, 0}, // FaceOrientation::Bottom
+                {2, 1}, // FaceOrientation::Right
+                {1, 2}, // FaceOrientation::Left
+                {0, 1}, // FaceOrientation::Back
+                {1, 0} // FaceOrientation::Front
+            }};
 
-            auto swap = [](int32_t& a, int32_t& b) {
-                int32_t v = a;
-                a = b;
-                b = v;
-            };
-            if(d.end_position.x < d.start_position.x)
-                swap(d.end_position.x, d.start_position.x);
-            if(d.end_position.y < d.start_position.y)
-                swap(d.end_position.y, d.start_position.y);
-            if(d.end_position.z < d.start_position.z)
-                swap(d.end_position.z, d.start_position.z);
+            std::vector<glm::ivec4> r;
+            for(auto d : data) {
+                auto& arr = face_orientation_to_position_dimension_idx[(uint8_t)d.orientation];
 
-            r.emplace_back(d.start_position.x, d.start_position.y, d.start_position.z, d.type);
+                auto swap = [](int32_t& a, int32_t& b) {
+                    int32_t v = a;
+                    a = b;
+                    b = v;
+                };
+                if(d.end_position.x < d.start_position.x)
+                    swap(d.end_position.x, d.start_position.x);
+                if(d.end_position.y < d.start_position.y)
+                    swap(d.end_position.y, d.start_position.y);
+                if(d.end_position.z < d.start_position.z)
+                    swap(d.end_position.z, d.start_position.z);
 
-            r.emplace_back((uint32_t)d.orientation, 
-                    std::abs(d.end_position[arr[0]] - d.start_position[arr[0]]), 
-                    std::abs(d.end_position[arr[1]] - d.start_position[arr[1]]), 0);
-        }
+                r.emplace_back(d.start_position.x, d.start_position.y, d.start_position.z, d.type);
 
-        return r;
-
-    }
-
-    std::tuple<wgpu::Texture, wgpu::TextureDescriptor> SetupTexture(const RendererInitData& init) {
-
-        auto image = Image::LoadImage("res/textures/blocks/atlas.png", 4);
-        if(!image)
-            throw std::runtime_error(std::format("Failed to load image {}", "res/textures/blocks/bedrock.png"));
-
-        constexpr uint32_t ATLAS_UNIT_PIXEL_SIZE = 32;
-        if(image->x % ATLAS_UNIT_PIXEL_SIZE != 0 || image->y % ATLAS_UNIT_PIXEL_SIZE != 0)
-            throw std::runtime_error("Failed to load texture! Texture size is not a multiple of 32!");
-
-        uint32_t atlas_units_x = image->x / ATLAS_UNIT_PIXEL_SIZE;
-        uint32_t atlas_units_y = image->y / ATLAS_UNIT_PIXEL_SIZE;
-        uint32_t unit_byte_offset = image->num_channels*ATLAS_UNIT_PIXEL_SIZE;
-        uint32_t image_byte_size = image->x*image->y*image->num_channels;
-
-        wgpu::TextureDescriptor desc {
-            .usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst,
-            .dimension = wgpu::TextureDimension::e2D,
-            .size = { ATLAS_UNIT_PIXEL_SIZE, ATLAS_UNIT_PIXEL_SIZE, atlas_units_x * atlas_units_y},
-#ifdef WSL
-            .format = wgpu::TextureFormat::RGBA8UnormSrgb,
-#else
-            .format = wgpu::TextureFormat::RGBA8Unorm,
-#endif
-            .mipLevelCount = 1,
-            .sampleCount = 1,
-        };
-
-        wgpu::Texture texture = init.device.CreateTexture(&desc);
-
-        wgpu::TexelCopyTextureInfo destination {
-            .texture = texture,
-            .mipLevel = 0,
-            .origin = {0,0,0},
-            .aspect = wgpu::TextureAspect::All,
-        };
-        wgpu::TexelCopyBufferLayout layout {
-            .bytesPerRow = image->num_channels*image->x,
-            .rowsPerImage = image->y 
-        };
-        wgpu::Extent3D extent = {ATLAS_UNIT_PIXEL_SIZE, ATLAS_UNIT_PIXEL_SIZE, 1};
-
-
-        for(uint32_t iy = 0; iy < atlas_units_y; iy++) {
-            for(uint32_t ix = 0; ix < atlas_units_x; ix++) {
-
-                layout.offset = ix*unit_byte_offset + (iy*atlas_units_x*unit_byte_offset*ATLAS_UNIT_PIXEL_SIZE);
-                destination.origin.z = ix + (iy*atlas_units_x);
-                init.queue.WriteTexture(&destination, image->data, image_byte_size, &layout, &extent);
+                r.emplace_back((uint32_t)d.orientation, 
+                        std::abs(d.end_position[arr[0]] - d.start_position[arr[0]]), 
+                        std::abs(d.end_position[arr[1]] - d.start_position[arr[1]]), 0);
             }
-        }
 
-        return {texture, desc};
+            return r;
+
+        }
     }
 
-    wgpu::BindGroupLayout CreateBindGroupLayout(const RendererInitData& init) {
+        std::tuple<wgpu::Texture, wgpu::TextureDescriptor> StaticBlockRenderer::SetupTexture(const Renderer& renderer) {
+
+            auto image = Image::LoadImage("res/textures/blocks/atlas.png", 4);
+            if(!image)
+                throw std::runtime_error(std::format("Failed to load image {}", "res/textures/blocks/bedrock.png"));
+
+            constexpr uint32_t ATLAS_UNIT_PIXEL_SIZE = 32;
+            if(image->x % ATLAS_UNIT_PIXEL_SIZE != 0 || image->y % ATLAS_UNIT_PIXEL_SIZE != 0)
+                throw std::runtime_error("Failed to load texture! Texture size is not a multiple of 32!");
+
+            uint32_t atlas_units_x = image->x / ATLAS_UNIT_PIXEL_SIZE;
+            uint32_t atlas_units_y = image->y / ATLAS_UNIT_PIXEL_SIZE;
+            uint32_t unit_byte_offset = image->num_channels*ATLAS_UNIT_PIXEL_SIZE;
+            uint32_t image_byte_size = image->x*image->y*image->num_channels;
+
+            wgpu::TextureDescriptor desc {
+                .usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst,
+                .dimension = wgpu::TextureDimension::e2D,
+                .size = { ATLAS_UNIT_PIXEL_SIZE, ATLAS_UNIT_PIXEL_SIZE, atlas_units_x * atlas_units_y},
+#ifdef WSL
+                .format = wgpu::TextureFormat::RGBA8UnormSrgb,
+#else
+                .format = wgpu::TextureFormat::RGBA8Unorm,
+#endif
+                .mipLevelCount = 1,
+                .sampleCount = 1,
+            };
+
+            wgpu::Texture texture = renderer.device.CreateTexture(&desc);
+
+            wgpu::TexelCopyTextureInfo destination {
+                .texture = texture,
+                .mipLevel = 0,
+                .origin = {0,0,0},
+                .aspect = wgpu::TextureAspect::All,
+            };
+            wgpu::TexelCopyBufferLayout layout {
+                .bytesPerRow = image->num_channels*image->x,
+                .rowsPerImage = image->y 
+            };
+            wgpu::Extent3D extent = {ATLAS_UNIT_PIXEL_SIZE, ATLAS_UNIT_PIXEL_SIZE, 1};
+
+
+            for(uint32_t iy = 0; iy < atlas_units_y; iy++) {
+                for(uint32_t ix = 0; ix < atlas_units_x; ix++) {
+
+                    layout.offset = ix*unit_byte_offset + (iy*atlas_units_x*unit_byte_offset*ATLAS_UNIT_PIXEL_SIZE);
+                    destination.origin.z = ix + (iy*atlas_units_x);
+                    renderer.queue.WriteTexture(&destination, image->data, image_byte_size, &layout, &extent);
+                }
+            }
+
+            return {texture, desc};
+        }
+
+    wgpu::BindGroupLayout StaticBlockRenderer::CreateBindGroupLayout(const Renderer& renderer) {
         wgpu::BindGroupLayoutEntry layout_entries[] = {
             {
                 .binding = 0,
@@ -269,9 +238,9 @@ namespace {
             .entryCount = 3,
             .entries = &layout_entries[0]
         };
-        return init.device.CreateBindGroupLayout(&layout_descriptor);
+        return renderer.device.CreateBindGroupLayout(&layout_descriptor);
     }
-    std::tuple<uint32_t, wgpu::BindGroup, wgpu::Buffer> CreateBufferAndBindGroup(const RendererInitData& init, std::span<BlockData> block_data, wgpu::BindGroupLayout layout) {
+    std::tuple<uint32_t, wgpu::BindGroup, wgpu::Buffer> StaticBlockRenderer::CreateBufferAndBindGroup(const Renderer& renderer, std::span<BlockData> block_data, wgpu::BindGroupLayout layout) {
 
         auto data = BlockFaceToShaderData(block_data);
 
@@ -280,14 +249,14 @@ namespace {
         bd.usage = wgpu::BufferUsage::Storage;
         bd.mappedAtCreation = true;
 
-        wgpu::Buffer buffer = init.device.CreateBuffer(&bd);
+        wgpu::Buffer buffer = renderer.device.CreateBuffer(&bd);
         uint32_t vertex_count = (uint32_t)data.size() * 3;
 
         buffer.WriteMappedRange(0, data.data(), bd.size);
 
         buffer.Unmap();
 
-        auto[texture, texture_desc] = SetupTexture(init);
+        auto[texture, texture_desc] = SetupTexture(renderer);
         wgpu::TextureViewDescriptor texture_view_desc = {
             .format = texture_desc.format,
             .dimension = wgpu::TextureViewDimension::e2DArray,
@@ -307,7 +276,7 @@ namespace {
             .lodMaxClamp = 1.0f,
         };
 
-        wgpu::Sampler s = init.device.CreateSampler(&sd);
+        wgpu::Sampler s = renderer.device.CreateSampler(&sd);
 
         wgpu::BindGroupEntry group_entries[] = {
             {
@@ -333,17 +302,16 @@ namespace {
         };
         return {
             vertex_count, 
-            init.device.CreateBindGroup(&group_descriptor),
+            renderer.device.CreateBindGroup(&group_descriptor),
             buffer
         };
     }
 
-    std::span<BlockData> GetRegistryBlockData() {
-        auto& block_data_storage = registry->storage<BlockData>();
+    std::span<BlockData> StaticBlockRenderer::GetRegistryBlockData(entt::registry& registry) {
+        auto& block_data_storage = registry.storage<BlockData>();
         if(!block_data_storage.contiguous())
             throw std::runtime_error("Block data buffer cannot be updated as the storage is not contiguous");
 
         return std::span<BlockData>(*block_data_storage.raw(), block_data_storage.size());
-        // auto [_vertex_count, _group, _block_data_buffer] = CreateBufferAndBindGroup(Renderer::init, std::span<BlockData>(*block_data_storage.raw(), block_data_storage.size()), layout);
     }
 }

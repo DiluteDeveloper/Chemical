@@ -3,6 +3,7 @@
 #include "input.h"
 #include "block.h"
 #include "level_editor.h"
+#include "renderers/static_block_renderer.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <spdlog/spdlog.h>
@@ -27,19 +28,16 @@ namespace Chemical {
     App::App() : window(SetupGLFW()) {
         spdlog::set_level(spdlog::level::trace);
 
-        Input::Initialise(window);
-
-        registry.ctx().emplace<CharacterController>();
-
         BlockData::AddTestDataToRegistry(registry);
         BoxCollider::AddTestCollidersToRegistry(registry);
 
-        Renderer::Initialise(window, registry);
+        Input& input = registry.ctx().emplace<Input>(window);
+        registry.ctx().emplace<CharacterController>(input);
+        registry.ctx().emplace<LevelEditor>(registry);
+        Renderer& renderer = registry.ctx().emplace<Renderer>(window, registry);
+        registry.ctx().emplace<StaticBlockRenderer>(renderer);
 
-        LevelEditor::Initialise(registry);
         old_time = clock::now();
-
-
 
 #ifdef __EMSCRIPTEN__
         emscripten_set_main_loop_arg(std::bind_front(&App::Loop, this), nullptr, 0, true);
@@ -50,7 +48,12 @@ namespace Chemical {
 #endif
     }
     App::~App() {
-        Renderer::Shutdown();
+        registry.ctx().erase<StaticBlockRenderer>();
+        registry.ctx().erase<Renderer>();
+        registry.ctx().erase<LevelEditor>();
+        registry.ctx().erase<CharacterController>();
+        registry.ctx().erase<Input>();
+
         glfwDestroyWindow(window);
         glfwTerminate();
     }
@@ -62,8 +65,8 @@ namespace Chemical {
         delta_time = std::chrono::duration<float>(new_time - old_time).count();
         old_time = new_time;
 
-        registry.ctx().get<CharacterController>().Update(registry.view<BoxCollider>(), delta_time, Renderer::init.queue, Renderer::view_buffer);
-        Renderer::Render(registry);
+        registry.ctx().get<CharacterController>().Update(registry.view<BoxCollider>(), delta_time);
+        registry.ctx().get<Renderer>().Render();
 
         glfwPollEvents();
 

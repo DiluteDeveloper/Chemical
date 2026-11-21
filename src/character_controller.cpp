@@ -12,9 +12,9 @@ namespace Chemical {
             switch(key) {
                 case GLFW_KEY_ESCAPE:
                     if(input_enabled)
-                        Input::SetCursorEnabled();
+                        input->SetCursorEnabled();
                     else
-                        Input::SetCursorDisabled();
+                        input->SetCursorDisabled();
                     input_enabled = !input_enabled;
                     break;
                 case GLFW_KEY_F:
@@ -57,7 +57,7 @@ namespace Chemical {
         last_mouse_pos.y = ypos;
     }
 
-    void CharacterController::UpdateFreecamController(BoxColliderConstView colliders, double delta_time, wgpu::Queue queue, wgpu::Buffer buffer) {
+    void CharacterController::UpdateFreecamController(BoxColliderConstView colliders, double delta_time) {
 
         transform.rotation.y += static_cast<float>(mouse_offset_since_last_update.x) * sensitivity;
         transform.rotation.x += static_cast<float>(mouse_offset_since_last_update.y) * sensitivity;
@@ -127,9 +127,9 @@ namespace Chemical {
             delta_accumulator = 0.0f;
         }
 
-        queue.WriteBuffer(buffer, 0, &glm::inverse(transform.AsMat4())[0][0], sizeof(glm::mat4));
+        if(view_matrix_update_callback) view_matrix_update_callback(glm::inverse(transform.AsMat4()));
     }
-    void CharacterController::UpdateCharacterController(BoxColliderConstView colliders, double delta_time, wgpu::Queue queue, wgpu::Buffer buffer) {
+    void CharacterController::UpdateCharacterController(BoxColliderConstView colliders, double delta_time) {
 
         transform.rotation.y += static_cast<float>(mouse_offset_since_last_update.x) * sensitivity;
         transform.rotation.x += static_cast<float>(mouse_offset_since_last_update.y) * sensitivity;
@@ -201,24 +201,27 @@ namespace Chemical {
         else
             bhop_speed += bhop_speed_increase_rate * delta_time;
 
-        queue.WriteBuffer(buffer, 0, &glm::inverse(transform.AsMat4())[0][0], sizeof(glm::mat4));
+        if(view_matrix_update_callback) view_matrix_update_callback(glm::inverse(transform.AsMat4()));
     }
 
-    CharacterController::CharacterController() {
-        Input::SubscribeToCursorPosCallback(std::bind_front(&CharacterController::OnCursorPosCallback, this), this);
-        Input::SubscribeToKeyCallback(std::bind_front(&CharacterController::OnKeyCallback, this), this);
+    CharacterController::CharacterController(Input& input) : input(&input) {
+        input.SubscribeToCursorPosCallback(std::bind_front(&CharacterController::OnCursorPosCallback, this), this);
+        input.SubscribeToKeyCallback(std::bind_front(&CharacterController::OnKeyCallback, this), this);
     }
     CharacterController::~CharacterController() {
-        Input::UnsubscribeFromCursorPosCallback(this);
-        Input::UnsubscribeFromKeyCallback(this);
+        input->UnsubscribeFromCursorPosCallback(this);
+        input->UnsubscribeFromKeyCallback(this);
+    }
+    void CharacterController::SetViewMatrixUpdateCallback(std::function<void(const glm::mat4& view_matrix)> cb) {
+        view_matrix_update_callback = cb;
     }
 
-    void CharacterController::Update(BoxColliderConstView colliders, double delta_time, wgpu::Queue queue, wgpu::Buffer buffer) {
+    void CharacterController::Update(BoxColliderConstView colliders, double delta_time) {
 
             if(freecam_enabled)
-                UpdateFreecamController(colliders, delta_time, queue, buffer);
+                UpdateFreecamController(colliders, delta_time);
             else
-                UpdateCharacterController(colliders, delta_time, queue, buffer);
+                UpdateCharacterController(colliders, delta_time);
 
     }
 }

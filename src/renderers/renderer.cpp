@@ -2,6 +2,7 @@
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 #include "character_controller.h"
+#include "renderers/static_block_renderer.h"
 #include "webgpu/webgpu_cpp.h"
 #include <spdlog/spdlog.h>
 #include <webgpu/webgpu_glfw.h>
@@ -10,64 +11,37 @@
 #include <imgui_impl_glfw.h>
 #include <entt/entity/registry.hpp>
 
-namespace {
+namespace Chemical {
 
-    using namespace Chemical;
-    RendererInitData InitialiseWebGPU(GLFWwindow* window);
-    std::tuple<wgpu::Buffer, wgpu::BindGroup, wgpu::BindGroupLayout> SetupViewProjection(const RendererInitData& init);
-    std::tuple<wgpu::SurfaceTexture, wgpu::TextureView> GetNextSurfaceViewData(const wgpu::Surface& surface);
-
-    std::tuple<wgpu::Texture, wgpu::TextureView> CreateDepthTexture(const RendererInitData& init);
-    void InitialiseImgui(GLFWwindow* window, const RendererInitData& init);
-
-    void ExecutePrimaryRenderPass(wgpu::CommandEncoder encoder, wgpu::TextureView surface_view);
-    void ExecuteImguiRenderPass(wgpu::CommandEncoder encoder, wgpu::TextureView surface_view);
-
-    void InitialisePrimaryRenderPass(wgpu::TextureView depth_texture_view);
-    void InitialiseImguiRenderPass();
-
-
-    PrimaryRenderPass primary_pass;
-    ImguiRenderPass imgui_pass;
-
-    wgpu::BindGroup camera_group;
-}
-namespace Chemical::StaticBlockRenderer {
-    void Initialise(const RendererInitData& init, entt::registry& _registry);
-    void Render(wgpu::RenderPassEncoder render_pass);
-};
-
-namespace Chemical::Renderer {
-    RendererInitData init;
-    wgpu::Buffer view_buffer;
-
-    void Initialise(GLFWwindow* window, entt::registry& registry) {
-        init = InitialiseWebGPU(window);
-        auto [_view_buffer, _camera_group, _layout] = SetupViewProjection(init);
+    Renderer::Renderer(GLFWwindow* window, entt::registry& registry) : registry(&registry) {
+        InitialiseWebGPU(window);
+        auto [_view_buffer, _camera_group, _layout] = InitialiseViewProjection();
         camera_group = _camera_group;
         view_buffer = _view_buffer;
-        init.view_projection_layout = _layout;
+        view_projection_layout = _layout;
 
-        StaticBlockRenderer::Initialise(init, registry);
+        InitialiseImgui(window);
 
-        InitialiseImgui(window, init);
-
-        auto [surface_depth_texture, surface_depth_texture_view] = CreateDepthTexture(init);
+        auto [surface_depth_texture, surface_depth_texture_view] = CreateDepthTexture();
         InitialisePrimaryRenderPass(surface_depth_texture_view);
         InitialiseImguiRenderPass();
+
+        registry.ctx().get<CharacterController>().SetViewMatrixUpdateCallback([this](const glm::mat4& view_matrix) {
+            queue.WriteBuffer(view_buffer, 0, &view_matrix[0][0], sizeof(glm::mat4));
+        });
     }
-    void Shutdown() {
+    Renderer::~Renderer() {
         ImGui_ImplWGPU_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
     }
-    void Render(entt::registry& registry) {
+    void Renderer::Render() {
         ImGui_ImplWGPU_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
 
-        auto& controller = registry.ctx().get<CharacterController>();
+        auto& controller = registry->ctx().get<CharacterController>();
         ImGui::Begin("Player Configuration");
 
         ImGui::InputFloat("Set Speed", &controller.base_speed, 0, 5, "%.5f");
@@ -87,43 +61,40 @@ namespace Chemical::Renderer {
 
         ImGui::Render();
 
-        auto[surface_texture, surface_view] = GetNextSurfaceViewData(init.surface);
+        auto[surface_texture, surface_view] = GetNextSurfaceViewData();
         if(!surface_view) return;
 
-        wgpu::CommandEncoder encoder = init.device.CreateCommandEncoder();
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         ExecutePrimaryRenderPass(encoder, surface_view);
         ExecuteImguiRenderPass(encoder, surface_view);
 
         wgpu::CommandBuffer cmd = encoder.Finish(nullptr);
-        init.queue.Submit(1, &cmd);
+        queue.Submit(1, &cmd);
 
 #ifndef __EMSCRIPTEN__
-        init.surface.Present();
-        init.device.Tick();
+        surface.Present();
+        device.Tick();
 #endif
 
-        init.instance.ProcessEvents();
+        instance.ProcessEvents();
     }
 
-}
-namespace {
-
-    void ExecutePrimaryRenderPass(wgpu::CommandEncoder encoder, wgpu::TextureView surface_view) {
+    void Renderer::ExecutePrimaryRenderPass(wgpu::CommandEncoder encoder, wgpu::TextureView surface_view) {
         primary_pass.color.view = surface_view;
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&primary_pass.descriptor);
         pass.SetBindGroup(0, camera_group, 0, nullptr);
-        StaticBlockRenderer::Render(pass);
+        registry->ctx().get<StaticBlockRenderer>().Render(pass);
         pass.End();
     }
 
-    void ExecuteImguiRenderPass(wgpu::CommandEncoder encoder, wgpu::TextureView surface_view) {
+    void Renderer::ExecuteImguiRenderPass(wgpu::CommandEncoder encoder, wgpu::TextureView surface_view) {
         imgui_pass.color.view = surface_view;
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&imgui_pass.descriptor);
         ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), pass.Get());
         pass.End();
     }
 
-    void InitialisePrimaryRenderPass(wgpu::TextureView depth_texture_view) {
+    void Renderer::InitialisePrimaryRenderPass(wgpu::TextureView depth_texture_view) {
         primary_pass.color = {
             .loadOp = wgpu::LoadOp::Clear,
             .storeOp = wgpu::StoreOp::Store,
@@ -143,7 +114,7 @@ namespace {
         };
     }
 
-    void InitialiseImguiRenderPass() {
+    void Renderer::InitialiseImguiRenderPass() {
 
         imgui_pass.color = {
             .loadOp = wgpu::LoadOp::Load,
@@ -156,7 +127,7 @@ namespace {
         };
     }
 
-    void AwaitAsync(const wgpu::Instance& instance, const wgpu::Future& future) {
+    void Renderer::AwaitAsync(const wgpu::Future& future) {
         while(true) {
 #ifdef __EMSCRIPTEN__
             emscripten_sleep(10); 
@@ -166,11 +137,9 @@ namespace {
         }
     }
 
-    RendererInitData InitialiseWebGPU(GLFWwindow* window) {
+    void Renderer::InitialiseWebGPU(GLFWwindow* window) {
 
-        RendererInitData init;
-
-        init.instance = wgpu::CreateInstance(nullptr),
+        instance = wgpu::CreateInstance(nullptr),
         
         // Adapter ----------------------------------------
         
@@ -178,14 +147,14 @@ namespace {
 
         wgpu::RequestAdapterOptions adapter_opt;
         // adapter_opt.backendType = wgpu::BackendType::Vulkan;
-        wgpu::Future adapter_future = init.instance.RequestAdapter(&adapter_opt, wgpu::CallbackMode::WaitAnyOnly, [&init](wgpu::RequestAdapterStatus status, wgpu::Adapter new_adapter, wgpu::StringView message) {
+        wgpu::Future adapter_future = instance.RequestAdapter(&adapter_opt, wgpu::CallbackMode::WaitAnyOnly, [this](wgpu::RequestAdapterStatus status, wgpu::Adapter new_adapter, wgpu::StringView message) {
             if (status == wgpu::RequestAdapterStatus::Success)
-                init.adapter = new_adapter;
+                adapter = new_adapter;
             else
                 spdlog::error("WebGPU adapter request failed: {}", message.data);
         });
 
-        AwaitAsync(init.instance, adapter_future);
+        AwaitAsync(adapter_future);
 
         // Device ----------------------------------------
         
@@ -207,59 +176,57 @@ namespace {
             throw std::runtime_error(std::format("WebGPU device uncaptured error: {} with error type: ", message.data, ((int)type)));
         });
 
-        wgpu::Future device_future = init.adapter.RequestDevice(&device_descriptor, wgpu::CallbackMode::WaitAnyOnly, [&init](wgpu::RequestDeviceStatus status, wgpu::Device new_device, wgpu::StringView message) {
+        wgpu::Future device_future = adapter.RequestDevice(&device_descriptor, wgpu::CallbackMode::WaitAnyOnly, [this](wgpu::RequestDeviceStatus status, wgpu::Device new_device, wgpu::StringView message) {
           if (status == wgpu::RequestDeviceStatus::Success)
-                init.device = new_device;
+                device = new_device;
           else
               throw std::runtime_error(std::format("WebGPU device request failed: {}", message.data));
         });
 
-        AwaitAsync(init.instance, device_future);
+        AwaitAsync(device_future);
 
-        init.queue = init.device.GetQueue();
+        queue = device.GetQueue();
         
 #ifdef __EMSCRIPTEN__
         wgpu::EmscriptenSurfaceSourceCanvasHTMLSelector src;
         src.selector = "#canvas";
         wgpu::SurfaceDescriptor desc;
         desc.nextInChain = &src;
-        init.surface = wgpu.instance.CreateSurface(&desc),
+        surface = wgpu.instance.CreateSurface(&desc),
 #else
-        init.surface = wgpu::glfw::CreateSurfaceForWindow(init.instance, window);
+        surface = wgpu::glfw::CreateSurfaceForWindow(instance, window);
 #endif
         wgpu::SurfaceCapabilities capabilities;
-        init.surface.GetCapabilities(init.adapter, &capabilities);
+        surface.GetCapabilities(adapter, &capabilities);
         if(capabilities.presentModeCount == 0) 
             throw std::runtime_error("WebGPU surface has no present modes!");
 
         wgpu::SurfaceConfiguration config = {
-            .device = init.device,
+            .device = device,
             .format = capabilities.formats[0],
             .width = 1920,
             .height = 1080,
             .alphaMode = wgpu::CompositeAlphaMode::Auto,
             .presentMode = capabilities.presentModes[0]
         };
-        init.surface.Configure(&config);
-        init.surface_format = config.format;
-        return init;
+        surface.Configure(&config);
+        surface_format = config.format;
     }
 
-
-    std::tuple<wgpu::Buffer, wgpu::BindGroup, wgpu::BindGroupLayout> SetupViewProjection(const RendererInitData& init) {
+    std::tuple<wgpu::Buffer, wgpu::BindGroup, wgpu::BindGroupLayout> Renderer::InitialiseViewProjection() {
         
         wgpu::BufferDescriptor bd = {
             .usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform,
             .size = sizeof(float) * 4 * 4,
             .mappedAtCreation = true
         };
-        wgpu::Buffer view_buffer = init.device.CreateBuffer(&bd);
+        wgpu::Buffer view_buffer = device.CreateBuffer(&bd);
 
         glm::mat4 matrix = glm::mat4(1.0f);
         view_buffer.WriteMappedRange(0, &matrix, bd.size);
         view_buffer.Unmap();
 
-        wgpu::Buffer projection_buffer = init.device.CreateBuffer(&bd);
+        wgpu::Buffer projection_buffer = device.CreateBuffer(&bd);
 
         matrix = glm::perspectiveFovLH(glm::radians(90.0f), 1920.0f, 1080.0f, 0.01f, 1000.0f);
         projection_buffer.WriteMappedRange(0, &matrix, bd.size);
@@ -297,16 +264,16 @@ namespace {
             .entryCount = 2,
             .entries = &view_bgle[0]
         };
-        wgpu::BindGroupLayout layout = init.device.CreateBindGroupLayout(&bgld);
+        wgpu::BindGroupLayout layout = device.CreateBindGroupLayout(&bgld);
         wgpu::BindGroupDescriptor bind_group_descriptor {
             .layout = layout,
             .entryCount = 2,
             .entries = &view_bge[0]
         };
-        return {view_buffer, init.device.CreateBindGroup(&bind_group_descriptor), layout};
-    };
+        return {view_buffer, device.CreateBindGroup(&bind_group_descriptor), layout};
+    }
 
-    std::tuple<wgpu::SurfaceTexture, wgpu::TextureView> GetNextSurfaceViewData(const wgpu::Surface& surface) {
+    std::tuple<wgpu::SurfaceTexture, wgpu::TextureView> Renderer::GetNextSurfaceViewData() {
         wgpu::SurfaceTexture surface_texture;
         surface.GetCurrentTexture(&surface_texture);
         if(surface_texture.status != wgpu::SurfaceGetCurrentTextureStatus::SuccessOptimal) {
@@ -329,19 +296,19 @@ namespace {
         return std::make_tuple(surface_texture, target_view);
     }
 
-    std::tuple<wgpu::Texture, wgpu::TextureView> CreateDepthTexture(const RendererInitData& init) {
+    std::tuple<wgpu::Texture, wgpu::TextureView> Renderer::CreateDepthTexture() {
         wgpu::TextureDescriptor desc = {
             .usage = wgpu::TextureUsage::RenderAttachment,
             .dimension = wgpu::TextureDimension::e2D,
             .size = wgpu::Extent3D(1920, 1080, 1),
             .format = wgpu::TextureFormat::Depth32Float
         };
-        auto tex = init.device.CreateTexture(&desc);
+        auto tex = device.CreateTexture(&desc);
         auto view = tex.CreateView();
         return {tex, view};
     }
 
-    void InitialiseImgui(GLFWwindow* window, const RendererInitData& init) {
+    void Renderer::InitialiseImgui(GLFWwindow* window) {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         // ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -351,9 +318,9 @@ namespace {
         ImGui_ImplGlfw_InstallEmscriptenCallbacks(window, "#canvas");
 #endif
         ImGui_ImplWGPU_InitInfo init_info;
-        init_info.Device = init.device.Get();
+        init_info.Device = device.Get();
         init_info.NumFramesInFlight = 3;
-        init_info.RenderTargetFormat = (WGPUTextureFormat)init.surface_format;
+        init_info.RenderTargetFormat = (WGPUTextureFormat)surface_format;
         init_info.DepthStencilFormat = WGPUTextureFormat_Undefined;
         ImGui_ImplWGPU_Init(&init_info);
 #ifdef __EMSCRIPTEN__

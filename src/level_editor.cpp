@@ -4,37 +4,27 @@
 #include "input.h"
 #include "block.h"
 
-namespace {
+namespace Chemical {
 
-    using namespace Chemical;
+    LevelEditor::LevelEditor(entt::registry& registry) : registry(&registry) {
 
-    entt::registry* registry = nullptr;
-    void OnMouseButtonCallback(int button, int action, int mods);
-    void OnCursorPosCallback(double, double);
-    void OnScrollCallback(double, double yoffset);
-}
-namespace Chemical::LevelEditor {
+        Input& input = registry.ctx().get<Input>();
+        input.SubscribeToMouseButtonCallback(std::bind_front(&LevelEditor::OnMouseButtonCallback, this), this); 
+        input.SubscribeToCursorPosCallback(std::bind_front(&LevelEditor::OnCursorPosCallback, this), this); 
+        input.SubscribeToScrollCallback(std::bind_front(&LevelEditor::OnScrollCallback, this), this); 
+    }
+    LevelEditor::~LevelEditor() {
 
-    void Initialise(entt::registry& _registry) {
-        registry = &_registry;
-
-        Input::SubscribeToMouseButtonCallback(OnMouseButtonCallback, nullptr); 
-        Input::SubscribeToCursorPosCallback(OnCursorPosCallback, nullptr); 
-        Input::SubscribeToScrollCallback(OnScrollCallback, nullptr); 
+        Input& input = registry->ctx().get<Input>();
+        input.UnsubscribeFromMouseButtonCallback(this); 
+        input.UnsubscribeFromCursorPosCallback(this); 
+        input.UnsubscribeFromScrollCallback(this); 
     }
 
-}
-
-namespace {
-
-    entt::entity current_drag_block;
-    bool dragging = false;
-    Type type = Type::Grass;
-
-    void OnScrollCallback(double, double yoffset) {
-        type = (Type)(((uint8_t)type + (uint8_t)yoffset) % 5);
+    void LevelEditor::OnScrollCallback(double, double yoffset) {
+        type = (BlockType)(((uint8_t)type + (uint8_t)yoffset) % 5);
     }
-    void OnCursorPosCallback(double, double) {
+    void LevelEditor::OnCursorPosCallback(double, double) {
         if(!dragging)
             return;
 
@@ -52,7 +42,7 @@ namespace {
 
     }
 
-    void OnMouseButtonCallback(int button, int action, int) {
+    void LevelEditor::OnMouseButtonCallback(int button, int action, int) {
         if(button == GLFW_MOUSE_BUTTON_LEFT) {
             if(action == GLFW_PRESS) {
                 auto controller = registry->ctx().get<CharacterController>();

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "input.h"
 #include "physics.h"
 #include "utils/transform.h"
 #include <bitset>
@@ -11,9 +12,10 @@ namespace Chemical {
 
         using BoxColliderConstView = entt::view<entt::get_t<const BoxCollider>>;
 
-        CharacterController();
+        CharacterController(Input& input);
         ~CharacterController();
-        void Update(BoxColliderConstView colliders, double delta_time, wgpu::Queue queue, wgpu::Buffer buffer);
+        void Update(BoxColliderConstView colliders, double delta_time);
+        void SetViewMatrixUpdateCallback(std::function<void(const glm::mat4& view_matrix)>);
 
         static constexpr uint32_t PHYSICS_FRAME_RATE = 60;
         static constexpr std::bitset<8> MOVEMENT_DIRECTIONS = std::bitset<8>().set((uint8_t)Direction::Forwards).set((uint8_t)Direction::Backwards).set((uint8_t)Direction::Left).set((uint8_t)Direction::Right);
@@ -48,11 +50,15 @@ namespace Chemical {
         bool input_enabled = true;
         std::bitset<8> direction_flags = 0;
 
+
     private:
+        std::function<void(const glm::mat4& view_matrix)> view_matrix_update_callback;
+        Input* input;
+
         void OnKeyCallback(int key, int, int action, int);
         void OnCursorPosCallback(double xpos, double ypos);
 
-        void UpdateFreecamController(BoxColliderConstView colliders, double delta_time, wgpu::Queue queue, wgpu::Buffer buffer);
-        void UpdateCharacterController(BoxColliderConstView colliders, double delta_time, wgpu::Queue queue, wgpu::Buffer buffer);
+        void UpdateFreecamController(BoxColliderConstView colliders, double delta_time);
+        void UpdateCharacterController(BoxColliderConstView colliders, double delta_time);
     };
 }
